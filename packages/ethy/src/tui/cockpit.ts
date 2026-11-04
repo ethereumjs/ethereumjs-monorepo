@@ -1,4 +1,5 @@
 import {
+  computeAccountRangeFraction,
   computeSnapProgressPct,
   formatProgressBar,
   snapBucketsDoneCount,
@@ -41,6 +42,22 @@ function formatCompactCount(n: number): string {
   return n.toLocaleString('en-US')
 }
 
+function estimateAccountSyncEtaMin(spine: EthySpine): number | undefined {
+  if (spine.snapEtaMinutes !== undefined && spine.snapEtaMinutes > 0) {
+    return spine.snapEtaMinutes
+  }
+  const frac = computeAccountRangeFraction(spine.snapBuckets)
+  const perMin =
+    spine.accountsPerMin !== undefined && spine.accountsPerMin > 0
+      ? spine.accountsPerMin
+      : spine.accountsPerSec * 60
+  if (frac < 0.005 || frac >= 1 || perMin <= 0 || spine.totalAccountsSynced <= 0) {
+    return undefined
+  }
+  const remainingAccounts = spine.totalAccountsSynced * ((1 - frac) / frac)
+  return remainingAccounts / perMin
+}
+
 function snapTargetRow(spine: EthySpine): string {
   const pivot = spine.pivotBlockNumber
   if (pivot === undefined) {
@@ -70,10 +87,12 @@ function nodePulsePairs(spine: EthySpine): TwoColumnPair[] {
     const allBucketsDone = snapBucketsDoneCount(spine.snapBuckets) === 16
     if (!allBucketsDone) {
       const rate = Math.round(spine.accountsPerSec).toLocaleString('en-US')
+      const pct = computeSnapProgressPct(spine)
+      const etaMin = estimateAccountSyncEtaMin(spine)
       return [
         { label: 'Stage', value: 'Snap Sync · Accounts' },
         { label: 'Target', value: snapTargetRow(spine) },
-        { label: 'Progress', value: formatProgressBar(computeSnapProgressPct(spine)) },
+        { label: 'Progress', value: formatProgressBar(pct, etaMin) },
         {
           label: 'State',
           value: `${formatCompactCount(spine.totalAccountsSynced)} acc · ${rate}/s`,

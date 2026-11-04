@@ -51,6 +51,13 @@ describe('[Ethy/TUI]: renderFrame', () => {
     assert.include(plain, 'acc ·')
     assert.notInclude(plain, 'kept')
     assert.notInclude(plain, '16/16')
+
+    // When syncing is active with known range progress and rate, Progress shows (~Xm)
+    spine.totalAccountsSynced = 13_500_000
+    spine.accountsPerSec = 40_000
+    spine.snapEtaMinutes = 38
+    const withEta = stripAnsi(renderFrame(spine, createInitialViewState(), 140, 30).join('\n'))
+    assert.include(withEta, '(~38m)')
   })
 
   it('node pulse uses four rows and BAL catch-up copy', () => {

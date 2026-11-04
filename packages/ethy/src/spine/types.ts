@@ -24,6 +24,18 @@ export interface PeerTelemetry {
   lastError?: string
 }
 
+/** Non-overlapping snap/1 sub-range within one nibble bucket (WP-04h). */
+export type SnapRangeCursor = {
+  id: number
+  bucketIndex: number
+  origin: Uint8Array
+  limit: Uint8Array
+  /** `prefix` → `accounts/<nibble>.bin`; else segment file key under that nibble. */
+  journal: 'prefix' | string
+  inFlightReqKey?: string
+  verifying?: boolean
+}
+
 export interface SnapBucket {
   index: number
   prefix: string
@@ -34,6 +46,8 @@ export interface SnapBucket {
   limitHash: Uint8Array
   assignedPeerId?: string
   lastStallReason?: string
+  /** When set, network concurrency is tracked per cursor (WP-04h). */
+  subRanges?: SnapRangeCursor[]
 }
 
 export type DiagnosticSubsystem = 'devp2p' | 'snap' | 'bal' | 'mpt' | 'cl' | 'ai'
@@ -118,6 +132,10 @@ export interface EthySpine {
   snapBuckets: SnapBucket[]
   totalAccountsSynced: number
   accountsPerSec: number
+  /** Smoothed per-minute account rate (refreshed every ~5s to stay steady in the TUI). */
+  accountsPerMin?: number
+  /** Smoothed ETA in minutes for the active snap sync stage (refreshed every ~5s). */
+  snapEtaMinutes?: number
   codesSynced: number
   /** Code hashes still queued or in flight. */
   codesQueued: number

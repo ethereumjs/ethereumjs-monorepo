@@ -1,5 +1,7 @@
+import { Common, Sepolia } from '@ethereumjs/common'
 import { hexToBytes } from '@ethereumjs/util'
 import { secp256k1 } from '@noble/curves/secp256k1.js'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 import { assert, describe, it } from 'vitest'
 
 import * as message from '../../src/dpt/message.ts'
@@ -57,5 +59,28 @@ describe('[Devp2p/DPT]: messages', () => {
 
     assert.strictEqual(msg.typename, 'neighbours')
     assert.deepEqual(msg.publicKey, publicKey)
+  })
+
+  it('encode() uses common.customCrypto.keccak256 when provided', () => {
+    let hashCalls = 0
+    const common = new Common({
+      chain: Sepolia,
+      customCrypto: {
+        keccak256: (msg: Uint8Array) => {
+          hashCalls++
+          return keccak_256(msg)
+        },
+      },
+    })
+    const data = {
+      version: 4,
+      from: { address: '127.0.0.1', udpPort: 30303, tcpPort: 30303 },
+      to: { address: '127.0.0.1', udpPort: 30304, tcpPort: 30304 },
+    }
+    const packet = message.encode('ping', data, privateKey, common)
+    assert.ok(hashCalls >= 2, 'signing and outer hash must call custom keccak')
+    const decoded = message.decode(packet, common)
+    assert.strictEqual(decoded.typename, 'ping')
+    assert.strictEqual(decoded.data.version, 4)
   })
 })

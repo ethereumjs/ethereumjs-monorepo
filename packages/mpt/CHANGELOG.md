@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Changes
 
+- `MerklePatriciaTrie.putSortedLeaves()` batches sorted inserts with a dirty stack so each modified node is hashed once; `verifyMerkleRangeProof` uses it on all-elements and two-edge paths
 - `findPath()` uses a direct single-child walk instead of `WalkController` (same `Path` result; faster warm `get` / `findPath` on MapDB benches)
 
 ## 10.1.3 - 2026-08-21

@@ -12,7 +12,7 @@ EthereumJS is a protocol-library vendor. A wrong tx hash, sender recovery, or si
 - **S0 (funds / identity):** `packages/tx`, `packages/util` (`signature.ts`, `account.ts`, `authorization.ts`). Extra review. Do not change expected hashes or signature vectors unless the EIP/spec changed.
 - **S1 (consensus):** `packages/evm` (especially `precompiles/`), `packages/vm`. Spec tests (legacy + execution-spec tests) are the security control. Do not skip or weaken vectors to go green.
 - **S2:** `rlp`, `block`, `mpt`, `statemanager` — decode, freeze, proofs/roots.
-- **S3:** `packages/common` `customCrypto` — replaces keccak / ecsign / ecrecover / KZG for the whole stack. WASM backends stay opt-in; keep the README warning.
+- **S3:** `packages/common` `customCrypto` — replaces keccak / ecsign / ecdsaRecover / KZG for the whole stack. WASM backends stay opt-in; keep the README warning. **Library packages (`common`, `mpt`, `statemanager`, `devp2p`, `evm`, `vm`, `tx`, `block`, `rlp`, `util`) must never embed WASM code or depend on WASM crypto packages directly** — only end-user applications like `@ethereumjs/ethy` may depend on WASM crypto and inject it via `customCrypto` / callback parameters.
 - **S2 (networking):** `devp2p` — RLPx, ECIES/MAC, DPT, wire protocols. Extra review on handshake and transport crypto.
 - **S4 (deprecated, still on npm):** `wallet`. Containment only — no new features, no new runtime deps. **`client`** lives under [`archive/client`](../../archive/client) (not a workspace; ignore `package.json.stale` for dependency inventory).
 - **S5:** genesis, binarytree, e2store, testdata, ethash.

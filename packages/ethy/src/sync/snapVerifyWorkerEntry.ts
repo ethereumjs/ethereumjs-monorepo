@@ -1,5 +1,6 @@
 import { parentPort } from 'node:worker_threads'
 
+import { initEthyKeccak } from '../crypto/keccak.ts'
 import { verifyAccountRangeJob, verifyStorageRangeJob } from './snapVerifyJob.ts'
 
 type WorkerRequest =
@@ -23,27 +24,32 @@ type WorkerResponse = {
   result:
     | Awaited<ReturnType<typeof verifyAccountRangeJob>>
     | Awaited<ReturnType<typeof verifyStorageRangeJob>>
-  transfer?: ArrayBuffer[]
 }
 
 if (parentPort === null) {
   throw new Error('snapVerifyWorkerEntry must run inside a Worker')
 }
 
-parentPort.on('message', async (msg: WorkerRequest) => {
+const port = parentPort
+const ready = initEthyKeccak()
+
+port.on('message', async (msg: WorkerRequest) => {
   try {
+    await ready
     if (msg.kind === 'account') {
       const result = await verifyAccountRangeJob({
         stateRoot: msg.stateRoot,
         origin: msg.origin,
         payload: msg.payload,
       })
-      const transfer: ArrayBuffer[] = []
-      if (result.slab !== undefined) {
-        transfer.push(result.slab.buffer.slice(0) as ArrayBuffer)
-      }
-      const out: WorkerResponse = { id: msg.id, result, transfer }
-      parentPort!.postMessage(out, transfer)
+      const transfer =
+        result.slab !== undefined &&
+        result.slab.byteOffset === 0 &&
+        result.slab.byteLength === result.slab.buffer.byteLength
+          ? ([result.slab.buffer] as ArrayBuffer[])
+          : []
+      const out: WorkerResponse = { id: msg.id, result }
+      port.postMessage(out, transfer)
       return
     }
     const result = await verifyStorageRangeJob({
@@ -51,9 +57,9 @@ parentPort.on('message', async (msg: WorkerRequest) => {
       origin: msg.origin,
       replyPayload: msg.payload,
     })
-    parentPort!.postMessage({ id: msg.id, result } satisfies WorkerResponse)
+    port.postMessage({ id: msg.id, result } satisfies WorkerResponse)
   } catch (err: unknown) {
-    parentPort!.postMessage({
+    port.postMessage({
       id: msg.id,
       result: {
         ok: false,

@@ -18,6 +18,14 @@ import {
   equalsBytes,
   isDebugEnabled,
 } from '@ethereumjs/util'
+
+function compareKeysLex(a: Uint8Array, b: Uint8Array): number {
+  const min = Math.min(a.length, b.length)
+  for (let i = 0; i < min; i++) {
+    if (a[i]! !== b[i]!) return a[i]! - b[i]!
+  }
+  return a.length - b.length
+}
 import { keccak_256 } from '@noble/hashes/sha3.js'
 import debug from 'debug'
 
@@ -573,6 +581,22 @@ export class MerklePatriciaTrie {
     stack: MPTNode[],
   ): Promise<void> {
     const opStack: BatchDBOp[] = []
+    const fullKeyNibbles = bytesToNibbles(keyBytes)
+    this._stageNodeUpdate(keyBytes, value, keyRemainder, stack, opStack)
+    await this.saveStack(fullKeyNibbles, stack, opStack)
+  }
+
+  /**
+   * Mutates `stack` in place for a value update without persisting (see {@link MerklePatriciaTrie.saveStack}).
+   * @private
+   */
+  protected _stageNodeUpdate(
+    keyBytes: Uint8Array,
+    value: Uint8Array,
+    keyRemainder: Nibbles,
+    stack: MPTNode[],
+    opStack: BatchDBOp[] = [],
+  ): void {
     const lastNode = stack.pop()
     if (!lastNode) {
       throw EthereumJSErrorWithoutCode('Stack underflow')
@@ -582,11 +606,9 @@ export class MerklePatriciaTrie {
     const matchLeaf = this._isMatchingLeafUpdate(lastNode, stack, fullKeyNibbles, keyRemainder)
 
     if (matchLeaf) {
-      // Case 1: Key already exists at this leaf – update value in place
       lastNode.value(value)
       stack.push(lastNode)
     } else if (lastNode instanceof BranchMPTNode) {
-      // Case 2: Insert into branch – either new leaf on empty slot or set branch value
       stack.push(lastNode)
       if (keyRemainder.length !== 0) {
         keyRemainder.shift()
@@ -595,7 +617,6 @@ export class MerklePatriciaTrie {
         lastNode.value(value)
       }
     } else {
-      // Case 3: Last node is Extension or Leaf – path diverges. Create branch at divergence point
       const lastKey = lastNode.key()
       const matchingLength = matchingNibbleLength(lastKey, keyRemainder)
       const newBranchMPTNode = new BranchMPTNode()
@@ -634,8 +655,228 @@ export class MerklePatriciaTrie {
         newBranchMPTNode.value(value)
       }
     }
+  }
 
-    await this.saveStack(fullKeyNibbles, stack, opStack)
+  /**
+   * Persist the suffix of `stack` from the leaf while `pathNibbles` covers more than `keepNibbleLength` nibbles.
+   * Wires the resulting child hash (or inline raw node) into the remaining stack top when stopping early.
+   * @private
+   */
+  protected async _commitStackSuffix(
+    pathNibbles: Nibbles,
+    stack: MPTNode[],
+    keepNibbleLength: number,
+    opStack: BatchDBOp[],
+  ): Promise<void> {
+    let childRef: NodeReferenceOrRawMPTNode | undefined
+
+    while (stack.length > 0) {
+      const node = stack[stack.length - 1]!
+      let lenAfterNode = pathNibbles.length
+      if (node instanceof LeafMPTNode || node instanceof ExtensionMPTNode) {
+        lenAfterNode -= node.key().length
+      } else if (node instanceof BranchMPTNode) {
+        lenAfterNode -= 1
+      }
+      if (lenAfterNode <= keepNibbleLength) {
+        break
+      }
+
+      const popped = stack.pop()!
+      if (popped instanceof LeafMPTNode || popped instanceof ExtensionMPTNode) {
+        pathNibbles.splice(pathNibbles.length - popped.key().length)
+      }
+      if (popped instanceof ExtensionMPTNode && childRef !== undefined) {
+        popped.value(childRef as Uint8Array)
+      }
+      if (popped instanceof BranchMPTNode && childRef !== undefined) {
+        const branchIndex = pathNibbles.pop()
+        popped.setBranch(branchIndex!, childRef)
+      }
+      childRef = this._formatNode(popped, stack.length === 0, opStack) as NodeReferenceOrRawMPTNode
+    }
+
+    if (childRef !== undefined) {
+      if (stack.length > 0) {
+        const parent = stack[stack.length - 1]!
+        if (parent instanceof ExtensionMPTNode) {
+          parent.value(childRef as Uint8Array)
+        } else if (parent instanceof BranchMPTNode) {
+          const branchIndex = pathNibbles.pop()
+          parent.setBranch(branchIndex!, childRef)
+        }
+      } else {
+        this.root(childRef as Uint8Array)
+      }
+    }
+  }
+
+  /**
+   * Insert strictly sorted keys with one hash pass per modified node (range-proof hot path).
+   * Falls back to sequential {@link MerklePatriciaTrie.put} when node pruning is enabled.
+   */
+  async putSortedLeaves(
+    keys: Uint8Array[],
+    values: Uint8Array[],
+    preallocatedNibbles?: Nibbles[],
+  ): Promise<void> {
+    if (keys.length !== values.length) {
+      throw EthereumJSErrorWithoutCode('invalid keys length or values length')
+    }
+    for (let i = 0; i < values.length; i++) {
+      const v = values[i]
+      if (v === null || v === undefined || v.length === 0) {
+        throw EthereumJSErrorWithoutCode('invalid values')
+      }
+    }
+    if (!this._opts.useKeyHashing) {
+      for (let i = 1; i < keys.length; i++) {
+        if (compareKeysLex(keys[i - 1]!, keys[i]!) >= 0) {
+          throw EthereumJSErrorWithoutCode('invalid keys order')
+        }
+      }
+    }
+    if (keys.length === 0) {
+      return
+    }
+
+    if (this._opts.useNodePruning || this._opts.useKeyHashing) {
+      await this._withLock(async () => {
+        for (let i = 0; i < keys.length; i++) {
+          const appliedKey = this.appliedKey(keys[i]!)
+          if (equalsBytes(this.root(), this.EMPTY_TRIE_ROOT)) {
+            await this._createInitialNode(appliedKey, values[i]!)
+          } else {
+            const { remaining, stack } = await this.findPath(appliedKey, true)
+            let ops: BatchDBOp[] = []
+            if (this._opts.useNodePruning) {
+              const val = await this.get(keys[i]!)
+              if (val === null || !equalsBytes(val, values[i]!)) {
+                ops = this._createPruneDeleteOps(stack)
+              }
+            }
+            await this._updateNode(appliedKey, values[i]!, remaining, stack)
+            if (this._opts.useNodePruning) {
+              await this._db.batch(ops)
+            }
+          }
+        }
+        await this.persistRoot()
+      })
+      return
+    }
+
+    await this._withLock(async () => {
+      const opStack: BatchDBOp[] = []
+      let liveStack: MPTNode[] = []
+      let livePathNibbles: Nibbles | null = null
+
+      for (let i = 0; i < keys.length; i++) {
+        const key = keys[i]!
+        const value = values[i]!
+        if (this._opts.useRootPersistence && equalsBytes(key, ROOT_DB_KEY)) {
+          throw EthereumJSErrorWithoutCode(
+            `Attempted to set '${bytesToUtf8(ROOT_DB_KEY)}' key but it is not allowed.`,
+          )
+        }
+        const keyNibbles = preallocatedNibbles?.[i] ?? bytesToNibbles(key)
+
+        if (i > 0 && livePathNibbles !== null) {
+          const keep = matchingNibbleLength(livePathNibbles, keyNibbles)
+          if (keep > 0) {
+            const pathCopy = livePathNibbles.slice()
+            await this._commitStackSuffix(pathCopy, liveStack, keep, opStack)
+          } else {
+            await this.saveStack(livePathNibbles.slice(), liveStack, opStack)
+          }
+          if (opStack.length > 0) {
+            await this._db.batch(opStack)
+            opStack.length = 0
+          }
+        }
+
+        let remaining: Nibbles
+        let stack: MPTNode[]
+        if (liveStack.length === 0) {
+          if (equalsBytes(this.root(), this.EMPTY_TRIE_ROOT)) {
+            const newNode = new LeafMPTNode(keyNibbles.slice(), value)
+            liveStack = [newNode]
+            livePathNibbles = keyNibbles
+            continue
+          }
+          const path = await this.findPath(key, true)
+          remaining = path.remaining
+          stack = path.stack
+        } else {
+          let consumed = 0
+          for (let s = 0; s < liveStack.length - 1; s++) {
+            const n = liveStack[s]!
+            consumed += n instanceof BranchMPTNode ? 1 : n.key().length
+          }
+          remaining = keyNibbles.slice(consumed)
+          stack = liveStack
+
+          while (true) {
+            if (stack[stack.length - 1] instanceof BranchMPTNode) {
+              const branch = stack[stack.length - 1] as BranchMPTNode
+              if (remaining.length === 0) break
+              const branchIdx = remaining[0]!
+              const branchChild = branch.getBranch(branchIdx)
+              if (!branchChild) break
+              remaining = remaining.slice(1)
+              const childNode = await this.lookupNode(branchChild)
+              stack.push(childNode)
+            } else if (stack[stack.length - 1] instanceof ExtensionMPTNode) {
+              const ext = stack[stack.length - 1] as ExtensionMPTNode
+              const extKey = ext.key()
+              if (matchingNibbleLength(extKey, remaining) !== extKey.length) break
+              remaining = remaining.slice(extKey.length)
+              const childNode = await this.lookupNode(ext.value())
+              stack.push(childNode)
+            } else if (stack[stack.length - 1] instanceof LeafMPTNode) {
+              const leaf = stack[stack.length - 1] as LeafMPTNode
+              const leafKey = leaf.key()
+              if (
+                remaining.length === leafKey.length &&
+                matchingNibbleLength(leafKey, remaining) === leafKey.length
+              ) {
+                remaining = []
+              }
+              break
+            } else {
+              break
+            }
+          }
+        }
+
+        this._stageNodeUpdate(key, value, remaining, stack, opStack)
+        if (opStack.length > 0) {
+          await this._db.batch(opStack)
+          opStack.length = 0
+        }
+        liveStack = stack
+        livePathNibbles = keyNibbles
+      }
+
+      if (liveStack.length > 0 && livePathNibbles !== null) {
+        const topNode = liveStack[liveStack.length - 1]
+        const canShortcutSingleLeaf =
+          liveStack.length === 1 &&
+          topNode instanceof LeafMPTNode &&
+          !(topNode instanceof BranchMPTNode)
+        if (canShortcutSingleLeaf) {
+          const encoded = topNode.serialize()
+          this.root(this.hash(encoded))
+          await this._db.put(this._getDbKey(this.root()), encoded)
+        } else {
+          await this.saveStack(livePathNibbles.slice(), liveStack, opStack)
+          if (opStack.length > 0) {
+            await this._db.batch(opStack)
+          }
+        }
+      }
+      await this.persistRoot()
+    })
   }
 
   /**
@@ -1051,7 +1292,8 @@ export class MerklePatriciaTrie {
   }
 
   protected hash(inputBytes: Uint8Array): Uint8Array {
-    return Uint8Array.from(this._opts.useKeyHashingFunction.call(undefined, inputBytes))
+    const out = this._opts.useKeyHashingFunction.call(undefined, inputBytes)
+    return out instanceof Uint8Array ? out : Uint8Array.from(out)
   }
 
   /**

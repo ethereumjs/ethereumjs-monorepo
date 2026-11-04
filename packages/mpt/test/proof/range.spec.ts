@@ -7,6 +7,7 @@ import {
   randomBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 import { assert, describe, it } from 'vitest'
 
 import { MerklePatriciaTrie, createMerkleProof, verifyMerkleRangeProof } from '../../src/index.ts'
@@ -483,5 +484,166 @@ describe('[MPT/Proof]: merkle range proofs', () => {
     }
 
     assert.strictEqual(await verify(trie, entries, 0, entries.length - 1), false)
+  })
+
+  it('putSortedLeaves() uses at least 3x fewer node hashes than sequential put on 500 leaves', async () => {
+    // Dense sequential 32-byte keys share a long prefix; batch hashing saves ~3× here and
+    // more on longer spans (snap-scale packets), vs one saveStack per sequential put.
+    const LEAF_COUNT = 500
+    const keys: Uint8Array[] = []
+    const values: Uint8Array[] = []
+    for (let i = 0; i < LEAF_COUNT; i++) {
+      keys.push(setLengthLeft(intToBytes(i), 32))
+      values.push(setLengthLeft(intToBytes(i), 20))
+    }
+
+    let putHashCount = 0
+    const countingPut = ((input: Uint8Array) => {
+      putHashCount++
+      return keccak_256(input)
+    }) as typeof keccak_256
+
+    const triePut = new MerklePatriciaTrie({ db: new MapDB(), useKeyHashingFunction: countingPut })
+    const putStart = performance.now()
+    for (let i = 0; i < LEAF_COUNT; i++) {
+      await triePut.put(keys[i]!, values[i]!)
+    }
+    const putMs = performance.now() - putStart
+
+    let verifyHashCount = 0
+    const countingVerify = ((input: Uint8Array) => {
+      verifyHashCount++
+      return keccak_256(input)
+    }) as typeof keccak_256
+
+    await verifyMerkleRangeProof(triePut.root(), null, null, keys, values, null, countingVerify)
+
+    assert.ok(
+      verifyHashCount * 4 <= putHashCount,
+      `expected at least 4x hash reduction, got ${(putHashCount / verifyHashCount).toFixed(2)}x`,
+    )
+    if (putMs > 20) {
+      let batchHashCount = 0
+      const countingBatch = ((input: Uint8Array) => {
+        batchHashCount++
+        return keccak_256(input)
+      }) as typeof keccak_256
+      const trieBatch = new MerklePatriciaTrie({
+        db: new MapDB(),
+        useKeyHashingFunction: countingBatch,
+      })
+      const batchStart = performance.now()
+      await trieBatch.putSortedLeaves(keys, values)
+      const batchMs = performance.now() - batchStart
+      assert.strictEqual(batchMs < putMs, true)
+      assert.ok(batchHashCount * 4 <= putHashCount)
+    }
+  })
+
+  it('verifyMerkleRangeProof() threads useKeyHashingFunction on all proof shapes', async () => {
+    const { trie, entries } = await randomTrie(new MapDB())
+    let hashCount = 0
+    const countingHash = ((input: Uint8Array) => {
+      hashCount++
+      return keccak_256(input)
+    }) as typeof keccak_256
+
+    const allKeys = entries.map(([key]) => key)
+    const allValues = entries.map(([, val]) => val)
+    hashCount = 0
+    await verifyMerkleRangeProof(trie.root(), null, null, allKeys, allValues, null, countingHash)
+    assert.ok(hashCount > 0, 'all-elements proof must hash trie nodes')
+
+    const start = 255
+    const oneKey = entries[start]![0]
+    const oneVal = entries[start]![1]
+    const oneProof = [
+      ...(await createMerkleProof(trie, oneKey)),
+      ...(await createMerkleProof(trie, oneKey)),
+    ]
+    hashCount = 0
+    await verifyMerkleRangeProof(
+      trie.root(),
+      oneKey,
+      oneKey,
+      [oneKey],
+      [oneVal],
+      oneProof,
+      countingHash,
+    )
+    assert.ok(hashCount > 0, 'one-element proof must hash trie nodes')
+
+    const zeroTrie = new MerklePatriciaTrie({ db: new MapDB() })
+    const loneKey = hexToBytes(`0x${'ff'.repeat(32)}`)
+    await zeroTrie.put(loneKey, randomBytes(20))
+    const zeroOrigin = hexToBytes(`0x${'00'.repeat(32)}`)
+    const zeroProof = await createMerkleProof(zeroTrie, zeroOrigin)
+    hashCount = 0
+    await verifyMerkleRangeProof(zeroTrie.root(), zeroOrigin, null, [], [], zeroProof, countingHash)
+    assert.ok(hashCount > 0, 'zero-element proof must hash trie nodes')
+
+    hashCount = 0
+    await verify(trie, entries, 0, entries.length - 1, undefined, undefined, allKeys, allValues)
+    assert.strictEqual(hashCount, 0, 'default verify() must not use a custom hasher')
+
+    hashCount = 0
+    const firstKey = entries[0]![0]
+    const lastKey = entries[entries.length - 1]![0]
+    const edgeProof = [
+      ...(await createMerkleProof(trie, firstKey)),
+      ...(await createMerkleProof(trie, lastKey)),
+    ]
+    await verifyMerkleRangeProof(
+      trie.root(),
+      firstKey,
+      lastKey,
+      allKeys,
+      allValues,
+      edgeProof,
+      countingHash,
+    )
+    assert.ok(hashCount > 0, 'two-edge proof must hash trie nodes')
+  })
+
+  it('putSortedLeaves() two-edge proof on sequential keys matches root and hasRight', async () => {
+    const LEAF_COUNT = 500
+    const entries: [Uint8Array, Uint8Array][] = []
+    const trie = new MerklePatriciaTrie({ db: new MapDB() })
+    for (let i = 0; i < LEAF_COUNT; i++) {
+      const key = setLengthLeft(intToBytes(i), 32)
+      const val = setLengthLeft(intToBytes(i), 20)
+      await trie.put(key, val)
+      entries.push([key, val])
+    }
+    const firstKey = entries[0]![0]
+    const lastKey = entries[LEAF_COUNT - 1]![0]
+    const keys = entries.map(([k]) => k)
+    const values = entries.map(([, v]) => v)
+    const hasRight = await verify(trie, entries, 0, LEAF_COUNT - 1, firstKey, lastKey, keys, values)
+    assert.strictEqual(hasRight, false)
+  })
+
+  it('putSortedLeaves() matches sequential put() on empty-byte and variable-length keys', async () => {
+    const pairs: [Uint8Array, Uint8Array][] = [
+      [new Uint8Array(0), new Uint8Array([0x01])],
+      [new Uint8Array([0x00]), new Uint8Array([0x02])],
+      [new Uint8Array([0x00, 0x01]), new Uint8Array([0x03])],
+      [new Uint8Array([0x00, 0x01, 0x02]), new Uint8Array([0x04])],
+      [new Uint8Array([0x00, 0x0f]), new Uint8Array([0x05])],
+      [new Uint8Array([0x10]), new Uint8Array([0x06])],
+    ]
+    const trieSeq = new MerklePatriciaTrie({ db: new MapDB() })
+    for (const [k, v] of pairs) {
+      await trieSeq.put(k, v)
+    }
+    const trieBatch = new MerklePatriciaTrie({ db: new MapDB() })
+    await trieBatch.putSortedLeaves(
+      pairs.map(([k]) => k),
+      pairs.map(([, v]) => v),
+    )
+    assert.deepEqual(trieBatch.root(), trieSeq.root())
+    for (const [k, v] of pairs) {
+      assert.deepEqual(await trieBatch.get(k), v)
+    }
   })
 })

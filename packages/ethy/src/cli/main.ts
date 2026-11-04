@@ -1,4 +1,5 @@
 import { createEthyNode } from '../core/createEthyNode.ts'
+import { initEthyKeccak } from '../crypto/keccak.ts'
 import { advanceDemo } from '../demo/advanceDemo.ts'
 import { startPeerCoordinator } from '../net/peerCoordinator.ts'
 import { recordDiagnostic } from '../spine/diagnostics.ts'
@@ -29,6 +30,8 @@ async function main(): Promise<void> {
     process.stderr.write(`${(e as Error).message}\n`)
     process.exit(1)
   }
+
+  await initEthyKeccak()
 
   const node = createEthyNode({
     network,

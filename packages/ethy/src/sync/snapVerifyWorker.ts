@@ -210,7 +210,10 @@ export class SnapVerifyPool {
     const slot = this.pickSlot()
     slot.pendingIds.add(req.id)
     slot.inFlight = slot.pendingIds.size
-    const transfer = [req.payload.buffer.slice(0)] as ArrayBuffer[]
+    const transfer =
+      req.payload.byteOffset === 0 && req.payload.byteLength === req.payload.buffer.byteLength
+        ? ([req.payload.buffer] as ArrayBuffer[])
+        : []
     slot.worker.postMessage(req, transfer)
     return promise
   }

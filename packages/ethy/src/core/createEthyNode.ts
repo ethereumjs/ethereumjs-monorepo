@@ -1,5 +1,8 @@
+import { Common } from '@ethereumjs/common'
 import { createFlatStateManager } from '@ethereumjs/statemanager'
+
 import type { FlatStateManager } from '@ethereumjs/statemanager'
+import { ethyKeccak256 } from '../crypto/keccak.ts'
 
 import { DeterministicIntentEngine } from '../ai/deterministicEngine.ts'
 import type { IntentEngine } from '../ai/intentEngine.ts'
@@ -48,10 +51,16 @@ export function createEthyNode(opts: CreateEthyNodeOptions): EthyNode {
     genesisHash: networkGenesisHash(opts.network),
     enabled: !demo,
   })
+  const common = new Common({
+    chain,
+    hardfork,
+    customCrypto: { keccak256: ethyKeccak256 },
+  })
   const stateManager = createFlatStateManager(
     demo
-      ? {}
+      ? { common }
       : {
+          common,
           maxResidentAccounts: 500_000,
           coldAccountLookup: (accountHash) => snapStore.lookupBinaryAccountByHash(accountHash),
         },

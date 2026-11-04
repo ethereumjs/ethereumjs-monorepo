@@ -1,9 +1,15 @@
-import { verifyMerkleRangeProof } from '@ethereumjs/mpt'
+import { type HashKeysFunction, verifyMerkleRangeProof } from '@ethereumjs/mpt'
+
 import { RLP } from '@ethereumjs/rlp'
 import { SNAP_BINARY_ACCOUNT_SLAB_RECORD_SIZE } from '@ethereumjs/statemanager'
-import { binaryAccountToRLP, bytesToBigInt } from '@ethereumjs/util'
+import { bytesToBigInt } from '@ethereumjs/util'
+import { ethyKeccak256, initEthyKeccak } from '../crypto/keccak.ts'
 
-import { compareBytes32, parseAccountRangeReply } from './syntheticPeer.ts'
+import {
+  accountRangeRowsFromRaw,
+  compareBytes32,
+  decodeAccountRangePayload,
+} from './syntheticPeer.ts'
 
 export type AccountRangeVerifyResult = {
   ok: boolean
@@ -38,18 +44,30 @@ function asBytes(value: unknown): Uint8Array | undefined {
 }
 
 /** CPU-heavy ACCOUNT_RANGE verify (safe to run off the main thread). */
-export async function verifyAccountRangeJob(opts: {
-  stateRoot: Uint8Array
-  origin?: Uint8Array
-  payload: Uint8Array
-}): Promise<AccountRangeVerifyResult> {
-  const parsed = parseAccountRangeReply(opts.payload)
-  if (parsed === undefined) return { ok: false, hasRight: false, count: 0 }
-  const { entries, proof } = parsed
-  if (entries.length === 0) {
+export async function verifyAccountRangeJob(
+  opts: {
+    stateRoot: Uint8Array
+    origin?: Uint8Array
+    payload: Uint8Array
+  },
+  useKeyHashingFunction: HashKeysFunction = ethyKeccak256,
+): Promise<AccountRangeVerifyResult> {
+  await initEthyKeccak()
+  const decoded = decodeAccountRangePayload(opts.payload)
+  if (decoded === undefined) return { ok: false, hasRight: false, count: 0 }
+  const { accountsRaw, proof } = decoded
+  if (accountsRaw.length === 0) {
     if (opts.origin !== undefined && proof.length > 0) {
       try {
-        await verifyMerkleRangeProof(opts.stateRoot, opts.origin, null, [], [], proof)
+        await verifyMerkleRangeProof(
+          opts.stateRoot,
+          opts.origin,
+          null,
+          [],
+          [],
+          proof,
+          useKeyHashingFunction,
+        )
         return { ok: true, hasRight: false, count: 0 }
       } catch (err: unknown) {
         return { ok: false, hasRight: false, count: 0, reason: errorText(err) }
@@ -63,8 +81,17 @@ export async function verifyAccountRangeJob(opts: {
     }
   }
   try {
-    const keys = entries.map((e) => e.accountHash)
-    const values = entries.map((e) => binaryAccountToRLP(e.binaryAccount))
+    const slab = new Uint8Array(accountsRaw.length * SNAP_BINARY_ACCOUNT_SLAB_RECORD_SIZE)
+    const rows = accountRangeRowsFromRaw(accountsRaw, slab)
+    if (rows === undefined) {
+      return {
+        ok: false,
+        hasRight: false,
+        count: 0,
+        reason: 'malformed account range entry',
+      }
+    }
+    const { keys, values } = rows
     if (opts.origin !== undefined && compareBytes32(opts.origin, keys[keys.length - 1]!) > 0) {
       return {
         ok: false,
@@ -82,19 +109,14 @@ export async function verifyAccountRangeJob(opts: {
       keys,
       values,
       proof,
+      useKeyHashingFunction,
     )
-    const slab = new Uint8Array(entries.length * SNAP_BINARY_ACCOUNT_SLAB_RECORD_SIZE)
-    let offset = 0
-    for (const row of entries) {
-      slab.set(row.accountHash.subarray(0, 32), offset)
-      slab.set(row.binaryAccount.subarray(0, 104), offset + 32)
-      offset += SNAP_BINARY_ACCOUNT_SLAB_RECORD_SIZE
-    }
+    const lastKeyCopy = new Uint8Array(lastKey)
     return {
       ok: true,
       hasRight,
-      count: entries.length,
-      lastKey: parsed.lastKey,
+      count: keys.length,
+      lastKey: lastKeyCopy,
       slab,
     }
   } catch (err: unknown) {
@@ -103,11 +125,15 @@ export async function verifyAccountRangeJob(opts: {
 }
 
 /** CPU-heavy STORAGE_RANGES verify (safe to run off the main thread). */
-export async function verifyStorageRangeJob(opts: {
-  storageRoot: Uint8Array
-  replyPayload: Uint8Array
-  origin: Uint8Array
-}): Promise<StorageRangeVerifyResult> {
+export async function verifyStorageRangeJob(
+  opts: {
+    storageRoot: Uint8Array
+    replyPayload: Uint8Array
+    origin: Uint8Array
+  },
+  useKeyHashingFunction: HashKeysFunction = ethyKeccak256,
+): Promise<StorageRangeVerifyResult> {
+  await initEthyKeccak()
   let decoded: unknown[]
   try {
     decoded = RLP.decode(opts.replyPayload) as unknown[]
@@ -154,7 +180,15 @@ export async function verifyStorageRangeJob(opts: {
   try {
     let hasRight: boolean
     if (proof !== null && proof.length === 0 && keys.length > 0) {
-      hasRight = await verifyMerkleRangeProof(opts.storageRoot, null, null, keys, values, null)
+      hasRight = await verifyMerkleRangeProof(
+        opts.storageRoot,
+        null,
+        null,
+        keys,
+        values,
+        null,
+        useKeyHashingFunction,
+      )
     } else if (proof !== null && proof.length > 0 && keys.length > 0) {
       const lastKey = keys[keys.length - 1]!
       hasRight = await verifyMerkleRangeProof(
@@ -164,6 +198,7 @@ export async function verifyStorageRangeJob(opts: {
         keys,
         values,
         proof,
+        useKeyHashingFunction,
       )
     } else {
       return { ok: true, hasRight: false }

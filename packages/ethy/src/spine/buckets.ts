@@ -1,4 +1,7 @@
-import type { EthyPhase, EthySpine, SnapBucket } from './types.ts'
+import type { EthyPhase, EthySpine, SnapBucket, SnapRangeCursor } from './types.ts'
+
+/** Width of one nibble bucket in 36-bit cursor space (WP-04f / WP-04h). */
+export const FULL_BUCKET_SPAN_36 = 0x10_0000_0000
 
 /** Build 16 snap sync buckets by first account-hash nibble (0x0..0xf). */
 export function createSnapBuckets(): SnapBucket[] {
@@ -7,17 +10,97 @@ export function createSnapBuckets(): SnapBucket[] {
     const prefix = `0x${i.toString(16)}`
     const startHash = nibbleStartHash(i)
     const limitHash = nibbleLimitHash(i)
+    const origin = new Uint8Array(startHash)
     buckets.push({
       index: i,
       prefix,
       status: 'pending',
       accountsLoaded: 0,
       startHash,
-      currentLastHash: new Uint8Array(startHash),
+      currentLastHash: origin,
       limitHash,
+      subRanges: [newPrefixCursor(i, origin, limitHash, i)],
     })
   }
   return buckets
+}
+
+export function newPrefixCursor(
+  bucketIndex: number,
+  origin: Uint8Array,
+  limit: Uint8Array,
+  id: number,
+): SnapRangeCursor {
+  return {
+    id,
+    bucketIndex,
+    origin: new Uint8Array(origin),
+    limit: new Uint8Array(limit),
+    journal: 'prefix',
+  }
+}
+
+/** Legacy buckets without `subRanges` get a single prefix cursor from the saved hash span. */
+export function ensureBucketSubRanges(bucket: SnapBucket): SnapRangeCursor[] {
+  if (bucket.subRanges !== undefined && bucket.subRanges.length > 0) {
+    if (
+      bucket.subRanges.length === 1 &&
+      bucket.subRanges[0]!.journal === 'prefix' &&
+      compareBytes32(bucket.currentLastHash, bucket.subRanges[0]!.origin) > 0
+    ) {
+      bucket.subRanges[0]!.origin = new Uint8Array(bucket.currentLastHash)
+    }
+    return bucket.subRanges
+  }
+  if (compareBytes32(bucket.currentLastHash, bucket.limitHash) >= 0) {
+    bucket.subRanges = []
+    return bucket.subRanges
+  }
+  const origin = new Uint8Array(bucket.currentLastHash)
+  const limit = new Uint8Array(bucket.limitHash)
+  bucket.subRanges = [newPrefixCursor(bucket.index, origin, limit, bucket.index)]
+  return bucket.subRanges
+}
+
+export function cursorSpan36(cursor: SnapRangeCursor): number {
+  if (!cursorActive(cursor)) return 0
+  const lo = bucketPosition36(cursor.origin)
+  const hi = bucketPosition36(cursor.limit)
+  return Math.max(0, hi - lo + 1)
+}
+
+export function cursorActive(cursor: SnapRangeCursor): boolean {
+  return compareBytes32(cursor.origin, cursor.limit) <= 0
+}
+
+export function syncBucketCursorFields(bucket: SnapBucket): void {
+  const ranges = bucket.subRanges
+  if (ranges === undefined) {
+    if (compareBytes32(bucket.currentLastHash, bucket.limitHash) >= 0) {
+      bucket.status = 'done'
+      bucket.assignedPeerId = undefined
+    }
+    return
+  }
+  const active = ranges.filter((c) => cursorActive(c))
+  bucket.subRanges = active
+  if (active.length === 0) {
+    bucket.currentLastHash = new Uint8Array(bucket.limitHash)
+    bucket.status = 'done'
+    bucket.assignedPeerId = undefined
+    bucket.lastStallReason = undefined
+    return
+  }
+  let minOrigin = active[0]!.origin
+  for (const c of active) {
+    if (compareBytes32(c.origin, minOrigin) < 0) {
+      minOrigin = c.origin
+    }
+  }
+  bucket.currentLastHash = new Uint8Array(minOrigin)
+  if (bucket.status === 'done') {
+    bucket.status = 'pending'
+  }
 }
 
 function nibbleStartHash(nibble: number): Uint8Array {
@@ -35,6 +118,18 @@ function nibbleLimitHash(nibble: number): Uint8Array {
 
 /** True when the snap cursor has reached the bucket limit. */
 export function snapBucketCursorExhausted(bucket: SnapBucket): boolean {
+  if (compareBytes32(bucket.currentLastHash, bucket.limitHash) >= 0) {
+    if (
+      bucket.subRanges === undefined ||
+      bucket.subRanges.length === 0 ||
+      (bucket.subRanges.length === 1 && bucket.subRanges[0]!.journal === 'prefix')
+    ) {
+      return true
+    }
+  }
+  if (bucket.subRanges !== undefined) {
+    return bucket.subRanges.every((c) => !cursorActive(c))
+  }
   return compareBytes32(bucket.currentLastHash, bucket.limitHash) >= 0
 }
 
@@ -160,9 +255,27 @@ export function bucketPosition36(bytes: Uint8Array): number {
   return (bytes[0]! & 0x0f) * 0x1_0000_0000 + readUInt32BE(bytes, 1)
 }
 
-/** Cursor position within a bucket range including byte[0] low nibble (WP-04f). */
+function remainingSpan36(bucket: SnapBucket): number {
+  const ranges = ensureBucketSubRanges(bucket)
+  let sum = 0
+  for (const c of ranges) {
+    if (!cursorActive(c)) continue
+    sum += cursorSpan36(c)
+  }
+  return sum
+}
+
+/** Cursor position within a bucket range including byte[0] low nibble (WP-04f / WP-04h). */
 export function bucketCursorFraction(bucket: SnapBucket): number {
   if (bucket.status === 'done') return 1
+  if (bucket.subRanges !== undefined) {
+    const lo = bucketPosition36(bucket.startHash)
+    const hi = bucketPosition36(bucket.limitHash)
+    const totalSpan = Math.max(1, hi - lo + 1)
+    const remaining = remainingSpan36(bucket)
+    const frac = 1 - remaining / totalSpan
+    return Math.min(1, Math.max(0, frac))
+  }
   const cur = bucketPosition36(bucket.currentLastHash)
   const lo = bucketPosition36(bucket.startHash)
   const hi = bucketPosition36(bucket.limitHash)
@@ -174,11 +287,16 @@ export function bucketCursorFraction(bucket: SnapBucket): number {
   return (cur - lo) / (hi - lo)
 }
 
+/** Continuous fraction of the 256-bit account range covered (`0.0 .. 1.0`). */
+export function computeAccountRangeFraction(buckets: readonly SnapBucket[]): number {
+  if (buckets.length === 0) return 0
+  return buckets.reduce((sum, b) => sum + bucketCursorFraction(b), 0) / buckets.length
+}
+
 /** Continuous snap progress: 85% accounts, then 15% code+storage when all buckets are done. */
 export function computeSnapProgressPct(spine: EthySpine): number {
   const buckets = spine.snapBuckets
-  const accountFraction =
-    buckets.reduce((sum, b) => sum + bucketCursorFraction(b), 0) / Math.max(1, buckets.length)
+  const accountFraction = computeAccountRangeFraction(buckets)
   const allDone = buckets.every((b) => b.status === 'done')
   if (!allDone) {
     return Math.min(100, Math.max(0, Math.round(0.85 * accountFraction * 100)))
@@ -193,13 +311,17 @@ export function computeSnapProgressPct(spine: EthySpine): number {
 
 const PROGRESS_BAR_CELLS = 16
 
-/** Node Pulse progress row: 16 cells of █/░ plus a padded percent. */
-export function formatProgressBar(pct: number): string {
+/** Node Pulse progress row: 16 cells of █/░ plus a padded percent and optional ETA. */
+export function formatProgressBar(pct: number, etaMinutes?: number): string {
   const clamped = Math.min(100, Math.max(0, pct))
   const filled = Math.round((clamped / 100) * PROGRESS_BAR_CELLS)
   const bar = `${'█'.repeat(filled)}${'░'.repeat(PROGRESS_BAR_CELLS - filled)}`
   const pctText = `${Math.round(clamped)}`.padStart(3, ' ')
-  return `${bar} ${pctText}%`
+  if (etaMinutes === undefined || !Number.isFinite(etaMinutes) || etaMinutes <= 0) {
+    return `${bar} ${pctText}%`
+  }
+  const label = etaMinutes < 1 ? '<1m' : `~${Math.round(etaMinutes)}m`
+  return `${bar} ${pctText}% (${label})`
 }
 
 export function findBucketByPrefix(

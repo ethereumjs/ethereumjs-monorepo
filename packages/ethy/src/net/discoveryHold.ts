@@ -1,10 +1,10 @@
-/** Target snap peers before VIP redial stops (WP-04f). */
-export const VIP_SNAP_PEER_TARGET = 6
+/** Target snap peers before VIP redial stops (WP-04h). */
+export const VIP_SNAP_PEER_TARGET = 10
 
 /**
  * Whether snap sync should pause discovery.
  *
- * Hold when enough proven peers are serving (>= 5), sticky while held and >= 4 serving.
+ * Hold when enough proven peers are serving (>= 8), sticky while held and >= 6 serving.
  */
 export function wantSnapDiscoveryHold(opts: {
   snapSessions: number
@@ -12,8 +12,8 @@ export function wantSnapDiscoveryHold(opts: {
   held: boolean
 }): boolean {
   if (opts.snapSessions <= 0) return false
-  if (opts.servingSnapPeers >= 5) return true
-  if (opts.held && opts.servingSnapPeers >= 4) return true
+  if (opts.servingSnapPeers >= 8) return true
+  if (opts.held && opts.servingSnapPeers >= 6) return true
   return false
 }
 

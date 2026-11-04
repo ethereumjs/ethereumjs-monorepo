@@ -1,7 +1,7 @@
 import type { FlatStateManager } from '@ethereumjs/statemanager'
 import { bytesToHex, hexToBytes, isHexString } from '@ethereumjs/util'
-import { keccak_256 } from '@noble/hashes/sha3'
 
+import { ethyKeccak256 } from '../crypto/keccak.ts'
 import type { EthySpine, WidgetSpec } from '../spine/types.ts'
 
 export function inspectLatestBAL(spine: EthySpine): WidgetSpec {
@@ -69,7 +69,7 @@ export function inspectAccount(
     }
   }
   const bytes = hexToBytes(`0x${hex}`)
-  const accountHash = bytes.length === 32 ? bytes : keccak_256(bytes)
+  const accountHash = bytes.length === 32 ? bytes : ethyKeccak256(bytes)
   const display = bytes.length === 20 ? `0x${hex}` : `0x${hex} (hash)`
   const acc = stateManager.getAccountByHash(accountHash)
   if (acc === undefined) {

@@ -100,8 +100,9 @@ Whenever designing or modifying P2P discovery, peer books, or work schedulers in
    - `applyTelemetry` / `noteTelemetryPeer` runs every `150ms`. It must update **observation fields only** (`lastStatusAt`, `rttMs`, `clientFamily`, `snapCapable`) and must **never** reset `row.dialAfter = now` or clear backoff counters!
    - Resetting `dialAfter` on every telemetry tick erases the `noteDialAttempt` dial hold the instant a crawler or non-serving peer handshakes, trapping the dialer in an infinite 5-second redial loop with the same peer. Only clear `dialAfter = 0` inside `noteSnapSuccess` when a peer actually delivers verified work.
 4. **Law 4 — Work-Stealing / Range Bisection Must Mutate Both Bounds (Zero Duplicate Downloads):**
-   - When splitting an in-flight range `[lo .. hi]` at `mid` so an idle fast peer can help a slow peer, you **must** clamp the original range's upper bound to `mid` (`limitHash = mid`) and advance a persistent cursor `[stealCursor .. hi]` for the upper half until it reaches `hi`.
-   - Never issue a "one-shot" steal at `mid` that leaves `limitHash = hi` unchanged and forgets `stealCursor`, as both peers will re-download `[mid .. hi]` redundantly.
+   - Network work is a **`SnapRangeCursor`** with its own inclusive `[origin .. limit]`; bucket `startHash`/`limitHash` stay fixed nibble bounds.
+   - When bisecting at `mid`, clamp the left cursor's `limit` to `mid` and insert a right cursor at `incrementKey32(mid)`; the in-flight request keeps the **limit it was sent with**, and verified slabs are clipped to `min(sentLimit, cursor.limit)` so a post-send split does not duplicate downloads.
+   - Never issue a one-shot steal that leaves the primary range unchanged while a peer re-downloads the upper half without a persistent upper cursor.
 5. **Law 5 — Test With Mixed Adversarial Peers & Asymptotic Slope Gates (Not Just 2 Happy Peers at `N = 32`):**
    - Every scheduler or peer-book change must be verified against a **mixed adversarial peer set** (1 proven fast peer + 1 crawler that disconnects after `STATUS` + 1 `eth`-only peer without `snap` + 1 silent-timeout `snap` peer + 1 empty-reply `snap` peer) and assert **zero `0/s` stalls** on the healthy peer, **zero duplicate range downloads** on work-stealing, and **flat memory slope** above `maxResidentAccounts`.
 
