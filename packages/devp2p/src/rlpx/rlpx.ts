@@ -41,6 +41,8 @@ const MAX_DIAL_QUEUE = 512
 const MAX_DIAL_LATER = 2048
 /** Outbound TCP connect timeout (RLPx handshake uses {@link RLPxOptions.timeout}). */
 const DIAL_TCP_TIMEOUT_MS = 5_000
+/** Maximum simultaneous outbound TCP dials in flight so we don't trigger firewall storms or flood maxPeers. */
+const MAX_CONCURRENT_PENDING_DIALS = 6
 
 /** RLPx transport: encrypted TCP sessions, HELLO/capability negotiation, and sub-protocol multiplexing. */
 export class RLPx {
@@ -259,7 +261,9 @@ export class RLPx {
 
   _canStartOutboundDial(): boolean {
     if (this._connectedPeerCount() >= this._maxPeers) return false
-    if (this._pendingDials.size >= this._maxPeers) return false
+    const maxPending = Math.min(this._maxPeers, MAX_CONCURRENT_PENDING_DIALS)
+    if (this._pendingDials.size >= maxPending) return false
+    if (this._connectedPeerCount() + this._pendingDials.size >= this._maxPeers + 2) return false
     return true
   }
 
@@ -319,7 +323,7 @@ export class RLPx {
   _dialQueuedDirectoryPeers(): void {
     this._peersQueue = this._peersQueue.filter((item) => {
       if (!isChainDirectoryPeer(item.peer)) return true
-      if (this._getOpenSlots() === 0) return true
+      if (!this._canStartOutboundDial()) return true
       if (item.ts > Date.now()) return true
       this._connectToPeer(item.peer)
       return false
@@ -564,7 +568,7 @@ export class RLPx {
     if (this._hasReadyDirectoryPeer()) return
 
     this._peersQueue = this._peersQueue.filter((item) => {
-      if (this._getOpenSlots() === 0) return true
+      if (!this._canStartOutboundDial()) return true
       if (item.ts > Date.now()) return true
 
       // Randomly distributed selector based on peer ID

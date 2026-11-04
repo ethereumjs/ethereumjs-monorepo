@@ -152,6 +152,8 @@ function mapPeer(snapshot: WorkerPeerSnapshot, prev?: PeerTelemetry): PeerTeleme
     caps: [...snapshot.caps],
     snapSession: snapshot.snapSession === true,
     hasHead: snapshot.bestHash !== undefined,
+    latestBlock:
+      snapshot.latestBlock !== undefined ? BigInt(snapshot.latestBlock) : prev?.latestBlock,
     snapRequestsSent: prev?.snapRequestsSent ?? 0,
     snapResponsesOk: prev?.snapResponsesOk ?? 0,
     snapTimeouts: prev?.snapTimeouts ?? 0,
@@ -214,6 +216,30 @@ export async function startPeerCoordinator(
   let resumeDecided = false
   let handoffCatchup = false
   let baseSyncCompletePosted = false
+  let markingBaseSyncComplete = false
+  let headFlipSummaryPosted = false
+
+  const populateHeadFlipSummary = (head: bigint) => {
+    if (headFlipSummaryPosted) return
+    headFlipSummaryPosted = true
+    spine.headFlipSummary = {
+      kind: 'key_value',
+      title: `★ Synced to Live Head #${head.toLocaleString('en-US')}`,
+      entries: [
+        { key: 'Accounts', value: spine.totalAccountsSynced.toLocaleString('en-US') },
+        { key: 'Code', value: spine.codesSynced.toLocaleString('en-US') },
+        { key: 'Storage slots', value: spine.storageSlotsSynced.toLocaleString('en-US') },
+        {
+          key: 'Pivot steps',
+          value: String(spine.pivotStepsCompleted ?? 0),
+        },
+        {
+          key: 'BALs applied',
+          value: String(spine.appliedBalCount ?? spine.streamedBalCount ?? 0),
+        },
+      ],
+    }
+  }
   /** Saved snap journals replayed from disk (head used only for stale / BAL handoff). */
   let diskHydrated = false
   let resumeHeadHandled = false
@@ -245,10 +271,25 @@ export async function startPeerCoordinator(
         pickEthPeer: () => {
           const best = pickBestPeer(lastTelemetryPeers, pivotBlockedPeers)
           if (best === undefined) return undefined
+          const snapPeersWithHead = lastTelemetryPeers.filter(
+            (p) => p.snapSession === true && p.latestBlock !== undefined,
+          )
+          let safeSnapHead: bigint | undefined
+          for (const p of snapPeersWithHead) {
+            const b = BigInt(p.latestBlock!)
+            if (safeSnapHead === undefined || b < safeSnapHead) {
+              safeSnapHead = b
+            }
+          }
+          const bestBlock = best.latestBlock !== undefined ? BigInt(best.latestBlock) : undefined
+          const effectiveBlock =
+            safeSnapHead !== undefined && bestBlock !== undefined && safeSnapHead < bestBlock
+              ? safeSnapHead
+              : bestBlock
           return {
             id: best.id,
             ethVersion: highestEthVersion(best.caps),
-            latestBlock: best.latestBlock !== undefined ? Number(best.latestBlock) : undefined,
+            latestBlock: effectiveBlock !== undefined ? Number(effectiveBlock) : undefined,
           }
         },
         putServableBlock: (bundle) => clientRef.putServableBlock(bundle),
@@ -256,6 +297,7 @@ export async function startPeerCoordinator(
         appendHealBal: bundleBalHooks.appendHealBal,
         noteVerifiedBlock: (n) => snapStore?.noteVerifiedBlock(n),
         onSyncedToHead: (head) => {
+          populateHeadFlipSummary(head)
           opts.notices?.post(
             {
               key: 'bal-synced-head',
@@ -265,6 +307,7 @@ export async function startPeerCoordinator(
             },
             Date.now(),
           )
+          deriveCapabilities(spine)
         },
         onPivotStep: (newPivot) => {
           snapStore?.updatePivotHead({
@@ -302,6 +345,7 @@ export async function startPeerCoordinator(
           snapResponsesOk: p.snapResponsesOk,
           snapTimeouts: p.snapTimeouts,
           avgLatencyMs: p.avgLatencyMs,
+          latestBlock: p.latestBlock,
         }))
     if (snapSync === undefined) {
       snapSync = new SnapAccountSynchronizer({
@@ -549,46 +593,49 @@ export async function startPeerCoordinator(
   }
 
   const maybeMarkBaseSyncComplete = () => {
-    if (handoffCatchup || baseSyncCompletePosted || snapStore === undefined) return
+    if (
+      handoffCatchup ||
+      baseSyncCompletePosted ||
+      markingBaseSyncComplete ||
+      snapStore === undefined
+    ) {
+      return
+    }
     if (snapBucketsUnfinished(spine.snapBuckets)) return
     if (codeSync !== undefined && !codeSync.pendingDone()) return
-    const pivot = spine.pivotBlockNumber
-    if (pivot === undefined) return
-    snapStore.markBaseSyncComplete(pivot)
-    baseSyncCompletePosted = true
-    opts.notices?.post(
-      {
-        key: 'snap-base-done',
-        level: 'info',
-        text: `Snap base sync complete at #${pivot.toString()}`,
-        relevantForMs: 8_000,
-      },
-      Date.now(),
-    )
-    const best = pickBestPeer(lastTelemetryPeers, pivotBlockedPeers)
-    const bestHead = best?.latestBlock !== undefined ? BigInt(best.latestBlock) : pivot
-    spine.bestPeerHead = bestHead
-    const flipped = tryEnterBalCatchUp(spine, snapSync, codeSync, bestHead)
-    ensureHeadFollower(client)
-    if (flipped && spine.phase === 'HEAD_FOLLOWING') {
-      spine.headFlipSummary = {
-        kind: 'key_value',
-        title: `★ Synced to Live Head #${bestHead.toLocaleString('en-US')}`,
-        entries: [
-          { key: 'Accounts', value: spine.totalAccountsSynced.toLocaleString('en-US') },
-          { key: 'Code', value: spine.codesSynced.toLocaleString('en-US') },
-          { key: 'Storage slots', value: spine.storageSlotsSynced.toLocaleString('en-US') },
+    if (spine.pivotBlockNumber === undefined) return
+    markingBaseSyncComplete = true
+    void (async () => {
+      try {
+        await headFollower?.flushBufferedBlocks()
+        const pivot = spine.pivotBlockNumber
+        if (pivot === undefined) return
+        snapStore.markBaseSyncComplete(pivot)
+        baseSyncCompletePosted = true
+        opts.notices?.post(
           {
-            key: 'Pivot steps',
-            value: String(spine.pivotStepsCompleted ?? 0),
+            key: 'snap-base-done',
+            level: 'info',
+            text: `Snap base sync complete at #${pivot.toString()}`,
+            relevantForMs: 8_000,
           },
-          {
-            key: 'BALs applied',
-            value: String(spine.appliedBalCount ?? spine.streamedBalCount ?? 0),
-          },
-        ],
+          Date.now(),
+        )
+        const best = pickBestPeer(lastTelemetryPeers, pivotBlockedPeers)
+        const peerHead =
+          best?.latestBlock !== undefined ? BigInt(best.latestBlock) : (spine.bestPeerHead ?? pivot)
+        const bestHead = peerHead > pivot ? peerHead : pivot
+        spine.bestPeerHead = bestHead
+        const flipped = tryEnterBalCatchUp(spine, snapSync, codeSync, bestHead)
+        ensureHeadFollower(client)
+        if (flipped && spine.phase === 'HEAD_FOLLOWING') {
+          populateHeadFlipSummary(bestHead)
+        }
+        deriveCapabilities(spine)
+      } finally {
+        markingBaseSyncComplete = false
       }
-    }
+    })()
   }
 
   const maybeVipReconnect = (now: number) => {

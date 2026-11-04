@@ -240,19 +240,24 @@ export class PeerBookStore {
   }
 
   noteTelemetryPeer(peer: WorkerPeerSnapshot, now: number): void {
-    if (!this._enabled || peer.bestHash === undefined) return
+    if (!this._enabled) return
     if (peer.address === undefined || peer.tcpPort === undefined) return
     const id = peer.id.toLowerCase()
     const row = this._ensureRow(id, peer, now)
     if (row === undefined) return
-    row.lastStatusAt = now
-    row.tooManyPeersStreak = 0
     row.clientFamily = clientFamilyFromClientId(peer.clientId) ?? row.clientFamily
     if (peer.snapSession === true) {
       row.snapCapable = true
     } else if (peer.snapSession === false) {
       row.snapCapable = false
     }
+    if (peer.bestHash === undefined) {
+      this.schedulePersist()
+      return
+    }
+    row.lastStatusAt = now
+    row.tooManyPeersStreak = 0
+    row.resetStreak = 0
     if (row.forkHash === undefined) {
       row.forkHash = this.expectedForkHash
     } else if (row.forkHash !== this.expectedForkHash) {
@@ -307,6 +312,18 @@ export class PeerBookStore {
       row.tooManyPeersStreak = streak
       const vip = row.snapResponsesOk > 0
       row.dialAfter = now + tooManyPeersHoldMs(vip, streak - 1)
+      this.schedulePersist()
+      return
+    }
+
+    if (upper.includes('USELESS_PEER') || upper.includes('INCOMPATIBLE_VERSION')) {
+      row.dialAfter = now + PEER_TOO_MANY_PEERS_HOLD_MAX_MS
+      this.schedulePersist()
+      return
+    }
+
+    if (upper.includes('SUBPROTOCOL_ERROR') || upper.includes('PROTOCOL_ERROR')) {
+      row.dialAfter = now + (row.snapResponsesOk > 0 ? 30_000 : 120_000)
       this.schedulePersist()
       return
     }

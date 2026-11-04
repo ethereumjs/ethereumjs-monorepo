@@ -375,8 +375,18 @@ export class SnapAccountSynchronizer {
       }
     }
     const free = () => this.listFreeCursors(now)
+    const pivotBlock = this.spine.pivotBlockNumber ?? 0n
     for (const peer of peers) {
       if (now < (this.peerRestUntil.get(peer.id) ?? 0)) continue
+      // If a peer's last reported head is older than our stepped pivot, only allow it if it hasn't reported latestBlock yet;
+      // otherwise wait until its head catches up or BLOCK_RANGE_UPDATE arrives so it doesn't return empty [reqId, [], []] replies!
+      if (
+        peer.latestBlock !== undefined &&
+        peer.latestBlock > 0n &&
+        peer.latestBlock < pivotBlock
+      ) {
+        continue
+      }
       const maxInFlight = maxInFlightForPeer(peer)
       while (this.flightTracker.inFlightCount(peer.id) < maxInFlight) {
         let cursor: SnapRangeCursor | undefined = free()[0]
@@ -521,7 +531,8 @@ export class SnapAccountSynchronizer {
     this.stallRepeats.set(bucket.index, repeats)
     const peerRangeMismatch =
       reason.includes('firstKey should be less than lastKey') ||
-      reason.includes('peer returned accounts below request origin')
+      reason.includes('peer returned accounts below request origin') ||
+      reason.includes('empty account range without proof')
     const delay = peerRangeMismatch
       ? 500
       : Math.min(STALL_MAX_MS, STALL_BASE_MS * 2 ** Math.min(repeats - 1, 3))
@@ -646,19 +657,24 @@ export class SnapAccountSynchronizer {
         this.stateManager.putSnapBinaryAccountsFromSlab(persistSlab)
       }
     }
+    const isRefresh = cursor?.refresh === true
     const acceptedCount = persistSlab !== undefined ? persistSlab.length / 136 : result.count
     if (acceptedCount > 0) {
-      bucket.accountsLoaded += acceptedCount
-      this.spine.totalAccountsSynced += acceptedCount
+      if (!isRefresh) {
+        bucket.accountsLoaded += acceptedCount
+        this.spine.totalAccountsSynced += acceptedCount
+      }
       this.updateRate()
       this.peerBook?.noteSnapSuccess(peerId, Date.now())
       if (persistSlab !== undefined && persistSlab.length > 0) {
-        void this.snapStore?.appendVerifiedSlabAsync(
-          flight.bucket,
-          persistSlab,
-          this.spine.snapBuckets,
-          cursor?.journal ?? 'prefix',
-        )
+        if (!isRefresh) {
+          void this.snapStore?.appendVerifiedSlabAsync(
+            flight.bucket,
+            persistSlab,
+            this.spine.snapBuckets,
+            cursor?.journal ?? 'prefix',
+          )
+        }
         this.onAccountsIngested?.(ingestedMetaFromBinarySlab(persistSlab))
       }
       if (result.hasRight && result.lastKey instanceof Uint8Array) {

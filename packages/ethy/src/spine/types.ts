@@ -17,6 +17,8 @@ export interface PeerTelemetry {
   snapSession?: boolean
   /** ETH STATUS completed with a usable head hash. */
   hasHead?: boolean
+  /** Latest block number reported by the peer's ETH STATUS / BLOCK_RANGE_UPDATE. */
+  latestBlock?: bigint
   snapRequestsSent: number
   snapResponsesOk: number
   snapTimeouts: number

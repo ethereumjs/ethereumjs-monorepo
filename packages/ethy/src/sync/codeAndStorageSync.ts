@@ -25,6 +25,7 @@ import type { SnapPeerFlightTracker } from './snapFlight.ts'
 import type { SnapTransport } from './snapTransport.ts'
 import { snapReplyRequestId, verifyStorageRangeJob } from './snapVerifyJob.ts'
 import { SnapVerifyPool } from './snapVerifyWorker.ts'
+import { isAccountHashSynced } from './syncedAccountHash.ts'
 import { incrementKey32 } from './syntheticPeer.ts'
 
 const RESPONSE_BYTES = 128 * 1024
@@ -159,7 +160,15 @@ export class SnapCodeAndStorageSynchronizer {
       }
       if (!equalsBytes(storageRoot, KECCAK256_RLP)) {
         const key = accountHashKey(ownedHash)
-        if (!this.pendingStorage.has(key)) {
+        const existing = this.pendingStorage.get(key)
+        if (existing !== undefined) {
+          if (!equalsBytes(existing.storageRoot, storageRoot)) {
+            existing.storageRoot = new Uint8Array(storageRoot)
+            existing.origin = new Uint8Array(32)
+            existing.verifying = false
+            existing.missRetries = 0
+          }
+        } else {
           if (this.pendingStorage.size >= this.maxInMemoryContractTasks) {
             if (this.snapStore !== undefined) {
               this.snapStore.enableContractScan()
@@ -225,7 +234,11 @@ export class SnapCodeAndStorageSynchronizer {
       if (address.length !== 20) continue
       const accountHash = ethyKeccak256(address)
       const touchedStorageOrCode = row.storageChanges.length > 0 || row.codeChanges.length > 0
-      if (touchedStorageOrCode && this.spine.phase === 'SNAP_SYNCING') {
+      if (
+        touchedStorageOrCode &&
+        this.spine.phase === 'SNAP_SYNCING' &&
+        isAccountHashSynced(accountHash, this.spine.snapBuckets)
+      ) {
         this.onBalRefreshAccount?.(accountHash)
       }
       this.invalidateAccount(accountHash)

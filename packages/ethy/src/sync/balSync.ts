@@ -29,6 +29,7 @@ export const PIVOT_STEP_BLOCKS = 16n
 export const SAFE_HEAD_MARGIN = 2n
 export const HEAD_FOLLOW_POLL_MS = 5_000
 export const TIP_POLL_MS = 4_000
+export const BUNDLE_IN_FLIGHT_TIMEOUT_MS = 10_000
 export const LAPTOP_WAKE_BLOCK_GAP = 2n
 
 export type VerifiedBalBlock = {
@@ -236,6 +237,7 @@ export class BalChainStreamer {
   private catchUp?: HeadCatchUp
   private readonly buffered: VerifiedBalBlock[] = []
   private appliedBalLog: VerifiedBalBlock[] = []
+  private lastTipProbeAt = 0
 
   constructor(opts: HeadFollowerOpts) {
     this.opts = opts
@@ -243,6 +245,7 @@ export class BalChainStreamer {
 
   start(): void {
     if (this.timer !== undefined) return
+    this.lastTipProbeAt = Date.now()
     const pollMs = this.opts.spine.phase === 'SNAP_SYNCING' ? TIP_POLL_MS : HEAD_FOLLOW_POLL_MS
     this.timer = setInterval(() => {
       void this.tick()
@@ -269,7 +272,10 @@ export class BalChainStreamer {
     )
     if (result === 'ignore') return false
     if (result === 'failed') {
-      if (this.catchUp !== undefined) this.catchUp.inFlight = undefined
+      if (this.catchUp !== undefined) {
+        this.catchUp.inFlight = undefined
+        this.catchUp = undefined
+      }
       return true
     }
     if (result === 'progress') return true
@@ -279,6 +285,15 @@ export class BalChainStreamer {
 
   private verifiedTip(spine: EthySpine): bigint | undefined {
     return spine.lastVerifiedBlockNumber ?? spine.headBlockNumber ?? spine.pivotBlockNumber
+  }
+
+  private downloadTip(spine: EthySpine): bigint | undefined {
+    const lastBuffered = this.buffered[this.buffered.length - 1]?.blockNumber
+    if (lastBuffered !== undefined) return lastBuffered
+    if (spine.phase === 'SNAP_SYNCING') {
+      return spine.pivotBlockNumber ?? spine.lastVerifiedBlockNumber
+    }
+    return this.verifiedTip(spine)
   }
 
   private async finishCatchUpBlock(): Promise<void> {
@@ -304,13 +319,11 @@ export class BalChainStreamer {
         ? headFieldsFromHeaderRlp(bundle.headerRlp, this.opts.chain, this.opts.hardfork)
         : null
     if (fields !== null) {
-      spine.lastVerifiedBlockNumber = fields.number
       spine.headBlockNumber = fields.number
       spine.headStateRoot = fields.stateRoot
       spine.currentSlot = Number(fields.number)
-      this.opts.noteVerifiedBlock?.(fields.number)
-      if (spine.balCatchUp !== undefined) {
-        spine.balCatchUp.applied = Math.min(spine.balCatchUp.total, spine.balCatchUp.applied + 1)
+      if (spine.bestPeerHead === undefined || fields.number > spine.bestPeerHead) {
+        spine.bestPeerHead = fields.number
       }
       if (snapStreaming) {
         const entry: VerifiedBalBlock = {
@@ -324,12 +337,26 @@ export class BalChainStreamer {
         spine.streamedBalCount = (spine.streamedBalCount ?? 0) + 1
         spine.bufferedBalCount = this.buffered.length
         this.opts.onBalBlockBuffered?.(entry)
-        void this.maybePivotStep()
-      } else if (bundle.balRlp !== undefined) {
+        await this.maybePivotStep()
+      } else {
+        spine.lastVerifiedBlockNumber = fields.number
+        this.opts.noteVerifiedBlock?.(fields.number)
+        if (spine.balCatchUp !== undefined) {
+          spine.balCatchUp.applied = Math.min(spine.balCatchUp.total, spine.balCatchUp.applied + 1)
+        }
         spine.appliedBalCount = (spine.appliedBalCount ?? 0) + 1
       }
     }
     seq.inFlight = undefined
+    if (snapStreaming || this.opts.spine.phase === 'SNAP_SYNCING') {
+      const tip = this.downloadTip(this.opts.spine)
+      if (tip !== undefined && tip < seq.targetHead) {
+        void this.tick()
+      } else {
+        this.catchUp = undefined
+      }
+      return
+    }
     const tip = this.verifiedTip(this.opts.spine)
     if (tip !== undefined && tip >= seq.targetHead) {
       setPhase(this.opts.spine, 'HEAD_FOLLOWING')
@@ -345,22 +372,14 @@ export class BalChainStreamer {
     }
   }
 
-  private async maybePivotStep(): Promise<void> {
+  private async applyBufferedWindow(
+    window: VerifiedBalBlock[],
+    syncBuckets: SnapBucket[] | undefined,
+  ): Promise<void> {
     const { spine } = this.opts
-    if (spine.phase !== 'SNAP_SYNCING') return
-    const pivot = spine.pivotBlockNumber
-    if (pivot === undefined || spine.pivotStateRoot === undefined) return
-    const best = spine.bestPeerHead ?? pivot
-    const targetBlock = pivot + PIVOT_STEP_BLOCKS
-    if (this.buffered.length < Number(PIVOT_STEP_BLOCKS)) return
-    const first = this.buffered[0]?.blockNumber
-    const last = this.buffered[this.buffered.length - 1]?.blockNumber
-    if (first === undefined || last === undefined) return
-    if (first !== pivot + 1n || last < targetBlock) return
-    if (targetBlock > best - SAFE_HEAD_MARGIN) return
-
-    const window = this.buffered.splice(0, Number(PIVOT_STEP_BLOCKS))
+    if (window.length === 0) return
     for (const block of window) {
+      let balJson: BALJSONBlockAccessList | undefined
       if (block.balRlp !== undefined && block.balRlp.length > 0) {
         const applied = await applyBlockBal(
           this.opts.stateManager,
@@ -368,15 +387,16 @@ export class BalChainStreamer {
           block.balRlp,
           this.opts.chain,
           this.opts.hardfork,
-          spine.snapBuckets,
+          syncBuckets,
         )
-        if (applied.balJson !== undefined) {
-          block.balJson = applied.balJson
-          pushBalWindow(spine, block.blockNumber, applied.balJson)
-          this.opts.onBalApplied?.(applied.balJson)
-          spine.appliedBalCount = (spine.appliedBalCount ?? 0) + 1
+        balJson = applied.balJson
+        if (balJson !== undefined) {
+          block.balJson = balJson
+          this.opts.onBalApplied?.(balJson)
         }
       }
+      pushBalWindow(spine, block.blockNumber, balJson ?? [])
+      spine.appliedBalCount = (spine.appliedBalCount ?? 0) + 1
       this.appliedBalLog.push({ ...block })
       if (this.appliedBalLog.length > 64) {
         this.appliedBalLog.shift()
@@ -386,9 +406,44 @@ export class BalChainStreamer {
     spine.pivotBlockNumber = newTip.blockNumber
     spine.pivotStateRoot = newTip.stateRoot
     spine.lastVerifiedBlockNumber = newTip.blockNumber
-    spine.pivotStepsCompleted = (spine.pivotStepsCompleted ?? 0) + 1
     spine.bufferedBalCount = this.buffered.length
+    this.opts.noteVerifiedBlock?.(newTip.blockNumber)
     this.opts.onPivotStep?.(newTip)
+  }
+
+  private async maybePivotStep(): Promise<void> {
+    const { spine } = this.opts
+    if (spine.phase !== 'SNAP_SYNCING') return
+    const pivot = spine.pivotBlockNumber
+    if (pivot === undefined || spine.pivotStateRoot === undefined) return
+    if (this.buffered.length < Number(PIVOT_STEP_BLOCKS)) return
+    const first = this.buffered[0]?.blockNumber
+    const last = this.buffered[this.buffered.length - 1]?.blockNumber
+    if (first === undefined || last === undefined) return
+    const targetBlock = pivot + PIVOT_STEP_BLOCKS
+    const best =
+      spine.bestPeerHead !== undefined && spine.bestPeerHead > last ? spine.bestPeerHead : last
+    if (first !== pivot + 1n || last < targetBlock) return
+    if (targetBlock > best - SAFE_HEAD_MARGIN) return
+
+    const window = this.buffered.splice(0, Number(PIVOT_STEP_BLOCKS))
+    spine.pivotStepsCompleted = (spine.pivotStepsCompleted ?? 0) + 1
+    await this.applyBufferedWindow(window, spine.snapBuckets)
+    // Advance Connected Peers' known latestBlock to at least targetBlock once we have verified
+    // that targetBlock + SAFE_HEAD_MARGIN is already live on the network, so snap schedulers
+    // don't skip peers between Geth's 32-block BLOCK_RANGE_UPDATE broadcasts.
+    for (const p of spine.peers.values()) {
+      if (p.hasHead === true && (p.latestBlock === undefined || p.latestBlock < targetBlock)) {
+        p.latestBlock = targetBlock
+      }
+    }
+  }
+
+  /** Apply any remaining buffered BALs when `SNAP_SYNCING` base sync finishes ("The Big Flip"). */
+  async flushBufferedBlocks(): Promise<void> {
+    if (this.buffered.length === 0) return
+    const window = this.buffered.splice(0, this.buffered.length)
+    await this.applyBufferedWindow(window, undefined)
   }
 
   /** BAL blocks applied during snap for late in-flight snap range replies. */
@@ -405,9 +460,17 @@ export class BalChainStreamer {
     ) {
       return
     }
-    const tip = this.verifiedTip(spine)
-    if (tip === undefined) return
+    const now = Date.now()
+    if (
+      this.catchUp?.inFlight !== undefined &&
+      now - this.catchUp.inFlight.startedAt >= BUNDLE_IN_FLIGHT_TIMEOUT_MS
+    ) {
+      this.catchUp.inFlight = undefined
+      this.catchUp = undefined
+    }
     if (this.catchUp?.inFlight !== undefined) return
+    const tip = this.downloadTip(spine)
+    if (tip === undefined) return
     const peer = this.opts.pickEthPeer()
     if (peer?.latestBlock === undefined) return
     const peerHead = BigInt(peer.latestBlock)
@@ -422,16 +485,30 @@ export class BalChainStreamer {
       if (spine.phase === 'BAL_CATCHUP') {
         setPhase(spine, 'HEAD_FOLLOWING')
         spine.balCatchUp = undefined
-        this.opts.onSyncedToHead?.(peerHead)
+        this.opts.onSyncedToHead?.(tip)
       }
       if (spine.phase === 'SNAP_SYNCING') {
         void this.maybePivotStep()
+      }
+      // Because Geth/Nethermind only send BLOCK_RANGE_UPDATE every 32 blocks (~6.4m),
+      // probe tip + 1n periodically to discover newly mined 12s blocks live.
+      if (now - this.lastTipProbeAt >= TIP_POLL_MS) {
+        this.lastTipProbeAt = now
+        const next = tip + 1n
+        this.catchUp = {
+          peerId: peer.id,
+          ethVersion: peer.ethVersion,
+          targetHead: next,
+          inFlight: startBlockBundleByNumber(this.opts.getClient(), peer.id, peer.ethVersion, next),
+        }
+        return
       }
       this.catchUp = undefined
       return
     }
     const next = tip + 1n
     if (next > this.catchUp.targetHead) return
+    this.lastTipProbeAt = now
     this.catchUp.inFlight = startBlockBundleByNumber(
       this.opts.getClient(),
       this.catchUp.peerId,

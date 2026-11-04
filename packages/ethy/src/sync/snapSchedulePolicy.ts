@@ -5,6 +5,7 @@ export type SnapSchedulePeer = {
   snapResponsesOk: number
   snapTimeouts: number
   avgLatencyMs: number
+  latestBlock?: bigint
 }
 
 export const MAX_IN_FLIGHT_PROVEN = 2
@@ -56,6 +57,9 @@ export function peerRestMsForRangeFailure(
   consecutivePeerFailures: number,
 ): number | undefined {
   if (reason.includes('peer returned accounts below request origin')) return undefined
+  if (reason.includes('empty account range without proof')) {
+    return peer.snapResponsesOk === 0 ? UNPROVEN_PEER_REST_MS : 5_000
+  }
   if (reason.includes('firstKey should be less than lastKey')) return PROVEN_PEER_REST_MS
   if (!isPeerQuarantineRangeFailure(reason)) return undefined
   if (consecutivePeerFailures >= 2) return UNPROVEN_PEER_REST_MS
