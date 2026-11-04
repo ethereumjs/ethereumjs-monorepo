@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 - Worker `setDiscoveryPaused`, `RLPx.setSyncDiscoveryHold`, and `discoveryPaused` on discovery telemetry.
 - RLPx `MAC` reuses one `aes-256-ecb` cipher per connection instead of allocating a cipher on every header/body frame.
+- Inbound `BLOCK_RANGE_UPDATE` on eth/69+ updates `peerStatusHead()`; worker emits telemetry on `blockRangeUpdate`.
 
 ## 10.0.0 - 2025-04-29
 

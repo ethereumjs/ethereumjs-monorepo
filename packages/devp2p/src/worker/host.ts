@@ -401,6 +401,9 @@ export class Devp2pWorkerHost {
         this._discoveryMetrics.recordRlpxStatusOk()
         this._emitTelemetry()
       })
+      eth.events.on('blockRangeUpdate', () => {
+        this._emitTelemetry()
+      })
       if (this._options?.status !== undefined) {
         try {
           const statusFields = this._ethStatusFieldsForSend()
@@ -415,7 +418,10 @@ export class Devp2pWorkerHost {
     }
 
     peer.subprotocolDispatch = (protocolName, msgCode, payload) => {
-      if (protocolName === 'ETH' && msgCode === EthMessageCodes.STATUS) {
+      if (
+        protocolName === 'ETH' &&
+        (msgCode === EthMessageCodes.STATUS || msgCode === EthMessageCodes.BLOCK_RANGE_UPDATE)
+      ) {
         return 'default'
       }
       if (

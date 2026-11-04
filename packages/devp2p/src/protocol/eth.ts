@@ -160,6 +160,11 @@ export class ETH extends Protocol {
       this._peer.disconnect(DISCONNECT_REASON.USELESS_PEER)
       return
     }
+    if (this._peerStatus !== null && ethUsesBlockRangeStatus(this._version)) {
+      this._peerStatus[4] = payload[0] as Uint8Array
+      this._peerStatus[5] = payload[1] as Uint8Array
+      this._peerStatus[6] = payload[2] as Uint8Array
+    }
     this.events.emit('blockRangeUpdate', {
       earliestBlock: payload[0] as Uint8Array,
       latestBlock: payload[1] as Uint8Array,
