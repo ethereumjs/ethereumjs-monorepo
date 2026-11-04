@@ -43,6 +43,11 @@ export async function runEthySession(node: EthyNode): Promise<void> {
     if (node.demo) {
       advanceDemo(node.spine, Date.now() - demoStart)
     }
+    const flip = node.spine.headFlipSummary
+    if (view.activeWidget === null && flip !== undefined) {
+      view = { ...view, activeWidget: flip }
+      node.spine.headFlipSummary = undefined
+    }
     const cols = output.columns ?? 100
     const rows = output.rows ?? 30
     const now = Date.now()

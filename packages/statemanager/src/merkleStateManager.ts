@@ -738,7 +738,10 @@ export class MerkleStateManager implements StateManagerInterface {
    *
    * @remarks Experimental (Amsterdam): may change on patch releases.
    */
-  async consumeBAL(bal: BALJSONBlockAccessList, expectedStateRoot?: Uint8Array): Promise<void> {
-    return consumeBALUtil(this, bal, expectedStateRoot)
+  async consumeBAL(
+    bal: BALJSONBlockAccessList,
+    optsOrExpectedStateRoot?: Uint8Array | import('@ethereumjs/common').ConsumeBALOptions,
+  ): Promise<void> {
+    return consumeBALUtil(this, bal, optsOrExpectedStateRoot)
   }
 }

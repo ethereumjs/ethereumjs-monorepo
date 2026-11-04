@@ -45,7 +45,7 @@ export abstract class Protocol {
       protocol !== ProtocolType.SNAP
         ? setTimeout(() => {
             this._peer.disconnect(DISCONNECT_REASON.TIMEOUT)
-          }, 5000) // 5 sec * 1000
+          }, 10000) // 10 sec * 1000
         : undefined
 
     this._debug = devp2pDebug.extend(protocol)

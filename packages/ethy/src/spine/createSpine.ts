@@ -26,7 +26,11 @@ export function deriveCapabilities(spine: EthySpine): void {
         phase: spine.phase,
       })
       spine.capabilities.snap = { status: 'partial', label: snapLabel }
-      spine.capabilities.head = { status: 'locked', label: 'Locked' }
+      const streamed = spine.streamedBalCount ?? 0
+      spine.capabilities.head =
+        streamed > 0
+          ? { status: 'partial', label: 'Streaming' }
+          : { status: 'locked', label: 'Locked' }
       break
     }
     case 'BAL_CATCHUP':

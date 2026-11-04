@@ -10,6 +10,12 @@ import type {
   PrefixedHexString,
 } from '@ethereumjs/util'
 
+/** Options for experimental Amsterdam {@link StateManagerInterface.consumeBAL}. */
+export type ConsumeBALOptions = {
+  expectedStateRoot?: Uint8Array
+  shouldApplyAccount?: (address: Address) => boolean
+}
+
 /** Flat map of hashed storage keys to hex values. */
 export interface StorageDump {
   [key: string]: string
@@ -223,7 +229,10 @@ export interface StateManagerInterface {
    *
    * @remarks Experimental (Amsterdam): may change on patch releases.
    */
-  consumeBAL?(bal: BALJSONBlockAccessList, expectedStateRoot?: Uint8Array): Promise<void>
+  consumeBAL?(
+    bal: BALJSONBlockAccessList,
+    optsOrExpectedStateRoot?: Uint8Array | ConsumeBALOptions,
+  ): Promise<void>
 
   /*
    * EVM/VM Specific Functionality

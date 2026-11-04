@@ -255,6 +255,29 @@ export class SnapPivotStore {
     } satisfies ActiveMeta)
   }
 
+  /** Rewrite pivot head metadata without changing the active journal directory (WP-04k). */
+  updatePivotHead(meta: {
+    blockNumber: bigint
+    blockHash: Uint8Array
+    stateRoot: Uint8Array
+  }): void {
+    if (!this.enabled) return
+    const active = this.readActive()
+    if (active === undefined) return
+    const stateRootHex = active.stateRoot
+    const pivotPath = path.join(this.pivotDir(stateRootHex), 'pivot.json')
+    writeAtomicDoc(pivotPath, {
+      blockNumber: meta.blockNumber.toString(),
+      blockHash: bytesToHex(meta.blockHash),
+      stateRoot: bytesToHex(meta.stateRoot),
+      anchoredAt: Date.now(),
+    } satisfies PivotMeta)
+    writeAtomicDoc(path.join(this.networkDir, 'active.json'), {
+      ...active,
+      lastVerifiedBlockNumber: meta.blockNumber.toString(),
+    } satisfies ActiveMeta)
+  }
+
   noteVerifiedBlock(blockNumber: bigint): void {
     if (!this.enabled) return
     const active = this.readActive()

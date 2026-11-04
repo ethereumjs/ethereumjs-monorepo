@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ### `@ethereumjs/statemanager`
 
 - `FlatStateManager` stores accounts as 104-byte binary records; add `putSnapBinaryAccountsBatch` and `getBinaryAccountByHash`.
+- `consumeBAL()` accepts optional `shouldApplyAccount`; `FlatStateManager` pins only filtered account rows.
 
 ## 10.1.3 - 2026-08-21
 

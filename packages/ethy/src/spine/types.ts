@@ -17,6 +17,8 @@ export interface PeerTelemetry {
   snapSession?: boolean
   /** ETH STATUS completed with a usable head hash. */
   hasHead?: boolean
+  /** Latest block number reported by the peer's ETH STATUS / BLOCK_RANGE_UPDATE. */
+  latestBlock?: bigint
   snapRequestsSent: number
   snapResponsesOk: number
   snapTimeouts: number
@@ -34,6 +36,8 @@ export type SnapRangeCursor = {
   journal: 'prefix' | string
   inFlightReqKey?: string
   verifying?: boolean
+  /** One-account storage/code refresh after BAL during snap (WP-04k). */
+  refresh?: boolean
 }
 
 export interface SnapBucket {
@@ -118,6 +122,13 @@ export interface EthySpine {
     applied: number
     total: number
   }
+  /** Rolling pivot steps completed during snap (WP-04k). */
+  pivotStepsCompleted?: number
+  streamedBalCount?: number
+  appliedBalCount?: number
+  bufferedBalCount?: number
+  /** One-shot celebration payload for Zone 2 after snap completes (WP-04k). */
+  headFlipSummary?: WidgetSpec
   capabilities: {
     p2p: CapabilityState
     snap: CapabilityState
