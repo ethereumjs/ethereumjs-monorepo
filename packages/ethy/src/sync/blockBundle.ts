@@ -22,7 +22,7 @@ import {
   parseReceiptsReplyPayload,
   peerIdToBytes,
 } from '../net/pivotHeader.ts'
-import type { EthySpine } from '../spine/types.ts'
+import type { EthySpine, SnapBucket } from '../spine/types.ts'
 
 import { applyBlockBal, pushBalWindow } from './balSync.ts'
 
@@ -66,6 +66,9 @@ export type FinalizeBlockBundleOpts = {
   putServableBlock: Devp2pWorkerClient['putServableBlock']
   onBalApplied?: (balJson: BALJSONBlockAccessList) => void
   appendHealBal?: (blockNumber: bigint, balRlp: Uint8Array) => void
+  syncBuckets?: SnapBucket[]
+  /** When true, servable registration runs but state apply is deferred to pivot step. */
+  deferStateApply?: boolean
 }
 
 /** Register servable bundle and apply BAL when present. */
@@ -90,16 +93,19 @@ export async function finalizeBlockBundle(opts: FinalizeBlockBundleOpts): Promis
   if (bundle.balRlp !== undefined && bundle.balRlp.length > 0) {
     opts.appendHealBal?.(bundle.blockNumber, bundle.balRlp)
   }
-  const applied = await applyBlockBal(
-    opts.stateManager,
-    bundle.headerRlp,
-    bundle.balRlp,
-    opts.chain,
-    opts.hardfork,
-  )
-  if (applied.balJson !== undefined) {
-    pushBalWindow(opts.spine, bundle.blockNumber, applied.balJson)
-    opts.onBalApplied?.(applied.balJson)
+  if (opts.deferStateApply !== true) {
+    const applied = await applyBlockBal(
+      opts.stateManager,
+      bundle.headerRlp,
+      bundle.balRlp,
+      opts.chain,
+      opts.hardfork,
+      opts.syncBuckets,
+    )
+    if (applied.balJson !== undefined) {
+      pushBalWindow(opts.spine, bundle.blockNumber, applied.balJson)
+      opts.onBalApplied?.(applied.balJson)
+    }
   }
 }
 

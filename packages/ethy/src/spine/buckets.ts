@@ -255,8 +255,12 @@ export function bucketPosition36(bytes: Uint8Array): number {
   return (bytes[0]! & 0x0f) * 0x1_0000_0000 + readUInt32BE(bytes, 1)
 }
 
+function progressCursors(bucket: SnapBucket): SnapRangeCursor[] {
+  return ensureBucketSubRanges(bucket).filter((c) => c.refresh !== true)
+}
+
 function remainingSpan36(bucket: SnapBucket): number {
-  const ranges = ensureBucketSubRanges(bucket)
+  const ranges = progressCursors(bucket)
   let sum = 0
   for (const c of ranges) {
     if (!cursorActive(c)) continue
@@ -268,7 +272,7 @@ function remainingSpan36(bucket: SnapBucket): number {
 /** Cursor position within a bucket range including byte[0] low nibble (WP-04f / WP-04h). */
 export function bucketCursorFraction(bucket: SnapBucket): number {
   if (bucket.status === 'done') return 1
-  if (bucket.subRanges !== undefined) {
+  if (bucket.subRanges !== undefined && progressCursors(bucket).length > 0) {
     const lo = bucketPosition36(bucket.startHash)
     const hi = bucketPosition36(bucket.limitHash)
     const totalSpan = Math.max(1, hi - lo + 1)

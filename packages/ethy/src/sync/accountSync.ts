@@ -56,7 +56,7 @@ const MIN_RATE_SAMPLE_STEP_MS = 1_000
 /** Minimum remaining span before bisecting a cursor (one sub-nibble, WP-04h). */
 const MIN_SPLIT_SPAN = 0x1_0000_0000
 
-type InFlightRange = {
+export type InFlightRange = {
   peerId: string
   bucket: number
   cursorId: number
@@ -66,6 +66,8 @@ type InFlightRange = {
   timeoutMs: number
   origin: Uint8Array
   limit: Uint8Array
+  stateRoot: Uint8Array
+  pivotBlockNumber: bigint
 }
 
 function inFlightKey(peerId: string, reqId: bigint): string {
@@ -96,6 +98,7 @@ export type SnapAccountSynchronizerOpts = {
   peerBook?: PeerBookStore
   verifyPool?: SnapVerifyPool
   onAccountsIngested?: (entries: IngestedAccountMeta[]) => void
+  onSlabCommitted?: (flight: InFlightRange, lastKey: Uint8Array) => void
 }
 
 export class SnapAccountSynchronizer {
@@ -108,6 +111,7 @@ export class SnapAccountSynchronizer {
   private readonly peerBook?: PeerBookStore
   private readonly verifyPool: SnapVerifyPool
   private readonly onAccountsIngested?: (entries: IngestedAccountMeta[]) => void
+  private readonly onSlabCommitted?: (flight: InFlightRange, lastKey: Uint8Array) => void
   private reqId = 1n
   private nextCursorId = 256
   private inFlight = new Map<string, InFlightRange>()
@@ -135,6 +139,32 @@ export class SnapAccountSynchronizer {
     this.peerBook = opts.peerBook
     this.verifyPool = opts.verifyPool ?? new SnapVerifyPool({ inProcess: true })
     this.onAccountsIngested = opts.onAccountsIngested
+    this.onSlabCommitted = opts.onSlabCommitted
+  }
+
+  /** One-account snap cursor after BAL touched storage/code during account sync (WP-04k). */
+  enqueueAccountRefreshCursor(accountHash: Uint8Array): void {
+    if (accountHash.length !== 32) return
+    const bucketIndex = accountHash[0]! >> 4
+    const bucket = this.spine.snapBuckets[bucketIndex]
+    if (bucket === undefined || bucket.status === 'done') return
+    const ranges = ensureBucketSubRanges(bucket)
+    const key = bytesToUnprefixedHex(accountHash)
+    if (ranges.some((c) => c.refresh && bytesToUnprefixedHex(c.origin) === key)) return
+    const origin = new Uint8Array(accountHash)
+    const limit = new Uint8Array(accountHash)
+    ranges.push({
+      id: this.nextCursorId++,
+      bucketIndex,
+      origin,
+      limit,
+      journal: `refresh-${key.slice(0, 16)}`,
+      refresh: true,
+    })
+    bucket.subRanges = ranges
+    if (bucket.status === 'pending') bucket.status = 'syncing'
+    syncBucketCursorFields(bucket)
+    this.schedule()
   }
 
   abortInFlight(): void {
@@ -319,6 +349,8 @@ export class SnapAccountSynchronizer {
       timeoutMs: rangeTimeoutForPeer(peer),
       origin: sentOrigin,
       limit: sentLimit,
+      stateRoot: new Uint8Array(this.spine.pivotStateRoot!),
+      pivotBlockNumber: this.spine.pivotBlockNumber ?? 0n,
     })
     bucket.status = 'syncing'
     bucket.assignedPeerId = peer.id
@@ -538,7 +570,7 @@ export class SnapAccountSynchronizer {
     let result: Awaited<ReturnType<SnapVerifyPool['verifyAccountRange']>>
     try {
       result = await this.verifyPool.verifyAccountRange({
-        stateRoot: this.spine.pivotStateRoot,
+        stateRoot: flight.stateRoot,
         origin: flight.origin,
         payload,
       })
@@ -628,6 +660,9 @@ export class SnapAccountSynchronizer {
           cursor?.journal ?? 'prefix',
         )
         this.onAccountsIngested?.(ingestedMetaFromBinarySlab(persistSlab))
+      }
+      if (result.hasRight && result.lastKey instanceof Uint8Array) {
+        this.onSlabCommitted?.(flight, result.lastKey)
       }
     } else if (result.count === 0) {
       this.snapStore?.maybeFlushMetadata(true)

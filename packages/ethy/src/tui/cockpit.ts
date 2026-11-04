@@ -63,6 +63,11 @@ function snapTargetRow(spine: EthySpine): string {
   if (pivot === undefined) {
     return spine.pivotStatusHint ?? 'Awaiting peer head…'
   }
+  const buffered = spine.bufferedBalCount ?? 0
+  const steps = spine.pivotStepsCompleted ?? 0
+  if ((spine.streamedBalCount ?? 0) > 0) {
+    return `${formatBlockNum(pivot)} · +${buffered} BALs · pivot #${steps}`
+  }
   const head = spine.bestPeerHead ?? spine.headBlockNumber ?? pivot
   const drift = head > pivot ? head - pivot : 0n
   if (drift > 0n) return `${formatBlockNum(pivot)} (+${drift.toLocaleString('en-US')} blk)`
@@ -133,13 +138,17 @@ function nodePulsePairs(spine: EthySpine): TwoColumnPair[] {
 
   if (phase === 'HEAD_FOLLOWING') {
     const head = spine.headBlockNumber ?? spine.lastVerifiedBlockNumber
-    const balCount = spine.balWindow.length
+    const balCount = spine.appliedBalCount ?? spine.balWindow.length
     const acc = formatCompactCount(spine.totalAccountsSynced)
+    const pivSteps = spine.pivotStepsCompleted ?? 0
     return [
-      { label: 'Stage', value: 'Head Following' },
-      { label: 'Target', value: head !== undefined ? `${formatBlockNum(head)} (live)` : '—' },
-      { label: 'Progress', value: formatProgressBar(100) },
-      { label: 'State', value: `${acc} acc · ${balCount} BALs` },
+      { label: 'Stage', value: '★ Head Following · Live' },
+      {
+        label: 'Target',
+        value: head !== undefined ? `${formatBlockNum(head)} (live · +0 blk)` : '—',
+      },
+      { label: 'Progress', value: `${formatProgressBar(100)} (synced)` },
+      { label: 'State', value: `${acc} acc · ${balCount} BALs · pivot #${pivSteps}` },
     ]
   }
 
@@ -321,7 +330,32 @@ function metricsPairs(spine: EthySpine, domain: CapabilityId): TwoColumnPair[] {
         { label: 'Speed', value: `${Math.round(spine.accountsPerSec)} acc/s` },
       ]
     }
-    case 'head':
+    case 'head': {
+      if (spine.phase === 'SNAP_SYNCING' && (spine.streamedBalCount ?? 0) > 0) {
+        const pivot = spine.pivotBlockNumber
+        const tip = spine.headBlockNumber ?? pivot
+        const streamed = spine.streamedBalCount ?? 0
+        const applied = spine.appliedBalCount ?? 0
+        const steps = spine.pivotStepsCompleted ?? 0
+        return [
+          { label: 'Status', value: `Streaming BALs (pivot #${steps})` },
+          {
+            label: 'Pivot → Tip',
+            value:
+              pivot !== undefined && tip !== undefined
+                ? `${formatBlockNum(pivot)} → ${formatBlockNum(tip)}`
+                : '—',
+          },
+          { label: 'BALs Ready', value: `${streamed} streamed · ${applied} applied` },
+          {
+            label: 'BAL Window',
+            value:
+              spine.balWindow.length > 0
+                ? `${spine.balWindow.length} blocks · ${spine.balWindow[0]?.accountCount ?? 0} accounts`
+                : '—',
+          },
+        ]
+      }
       return [
         {
           label: 'Status',
@@ -345,6 +379,7 @@ function metricsPairs(spine: EthySpine, domain: CapabilityId): TwoColumnPair[] {
               : '—',
         },
       ]
+    }
     case 'ai': {
       const unlocked = (['p2p', 'snap', 'head', 'ai'] as const)
         .filter((id) => spine.capabilities[id].status !== 'locked')

@@ -23,8 +23,8 @@ import {
   formatProgressBar,
 } from '../src/spine/buckets.ts'
 import { createSpine, setPhase } from '../src/spine/createSpine.ts'
-import { seedBalCatchUp } from '../src/sync/balSync.ts'
-import { applyBlockBal } from '../src/sync/balSync.ts'
+import { applyBlockBal, applySyncedBalDiff, seedBalCatchUp } from '../src/sync/balSync.ts'
+import { isAccountHashSynced } from '../src/sync/syncedAccountHash.ts'
 import { stripAnsi } from '../src/tui/ansi.ts'
 import { renderCockpit } from '../src/tui/cockpit.ts'
 import { createInitialViewState } from '../src/tui/prompt.ts'
@@ -41,6 +41,31 @@ function tempDir(): string {
 }
 
 describe('[Ethy/Sync]: BAL catch-up oracle', () => {
+  it('isAccountHashSynced treats done buckets as synced and open cursors as not', () => {
+    const spine = createSpine('sepolia', 11155111n)
+    const buckets = spine.snapBuckets
+    const openHash = new Uint8Array(32)
+    openHash[0] = 0x30
+    assert.equal(isAccountHashSynced(openHash, buckets), false)
+    buckets[3]!.status = 'done'
+    assert.equal(isAccountHashSynced(openHash, buckets), true)
+  })
+
+  it('applySyncedBalDiff skips accounts inside an open sub-range cursor', async () => {
+    const flat = new FlatStateManager()
+    const spine = createSpine('sepolia', 11155111n)
+    const bucket = spine.snapBuckets[0]!
+    bucket.subRanges![0]!.origin = new Uint8Array(bucket.startHash)
+    bucket.subRanges![0]!.limit = new Uint8Array(32)
+    bucket.subRanges![0]!.limit.fill(0xff)
+    const bal = balSimpleJSON.filter(
+      (entry) => entry.balanceChanges.length > 0,
+    ) as BALJSONBlockAccessList
+    const before = flat.accountCount()
+    await applySyncedBalDiff(flat, bal, spine.snapBuckets)
+    assert.equal(flat.accountCount(), before)
+  })
+
   it('computeSnapProgressPct rises with bucket cursor and stays under 85 until done', () => {
     const spine = createSpine('sepolia', 11155111n)
     setPhase(spine, 'SNAP_SYNCING')

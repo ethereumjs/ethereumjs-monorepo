@@ -77,6 +77,7 @@ export type SnapCodeAndStorageSynchronizerOpts = {
   maxInMemoryContractTasks?: number
   /** Test-only spill file when no {@link SnapPivotStore} is attached. */
   contractSpillPath?: string
+  onBalRefreshAccount?: (accountHash: Uint8Array) => void
 }
 
 export class SnapCodeAndStorageSynchronizer {
@@ -90,6 +91,7 @@ export class SnapCodeAndStorageSynchronizer {
   private readonly verifyPool: SnapVerifyPool
   private readonly maxInMemoryContractTasks: number
   private readonly contractSpillPath?: string
+  private readonly onBalRefreshAccount?: (accountHash: Uint8Array) => void
   private contractsSpilledOnDisk = 0
   private contractSpillReadOffset = 0
   private readonly contractSpillBuffer: Uint8Array[] = []
@@ -113,6 +115,7 @@ export class SnapCodeAndStorageSynchronizer {
     this.verifyPool = opts.verifyPool ?? new SnapVerifyPool({ inProcess: true })
     this.maxInMemoryContractTasks = opts.maxInMemoryContractTasks ?? MAX_IN_MEMORY_CONTRACT_TASKS
     this.contractSpillPath = opts.contractSpillPath
+    this.onBalRefreshAccount = opts.onBalRefreshAccount
   }
 
   start(): void {
@@ -220,7 +223,12 @@ export class SnapCodeAndStorageSynchronizer {
     for (const row of bal) {
       const address = hexToBytes(row.address)
       if (address.length !== 20) continue
-      this.invalidateAccount(ethyKeccak256(address))
+      const accountHash = ethyKeccak256(address)
+      const touchedStorageOrCode = row.storageChanges.length > 0 || row.codeChanges.length > 0
+      if (touchedStorageOrCode && this.spine.phase === 'SNAP_SYNCING') {
+        this.onBalRefreshAccount?.(accountHash)
+      }
+      this.invalidateAccount(accountHash)
     }
     this.publishPending()
   }

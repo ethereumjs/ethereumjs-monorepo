@@ -36,8 +36,9 @@ import { recordDiagnostic } from '../spine/diagnostics.ts'
 import type { EthySpine, PeerTelemetry } from '../spine/types.ts'
 import { SnapAccountSynchronizer } from '../sync/accountSync.ts'
 import {
-  HeadBlockFollower,
+  BalChainStreamer,
   LAPTOP_WAKE_BLOCK_GAP,
+  replayAppliedBalBlocksForSlab,
   seedBalCatchUp,
   tryEnterBalCatchUp,
 } from '../sync/balSync.ts'
@@ -209,7 +210,7 @@ export async function startPeerCoordinator(
   const snapFlightTracker = new SnapPeerFlightTracker()
   let snapSync: SnapAccountSynchronizer | undefined
   let codeSync: SnapCodeAndStorageSynchronizer | undefined
-  let headFollower: HeadBlockFollower | undefined
+  let headFollower: BalChainStreamer | undefined
   let resumeDecided = false
   let handoffCatchup = false
   let baseSyncCompletePosted = false
@@ -234,7 +235,7 @@ export async function startPeerCoordinator(
   const ensureHeadFollower = (clientRef: Devp2pWorkerClient) => {
     if (spine.pivotStateRoot === undefined) return
     if (headFollower === undefined) {
-      headFollower = new HeadBlockFollower({
+      headFollower = new BalChainStreamer({
         spine,
         stateManager,
         chain,
@@ -264,6 +265,17 @@ export async function startPeerCoordinator(
             },
             Date.now(),
           )
+        },
+        onPivotStep: (newPivot) => {
+          snapStore?.updatePivotHead({
+            blockNumber: newPivot.blockNumber,
+            blockHash: newPivot.blockHash,
+            stateRoot: newPivot.stateRoot,
+          })
+          deriveCapabilities(spine)
+        },
+        onBalBlockBuffered: () => {
+          deriveCapabilities(spine)
         },
       })
     }
@@ -302,6 +314,16 @@ export async function startPeerCoordinator(
         getSnapPeers,
         verifyPool,
         onAccountsIngested: (entries) => codeSync?.noteAccounts(entries),
+        onSlabCommitted: (flight, lastKey) => {
+          const blocks = headFollower?.appliedBlocksSince(flight.pivotBlockNumber) ?? []
+          void replayAppliedBalBlocksForSlab(
+            blocks,
+            stateManager,
+            spine.snapBuckets,
+            flight.origin,
+            lastKey,
+          )
+        },
       })
       snapSync.start()
     }
@@ -315,6 +337,7 @@ export async function startPeerCoordinator(
         getSnapPeers,
         verifyPool,
         peerBusy: (peerId) => snapSync?.peerBusy(peerId) ?? false,
+        onBalRefreshAccount: (hash) => snapSync?.enqueueAccountRefreshCursor(hash),
       })
       codeSync.start()
     }
@@ -545,8 +568,27 @@ export async function startPeerCoordinator(
     const best = pickBestPeer(lastTelemetryPeers, pivotBlockedPeers)
     const bestHead = best?.latestBlock !== undefined ? BigInt(best.latestBlock) : pivot
     spine.bestPeerHead = bestHead
-    tryEnterBalCatchUp(spine, snapSync, codeSync, bestHead)
+    const flipped = tryEnterBalCatchUp(spine, snapSync, codeSync, bestHead)
     ensureHeadFollower(client)
+    if (flipped && spine.phase === 'HEAD_FOLLOWING') {
+      spine.headFlipSummary = {
+        kind: 'key_value',
+        title: `★ Synced to Live Head #${bestHead.toLocaleString('en-US')}`,
+        entries: [
+          { key: 'Accounts', value: spine.totalAccountsSynced.toLocaleString('en-US') },
+          { key: 'Code', value: spine.codesSynced.toLocaleString('en-US') },
+          { key: 'Storage slots', value: spine.storageSlotsSynced.toLocaleString('en-US') },
+          {
+            key: 'Pivot steps',
+            value: String(spine.pivotStepsCompleted ?? 0),
+          },
+          {
+            key: 'BALs applied',
+            value: String(spine.appliedBalCount ?? spine.streamedBalCount ?? 0),
+          },
+        ],
+      }
+    }
   }
 
   const maybeVipReconnect = (now: number) => {
@@ -653,6 +695,7 @@ export async function startPeerCoordinator(
       startPivotBundleFetch(peerId, ethVersion, parsed, headerRlp)
     }
     ensureSnapSync(client)
+    ensureHeadFollower(client)
     deriveCapabilities(spine)
   }
 

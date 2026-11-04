@@ -4,13 +4,15 @@ import type { Devp2pWorkerClient } from '@ethereumjs/devp2p'
 import { RLP } from '@ethereumjs/rlp'
 import type { FlatStateManager } from '@ethereumjs/statemanager'
 import {
+  type Address,
   type BALJSONBlockAccessList,
   createBlockLevelAccessListFromRLP,
   equalsBytes,
 } from '@ethereumjs/util'
 
+import { compareBytes32 } from '../spine/buckets.ts'
 import { setPhase } from '../spine/createSpine.ts'
-import type { EthySpine } from '../spine/types.ts'
+import type { EthySpine, SnapBucket } from '../spine/types.ts'
 import type { SnapAccountSynchronizer } from './accountSync.ts'
 import {
   type InFlightBlockBundle,
@@ -20,10 +22,67 @@ import {
   startBlockBundleByNumber,
 } from './blockBundle.ts'
 import type { SnapCodeAndStorageSynchronizer } from './codeAndStorageSync.ts'
+import { accountHashFromAddress, isAccountHashSynced } from './syncedAccountHash.ts'
 
 export const PIVOT_HEAL_BLOCK_GAP = 64n
+export const PIVOT_STEP_BLOCKS = 16n
+export const SAFE_HEAD_MARGIN = 2n
 export const HEAD_FOLLOW_POLL_MS = 5_000
+export const TIP_POLL_MS = 4_000
 export const LAPTOP_WAKE_BLOCK_GAP = 2n
+
+export type VerifiedBalBlock = {
+  blockNumber: bigint
+  blockHash: Uint8Array
+  stateRoot: Uint8Array
+  headerRlp: Uint8Array
+  balRlp?: Uint8Array
+  balJson?: BALJSONBlockAccessList
+}
+
+export function shouldApplySyncedAccount(address: Address, buckets: SnapBucket[]): boolean {
+  const hash = accountHashFromAddress(address.toString())
+  return isAccountHashSynced(hash, buckets)
+}
+
+export async function applySyncedBalDiff(
+  stateManager: FlatStateManager,
+  balJson: BALJSONBlockAccessList,
+  buckets: SnapBucket[],
+): Promise<void> {
+  await stateManager.consumeBAL(balJson, {
+    shouldApplyAccount: (address) => shouldApplySyncedAccount(address, buckets),
+  })
+}
+
+function balJsonForBlock(block: VerifiedBalBlock): BALJSONBlockAccessList | undefined {
+  if (block.balJson !== undefined) return block.balJson
+  if (block.balRlp === undefined || block.balRlp.length === 0) return undefined
+  return createBlockLevelAccessListFromRLP(block.balRlp).toJSON()
+}
+
+/** Re-apply BAL deltas for accounts in a late snap slab after pivot moved forward (WP-04k). */
+export async function replayAppliedBalBlocksForSlab(
+  blocks: VerifiedBalBlock[],
+  stateManager: FlatStateManager,
+  buckets: SnapBucket[],
+  origin: Uint8Array,
+  lastKey: Uint8Array,
+): Promise<void> {
+  const inRange = (hash: Uint8Array) =>
+    compareBytes32(hash, origin) >= 0 && compareBytes32(hash, lastKey) <= 0
+  for (const block of blocks) {
+    const balJson = balJsonForBlock(block)
+    if (balJson === undefined) continue
+    await stateManager.consumeBAL(balJson, {
+      shouldApplyAccount: (address) => {
+        if (!shouldApplySyncedAccount(address, buckets)) return false
+        const hash = accountHashFromAddress(address.toString())
+        return inRange(hash)
+      },
+    })
+  }
+}
 
 export function pushBalWindow(
   spine: EthySpine,
@@ -49,6 +108,7 @@ export async function applyBlockBal(
   balRlp: Uint8Array | undefined,
   chain: ChainConfig,
   hardfork: string,
+  syncBuckets?: SnapBucket[],
 ): Promise<{ ok: boolean; applied: boolean; balJson?: BALJSONBlockAccessList; reason?: string }> {
   const common = new Common({ chain, hardfork })
   const raw = headerRlp instanceof Uint8Array ? RLP.decode(headerRlp) : headerRlp
@@ -73,7 +133,11 @@ export async function applyBlockBal(
     return { ok: false, applied: false, reason: 'BAL hash mismatch' }
   }
   const balJson = bal.toJSON()
-  await stateManager.consumeBAL(balJson)
+  if (syncBuckets !== undefined) {
+    await applySyncedBalDiff(stateManager, balJson, syncBuckets)
+  } else {
+    await stateManager.consumeBAL(balJson)
+  }
   return { ok: true, applied: true, balJson }
 }
 
@@ -154,6 +218,8 @@ export type HeadFollowerOpts = {
   appendHealBal?: (blockNumber: bigint, balRlp: Uint8Array) => void
   noteVerifiedBlock?: (blockNumber: bigint) => void
   onSyncedToHead?: (head: bigint) => void
+  onPivotStep?: (newPivot: VerifiedBalBlock) => void
+  onBalBlockBuffered?: (entry: VerifiedBalBlock) => void
 }
 
 type HeadCatchUp = {
@@ -163,11 +229,13 @@ type HeadCatchUp = {
   inFlight?: InFlightBlockBundle
 }
 
-/** Polls peer head and advances block-by-block in `BAL_CATCHUP` and `HEAD_FOLLOWING`. */
-export class HeadBlockFollower {
+/** Streams and verifies `eth/71` blocks from pivot+1 through catch-up and live head (WP-04k). */
+export class BalChainStreamer {
   private readonly opts: HeadFollowerOpts
   private timer?: ReturnType<typeof setInterval>
   private catchUp?: HeadCatchUp
+  private readonly buffered: VerifiedBalBlock[] = []
+  private appliedBalLog: VerifiedBalBlock[] = []
 
   constructor(opts: HeadFollowerOpts) {
     this.opts = opts
@@ -175,9 +243,10 @@ export class HeadBlockFollower {
 
   start(): void {
     if (this.timer !== undefined) return
+    const pollMs = this.opts.spine.phase === 'SNAP_SYNCING' ? TIP_POLL_MS : HEAD_FOLLOW_POLL_MS
     this.timer = setInterval(() => {
       void this.tick()
-    }, HEAD_FOLLOW_POLL_MS)
+    }, pollMs)
     this.timer.unref?.()
   }
 
@@ -216,22 +285,25 @@ export class HeadBlockFollower {
     const seq = this.catchUp
     const bundle = seq?.inFlight
     if (seq === undefined || bundle === undefined) return
+    const { spine } = this.opts
+    const snapStreaming = spine.phase === 'SNAP_SYNCING'
     await finalizeBlockBundle({
-      spine: this.opts.spine,
+      spine,
       stateManager: this.opts.stateManager,
       chain: this.opts.chain,
       hardfork: this.opts.hardfork,
       bundle,
       putServableBlock: (b) => this.opts.putServableBlock(b),
-      onBalApplied: this.opts.onBalApplied,
+      onBalApplied: snapStreaming ? undefined : this.opts.onBalApplied,
       appendHealBal: this.opts.appendHealBal,
+      syncBuckets: snapStreaming ? spine.snapBuckets : undefined,
+      deferStateApply: snapStreaming,
     })
     const fields =
       bundle.headerRlp !== undefined
         ? headFieldsFromHeaderRlp(bundle.headerRlp, this.opts.chain, this.opts.hardfork)
         : null
     if (fields !== null) {
-      const { spine } = this.opts
       spine.lastVerifiedBlockNumber = fields.number
       spine.headBlockNumber = fields.number
       spine.headStateRoot = fields.stateRoot
@@ -239,6 +311,22 @@ export class HeadBlockFollower {
       this.opts.noteVerifiedBlock?.(fields.number)
       if (spine.balCatchUp !== undefined) {
         spine.balCatchUp.applied = Math.min(spine.balCatchUp.total, spine.balCatchUp.applied + 1)
+      }
+      if (snapStreaming) {
+        const entry: VerifiedBalBlock = {
+          blockNumber: fields.number,
+          blockHash: bundle.hash ?? new Uint8Array(32),
+          stateRoot: fields.stateRoot,
+          headerRlp: bundle.headerRlp!,
+          balRlp: bundle.balRlp,
+        }
+        this.buffered.push(entry)
+        spine.streamedBalCount = (spine.streamedBalCount ?? 0) + 1
+        spine.bufferedBalCount = this.buffered.length
+        this.opts.onBalBlockBuffered?.(entry)
+        void this.maybePivotStep()
+      } else if (bundle.balRlp !== undefined) {
+        spine.appliedBalCount = (spine.appliedBalCount ?? 0) + 1
       }
     }
     seq.inFlight = undefined
@@ -257,9 +345,66 @@ export class HeadBlockFollower {
     }
   }
 
+  private async maybePivotStep(): Promise<void> {
+    const { spine } = this.opts
+    if (spine.phase !== 'SNAP_SYNCING') return
+    const pivot = spine.pivotBlockNumber
+    if (pivot === undefined || spine.pivotStateRoot === undefined) return
+    const best = spine.bestPeerHead ?? pivot
+    const targetBlock = pivot + PIVOT_STEP_BLOCKS
+    if (this.buffered.length < Number(PIVOT_STEP_BLOCKS)) return
+    const first = this.buffered[0]?.blockNumber
+    const last = this.buffered[this.buffered.length - 1]?.blockNumber
+    if (first === undefined || last === undefined) return
+    if (first !== pivot + 1n || last < targetBlock) return
+    if (targetBlock > best - SAFE_HEAD_MARGIN) return
+
+    const window = this.buffered.splice(0, Number(PIVOT_STEP_BLOCKS))
+    for (const block of window) {
+      if (block.balRlp !== undefined && block.balRlp.length > 0) {
+        const applied = await applyBlockBal(
+          this.opts.stateManager,
+          block.headerRlp,
+          block.balRlp,
+          this.opts.chain,
+          this.opts.hardfork,
+          spine.snapBuckets,
+        )
+        if (applied.balJson !== undefined) {
+          block.balJson = applied.balJson
+          pushBalWindow(spine, block.blockNumber, applied.balJson)
+          this.opts.onBalApplied?.(applied.balJson)
+          spine.appliedBalCount = (spine.appliedBalCount ?? 0) + 1
+        }
+      }
+      this.appliedBalLog.push({ ...block })
+      if (this.appliedBalLog.length > 64) {
+        this.appliedBalLog.shift()
+      }
+    }
+    const newTip = window[window.length - 1]!
+    spine.pivotBlockNumber = newTip.blockNumber
+    spine.pivotStateRoot = newTip.stateRoot
+    spine.lastVerifiedBlockNumber = newTip.blockNumber
+    spine.pivotStepsCompleted = (spine.pivotStepsCompleted ?? 0) + 1
+    spine.bufferedBalCount = this.buffered.length
+    this.opts.onPivotStep?.(newTip)
+  }
+
+  /** BAL blocks applied during snap for late in-flight snap range replies. */
+  appliedBlocksSince(pivotBlock: bigint): VerifiedBalBlock[] {
+    return this.appliedBalLog.filter((b) => b.blockNumber > pivotBlock)
+  }
+
   private tick(): void {
     const { spine } = this.opts
-    if (spine.phase !== 'BAL_CATCHUP' && spine.phase !== 'HEAD_FOLLOWING') return
+    if (
+      spine.phase !== 'BAL_CATCHUP' &&
+      spine.phase !== 'HEAD_FOLLOWING' &&
+      spine.phase !== 'SNAP_SYNCING'
+    ) {
+      return
+    }
     const tip = this.verifiedTip(spine)
     if (tip === undefined) return
     if (this.catchUp?.inFlight !== undefined) return
@@ -279,6 +424,9 @@ export class HeadBlockFollower {
         spine.balCatchUp = undefined
         this.opts.onSyncedToHead?.(peerHead)
       }
+      if (spine.phase === 'SNAP_SYNCING') {
+        void this.maybePivotStep()
+      }
       this.catchUp = undefined
       return
     }
@@ -292,6 +440,9 @@ export class HeadBlockFollower {
     )
   }
 }
+
+/** @deprecated alias — prefer {@link BalChainStreamer} */
+export const HeadBlockFollower = BalChainStreamer
 
 /** Re-seed catch-up after laptop wake or handoff gap. */
 export function seedBalCatchUp(spine: EthySpine, bestPeerHead: bigint): void {

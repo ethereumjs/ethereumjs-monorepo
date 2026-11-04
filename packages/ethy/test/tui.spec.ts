@@ -76,11 +76,21 @@ describe('[Ethy/TUI]: renderFrame', () => {
     assert.notInclude(catchUp, 'previous')
     assert.notInclude(catchUp, '!')
 
+    setPhase(spine, 'SNAP_SYNCING')
+    spine.pivotBlockNumber = 1_000n
+    spine.streamedBalCount = 3
+    spine.bufferedBalCount = 2
+    spine.pivotStepsCompleted = 1
+    deriveCapabilities(spine)
+    const streaming = stripAnsi(renderFrame(spine, view, 160, 30).join('\n'))
+    assert.include(streaming, '+2 BALs')
+    assert.include(streaming, 'pivot #1')
+
     setPhase(spine, 'HEAD_FOLLOWING')
     spine.headBlockNumber = 125n
     const head = stripAnsi(renderFrame(spine, view, 160, 30).join('\n'))
-    assert.include(head, 'Head Following')
-    assert.include(head, '#125 (live)')
+    assert.include(head, '★ Head Following · Live')
+    assert.include(head, '#125 (live · +0 blk)')
     assert.include(head, '100%')
   })
 

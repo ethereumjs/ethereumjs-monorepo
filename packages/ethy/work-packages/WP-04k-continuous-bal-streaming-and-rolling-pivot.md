@@ -1,6 +1,6 @@
 # WP-04k: Continuous Parallel `eth/71` BAL Streaming, Routine Rolling-Pivot Heartbeat & "The Big Flip" to Live Head
 
-- **Status:** `READY_FOR_PLANNING`
+- **Status:** `IN_PROGRESS`
 - **Dependencies:** `WP-04h` (`DONE`), `WP-04i` (`DONE`), `WP-04j` (`DONE`)
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
@@ -157,10 +157,29 @@ When `BalChainStreamer` has downloaded and verified `PIVOT_STEP_BLOCKS = 16` con
 
 ## 5. Concrete Implementation Plan (Planner — Grok 4.7)
 
-*(To be filled out by Grok 4.7 during the Planning pass.)*
+Today snap holds one static pivot (**D-062**). `HeadBlockFollower` starts only in `BAL_CATCHUP` / `HEAD_FOLLOWING`. Account proofs verify against live `spine.pivotStateRoot`. `activatePivot` keys the journal directory by state root and would orphan `accounts/` on every step. Worker dispatch in `host.ts` posts eth messages before `ETH._handleMessage`; `_handleBlockRangeUpdate` does not write `_peerStatus[4..6]`. `FlatStateManager.consumeBAL` pins every BAL row before the helper runs.
+
+### Design refinements (D-083)
+
+- **Stable journal directory.** Do not call `activatePivot` or `bumpRootGeneration` on a step. `updatePivotHead` rewrites `pivot.json` in place; `active.json.stateRoot` stays the directory key from first anchor.
+- **One streamer.** `BalChainStreamer` in `balSync.ts`; `HeadBlockFollower` alias. Start at first pivot anchor during `SNAP_SYNCING`. Leave dormant `healSeq` unused.
+- **Late replies.** Per-flight `stateRoot` + `pivotBlockNumber`; applied-BAL log (cap 64); re-apply on slab commit for hashes in range.
+- **Point refresh cursors** (`refresh: true`) for BAL storage/code touches during account sync; progress math ignores them.
+- **Celebration one-shot** via `headFlipSummary` → `session.ts` when widget null.
+- **Catch-up for laptop wake only** when disk gap exceeds buffer; routine step at 16 blocks, `SAFE_HEAD_MARGIN = 2`.
+
+| Slice | Package | Work |
+| --- | --- | --- |
+| 1 | `@ethereumjs/devp2p` | `_peerStatus[4..6]` on `BLOCK_RANGE_UPDATE`; worker `'default'` route + telemetry; tests |
+| 1 | `@ethereumjs/common`, `@ethereumjs/statemanager` | `ConsumeBALOptions`, selective pin/unpin, unit tests |
+| 2 | `@ethereumjs/ethy` | `BalChainStreamer`, `syncedAccountHash.ts`, pivot step, per-flight roots, `updatePivotHead`, coordinator wiring |
+| 3 | `@ethereumjs/ethy` | Spine counters, cockpit HEAD partial + flip celebration, tests |
+
+**Gates:** `tsc`, `npm test` in common, statemanager, devp2p, ethy; spellcheck. Three atomic commits when shipping: devp2p → common+statemanager → ethy.
 
 ---
 
 ## 6. Implementation Notes & Deviations (Implementer — Composer 2.5)
 
-*(To be filled out by Composer 2.5 after implementation and verification.)*
+- Shipped Slice 1–3 on branch: `devp2p` `BLOCK_RANGE_UPDATE` → `_peerStatus` + worker `'default'` route; `ConsumeBALOptions` + selective `FlatStateManager` pin/unpin; `BalChainStreamer` (alias `HeadBlockFollower`) with 16-block pivot steps, per-flight `stateRoot`, `updatePivotHead`, TUI flip copy, and tests.
+- **Follow-up landed:** late-reply BAL re-apply on slab commit (`replayAppliedBalsForSlab`), storage/code `refresh` cursors + progress math, upstream CHANGELOG bullets. Worker peer `latestBlock` in telemetry IT deferred — eth/71 mesh does not yet surface remote STATUS head in snapshots (`blockRangeUpdate.spec.ts` covers `peerStatusHead()`).
