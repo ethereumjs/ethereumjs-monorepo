@@ -1,5 +1,12 @@
 import { bytesToUnprefixedHex } from '@ethereumjs/util'
 
+import {
+  journalPathForProofSidecar,
+  listProofSidecarsForBucket,
+  readProofSidecarRecords,
+  readSlabSlice,
+} from './ethyProofDisk.ts'
+
 /** One servable self-proving account chunk (spec §6 `0x04`). */
 export type EthyAccountChunkRecord = {
   bucketIndex: number
@@ -31,14 +38,47 @@ function chunkKey(bucketIndex: number, originHash: Uint8Array): string {
  */
 export class EthyChunkStore {
   private readonly _byKey = new Map<string, EthyAccountChunkRecord>()
+  private _pivotAccountsDir?: string
+
+  setPivotAccountsDir(dir: string | undefined): void {
+    this._pivotAccountsDir = dir
+  }
 
   put(record: EthyAccountChunkRecord): void {
     const key = chunkKey(record.bucketIndex, record.originHash)
     this._byKey.set(key, record)
   }
 
+  private getFromDisk(
+    bucketIndex: number,
+    originHash: Uint8Array,
+  ): EthyAccountChunkRecord | undefined {
+    const accountsDir = this._pivotAccountsDir
+    if (accountsDir === undefined) return undefined
+    for (const proofPath of listProofSidecarsForBucket(accountsDir, bucketIndex)) {
+      const journalPath = journalPathForProofSidecar(proofPath)
+      for (const rec of readProofSidecarRecords(proofPath)) {
+        if (bytesToUnprefixedHex(rec.originHash) !== bytesToUnprefixedHex(originHash)) continue
+        const slab = readSlabSlice(journalPath, rec.slabByteOffset, rec.slabByteLength)
+        return {
+          bucketIndex,
+          originHash: rec.originHash,
+          lastHash: rec.lastHash,
+          hasRight: rec.hasRight,
+          chunkStateRoot: rec.chunkStateRoot,
+          chunkBlockNumber: rec.chunkBlockNumber,
+          binaryAccountsSlab: slab,
+          proofNodes: rec.proofNodes,
+        }
+      }
+    }
+    return undefined
+  }
+
   get(bucketIndex: number, originHash: Uint8Array): EthyAccountChunkRecord | undefined {
-    return this._byKey.get(chunkKey(bucketIndex, originHash))
+    const mem = this._byKey.get(chunkKey(bucketIndex, originHash))
+    if (mem !== undefined) return mem
+    return this.getFromDisk(bucketIndex, originHash)
   }
 
   manifestForBucket(bucketIndex: number): EthyChunkManifestEntry[] {
@@ -58,9 +98,32 @@ export class EthyChunkStore {
         slabByteLength: rec.binaryAccountsSlab.length,
       })
     }
+    const accountsDir = this._pivotAccountsDir
+    if (accountsDir !== undefined) {
+      for (const proofPath of listProofSidecarsForBucket(accountsDir, bucketIndex)) {
+        for (const rec of readProofSidecarRecords(proofPath)) {
+          const accountCount = rec.slabByteLength === 0 ? 0 : Math.floor(rec.slabByteLength / 136)
+          out.push({
+            originHash: rec.originHash,
+            lastHash: rec.lastHash,
+            hasRight: rec.hasRight,
+            chunkStateRoot: rec.chunkStateRoot,
+            chunkBlockNumber: rec.chunkBlockNumber,
+            accountCount,
+            slabByteLength: rec.slabByteLength,
+          })
+        }
+      }
+    }
     out.sort((a, b) =>
       bytesToUnprefixedHex(a.originHash).localeCompare(bytesToUnprefixedHex(b.originHash)),
     )
-    return out
+    const seen = new Set<string>()
+    return out.filter((row) => {
+      const k = bytesToUnprefixedHex(row.originHash)
+      if (seen.has(k)) return false
+      seen.add(k)
+      return true
+    })
   }
 }

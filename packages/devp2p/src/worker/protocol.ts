@@ -79,6 +79,7 @@ export type WorkerCommand =
   | { type: 'sendSnapMessage'; peerId: Uint8Array; code: number; payload: Uint8Array }
   | { type: 'sendEthyMessage'; peerId: Uint8Array; code: number; payload: Uint8Array }
   | { type: 'setEthyStatus'; status: WorkerEthyLocalStatus }
+  | { type: 'setEthyPivotAccountsDir'; dir?: string }
   | {
       type: 'putEthyAccountChunk'
       chunk: {

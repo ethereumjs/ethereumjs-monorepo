@@ -156,6 +156,10 @@ export class Devp2pWorkerClient {
     this._send({ type: 'setEthyStatus', status })
   }
 
+  setEthyPivotAccountsDir(dir: string | undefined): void {
+    this._send({ type: 'setEthyPivotAccountsDir', dir })
+  }
+
   putEthyAccountChunk(chunk: {
     bucketIndex: number
     originHash: Uint8Array

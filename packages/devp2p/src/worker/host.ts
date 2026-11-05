@@ -240,6 +240,9 @@ export class Devp2pWorkerHost {
           this._ethyLocal = cmd.status
           this._broadcastEthyStatus()
           break
+        case 'setEthyPivotAccountsDir':
+          this._ethyChunks.setPivotAccountsDir(cmd.dir)
+          break
         case 'putEthyAccountChunk': {
           const c = cmd.chunk
           this._ethyChunks.put({
@@ -299,6 +302,9 @@ export class Devp2pWorkerHost {
     )
     const caps = resolveCapabilities(opts.capabilities ?? ['eth68'])
     const ethyEnabled = caps.some((c) => c.name === 'ethy')
+    if (opts.ethyPivotDir !== undefined) {
+      this._ethyChunks.setPivotAccountsDir(opts.ethyPivotDir)
+    }
     this._privateKey = opts.privateKey
     this._localNodeId = pk2id(secp256k1.getPublicKey(opts.privateKey, false))
     const endpoint = opts.endpoint ?? { address: '0.0.0.0', udpPort: 0, tcpPort: 0 }
