@@ -48,7 +48,7 @@ export function createAccessList2930TxFromBytesArray(values: TxValuesArray, opts
   const [chainId, nonce, gasPrice, gasLimit, to, value, data, accessList, v, r, s] = values
 
   validateNotArray({ chainId, v })
-  validateNoLeadingZeroes({ nonce, gasPrice, gasLimit, value, v, r, s })
+  validateNoLeadingZeroes({ chainId, nonce, gasPrice, gasLimit, value, v, r, s })
 
   const emptyAccessList: AccessList = []
 

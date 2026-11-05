@@ -181,6 +181,7 @@ export function createBlob4844TxFromBytesArray(values: TxValuesArray, opts: TxOp
 
   validateNotArray({ chainId, v })
   validateNoLeadingZeroes({
+    chainId,
     nonce,
     maxPriorityFeePerGas,
     maxFeePerGas,
