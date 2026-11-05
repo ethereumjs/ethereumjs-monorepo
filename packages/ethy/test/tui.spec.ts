@@ -7,6 +7,8 @@ import type { WidgetSpec } from '../src/spine/types.ts'
 import { stripAnsi, visibleWidth } from '../src/tui/ansi.ts'
 import { CAPABILITY_FG, capabilityMark } from '../src/tui/capabilityMark.ts'
 import { cockpitColumnWidths } from '../src/tui/cockpit.ts'
+import { renderCockpit } from '../src/tui/cockpit.ts'
+import { capabilityBarClockLabel } from '../src/tui/headerClock.ts'
 import { measurePage } from '../src/tui/pageLayout.ts'
 import {
   createInitialViewState,
@@ -28,14 +30,16 @@ describe('[Ethy/TUI]: renderFrame', () => {
   it('renderFrame() keeps Slot a fixed gap left of P2P', () => {
     const view = createInitialViewState()
     const spineA = createSpine('sepolia', 11155111n)
+    spineA.demoClock = true
     spineA.currentSlot = 1
     const spineB = createSpine('sepolia', 11155111n)
+    spineB.demoClock = true
     spineB.currentSlot = 123456
     const topA = stripAnsi(renderFrame(spineA, view, 100, 30)[0] ?? '')
     const topB = stripAnsi(renderFrame(spineB, view, 100, 30)[0] ?? '')
     assert.equal(topA.indexOf('P2P'), topB.indexOf('P2P'))
     assert.match(topA, /Slot 1 {8}\S P2P/)
-    assert.match(topB, /Slot 123456 {8}\S P2P/)
+    assert.match(topB, /Slot 123,456 {8}\S P2P/)
     assert.isAbove(topA.indexOf('Slot'), topA.indexOf('SEPOLIA'))
   })
 
@@ -84,7 +88,7 @@ describe('[Ethy/TUI]: renderFrame', () => {
     deriveCapabilities(spine)
     const streaming = stripAnsi(renderFrame(spine, view, 160, 30).join('\n'))
     assert.include(streaming, '+2 BALs')
-    assert.include(streaming, 'pivot #1')
+    assert.include(streaming, 'step 1')
 
     setPhase(spine, 'HEAD_FOLLOWING')
     spine.headBlockNumber = 125n
@@ -132,6 +136,38 @@ describe('[Ethy/TUI]: renderFrame', () => {
     assert.notInclude(top, 'Slash/Rule')
     assert.notInclude(top, '[')
     assert.match(lines[1] ?? '', /─/)
+  })
+
+  it('capabilityBarClockLabel prefers CL slot over EL block number', () => {
+    const spine = createSpine('sepolia', 11155111n)
+    spine.clOptimisticSlot = 12_071_120
+    spine.pivotBlockNumber = 12_070_000n
+    assert.include(capabilityBarClockLabel(spine), 'Slot 12,071,120')
+    spine.clOptimisticSlot = undefined
+    spine.demoClock = undefined
+    spine.bestPeerHead = 12_071_450n
+    assert.include(capabilityBarClockLabel(spine), 'Block #12,071,450')
+  })
+
+  it('renderFrame() Node Pulse shows bridge target distinct from capability slot', () => {
+    const spine = createSpine('sepolia', 11155111n)
+    setPhase(spine, 'SNAP_SYNCING')
+    spine.clOptimisticSlot = 9_999_999
+    spine.pivotBlockNumber = 12_070_000n
+    spine.pivotBridging = {
+      fromBlock: 12_070_000n,
+      currentBlock: 12_070_100n,
+      targetBlock: 12_070_350n,
+    }
+    spine.totalAccountsSynced = 3_000_000
+    const view = createInitialViewState()
+    const width = 160
+    const top = stripAnsi(renderFrame(spine, view, width, 30)[0] ?? '')
+    const cols = measurePage(width, 30).contentWidth
+    const cockpit = stripAnsi(renderCockpit(spine, view, cols).join('\n'))
+    assert.include(top, 'Slot 9,999,999')
+    assert.include(cockpit, '12,070,000')
+    assert.include(cockpit, '12,070,350')
   })
 
   it('renderFrame() keeps right-anchored capability pills when P2P label changes', () => {

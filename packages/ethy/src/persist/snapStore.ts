@@ -23,8 +23,10 @@ import {
 } from '../spine/buckets.ts'
 import type { EthySpine, SnapBucket, SnapBucketStatus, SnapRangeCursor } from '../spine/types.ts'
 import type { IngestedAccountMeta } from '../sync/accountSync.ts'
+import type { VerifiedBalBlock } from '../sync/balSync.ts'
 import type { SnapResumeSaved } from '../sync/resumePolicy.ts'
 import { incrementKey32 } from '../sync/syntheticPeer.ts'
+import { decodeHealBundleRlp, encodeHealBundleRlp } from './healBundle.ts'
 import {
   BINARY_ACCOUNT_JOURNAL_MAGIC,
   BINARY_ACCOUNT_JOURNAL_RECORD_SIZE,
@@ -127,6 +129,7 @@ export class SnapPivotStore {
   private readonly journalFdCache = new Map<number, number>()
   private contractScan?: { bucket: number; byteOffset: number; segment?: string }
   private contractScanComplete = false
+  private restoredHealBlocks: VerifiedBalBlock[] = []
 
   private constructor(opts: SnapStoreOpenOpts & { root: string; networkDir: string }) {
     this.enabled = opts.enabled
@@ -315,7 +318,6 @@ export class SnapPivotStore {
     spine.pivotStateRoot = unprefixedHexToBytes(
       pivot.stateRoot.startsWith('0x') ? pivot.stateRoot.slice(2) : pivot.stateRoot,
     )
-    spine.currentSlot = Number(pivot.blockNumber)
     if (active.lastVerifiedBlockNumber !== undefined) {
       spine.lastVerifiedBlockNumber = BigInt(active.lastVerifiedBlockNumber)
     } else if (active.baseSyncComplete === true) {
@@ -431,7 +433,6 @@ export class SnapPivotStore {
     spine.pivotStateRoot = unprefixedHexToBytes(
       pivot.stateRoot.startsWith('0x') ? pivot.stateRoot.slice(2) : pivot.stateRoot,
     )
-    spine.currentSlot = Number(pivot.blockNumber)
     if (active.lastVerifiedBlockNumber !== undefined) {
       spine.lastVerifiedBlockNumber = BigInt(active.lastVerifiedBlockNumber)
     } else if (active.baseSyncComplete === true) {
@@ -614,7 +615,18 @@ export class SnapPivotStore {
         spine.pivotCarry = { kind: 'previous', accounts: held }
       }
     }
+    this.restoredHealBlocks = this.readUnappliedHealBundles(
+      BigInt(pivot.blockNumber),
+      active.stateRoot,
+    )
     return restored
+  }
+
+  /** Buffered BAL blocks restored from disk for {@link BalChainStreamer.restoreBuffered}. */
+  takeRestoredHealBlocks(): VerifiedBalBlock[] {
+    const out = this.restoredHealBlocks
+    this.restoredHealBlocks = []
+    return out
   }
 
   /** Whether code/storage sync must still scan on-disk account journals (WP-04g). */
@@ -1263,6 +1275,69 @@ export class SnapPivotStore {
     fs.mkdirSync(healDir, { recursive: true })
     const file = path.join(healDir, `${blockNumber.toString()}.bal`)
     fs.writeFileSync(file, balRlp)
+  }
+
+  /** Persist a verified block+BAL bundle for snap-stream resume (WP-06d). */
+  appendHealBundle(entry: VerifiedBalBlock): void {
+    if (!this.enabled || this.activeStateRoot === undefined) return
+    if (entry.balRlp === undefined || entry.balRlp.length === 0) return
+    const healDir = path.join(this.pivotDir(this.activeStateRoot), 'heal')
+    fs.mkdirSync(healDir, { recursive: true })
+    const file = path.join(healDir, `${entry.blockNumber.toString()}.bundle.rlp`)
+    const body = encodeHealBundleRlp({
+      blockNumber: entry.blockNumber,
+      blockHash: entry.blockHash,
+      stateRoot: entry.stateRoot,
+      headerRlp: entry.headerRlp,
+      balRlp: entry.balRlp,
+    })
+    fs.writeFileSync(file, body)
+  }
+
+  pruneHealBundlesUpTo(blockNumber: bigint): void {
+    if (!this.enabled || this.activeStateRoot === undefined) return
+    const healDir = path.join(this.pivotDir(this.activeStateRoot), 'heal')
+    if (!fs.existsSync(healDir)) return
+    for (const name of fs.readdirSync(healDir)) {
+      const n = name.endsWith('.bundle.rlp')
+        ? BigInt(name.replace(/\.bundle\.rlp$/, ''))
+        : name.endsWith('.bal')
+          ? BigInt(name.replace(/\.bal$/, ''))
+          : undefined
+      if (n !== undefined && n <= blockNumber) {
+        try {
+          fs.unlinkSync(path.join(healDir, name))
+        } catch {
+          // already removed
+        }
+      }
+    }
+  }
+
+  private readUnappliedHealBundles(pivotBlock: bigint, stateRootHex: string): VerifiedBalBlock[] {
+    const healDir = path.join(this.pivotDir(stateRootHex), 'heal')
+    if (!fs.existsSync(healDir)) return []
+    const bundleNames = fs
+      .readdirSync(healDir)
+      .filter((n) => n.endsWith('.bundle.rlp'))
+      .sort((a, b) => {
+        const na = BigInt(a.replace(/\.bundle\.rlp$/, ''))
+        const nb = BigInt(b.replace(/\.bundle\.rlp$/, ''))
+        return na < nb ? -1 : na > nb ? 1 : 0
+      })
+    const out: VerifiedBalBlock[] = []
+    let expect = pivotBlock + 1n
+    for (const name of bundleNames) {
+      const blockNumber = BigInt(name.replace(/\.bundle\.rlp$/, ''))
+      if (blockNumber <= pivotBlock) continue
+      if (blockNumber !== expect) break
+      const raw = new Uint8Array(fs.readFileSync(path.join(healDir, name)))
+      const decoded = decodeHealBundleRlp(raw)
+      if (decoded === undefined) break
+      out.push(decoded)
+      expect = blockNumber + 1n
+    }
+    return out
   }
 
   /** Replay heal BAL files from previous (if any) and active pivot dirs (D-059). */

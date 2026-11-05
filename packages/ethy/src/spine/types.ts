@@ -99,6 +99,13 @@ export type PivotHealProgress = {
   toBlock: bigint
 }
 
+/** Fast-forward saved pivot via BALs before resuming `snap/1` (WP-06d). */
+export type PivotBridgingProgress = {
+  fromBlock: bigint
+  currentBlock: bigint
+  targetBlock: bigint
+}
+
 /**
  * Accounts that survived a finished heal (`kept`), or journals on the previous
  * pivot that resume did not load (`previous`).
@@ -125,8 +132,12 @@ export interface EthySpine {
   pivotStatusHint?: string
   /** Set while a rolling pivot heal is walking blocks. Cleared when it finishes or fails. */
   pivotHeal?: PivotHealProgress
+  /** BAL bridge into the live snap window; snap schedulers stay idle (WP-06d). */
+  pivotBridging?: PivotBridgingProgress
   /** Set after a heal that held accounts, or when the previous pivot still has unloaded journals. */
   pivotCarry?: PivotCarry
+  /** `--demo` uses {@link currentSlot} as a synthetic clock in the capability bar. */
+  demoClock?: boolean
   headBlockNumber?: bigint
   headStateRoot?: Uint8Array
   /** Last block whose header+BAL were verified and applied (persisted on disk). */

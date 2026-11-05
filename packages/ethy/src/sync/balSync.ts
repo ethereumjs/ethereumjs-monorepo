@@ -217,6 +217,7 @@ export type HeadFollowerOpts = {
   }) => void
   onBalApplied?: (balJson: BALJSONBlockAccessList) => void
   appendHealBal?: (blockNumber: bigint, balRlp: Uint8Array) => void
+  appendHealBundle?: (entry: VerifiedBalBlock) => void
   noteVerifiedBlock?: (blockNumber: bigint) => void
   onSyncedToHead?: (head: bigint) => void
   onPivotStep?: (newPivot: VerifiedBalBlock) => void
@@ -266,6 +267,22 @@ export class BalChainStreamer {
     this.catchUp = undefined
     this.buffered.length = 0
     this.appliedBalLog.length = 0
+  }
+
+  /** Restore persisted unapplied heal bundles after disk hydrate (WP-06d). */
+  restoreBuffered(blocks: VerifiedBalBlock[]): void {
+    if (blocks.length === 0) return
+    const { spine } = this.opts
+    this.buffered.length = 0
+    for (const block of blocks) {
+      this.buffered.push({ ...block })
+    }
+    spine.streamedBalCount = blocks.length
+    spine.bufferedBalCount = blocks.length
+    const last = blocks[blocks.length - 1]!
+    if (spine.bestPeerHead === undefined || last.blockNumber > spine.bestPeerHead) {
+      spine.bestPeerHead = last.blockNumber
+    }
   }
 
   handleEthMessage(msg: { peerId: string; code: number; payload: Uint8Array }): boolean {
@@ -320,6 +337,7 @@ export class BalChainStreamer {
       putServableBlock: (b) => this.opts.putServableBlock(b),
       onBalApplied: snapStreaming ? undefined : this.opts.onBalApplied,
       appendHealBal: this.opts.appendHealBal,
+      appendHealBundle: this.opts.appendHealBundle,
       syncBuckets: snapStreaming ? spine.snapBuckets : undefined,
       deferStateApply: snapStreaming,
     })
@@ -330,7 +348,6 @@ export class BalChainStreamer {
     if (fields !== null) {
       spine.headBlockNumber = fields.number
       spine.headStateRoot = fields.stateRoot
-      spine.currentSlot = Number(fields.number)
       if (spine.bestPeerHead === undefined || fields.number > spine.bestPeerHead) {
         spine.bestPeerHead = fields.number
       }

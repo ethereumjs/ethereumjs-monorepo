@@ -45,6 +45,7 @@ export interface EthyNode {
 export function createEthyNode(opts: CreateEthyNodeOptions): EthyNode {
   const spine = createSpine(opts.network, opts.chainId)
   const demo = opts.demo === true
+  if (demo) spine.demoClock = true
   const dataDir = opts.dataDir ?? resolveEthyDataDir()
   const chain = chainConfigForNetwork(opts.network)
   const hardfork = activeHardfork(chain)

@@ -18,6 +18,7 @@ import { recordDiagnostic } from '../spine/diagnostics.ts'
 import type { EthySpine } from '../spine/types.ts'
 import type { IngestedAccountMeta } from './accountSync.ts'
 import { applyBlockBal, pushBalWindow } from './balSync.ts'
+import { headFieldsFromHeaderRlp } from './blockBundle.ts'
 import { verifyProvenAccountChunkJob } from './snapVerifyJob.ts'
 import { incrementKey32, ingestedMetaFromBinarySlab } from './syntheticPeer.ts'
 
@@ -482,7 +483,24 @@ export class EthySwarmSynchronizer {
           pushBalWindow(this.opts.spine, block.blockNumber, applied.balJson)
           this.opts.spine.appliedBalCount = (this.opts.spine.appliedBalCount ?? 0) + 1
         }
-        this.opts.snapStore?.appendHealBal(block.blockNumber, block.balRlp)
+        const fields = headFieldsFromHeaderRlp(block.headerRlp, chain, hardfork)
+        const pivot = this.opts.spine.pivotBlockNumber
+        if (
+          fields !== null &&
+          this.opts.spine.phase === 'SNAP_SYNCING' &&
+          pivot !== undefined &&
+          block.blockNumber > pivot
+        ) {
+          this.opts.snapStore?.appendHealBundle({
+            blockNumber: block.blockNumber,
+            blockHash: fields.blockHash,
+            stateRoot: fields.stateRoot,
+            headerRlp: block.headerRlp,
+            balRlp: block.balRlp,
+          })
+        } else {
+          this.opts.snapStore?.appendHealBal(block.blockNumber, block.balRlp)
+        }
       }
       this.opts.spine.lastVerifiedBlockNumber = block.blockNumber
       this.opts.spine.headBlockNumber = block.blockNumber

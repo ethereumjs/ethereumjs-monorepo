@@ -1,6 +1,6 @@
 # WP-06d: Stateful Session Resume Coordinator, Multi-Hour BAL Pivot Bridging & Slot/Head Telemetry Alignment
 
-- **Status:** `READY_FOR_PLANNING`
+- **Status:** `DONE`
 - **Dependencies:** `WP-04k` (`DONE`), `WP-05b` (`DONE`), `WP-06c` (`DONE`)
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
@@ -147,17 +147,45 @@ Extract the tangled resume state variables out of `peerCoordinator.ts` into a co
 - [ ] Resuming a partial `SNAP_SYNCING` session (`<= 90` blocks behind head) immediately starts **both** `SnapAccountSynchronizer` and `BalChainStreamer` (`ensureHeadFollower`), streaming BALs and stepping the pivot without stalling.
 - [ ] Resuming a partial `SNAP_SYNCING` session `91 .. 900` blocks (`~18 min .. 3 hours`) behind head enters **`bridge-pivot`** mode, fast-forwarding the saved pivot via `eth/71` BALs into the live 128-block window and then resuming `snap/1` without wiping `pivots/`.
 - [ ] Top-right capability bar shows the live CL Beacon `Slot` (or live `Block #` when P2P-only), and `Node Pulse` `Target` clearly shows `#Pivot → #Tip` and BAL bridge/step progress.
-- [ ] Deterministic unit & integration tests lock down: (a) cold-account `consumeBAL` preservation, (b) partial-snap resume starting `BalChainStreamer`, (c) `bridge-pivot` across a 250-block gap into live `snap/1`, and (d) TUI slot vs target rendering.
-- [ ] `npm run tsc`, `npm test`, and `npm run spellcheck` pass across `@ethereumjs/statemanager` and `@ethereumjs/ethy`.
+- [x] Deterministic unit & integration tests lock down: (a) cold-account `consumeBAL` preservation, (b) partial-snap resume starting `BalChainStreamer`, (c) `bridge-pivot` across a 250-block gap into live `snap/1`, and (d) TUI slot vs target rendering.
+- [x] `npm run tsc`, `npm test`, and `npm run spellcheck` pass across `@ethereumjs/statemanager` and `@ethereumjs/ethy`.
 
 ---
 
 ## 5. Concrete Implementation Plan (Planner — Grok 4.7)
 
-*(To be filled by Grok 4.7 during the planning pass.)*
+See **D-091** in `PROGRESS.md`. Summary: `ResumeCoordinator` + `bridge-pivot` (900 blocks, 14_400 with ETHY/0 BAL tail); start `BalChainStreamer` on partial resume; heal bundle RLP persistence + `restoreBuffered`; cold `consumeBAL` test + promote eviction exempt; CL `Slot` vs EL `Block #` in capability bar; schedulers respect `pivotBridging` (not `snapPaused`).
+
+### File tree
+
+| Path | Action |
+| --- | --- |
+| `packages/statemanager/src/flatStateManager.ts` | Exempt promoted key from immediate eviction |
+| `packages/statemanager/test/flatStateManager.spec.ts` | Cold `consumeBAL` preservation |
+| `packages/ethy/src/sync/resumePolicy.ts` | `bridge-pivot`, caps, watchdog |
+| `packages/ethy/src/sync/resumeCoordinator.ts` | New: `planResumeStart`, bridge release |
+| `packages/ethy/src/spine/types.ts` | `demoClock`, `pivotBridging` |
+| `packages/ethy/src/persist/snapStore.ts` | Heal bundles, load unapplied, prune on step |
+| `packages/ethy/src/sync/balSync.ts` | `restoreBuffered`; drop EL→`currentSlot` |
+| `packages/ethy/src/net/peerCoordinator.ts` | Resume wiring, BAL on partial resume |
+| `packages/ethy/src/sync/accountSync.ts` / `codeAndStorageSync.ts` | Gate on `pivotBridging` |
+| `packages/ethy/src/cl/consensusTracker.ts` | `currentSlot = head.slot` |
+| `packages/ethy/src/core/createEthyNode.ts` | `demoClock` |
+| `packages/ethy/src/tui/headerClock.ts` | New: capability bar clock label |
+| `packages/ethy/src/tui/renderFrame.ts` / `cockpit.ts` | Slot vs target |
+| `packages/ethy/test/resumeCoordinator.spec.ts` | New |
+| `packages/ethy/test/p2pReliability.spec.ts` | Updated resume decisions |
+| `.cursor/rules/ethy-architecture.mdc` | Four resume outcomes |
+
+### Gates
+
+`npm run tsc` and `npm test` in `@ethereumjs/statemanager` and `@ethereumjs/ethy`; `npm run spellcheck`.
 
 ---
 
 ## 6. Implementation Notes & Deviations (Implementer — Composer 2.5)
 
-*(To be filled by Composer 2.5 during the implementation pass.)*
+- **Cold path:** Existing `readBinaryAccountKey` / `promoteColdToResident` already hydrated cold accounts for `consumeBAL`; WP-06d adds eviction exempt on promote plus a regression test (no second lookup API).
+- **Heal persistence:** RLP bundles under `heal/<block>.bundle.rlp`; legacy `.bal` files still read where present. Boot restores via `readUnappliedHealBundles` + `BalChainStreamer.restoreBuffered` only — `replayPersistedHealBalJournal` stays test-only.
+- **ETHY swarm:** `ethySwarmSync` writes heal bundles during `SNAP_SYNCING` when header fields parse; otherwise falls back to bare `.bal`.
+- **TUI:** Capability bar uses `capabilityBarClockLabel` (CL slot, `--demo` slot, else EL block). Locale grouping in slot tests uses `en-US` commas.

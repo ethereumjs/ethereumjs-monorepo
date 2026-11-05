@@ -23,6 +23,7 @@ import {
   peerIdToBytes,
 } from '../net/pivotHeader.ts'
 import type { EthySpine, SnapBucket } from '../spine/types.ts'
+import type { VerifiedBalBlock } from './balSync.ts'
 
 import { applyBlockBal, pushBalWindow } from './balSync.ts'
 
@@ -66,6 +67,7 @@ export type FinalizeBlockBundleOpts = {
   putServableBlock: Devp2pWorkerClient['putServableBlock']
   onBalApplied?: (balJson: BALJSONBlockAccessList) => void
   appendHealBal?: (blockNumber: bigint, balRlp: Uint8Array) => void
+  appendHealBundle?: (entry: VerifiedBalBlock) => void
   syncBuckets?: SnapBucket[]
   /** When true, servable registration runs but state apply is deferred to pivot step. */
   deferStateApply?: boolean
@@ -93,6 +95,18 @@ export async function finalizeBlockBundle(opts: FinalizeBlockBundleOpts): Promis
   if (bundle.balRlp !== undefined && bundle.balRlp.length > 0) {
     opts.appendHealBal?.(bundle.blockNumber, bundle.balRlp)
   }
+  if (opts.deferStateApply === true && bundle.balRlp !== undefined && bundle.balRlp.length > 0) {
+    const fields = headFieldsFromHeaderRlp(bundle.headerRlp, opts.chain, opts.hardfork)
+    if (fields !== null && bundle.hash !== undefined) {
+      opts.appendHealBundle?.({
+        blockNumber: bundle.blockNumber,
+        blockHash: bundle.hash,
+        stateRoot: fields.stateRoot,
+        headerRlp: bundle.headerRlp,
+        balRlp: bundle.balRlp,
+      })
+    }
+  }
   if (opts.deferStateApply !== true) {
     const applied = await applyBlockBal(
       opts.stateManager,
@@ -113,7 +127,7 @@ export function headFieldsFromHeaderRlp(
   headerRlp: Uint8Array,
   chain: ChainConfig,
   hardfork: string,
-): { number: bigint; stateRoot: Uint8Array } | null {
+): { number: bigint; stateRoot: Uint8Array; blockHash: Uint8Array } | null {
   const common = new Common({ chain, hardfork })
   try {
     const raw = RLP.decode(headerRlp) as never
@@ -121,7 +135,7 @@ export function headFieldsFromHeaderRlp(
       common,
       skipConsensusFormatValidation: true,
     })
-    return { number: header.number, stateRoot: header.stateRoot }
+    return { number: header.number, stateRoot: header.stateRoot, blockHash: header.hash() }
   } catch {
     return null
   }

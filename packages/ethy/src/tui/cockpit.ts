@@ -63,15 +63,18 @@ function snapTargetRow(spine: EthySpine): string {
   if (pivot === undefined) {
     return spine.pivotStatusHint ?? 'Awaiting peer head…'
   }
+  const bridging = spine.pivotBridging
+  if (bridging !== undefined) {
+    const remaining =
+      bridging.targetBlock > bridging.currentBlock
+        ? bridging.targetBlock - bridging.currentBlock
+        : 0n
+    return `${formatBlockNum(bridging.fromBlock)} → ${formatBlockNum(bridging.targetBlock)} (+${remaining.toLocaleString('en-US')} BALs)`
+  }
+  const tip = spine.bestPeerHead ?? spine.headBlockNumber ?? pivot
   const buffered = spine.bufferedBalCount ?? 0
   const steps = spine.pivotStepsCompleted ?? 0
-  if ((spine.streamedBalCount ?? 0) > 0) {
-    return `${formatBlockNum(pivot)} · +${buffered} BALs · pivot #${steps}`
-  }
-  const head = spine.bestPeerHead ?? spine.headBlockNumber ?? pivot
-  const drift = head > pivot ? head - pivot : 0n
-  if (drift > 0n) return `${formatBlockNum(pivot)} (+${drift.toLocaleString('en-US')} blk)`
-  return formatBlockNum(pivot)
+  return `${formatBlockNum(pivot)} → ${formatBlockNum(tip)} · +${buffered} BALs · step ${steps}`
 }
 
 function nodePulsePairs(spine: EthySpine): TwoColumnPair[] {
@@ -89,6 +92,23 @@ function nodePulsePairs(spine: EthySpine): TwoColumnPair[] {
   }
 
   if (phase === 'SNAP_SYNCING') {
+    if (spine.pivotBridging !== undefined) {
+      const bridge = spine.pivotBridging
+      const span =
+        bridge.targetBlock > bridge.fromBlock ? bridge.targetBlock - bridge.fromBlock : 1n
+      const done =
+        bridge.currentBlock > bridge.fromBlock ? bridge.currentBlock - bridge.fromBlock : 0n
+      const pct = span > 0n ? Number((done * 100n) / span) : 0
+      return [
+        { label: 'Stage', value: 'Snap Resume · Bridging' },
+        { label: 'Target', value: snapTargetRow(spine) },
+        { label: 'Progress', value: formatProgressBar(pct) },
+        {
+          label: 'State',
+          value: `${formatCompactCount(spine.totalAccountsSynced)} acc kept · applying BALs`,
+        },
+      ]
+    }
     const allBucketsDone = snapBucketsDoneCount(spine.snapBuckets) === 16
     if (!allBucketsDone) {
       const rate = Math.round(spine.accountsPerSec).toLocaleString('en-US')

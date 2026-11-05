@@ -407,7 +407,13 @@ export class SnapAccountSynchronizer {
   }
 
   private schedule(): void {
-    if (this.spine.snapPaused || this.spine.pivotStateRoot === undefined) return
+    if (
+      this.spine.snapPaused ||
+      this.spine.pivotBridging !== undefined ||
+      this.spine.pivotStateRoot === undefined
+    ) {
+      return
+    }
     const now = Date.now()
     this.refreshAccountRate(now)
     if (

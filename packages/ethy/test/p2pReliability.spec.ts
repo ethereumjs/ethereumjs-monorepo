@@ -29,6 +29,7 @@ import { SnapPivotStore } from '../src/persist/snapStore.ts'
 import { createSpine } from '../src/spine/createSpine.ts'
 import { type InFlightBlockBundle, advanceBlockBundleEthMessage } from '../src/sync/blockBundle.ts'
 import {
+  MAX_BAL_BRIDGE_BLOCKS,
   SNAP_RESUME_MAX_GAP,
   SNAP_UNSERVED_PIVOT_MS,
   decideSnapResume,
@@ -157,7 +158,24 @@ describe('[Ethy/P2P]: resume policy', () => {
         saved: { pivotBlockNumber: 50n, baseSyncComplete: false, bucketsDoneCount: 0 },
         head: 50n + SNAP_RESUME_MAX_GAP + 1n,
       }),
+      'bridge-pivot',
+    )
+    assert.equal(
+      decideSnapResume({
+        fresh: false,
+        saved: { pivotBlockNumber: 50n, baseSyncComplete: false, bucketsDoneCount: 0 },
+        head: 50n + MAX_BAL_BRIDGE_BLOCKS + 1n,
+      }),
       'reset-stale',
+    )
+    assert.equal(
+      decideSnapResume({
+        fresh: false,
+        saved: { pivotBlockNumber: 50n, baseSyncComplete: false, bucketsDoneCount: 0 },
+        head: 50n + 1_000n,
+        ethyBalTail: true,
+      }),
+      'bridge-pivot',
     )
     assert.equal(
       decideSnapResume({
@@ -171,35 +189,42 @@ describe('[Ethy/P2P]: resume policy', () => {
 
   it('shouldRefreshStaleSnapPivot replaces a far pivot that nobody is serving', () => {
     const pivot = 100n
-    const head = pivot + SNAP_RESUME_MAX_GAP + 1n
+    const bridgeHead = pivot + SNAP_RESUME_MAX_GAP + 1n
+    const staleHead = pivot + MAX_BAL_BRIDGE_BLOCKS + 1n
     assert.isFalse(
       shouldRefreshStaleSnapPivot({
         phase: 'SNAP_SYNCING',
         handoffCatchup: false,
+        pivotBridging: true,
         pivotBlock: pivot,
-        headBlock: head,
-        servingSnapPeers: 1,
+        headBlock: staleHead,
+        servingSnapPeers: 0,
         msSinceProgress: SNAP_UNSERVED_PIVOT_MS,
+        msSinceBalProgress: SNAP_UNSERVED_PIVOT_MS,
       }),
     )
     assert.isFalse(
       shouldRefreshStaleSnapPivot({
         phase: 'SNAP_SYNCING',
         handoffCatchup: false,
+        pivotBridging: false,
         pivotBlock: pivot,
-        headBlock: head,
+        headBlock: bridgeHead,
         servingSnapPeers: 0,
-        msSinceProgress: SNAP_UNSERVED_PIVOT_MS - 1,
+        msSinceProgress: SNAP_UNSERVED_PIVOT_MS,
+        msSinceBalProgress: SNAP_UNSERVED_PIVOT_MS,
       }),
     )
     assert.isTrue(
       shouldRefreshStaleSnapPivot({
         phase: 'SNAP_SYNCING',
         handoffCatchup: false,
+        pivotBridging: false,
         pivotBlock: pivot,
-        headBlock: head,
+        headBlock: staleHead,
         servingSnapPeers: 0,
         msSinceProgress: SNAP_UNSERVED_PIVOT_MS,
+        msSinceBalProgress: SNAP_UNSERVED_PIVOT_MS,
       }),
     )
   })
