@@ -1,9 +1,9 @@
 # WP-06a: `ETHY/0` DevP2P Protocol Specification & `ethereumjs/protocols` Repository
 
-- **Status:** `READY_FOR_EXECUTION` *(Coordinator-Executed Task — Gemini 4 Argon)*
+- **Status:** `DONE` *(Coordinator-Executed Task — Gemini 4 Argon)*
 - **Dependencies:** `WP-04k` (`DONE`), `WP-05a` (`DONE`), `WP-05b` (`DONE`)
 - **Author / Implementer:** Coordinator (Gemini 4 Argon)
-- **Target Repository:** `ethereumjs/protocols` (plus cross-reference in `ethereumjs-monorepo`)
+- **Target Repository:** [`ethereumjs/protocols`](https://github.com/ethereumjs/protocols) (`/Users/holgerd/DEV/EthereumJS/protocols`)
 
 ---
 
@@ -78,5 +78,5 @@ Unlike terse legacy `devp2p` specs, `devp2p/ETHY-0-SPEC.md` will be structured a
 
 ## 3. Acceptance Criteria
 
-- [ ] `ethereumjs/protocols` repository initialized with a compelling root `README.md` and `devp2p/ETHY-0-SPEC.md`.
-- [ ] All message codes (`0x00`..`0x0a`), RLP schemas, binary layouts, discovery tags, and verification invariants are specified unambiguously so Grok 4.7 / Composer 2.5 can implement `WP-06b` and `WP-06c` directly against the spec.
+- [x] `ethereumjs/protocols` repository initialized with a compelling root `README.md`, `LICENSE`, `AGENTS.md`, `.cursor/rules/`, and `devp2p/ETHY-0-SPEC.md`.
+- [x] All message codes (`0x00`..`0x0a`), RLP schemas, binary layouts (`136B` `BinaryAccount` slab + `<nibble>.proof.idx` sidecar), discovery tags (`"ethy"` ENR key), and verification invariants are specified unambiguously so Grok 4.7 / Composer 2.5 can implement `WP-06b` and `WP-06c` directly against the spec.

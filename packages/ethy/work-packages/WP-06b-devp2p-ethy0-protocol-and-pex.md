@@ -1,7 +1,7 @@
 # WP-06b: `@ethereumjs/devp2p` `ETHY/0` Subprotocol, Proven-Chunk Server, `ETHY_PEX` & Localhost Peer Connect
 
-- **Status:** `BLOCKED_BY_WP-06a`
-- **Dependencies:** `WP-06a`
+- **Status:** `READY_FOR_PLANNING`
+- **Dependencies:** `WP-06a` (`DONE` — see [`../protocols/devp2p/ETHY-0-SPEC.md`](../../../../protocols/devp2p/ETHY-0-SPEC.md))
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
 
