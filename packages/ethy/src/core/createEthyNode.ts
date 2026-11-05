@@ -10,6 +10,7 @@ import { activeHardfork, advertisedForkHash, chainConfigForNetwork } from '../ne
 import { networkGenesisHash } from '../net/genesisStatus.ts'
 import { NoticeBoard } from '../notify/board.ts'
 import { resolveEthyDataDir } from '../persist/ethyDataRoot.ts'
+import { EthyFlightRecorder } from '../persist/flightRecorder.ts'
 import { PeerBookStore } from '../persist/peerBook.ts'
 import { SnapPivotStore } from '../persist/snapStore.ts'
 import { createSpine } from '../spine/createSpine.ts'
@@ -23,6 +24,8 @@ export interface CreateEthyNodeOptions {
   /** Wipe pivot journals; peer book is kept (WP-04a). */
   fresh?: boolean
   dataDir?: string
+  /** Enable on-disk flight recorder logs in `networks/<net>/logs/` (default: `!demo && dataDir !== undefined`). */
+  enableFlightRecorder?: boolean
 }
 
 export interface EthyNode {
@@ -36,6 +39,7 @@ export interface EthyNode {
   disconnectPeer?: (peerId: string) => void
   snapStore?: SnapPivotStore
   peerBook?: PeerBookStore
+  flightRecorder?: EthyFlightRecorder
 }
 
 export function createEthyNode(opts: CreateEthyNodeOptions): EthyNode {
@@ -74,6 +78,18 @@ export function createEthyNode(opts: CreateEthyNodeOptions): EthyNode {
   if (opts.fresh === true && !demo) {
     snapStore.discardPivots()
   }
+  const recorderEnabled = opts.enableFlightRecorder ?? (!demo && opts.dataDir !== undefined)
+  const flightRecorder = new EthyFlightRecorder({
+    dataDir,
+    network: opts.network,
+    spine,
+    enabled: recorderEnabled,
+  })
+  if (recorderEnabled) {
+    spine.logsDirPath = flightRecorder.paths.logsDir
+    spine.onDiagnosticRecorded = (entry) => flightRecorder.recordDiagnostic(entry)
+    flightRecorder.start()
+  }
   // Disk restore and resume policy run in `startPeerCoordinator` once a peer head is known.
   const node: EthyNode = {
     spine,
@@ -84,6 +100,7 @@ export function createEthyNode(opts: CreateEthyNodeOptions): EthyNode {
     headless: opts.headless === true,
     snapStore,
     peerBook,
+    flightRecorder,
   }
   return node
 }

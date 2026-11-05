@@ -41,6 +41,7 @@ async function main(): Promise<void> {
     headless: cli.headless,
     fresh: cli.fresh,
     dataDir: cli.dataDir,
+    enableFlightRecorder: !cli.demo,
   })
 
   let coordinatorStop: (() => void) | undefined
@@ -105,6 +106,7 @@ async function main(): Promise<void> {
   const shutdown = () => {
     coordinatorStop?.()
     consensusStop?.()
+    node.flightRecorder?.stop()
   }
 
   if (cli.headless) {

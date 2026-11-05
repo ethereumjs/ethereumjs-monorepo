@@ -495,8 +495,13 @@ export class RLPx {
       }
 
       if (disconnectWe !== true && reason === DISCONNECT_REASON.TOO_MANY_PEERS) {
-        // hack
-        if (this._getOpenQueueSlots() > 0) {
+        // Only requeue if there are no fresh untried directory/deferred peers waiting;
+        // otherwise let PeerBookStore handle VIP redial backoff instead of clogging _peersQueue!
+        if (
+          this._peersDeferred.length === 0 &&
+          !this._hasReadyDirectoryPeer() &&
+          this._getOpenQueueSlots() > 0
+        ) {
           this._peersQueue.push({
             peer: {
               id: peer.getId()!,

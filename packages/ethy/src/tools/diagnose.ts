@@ -129,5 +129,9 @@ export function diagnosticsTableWidget(spine: EthySpine): WidgetSpec {
     headers: ['Time', 'Subsystem', 'Sev', 'Peer', 'Message'],
     rows,
     footer: 'discovery',
+    assistantComment:
+      spine.logsDirPath !== undefined
+        ? `Flight recorder active: ${spine.logsDirPath}/{ethy.log,errors.log,events.jsonl}`
+        : undefined,
   }
 }

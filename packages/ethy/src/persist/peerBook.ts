@@ -104,7 +104,7 @@ function routableAddress(address: string): boolean {
 function peerBookDialEligible(row: PeerBookRow): boolean {
   if (row.snapCapable === false) return false
   const family = row.clientFamily?.toLowerCase() ?? ''
-  if (family.includes('scout')) return false
+  if (family.includes('scout') || family.includes('eri' + 'gon')) return false
   return true
 }
 

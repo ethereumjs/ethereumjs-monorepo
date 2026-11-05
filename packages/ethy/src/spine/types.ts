@@ -187,6 +187,10 @@ export interface EthySpine {
   /** Finalized EL block hash from BLS-verified light client header. */
   clFinalizedBlockHash?: Uint8Array
   clEndpoint?: string
+  /** Optional sink hook for the persistent Flight Recorder log files. */
+  onDiagnosticRecorded?: (entry: DiagnosticEvent) => void
+  /** Active logs directory path (`~/.ethy/networks/<net>/logs`). */
+  logsDirPath?: string
 }
 
 export type WidgetSpec =

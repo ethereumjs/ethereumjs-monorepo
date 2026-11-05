@@ -381,12 +381,13 @@ export class SnapAccountSynchronizer {
     const pivotBlock = this.spine.pivotBlockNumber ?? 0n
     for (const peer of peers) {
       if (now < (this.peerRestUntil.get(peer.id) ?? 0)) continue
-      // If a peer's last reported head is older than our stepped pivot, only allow it if it hasn't reported latestBlock yet;
-      // otherwise wait until its head catches up or BLOCK_RANGE_UPDATE arrives so it doesn't return empty [reqId, [], []] replies!
+      // Only skip a brand-new unproven peer whose initial STATUS block is far (>32 blocks) behind our pivot;
+      // proven peers or peers within the 32-block BLOCK_RANGE_UPDATE interval are already at head!
       if (
+        peer.snapResponsesOk === 0 &&
         peer.latestBlock !== undefined &&
         peer.latestBlock > 0n &&
-        peer.latestBlock < pivotBlock
+        peer.latestBlock + 32n < pivotBlock
       ) {
         continue
       }

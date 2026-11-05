@@ -161,7 +161,29 @@ function workerChainId(network: string): WorkerChainId {
   throw new Error(`Unsupported worker chain: ${network}`)
 }
 
-function mapPeer(snapshot: WorkerPeerSnapshot, prev?: PeerTelemetry): PeerTelemetry {
+function mapPeer(
+  snapshot: WorkerPeerSnapshot,
+  prev?: PeerTelemetry,
+  pivotFloor?: bigint,
+): PeerTelemetry {
+  const snapBlock = snapshot.latestBlock !== undefined ? BigInt(snapshot.latestBlock) : undefined
+  const prevBlock = prev?.latestBlock
+  let latestBlock =
+    snapBlock !== undefined && prevBlock !== undefined
+      ? snapBlock > prevBlock
+        ? snapBlock
+        : prevBlock
+      : (snapBlock ?? prevBlock)
+  if (
+    pivotFloor !== undefined &&
+    latestBlock !== undefined &&
+    latestBlock > 0n &&
+    latestBlock < pivotFloor &&
+    prev !== undefined &&
+    prev.snapResponsesOk > 0
+  ) {
+    latestBlock = pivotFloor
+  }
   return {
     id: snapshot.id,
     clientName: snapshot.clientId || 'unknown',
@@ -170,8 +192,7 @@ function mapPeer(snapshot: WorkerPeerSnapshot, prev?: PeerTelemetry): PeerTeleme
     ethySession: snapshot.ethySession === true,
     ethyStatus: snapshot.ethyStatus,
     hasHead: snapshot.bestHash !== undefined,
-    latestBlock:
-      snapshot.latestBlock !== undefined ? BigInt(snapshot.latestBlock) : prev?.latestBlock,
+    latestBlock,
     snapRequestsSent: prev?.snapRequestsSent ?? 0,
     snapResponsesOk: prev?.snapResponsesOk ?? 0,
     snapTimeouts: prev?.snapTimeouts ?? 0,
@@ -1276,7 +1297,7 @@ export async function startPeerCoordinator(
     const prev = spine.peers
     spine.peers.clear()
     for (const p of snap.peers) {
-      spine.peers.set(p.id, mapPeer(p, prev.get(p.id)))
+      spine.peers.set(p.id, mapPeer(p, prev.get(p.id), spine.pivotBlockNumber))
       pendingVipDials.delete(p.id.toLowerCase())
       peerBook?.noteTelemetryPeer(p, Date.now())
     }
