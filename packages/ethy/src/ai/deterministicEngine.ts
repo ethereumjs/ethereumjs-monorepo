@@ -3,7 +3,12 @@ import type { FlatStateManager } from '@ethereumjs/statemanager'
 import type { WidgetSpec } from '../spine/types.ts'
 import { clMicroscopeWidget } from '../tools/clTools.ts'
 import { dropPeer, pauseSnapSync, reassignBucket, resumeSnapSync } from '../tools/devActions.ts'
-import { bucketsTableWidget, diagnosticsTableWidget, peersTableWidget } from '../tools/diagnose.ts'
+import {
+  bucketsTableWidget,
+  diagnosticsTableWidget,
+  ethyOverviewWidget,
+  peersTableWidget,
+} from '../tools/diagnose.ts'
 import { headLockedWidget, inspectLatestBALStub, simulateTxOnHeadStub } from '../tools/gated.ts'
 import { inspectAccount, inspectLatestBAL } from '../tools/headTools.ts'
 import { buildHelpWidget } from '../tools/help.ts'
@@ -75,6 +80,8 @@ export class DeterministicIntentEngine implements IntentEngine {
     switch (cmd) {
       case '/peers':
         return peersTableWidget(spine)
+      case '/ethy':
+        return ethyOverviewWidget(spine)
       case '/buckets':
       case '/snap':
         return bucketsTableWidget(spine)

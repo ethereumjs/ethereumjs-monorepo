@@ -1,5 +1,6 @@
 const SLASH_COMMANDS = [
   '/peers',
+  '/ethy',
   '/buckets',
   '/snap',
   '/diag',

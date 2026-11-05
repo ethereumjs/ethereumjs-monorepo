@@ -204,6 +204,23 @@ function snapSessionCount(spine: EthySpine): number {
   return n
 }
 
+function ethySessionCount(spine: EthySpine): number {
+  let n = 0
+  for (const p of spine.peers.values()) {
+    if (p.ethySession === true) n++
+  }
+  return n
+}
+
+function localEthySeedBits(spine: EthySpine): number {
+  const mask = spine.ethyBucketsBitmask ?? 0
+  let n = 0
+  for (let b = 0; b < 16; b++) {
+    if ((mask & (1 << b)) !== 0) n++
+  }
+  return n
+}
+
 function formatServeBytes(bytes: number): string {
   if (bytes >= 1_048_576) return `${(bytes / 1_048_576).toFixed(1)} MB`
   if (bytes >= 1024) return `${(bytes / 1024).toFixed(1)} KB`
@@ -213,8 +230,15 @@ function formatServeBytes(bytes: number): string {
 function servedMetric(spine: EthySpine): string {
   const s = spine.serving
   if (s === undefined) return '0 replies'
+  const ethyParts: string[] = []
+  if ((s.ethyChunksServed ?? 0) > 0) ethyParts.push(`${s.ethyChunksServed} chunks`)
+  if ((s.ethyBalBlocksServed ?? 0) > 0) ethyParts.push(`${s.ethyBalBlocksServed} BALs`)
+  const ethySuffix = ethyParts.length > 0 ? ` · ${ethyParts.join(' · ')}` : ''
   if (s.totalRequestsServed > 0) {
-    return `${s.totalRequestsServed} replies · ${formatServeBytes(s.totalBytesServed)}`
+    return `${s.totalRequestsServed} replies · ${formatServeBytes(s.totalBytesServed)}${ethySuffix}`
+  }
+  if (ethyParts.length > 0) {
+    return `${ethyParts.join(' · ')} · ${formatServeBytes(s.ethyBytesServed ?? 0)}`
   }
   if (s.blocksStored > 0) return '0 replies (ready)'
   return '0 replies'
@@ -269,6 +293,7 @@ function commandPairs(domain: CapabilityId, phase: EthyPhase): TwoColumnPair[] {
     case 'p2p':
       return [
         { label: '/peers', value: 'client table' },
+        { label: '/ethy', value: 'swarm status' },
         { label: '/diag', value: 'anomalies' },
         { label: '/drop', value: 'disconnect' },
         { label: '/help', value: 'commands' },
@@ -317,7 +342,7 @@ function metricsPairs(spine: EthySpine, domain: CapabilityId): TwoColumnPair[] {
       return [
         {
           label: 'Peers',
-          value: `${spine.peers.size} connected (${snapSessionCount(spine)} snap)`,
+          value: `${spine.peers.size} connected (${ethySessionCount(spine)} ethy · ${snapSessionCount(spine)} snap)`,
         },
         { label: 'Served', value: servedMetric(spine) },
         { label: 'Latency', value: avgLatency(spine) },
@@ -327,11 +352,27 @@ function metricsPairs(spine: EthySpine, domain: CapabilityId): TwoColumnPair[] {
       const done = snapBucketsDoneCount(spine.snapBuckets)
       const syncing = spine.snapBuckets.filter((b) => b.status === 'syncing').length
       const stalled = spine.snapBuckets.filter((b) => b.status === 'stalled').length
+      const seedBits = localEthySeedBits(spine)
+      const protocolRow =
+        spine.syncTransport === 'ethy'
+          ? {
+              label: 'Protocol',
+              value: `ETHY/0 Swarm (${ethySessionCount(spine)} peers)`,
+            }
+          : seedBits > 0
+            ? {
+                label: 'Protocol',
+                value: `SNAP/1 + ETHY/0 Seed (${seedBits}/16 ready)`,
+              }
+            : {
+                label: 'Speed',
+                value: `${Math.round(spine.accountsPerSec)} acc/s`,
+              }
       return [
         { label: 'Progress', value: `${Math.round((done / 16) * 100)}% (${done}/16 complete)` },
         { label: 'Active', value: `${syncing} syncing · ${stalled} stalled` },
         { label: 'Pivot Root', value: shortHash(spine.pivotStateRoot) },
-        { label: 'Speed', value: `${Math.round(spine.accountsPerSec)} acc/s` },
+        protocolRow,
       ]
     }
     case 'head': {

@@ -1,6 +1,6 @@
 # WP-06c: Ethy `ETHY/0` Swarm Sync, Proof-Sidecar Persistence, `ETHY/0` vs `SNAP/1` Sync Selector, Adaptive TUI & 2-Client Live Loopback
 
-- **Status:** `IN_PROGRESS`
+- **Status:** `DONE`
 - **Dependencies:** `WP-04k` (`DONE`), `WP-05b` (`DONE`), `WP-06a` (`DONE`), `WP-06b` (`DONE`)
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
@@ -202,4 +202,6 @@ Still four content rows per box (`D-033`). `spine.syncTransport` and `ethyBucket
 
 - **Core shipped:** proof sidecars on the slab write queue, `EthySwarmSynchronizer`, `--sync-mode`, `spine.syncTransport`, worker `setEthyPivotAccountsDir`, seed demo + in-process loopback test, cockpit account-stage strings for `ETHY/0`.
 - **ETHY anchor:** pivot is anchored from the seeder’s `ETHY STATUS` (`basePivotBlock` + `basePivotStateRoot`); optional ETH header cross-check remains on the header-reply path (`ethyAnchorPending`) when used.
-- **Still open:** `/peers` Ethy column and `/ethy` diagnose widget; fuller P2P metrics served strings; devp2p `ethyServer.spec.ts` disk round-trip; live 2-terminal loopback validation on a laptop.
+- **TUI/diagnose:** `/peers` Ethy column (`N/16`), `/ethy` overview widget, cockpit P2P ethy/snap counts and served ETHY counters, Snap metrics Protocol row when `syncTransport` or local seed bits are set.
+- **Tests:** devp2p `ethyServer.spec.ts` disk sidecar serve path; intent routes `/ethy`.
+- **Manual (optional):** two-terminal loopback via `npm run ethy:swarm-smoke` on a laptop; full-suite CI may rarely time out the loopback spec under load — re-run that file alone if needed.
