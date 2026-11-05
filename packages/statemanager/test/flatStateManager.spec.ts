@@ -3,7 +3,9 @@ import {
   Address,
   BINARY_ACCOUNT_SIZE,
   accountToBinaryAccount,
+  bytesToHex,
   createAccount,
+  createAddressFromString,
   hexToBytes,
   setLengthLeft,
   unprefixedHexToBytes,
@@ -11,6 +13,7 @@ import {
 import { keccak_256 } from '@noble/hashes/sha3.js'
 import { assert, describe, it } from 'vitest'
 
+import { consumeBAL } from '../src/consumeBAL.ts'
 import { FlatStateManager } from '../src/index.ts'
 
 describe('[StateManager/FlatStateManager]', () => {
@@ -181,6 +184,41 @@ describe('[StateManager/FlatStateManager]', () => {
       ])
     }
     assert.equal(sm.accountCount(), 50_010)
+  })
+
+  it('consumeBAL() on cold-disk account preserves balance and codeHash on nonce-only delta', async () => {
+    const addr = createAddressFromString(`0x${'dd'.repeat(20)}`)
+    const coldHash = keccak_256(addr.bytes)
+    const codeHash = keccak_256(new Uint8Array([1, 2, 3]))
+    const coldBinary = accountToBinaryAccount(
+      createAccount({ balance: 10_000_000_000_000_000_000n, nonce: 1n, codeHash }),
+    )
+    const sm = new FlatStateManager({
+      maxResidentAccounts: 1,
+      coldAccountLookup: (h) => {
+        if (h.length === 32 && h.every((b, i) => b === coldHash[i]))
+          return new Uint8Array(coldBinary)
+        return undefined
+      },
+    })
+    sm.setSyncedAccountCount(1)
+    await consumeBAL(sm, [
+      {
+        address: addr.toString(),
+        balanceChanges: [],
+        nonceChanges: [{ blockAccessIndex: '0x0', postNonce: '0x2' }],
+        codeChanges: [],
+        storageChanges: [],
+        storageReads: [],
+      },
+    ])
+    const loaded = await sm.getAccount(addr)
+    assert.isDefined(loaded)
+    assert.equal(loaded!.balance, 10_000_000_000_000_000_000n)
+    assert.equal(loaded!.nonce, 2n)
+    assert.equal(bytesToHex(loaded!.codeHash), bytesToHex(codeHash))
+    assert.equal(sm.accountCount(), 1)
+    assert.equal(sm.residentAccountCount(), 1)
   })
 
   it('coldAccountLookup promotes without bumping logical count', () => {
