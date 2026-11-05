@@ -261,6 +261,13 @@ export class BalChainStreamer {
     this.catchUp = undefined
   }
 
+  /** Clear buffered BAL blocks and in-flight fetches when resetting to a fresh pivot. */
+  resetForFreshPivot(): void {
+    this.catchUp = undefined
+    this.buffered.length = 0
+    this.appliedBalLog.length = 0
+  }
+
   handleEthMessage(msg: { peerId: string; code: number; payload: Uint8Array }): boolean {
     const inFlight = this.catchUp?.inFlight
     if (inFlight === undefined) return false

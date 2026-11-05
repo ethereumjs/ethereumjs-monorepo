@@ -30,8 +30,6 @@ import type { Capabilities, PeerInfo, RLPxEvent, RLPxOptions } from '../types.ts
 const DEBUG_BASE_NAME = 'rlpx'
 const verbose = debugDefault('verbose').enabled
 
-/** A peer that finished HELLO and then reported a full slot table. */
-const BUSY_PEER_REDIAL_MS = 60_000
 /** Bonded nodes waiting for a free outbound slot. */
 const MAX_DIAL_QUEUE = 512
 /**
@@ -494,24 +492,9 @@ export class RLPx {
         }
       }
 
-      if (disconnectWe !== true && reason === DISCONNECT_REASON.TOO_MANY_PEERS) {
-        // Only requeue if there are no fresh untried directory/deferred peers waiting;
-        // otherwise let PeerBookStore handle VIP redial backoff instead of clogging _peersQueue!
-        if (
-          this._peersDeferred.length === 0 &&
-          !this._hasReadyDirectoryPeer() &&
-          this._getOpenQueueSlots() > 0
-        ) {
-          this._peersQueue.push({
-            peer: {
-              id: peer.getId()!,
-              address: peer['_socket'].remoteAddress,
-              tcpPort: peer['_socket'].remotePort,
-            },
-            ts: (Date.now() + BUSY_PEER_REDIAL_MS) as number,
-          })
-        }
-      }
+      // A remote slot reject stays in the LRU. Requeueing it on a short timer
+      // fills the outbound dial slots with the same full nodes. Explicit
+      // connects (peer book) still retry after their own dial hold.
 
       const id = peer.getId()
       if (id) {

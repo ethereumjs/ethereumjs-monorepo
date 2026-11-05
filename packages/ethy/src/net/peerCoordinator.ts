@@ -53,8 +53,10 @@ import { SnapCodeAndStorageSynchronizer } from '../sync/codeAndStorageSync.ts'
 import { EthySwarmSynchronizer } from '../sync/ethySwarmSync.ts'
 import {
   decideSnapResume,
+  savedPivotExceedsResumeGap,
   shouldDeferLivePivotRequest,
   shouldEnsureSnapSync,
+  shouldRefreshStaleSnapPivot,
   snapResumeProgressPct,
 } from '../sync/resumePolicy.ts'
 import { SnapPeerFlightTracker } from '../sync/snapFlight.ts'
@@ -309,6 +311,8 @@ export async function startPeerCoordinator(
   let diskHydrated = savedSnapPeek === undefined
   let resumeDecided = savedSnapPeek === undefined
   let resumeHeadHandled = false
+  let lastSnapProgressAt = Date.now()
+  let lastSnapProgressAccounts = spine.totalAccountsSynced
   let resumeHydrateStarted = false
   let rollingStatusAdvertised = false
   const syncMode: SyncMode = opts.syncMode ?? 'auto'
@@ -525,9 +529,22 @@ export async function startPeerCoordinator(
   }
 
   const clearSpinePivotForFreshAnchor = (): void => {
+    snapSync?.bumpRootGeneration()
+    codeSync?.clearPending()
+    headFollower?.resetForFreshPivot()
+    stateManager.clearAccountsAndStorage()
     spine.pivotBlockNumber = undefined
     spine.pivotStateRoot = undefined
     spine.pivotStatusHint = undefined
+    spine.lastVerifiedBlockNumber = undefined
+    spine.headBlockNumber = undefined
+    spine.headStateRoot = undefined
+    spine.streamedBalCount = 0
+    spine.bufferedBalCount = 0
+    spine.appliedBalCount = 0
+    spine.pivotStepsCompleted = 0
+    spine.ethyBucketsBitmask = 0
+    bucketsAdvertised.clear()
     spine.snapBuckets = createSnapBuckets()
     spine.totalAccountsSynced = 0
     setPhase(spine, 'P2P_WARMUP')
@@ -571,10 +588,52 @@ export async function startPeerCoordinator(
     )
   }
 
+  const abandonStaleSnapPivot = (
+    headBlock: bigint,
+    peers: WorkerPeerSnapshot[],
+    savedPivot: bigint,
+  ): void => {
+    const gap = headBlock - savedPivot
+    snapStore?.discardPivots()
+    clearSpinePivotForFreshAnchor()
+    diskHydrated = true
+    resumeHeadHandled = true
+    lastSnapProgressAt = Date.now()
+    lastSnapProgressAccounts = spine.totalAccountsSynced
+    opts.notices?.clear('snap-resume', Date.now())
+    opts.notices?.post(
+      {
+        key: 'snap-stale-reset',
+        level: 'warn',
+        text: `Saved partial snap (#${savedPivot.toString()}, +${gap.toString()} blocks) expired — starting fresh at #${headBlock.toString()}`,
+        relevantForMs: 8_000,
+      },
+      Date.now(),
+    )
+    recordDiagnostic(spine, {
+      subsystem: 'snap',
+      severity: 'warn',
+      message: `Saved snap pivot #${savedPivot.toString()} is ${gap.toString()} blocks behind head with no usable serve — anchoring fresh`,
+    })
+    const best = pickBestPeer(peers, pivotBlockedPeers)
+    if (best !== undefined) requestPivotFromPeer(best)
+    deriveCapabilities(spine)
+  }
+
   const handleSnapResumeAtHead = (headBlock: bigint, peers: WorkerPeerSnapshot[]) => {
     if (resumeDecided) {
       if (diskHydrated && !resumeHeadHandled) {
         resumeHeadHandled = true
+        const peek = savedSnapPeek ?? snapStore?.peekActive()
+        if (
+          peek !== undefined &&
+          !peek.baseSyncComplete &&
+          !handoffCatchup &&
+          savedPivotExceedsResumeGap(headBlock, peek.pivotBlockNumber)
+        ) {
+          abandonStaleSnapPivot(headBlock, peers, peek.pivotBlockNumber)
+          return
+        }
         finishDiskResumeWithHead(headBlock)
       }
       return
@@ -597,24 +656,7 @@ export async function startPeerCoordinator(
     })
     resumeDecided = true
     if (decision === 'reset-stale') {
-      const gap = headBlock - peek.pivotBlockNumber
-      snapStore.discardPivots()
-      clearSpinePivotForFreshAnchor()
-      diskHydrated = true
-      resumeHeadHandled = true
-      opts.notices?.clear('snap-resume', Date.now())
-      opts.notices?.post(
-        {
-          key: 'snap-stale-reset',
-          level: 'warn',
-          text: `Saved partial snap (#${peek.pivotBlockNumber.toString()}, +${gap.toString()} blocks) expired — starting fresh at #${headBlock.toString()}`,
-          relevantForMs: 8_000,
-        },
-        Date.now(),
-      )
-      const best = pickBestPeer(peers, pivotBlockedPeers)
-      if (best !== undefined) requestPivotFromPeer(best)
-      deriveCapabilities(spine)
+      abandonStaleSnapPivot(headBlock, peers, peek.pivotBlockNumber)
       return
     }
     if (decision === 'anchor-fresh') {
@@ -629,6 +671,33 @@ export async function startPeerCoordinator(
     if (best?.latestBlock === undefined) return
     const headBlock = BigInt(best.latestBlock)
     handleSnapResumeAtHead(headBlock, peers)
+  }
+
+  const maybeRefreshUnservedPivot = (peers: WorkerPeerSnapshot[]) => {
+    const now = Date.now()
+    const servingSnapPeers = [...spine.peers.values()].filter(
+      (p) => p.snapSession === true && p.snapResponsesOk > 0,
+    ).length
+    if (spine.totalAccountsSynced !== lastSnapProgressAccounts || servingSnapPeers > 0) {
+      lastSnapProgressAccounts = spine.totalAccountsSynced
+      lastSnapProgressAt = now
+    }
+    const best = pickBestPeer(peers, pivotBlockedPeers)
+    const headBlock =
+      best?.latestBlock !== undefined ? BigInt(best.latestBlock) : spine.bestPeerHead
+    if (
+      !shouldRefreshStaleSnapPivot({
+        phase: spine.phase,
+        handoffCatchup,
+        pivotBlock: spine.pivotBlockNumber,
+        headBlock,
+        servingSnapPeers,
+        msSinceProgress: now - lastSnapProgressAt,
+      })
+    ) {
+      return
+    }
+    abandonStaleSnapPivot(headBlock!, peers, spine.pivotBlockNumber!)
   }
 
   const finishDiskHydrate = async (
@@ -837,6 +906,11 @@ export async function startPeerCoordinator(
       severity: 'info',
       message: `Pivot anchored at #${parsed.number.toString()}`,
     })
+    // A stale-pivot reset drops the phase to P2P_WARMUP. Snap sync may already
+    // be running, so start() will not set the phase again.
+    if (spine.phase === 'BOOTING' || spine.phase === 'P2P_WARMUP') {
+      setPhase(spine, 'SNAP_SYNCING')
+    }
     if (
       !anchorOpts.skipServableBundle &&
       headerRlp !== null &&
@@ -1321,6 +1395,7 @@ export async function startPeerCoordinator(
     maybePivotBundleTimeout()
     updatePivotStatusHint(spine, snap.peers)
     maybeApplyResumeFromPeers(snap.peers)
+    maybeRefreshUnservedPivot(snap.peers)
     const bestPeer = pickBestPeer(snap.peers, pivotBlockedPeers)
     if (bestPeer?.latestBlock !== undefined) {
       spine.bestPeerHead = BigInt(bestPeer.latestBlock)

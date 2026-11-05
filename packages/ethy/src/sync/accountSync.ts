@@ -120,6 +120,7 @@ export class SnapAccountSynchronizer {
   private inFlightOrigins = new Set<string>()
   private stallUntil = new Map<number, number>()
   private stallRepeats = new Map<number, number>()
+  private unprovenTimeoutLogged = new Set<string>()
   private peerLeftRepeats = new Map<number, number>()
   private peerRestUntil = new Map<string, number>()
   private detachAccountRange?: () => void
@@ -422,6 +423,11 @@ export class SnapAccountSynchronizer {
       this.getSnapPeers().filter((p) => p.caps.some((c) => c.startsWith('snap'))),
     )
     this.expireStaleRanges(new Set(peers.map((p) => p.id)), now)
+    let resting = 0
+    for (const peer of peers) {
+      if (now < (this.peerRestUntil.get(peer.id) ?? 0)) resting++
+    }
+    this.spine.snapPeersResting = resting
     if (peers.length === 0) return
     this.fillPeerSlots(peers, now)
   }
@@ -472,6 +478,16 @@ export class SnapAccountSynchronizer {
       const alternate = this.hasHealthyAlternatePeer(flight.peerId, now)
       if (schedulePeer.snapResponsesOk === 0 || alternate) {
         this.peerRestUntil.set(flight.peerId, now + peerRestAfterTimeout(schedulePeer))
+      }
+      if (schedulePeer.snapResponsesOk === 0 && !this.unprovenTimeoutLogged.has(flight.peerId)) {
+        this.unprovenTimeoutLogged.add(flight.peerId)
+        recordDiagnostic(this.spine, {
+          subsystem: 'snap',
+          severity: 'warn',
+          peerId: flight.peerId,
+          bucketIndex: flight.bucket,
+          message: 'Account range timed out before any snap response (peer resting)',
+        })
       }
       if (peerRow !== undefined) peerRow.snapTimeouts++
       this.peerBook?.noteSnapTimeout(flight.peerId)

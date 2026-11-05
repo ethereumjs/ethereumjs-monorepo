@@ -672,6 +672,33 @@ export class FlatStateManager implements StateManagerInterface {
     this._logicalAccountCount = count
   }
 
+  /** Reset all in-memory accounts, storage, and code when discarding a stale snap pivot. */
+  clearAccountsAndStorage(): void {
+    if (this._parent !== undefined) {
+      this._parent.clearAccountsAndStorage()
+      return
+    }
+    if (this._slotShards !== undefined && this._arena !== undefined) {
+      for (const shard of this._slotShards) {
+        for (const slot of shard.values()) {
+          this._arena.release(slot)
+        }
+        shard.clear()
+      }
+    }
+    for (const shard of this._overlayAccountShards) shard.clear()
+    this._residentCount = 0
+    this._logicalAccountCount = 0
+    this._tombstones.clear()
+    this._pinnedKeys.clear()
+    this._hashToAddress.clear()
+    this._storage.clear()
+    this._code.clear()
+    this._deltaStack.length = 0
+    this._overlayFrames.length = 0
+    this.originalStorageCache.clear()
+  }
+
   /** Evict unpinned residents down to `maxKeep` (memory watchdog). Returns slots freed. */
   trimUnpinnedResident(maxKeep: number): number {
     if (this._slotShards === undefined || this._maxResidentAccounts === undefined) return 0

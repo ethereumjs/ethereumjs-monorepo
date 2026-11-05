@@ -30,9 +30,11 @@ import { createSpine } from '../src/spine/createSpine.ts'
 import { type InFlightBlockBundle, advanceBlockBundleEthMessage } from '../src/sync/blockBundle.ts'
 import {
   SNAP_RESUME_MAX_GAP,
+  SNAP_UNSERVED_PIVOT_MS,
   decideSnapResume,
   shouldDeferLivePivotRequest,
   shouldEnsureSnapSync,
+  shouldRefreshStaleSnapPivot,
 } from '../src/sync/resumePolicy.ts'
 import { PROVEN_PEER_REST_MS, peerRestMsForRangeFailure } from '../src/sync/snapSchedulePolicy.ts'
 
@@ -75,14 +77,9 @@ describe('[Ethy/P2P]: resume policy', () => {
       wantSnapDiscoveryHold({ snapSessions: 1, servingSnapPeers: 1, held: false }),
       false,
     )
-    assert.equal(
-      wantSnapDiscoveryHold({ snapSessions: 2, servingSnapPeers: 0, held: false }),
-      false,
-    )
-    assert.equal(wantSnapDiscoveryHold({ snapSessions: 1, servingSnapPeers: 8, held: false }), true)
-    assert.equal(wantSnapDiscoveryHold({ snapSessions: 4, servingSnapPeers: 8, held: false }), true)
-    assert.equal(wantSnapDiscoveryHold({ snapSessions: 3, servingSnapPeers: 6, held: true }), true)
-    assert.equal(wantSnapDiscoveryHold({ snapSessions: 3, servingSnapPeers: 5, held: true }), false)
+    assert.equal(wantSnapDiscoveryHold({ snapSessions: 4, servingSnapPeers: 4, held: false }), true)
+    assert.equal(wantSnapDiscoveryHold({ snapSessions: 3, servingSnapPeers: 2, held: true }), true)
+    assert.equal(wantSnapDiscoveryHold({ snapSessions: 3, servingSnapPeers: 1, held: true }), false)
   })
 
   it('shouldVipReconnect dials below VIP_SNAP_PEER_TARGET even when discovery is held', () => {
@@ -169,6 +166,41 @@ describe('[Ethy/P2P]: resume policy', () => {
         head: 100n,
       }),
       'handoff-catchup',
+    )
+  })
+
+  it('shouldRefreshStaleSnapPivot replaces a far pivot that nobody is serving', () => {
+    const pivot = 100n
+    const head = pivot + SNAP_RESUME_MAX_GAP + 1n
+    assert.isFalse(
+      shouldRefreshStaleSnapPivot({
+        phase: 'SNAP_SYNCING',
+        handoffCatchup: false,
+        pivotBlock: pivot,
+        headBlock: head,
+        servingSnapPeers: 1,
+        msSinceProgress: SNAP_UNSERVED_PIVOT_MS,
+      }),
+    )
+    assert.isFalse(
+      shouldRefreshStaleSnapPivot({
+        phase: 'SNAP_SYNCING',
+        handoffCatchup: false,
+        pivotBlock: pivot,
+        headBlock: head,
+        servingSnapPeers: 0,
+        msSinceProgress: SNAP_UNSERVED_PIVOT_MS - 1,
+      }),
+    )
+    assert.isTrue(
+      shouldRefreshStaleSnapPivot({
+        phase: 'SNAP_SYNCING',
+        handoffCatchup: false,
+        pivotBlock: pivot,
+        headBlock: head,
+        servingSnapPeers: 0,
+        msSinceProgress: SNAP_UNSERVED_PIVOT_MS,
+      }),
     )
   })
 

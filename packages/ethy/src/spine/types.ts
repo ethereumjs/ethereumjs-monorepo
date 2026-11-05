@@ -158,6 +158,8 @@ export interface EthySpine {
   /** Rolling-window eth serve telemetry from the worker (live P2P only). */
   serving?: WorkerServingSnapshot
   snapBuckets: SnapBucket[]
+  /** Snap peers currently rested after a range timeout (live scheduler). */
+  snapPeersResting?: number
   totalAccountsSynced: number
   accountsPerSec: number
   /** Smoothed per-minute account rate (refreshed every ~5s to stay steady in the TUI). */

@@ -154,7 +154,8 @@ export class EthyFlightRecorder {
     this.lastPhase = s.phase
     this.lastPivot = s.pivotBlockNumber
 
-    const summary = `phase=${s.phase} transport=${s.syncTransport ?? 'unset'} pct=${pct}% acc=${s.totalAccountsSynced} rate=${rate}/s buckets=${doneBuckets}/16 peers=${peers.length}(snap:${snapPeers},serving:${servingSnap},ethy:${ethyPeers}) pivot=${s.pivotBlockNumber?.toString() ?? '-'} steps=${s.pivotStepsCompleted ?? 0} bal=${s.streamedBalCount ?? 0}/${s.appliedBalCount ?? 0} cl=${s.clStatus ?? '-'}`
+    const resting = s.snapPeersResting ?? 0
+    const summary = `phase=${s.phase} transport=${s.syncTransport ?? 'unset'} pct=${pct}% acc=${s.totalAccountsSynced} rate=${rate}/s buckets=${doneBuckets}/16 peers=${peers.length}(snap:${snapPeers},serving:${servingSnap},resting:${resting},ethy:${ethyPeers}) pivot=${s.pivotBlockNumber?.toString() ?? '-'} steps=${s.pivotStepsCompleted ?? 0} bal=${s.streamedBalCount ?? 0}/${s.appliedBalCount ?? 0} cl=${s.clStatus ?? '-'}`
     this.generalQueue.push(
       formatHumanLine(
         iso,
@@ -181,6 +182,7 @@ export class EthyFlightRecorder {
         total: peers.length,
         snap: snapPeers,
         servingSnap,
+        resting,
         ethy: ethyPeers,
       },
       pivot: s.pivotBlockNumber?.toString(),
