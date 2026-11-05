@@ -311,4 +311,113 @@ describe('[Ethy/Sync]: synthetic snap account range', () => {
     sync.stop()
     await inner.close()
   })
+
+  it('schedules proven snap peers across stepped pivots and skips only unproven peers lagging >32 blocks', () => {
+    const spine = createSpine('sepolia', 11155111n)
+    spine.pivotStateRoot = new Uint8Array(32).fill(0x11)
+    spine.pivotBlockNumber = 12_071_041n
+
+    const peers = [
+      // Unproven peer lagging >32 blocks behind pivot -> skipped
+      {
+        id: 'lagging-unproven',
+        caps: ['snap/1'],
+        snapResponsesOk: 0,
+        snapTimeouts: 0,
+        avgLatencyMs: 20,
+        latestBlock: 12_070_900n,
+      },
+      // Proven peer whose latestBlock hasn't received the next 32-block update yet -> scheduled!
+      {
+        id: 'proven-slightly-behind',
+        caps: ['snap/1'],
+        snapResponsesOk: 10,
+        snapTimeouts: 0,
+        avgLatencyMs: 20,
+        latestBlock: 12_071_000n,
+      },
+      // Newly connected snap/1 peer within the 32-block window -> scheduled!
+      {
+        id: 'new-within-window',
+        caps: ['snap/1'],
+        snapResponsesOk: 0,
+        snapTimeouts: 0,
+        avgLatencyMs: 20,
+        latestBlock: 12_071_020n,
+      },
+    ]
+
+    const dispatchedTo: string[] = []
+    const sync = new SnapAccountSynchronizer({
+      spine,
+      stateManager: createFlatStateManager(),
+      transport: mockSnapTransport({
+        snapPeers: () => peers,
+        sendAccountRange(peerId) {
+          dispatchedTo.push(peerId)
+        },
+      }),
+      flightTracker: new SnapPeerFlightTracker(),
+      getSnapPeers: () => peers,
+    })
+    sync.start()
+    sync.stop()
+
+    assert.isFalse(dispatchedTo.includes('lagging-unproven'))
+    assert.isTrue(dispatchedTo.includes('proven-slightly-behind'))
+    assert.isTrue(dispatchedTo.includes('new-within-window'))
+  })
+
+  it('does not falsely declare snap peer left if a peer stays in spine.peers while temporarily absent from getSnapPeers', async () => {
+    const spine = createSpine('sepolia', 11155111n)
+    spine.pivotStateRoot = new Uint8Array(32).fill(0x22)
+    spine.peers.set('aa11', {
+      id: 'aa11',
+      clientName: 'Geth/v1',
+      caps: ['eth/71', 'snap/1'],
+      snapSession: true,
+      ethySession: false,
+      hasHead: true,
+      snapRequestsSent: 0,
+      snapResponsesOk: 1,
+      snapTimeouts: 0,
+      avgLatencyMs: 25,
+    })
+    const peers = [
+      {
+        id: 'aa11',
+        caps: ['eth/71', 'snap/1'],
+        snapResponsesOk: 1,
+        snapTimeouts: 0,
+        avgLatencyMs: 25,
+      },
+    ]
+    let sent = 0
+    const sync = new SnapAccountSynchronizer({
+      spine,
+      stateManager: createFlatStateManager(),
+      transport: mockSnapTransport({
+        snapPeers: () => peers,
+        sendAccountRange() {
+          sent++
+        },
+      }),
+      flightTracker: new SnapPeerFlightTracker(),
+      getSnapPeers: () => peers,
+    })
+    sync.start()
+    assert.equal(sent, 1)
+    assert.equal(spine.snapBuckets[0]!.status, 'syncing')
+    // Temporarily remove from getSnapPeers while still present in spine.peers
+    peers.pop()
+    await new Promise((resolve) => setTimeout(resolve, 120))
+    assert.equal(spine.snapBuckets[0]!.status, 'syncing')
+    assert.notEqual(spine.snapBuckets[0]!.lastStallReason, 'snap peer left')
+    // Now actually remove from spine.peers
+    spine.peers.delete('aa11')
+    await new Promise((resolve) => setTimeout(resolve, 120))
+    sync.stop()
+    assert.equal(spine.snapBuckets[0]!.status, 'pending')
+    assert.equal(spine.snapBuckets[0]!.lastStallReason, 'snap peer left')
+  })
 })

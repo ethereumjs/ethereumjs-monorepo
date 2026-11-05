@@ -159,6 +159,11 @@ export class PeerBookStore {
         this._dirty = true
         continue
       }
+      // Clear expired dial holds on fresh boot so previous-session TOO_MANY_PEERS holds don't block warm start
+      if (row.dialAfter > now && row.snapResponsesOk > 0) {
+        row.dialAfter = 0
+        this._dirty = true
+      }
       const success = lastSuccessAt(row)
       if (success === undefined || now - success > PEER_STALE_SUCCESS_MS) {
         this._rows.delete(id)
@@ -248,7 +253,11 @@ export class PeerBookStore {
     row.clientFamily = clientFamilyFromClientId(peer.clientId) ?? row.clientFamily
     if (peer.snapSession === true) {
       row.snapCapable = true
-    } else if (peer.snapSession === false) {
+    } else if (
+      peer.snapSession === false &&
+      peer.clientId.length > 0 &&
+      row.snapResponsesOk === 0
+    ) {
       row.snapCapable = false
     }
     if (peer.bestHash === undefined) {
@@ -400,14 +409,22 @@ export class PeerBookStore {
 }
 
 function normalizeRow(id: string, row: PeerBookRow): PeerBookRow {
+  const snapResponsesOk = row.snapResponsesOk ?? 0
+  // Self-heal rows that were poisoned with snapCapable=false by pre-HELLO telemetry snapshots
+  const snapCapable =
+    snapResponsesOk > 0
+      ? true
+      : row.snapCapable === false && (row.lastStatusAt ?? 0) === 0
+        ? undefined
+        : row.snapCapable
   return {
     ...row,
     id: id.toLowerCase(),
-    snapResponsesOk: row.snapResponsesOk ?? 0,
+    snapResponsesOk,
     snapTimeouts: row.snapTimeouts ?? 0,
     dialAfter: row.dialAfter ?? 0,
     resetStreak: row.resetStreak ?? 0,
     tooManyPeersStreak: row.tooManyPeersStreak ?? 0,
-    snapCapable: row.snapCapable,
+    snapCapable,
   }
 }

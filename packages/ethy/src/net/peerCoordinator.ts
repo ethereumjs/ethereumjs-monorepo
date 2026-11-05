@@ -430,7 +430,7 @@ export async function startPeerCoordinator(
     const transport = createLiveSnapTransport(clientRef)
     const getSnapPeers = () =>
       [...spine.peers.values()]
-        .filter((p) => p.snapSession === true && p.hasHead === true)
+        .filter((p) => p.snapSession === true && (p.hasHead === true || p.snapResponsesOk > 0))
         .map((p) => ({
           id: p.id,
           caps: p.caps,
@@ -816,9 +816,9 @@ export async function startPeerCoordinator(
     const towardTarget = countSnapPeersTowardVipTarget([...spine.peers.values()])
     if (!shouldVipReconnect({ snapPeersTowardTarget: towardTarget })) return
     const connected = new Set(spine.peers.keys())
-    const need = VIP_SNAP_PEER_TARGET - towardTarget
+    const need = Math.min(2, VIP_SNAP_PEER_TARGET - towardTarget)
     let dialed = 0
-    for (const peer of peerBook.vipDialCandidates(now, PEER_BOOK_STARTUP_DIALS)) {
+    for (const peer of peerBook.vipDialCandidates(now, 64)) {
       const id = bytesToUnprefixedHex(peer.id as Uint8Array).toLowerCase()
       if (connected.has(id)) continue
       const pendingUntil = pendingVipDials.get(id)
@@ -1204,9 +1204,8 @@ export async function startPeerCoordinator(
       // An empty account proof is not valid snap, so inbound GETs stay unanswered.
       // Outbound ranges are small, and the pong deadline is 30s, so a busy server can stay up.
       answerEmptySnap: false,
-      // DNS ENR tree + bootnodes are chain-scoped. Unfiltered discv4 neighbors
-      // are other networks and crowd out Sepolia sessions.
-      shouldFindNeighbours: opts.shouldFindNeighbours ?? false,
+      // DNS ENR tree + EIP-868 ENR-verified discv4 neighbour crawl.
+      shouldFindNeighbours: opts.shouldFindNeighbours ?? true,
       chainDirectoryDiscovery: opts.shouldFindNeighbours === false ? false : true,
       clientId: utf8ToBytes(`ethy/v${getEthyClientVersion()}`),
       status,
@@ -1332,9 +1331,15 @@ export async function startPeerCoordinator(
 
   const maybeEnableRollingStatus = () => {
     if (rollingStatusAdvertised) return
-    if (spine.phase === 'BAL_CATCHUP' || spine.phase === 'HEAD_FOLLOWING') {
-      client.setAdvertiseBlockRange(true)
-      rollingStatusAdvertised = true
+    if (
+      spine.phase === 'SNAP_SYNCING' ||
+      spine.phase === 'BAL_CATCHUP' ||
+      spine.phase === 'HEAD_FOLLOWING'
+    ) {
+      if ((spine.serving?.blocksStored ?? 0) > 0) {
+        client.setAdvertiseBlockRange(true)
+        rollingStatusAdvertised = true
+      }
     }
   }
 

@@ -442,7 +442,7 @@ export class SnapAccountSynchronizer {
 
   private expireStaleRanges(livePeerIds: ReadonlySet<string>, now: number): void {
     for (const [key, flight] of this.inFlight) {
-      const left = !livePeerIds.has(flight.peerId)
+      const left = !livePeerIds.has(flight.peerId) && !this.spine.peers.has(flight.peerId)
       if (!left && now - flight.sentAt < flight.timeoutMs) continue
       this.inFlight.delete(key)
       this.flightTracker.release(flight.peerId, flight.reqId)

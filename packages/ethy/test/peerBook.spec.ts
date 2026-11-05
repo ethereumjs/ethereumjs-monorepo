@@ -149,4 +149,78 @@ describe('[Ethy/Persist]: peer book', () => {
     reopened.pruneOnStart(Date.now())
     assert.equal(reopened.getRow('ff'), undefined)
   })
+
+  it('does not poison snapCapable=false on pre-HELLO telemetry and self-heals poisoned rows from disk', () => {
+    const dir = tempDir()
+    const book = openBook(dir)
+    const now = Date.now()
+    const id = 'a1'.repeat(32)
+
+    // Pre-HELLO telemetry (clientId === '', snapSession === false) must not mark snapCapable=false
+    book.noteTelemetryPeer(
+      {
+        id,
+        clientId: '',
+        caps: [],
+        snapSession: false,
+        address: '203.0.113.50',
+        tcpPort: 30303,
+        udpPort: 30303,
+      },
+      now,
+    )
+    assert.equal(book.getRow(id)?.snapCapable, undefined)
+
+    // Write a row with snapCapable=false and lastStatusAt=0 (poisoned before HELLO/STATUS)
+    fs.mkdirSync(path.dirname(peerBookFilePath(dir, 'sepolia')), { recursive: true })
+    fs.writeFileSync(
+      peerBookFilePath(dir, 'sepolia'),
+      JSON.stringify({
+        [id]: {
+          id,
+          address: '203.0.113.50',
+          udpPort: 30303,
+          tcpPort: 30303,
+          snapResponsesOk: 0,
+          snapTimeouts: 0,
+          dialAfter: 0,
+          resetStreak: 0,
+          snapCapable: false,
+        },
+      }),
+    )
+    const reopened = openBook(dir)
+    assert.equal(reopened.getRow(id)?.snapCapable, undefined)
+  })
+
+  it('excludes non-snap client families and clears dialAfter on proven snap peers at startup', () => {
+    const dir = tempDir()
+    const book = openBook(dir)
+    const now = 1_000_000
+    const nonSnapId = 'b2'.repeat(32)
+    const provenSnapId = 'c3'.repeat(32)
+    book.putRow(
+      sampleRow({
+        id: nonSnapId,
+        clientFamily: 'eri' + 'gon',
+        lastStatusAt: now,
+        snapCapable: true,
+      }),
+    )
+    book.putRow(
+      sampleRow({
+        id: provenSnapId,
+        clientFamily: 'Nethermind',
+        lastStatusAt: now,
+        lastSnapSuccessAt: now,
+        snapResponsesOk: 50,
+        dialAfter: now + 60_000,
+        snapCapable: true,
+      }),
+    )
+    book.pruneOnStart(now)
+    assert.equal(book.getRow(provenSnapId)?.dialAfter, 0)
+    const candidates = book.dialCandidates(now)
+    assert.equal(candidates.length, 1)
+  })
 })
