@@ -502,8 +502,16 @@ export class SnapAccountSynchronizer {
       if (!left && now - flight.sentAt < flight.timeoutMs) continue
       this.inFlight.delete(key)
       this.flightTracker.release(flight.peerId, flight.reqId)
+      this.inFlightOrigins.delete(originDedupeKey(flight.bucket, flight.origin))
       const cursor = this.findCursor(flight.bucket, flight.cursorId)
-      this.clearCursorFlight(cursor)
+      if (cursor !== undefined) {
+        if (cursor.inFlightReqKey === key) {
+          cursor.inFlightReqKey = undefined
+        }
+        if ((cursor.verifyingCount ?? 0) === 0) {
+          cursor.pipelinedVerify = false
+        }
+      }
       const bucket = this.spine.snapBuckets[flight.bucket]
       if (bucket === undefined || bucket.status === 'done') continue
       if (left) {
@@ -675,7 +683,9 @@ export class SnapAccountSynchronizer {
       this.endCursorVerify(cursor)
       return
     }
-    bucket.status = 'verifying_proof'
+    if (cursor === undefined || !pipelined) {
+      bucket.status = 'verifying_proof'
+    }
     this.schedule()
 
     let result: Awaited<ReturnType<SnapVerifyPool['verifyAccountRange']>>
@@ -728,9 +738,13 @@ export class SnapAccountSynchronizer {
     if (!result.ok) {
       this.cancelSuccessorFlights(flight.cursorId, flight.bucket, flight.reqId)
       if (cursor !== undefined && flight.priorOrigin !== undefined) {
+        this.inFlightOrigins.delete(originDedupeKey(flight.bucket, cursor.origin))
+        this.inFlightOrigins.delete(originDedupeKey(flight.bucket, flight.priorOrigin))
         cursor.origin = new Uint8Array(flight.priorOrigin)
         cursor.inFlightReqKey = undefined
         cursor.pipelinedVerify = false
+      } else {
+        this.inFlightOrigins.delete(originDedupeKey(flight.bucket, flight.origin))
       }
       this.endCursorVerify(cursor)
       this.noteRangeFailure(bucket, peerId, result.reason ?? 'range proof failed')
@@ -738,6 +752,8 @@ export class SnapAccountSynchronizer {
       this.schedule()
       return
     }
+
+    this.inFlightOrigins.delete(originDedupeKey(flight.bucket, flight.origin))
 
     this.stallRepeats.delete(bucket.index)
     this.stallUntil.delete(bucket.index)
@@ -808,6 +824,11 @@ export class SnapAccountSynchronizer {
     }
 
     if (cursor !== undefined) {
+      if (flight.speculativeLastKey !== undefined) {
+        this.inFlightOrigins.delete(
+          originDedupeKey(flight.bucket, incrementKey32(flight.speculativeLastKey)),
+        )
+      }
       this.reconcileCursorAfterCommit(cursor, bucket, flight, result)
       this.endCursorVerify(cursor)
     }
@@ -825,14 +846,16 @@ export class SnapAccountSynchronizer {
     flight: InFlightRange,
     result: Awaited<ReturnType<SnapVerifyPool['verifyAccountRange']>>,
   ): void {
-    if (!(result.hasRight && result.lastKey instanceof Uint8Array)) {
-      this.removeCursor(bucket, cursor.id)
-      return
-    }
-    const verifiedLast = result.lastKey
     const hasSuccessor = [...this.inFlight.values()].some(
       (f) => f.cursorId === cursor.id && f.bucket === flight.bucket && f.reqId !== flight.reqId,
     )
+    if (!(result.hasRight && result.lastKey instanceof Uint8Array)) {
+      if (!hasSuccessor) {
+        this.removeCursor(bucket, cursor.id)
+      }
+      return
+    }
+    const verifiedLast = result.lastKey
     const speculative = flight.speculativeLastKey
     if (speculative !== undefined) {
       const cmpSpec = compareBytes32(verifiedLast, speculative)
@@ -848,12 +871,16 @@ export class SnapAccountSynchronizer {
         cursor.origin = incrementKey32(verifiedLast)
       }
     } else if (compareBytes32(verifiedLast, cursor.limit) >= 0) {
-      this.removeCursor(bucket, cursor.id)
+      if (!hasSuccessor) {
+        this.removeCursor(bucket, cursor.id)
+      }
       return
     } else if (compareBytes32(verifiedLast, flight.origin) >= 0) {
       cursor.origin = incrementKey32(verifiedLast)
+    } else if (compareBytes32(cursor.origin, cursor.limit) > 0) {
+      // If an earlier reply's lastKey was below a tightened split limit, keep the cursor alive from flight.origin
     }
-    if (!cursorActive(cursor)) {
+    if (!cursorActive(cursor) && !hasSuccessor) {
       this.removeCursor(bucket, cursor.id)
     }
   }

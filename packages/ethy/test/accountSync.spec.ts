@@ -442,7 +442,7 @@ describe('[Ethy/Sync]: synthetic snap account range', () => {
   })
 
   it('pipelines the next GetAccountRange while verify is still in flight', async () => {
-    const trie = await SyntheticSnapPeer.create(8)
+    const trie = await SyntheticSnapPeer.create(20)
     const spine = createSpine('sepolia', 11155111n)
     spine.pivotStateRoot = trie.rootHash
     spine.snapBuckets = createSnapBuckets().slice(0, 1)
@@ -508,6 +508,7 @@ describe('[Ethy/Sync]: synthetic snap account range', () => {
     })
     const pipelined = sent.slice(sentBeforeReply)
     assert.isTrue(pipelined.some((payload) => originOf(payload) !== firstOrigin))
+    assert.isFalse(pipelined.some((payload) => originOf(payload) === firstOrigin))
     release()
     await new Promise((resolve) => setTimeout(resolve, 50))
     sync.stop()
