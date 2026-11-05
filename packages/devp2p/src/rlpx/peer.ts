@@ -264,7 +264,7 @@ export class Peer {
     const payload: HelloMsg = [
       intToBytes(BASE_PROTOCOL_VERSION),
       this.clientId,
-      this._capabilities!.map((c) => [utf8ToBytes(c.name), intToBytes(c.version)]),
+      this._capabilities!.map((c) => [utf8ToBytes(c.name), intToUnpaddedBytes(c.version)]),
       !this._port ? new Uint8Array(0) : intToUnpaddedBytes(this._port),
       this.id,
     ]
@@ -748,6 +748,26 @@ export class Peer {
     const tcpPort = this._socket.remotePort
     if (address === undefined || address === '' || tcpPort === undefined) return undefined
     return { address, tcpPort }
+  }
+
+  /**
+   * TCP endpoint for peer exchange (HELLO `port` when advertised, else socket).
+   */
+  advertisedTcpEndpoint(): { address: string; tcpPort: number } | undefined {
+    const socketEp = this.endpointTcp()
+    if (socketEp === undefined) return undefined
+    let { address } = socketEp
+    if (address.startsWith('::ffff:')) {
+      address = address.slice('::ffff:'.length)
+    }
+    if (address === '0.0.0.0') {
+      address = '127.0.0.1'
+    }
+    const helloPort = this._hello?.port ?? 0
+    if (helloPort > 0) {
+      return { address, tcpPort: helloPort }
+    }
+    return socketEp
   }
 
   getHelloMessage() {

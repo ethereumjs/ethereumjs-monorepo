@@ -1,6 +1,6 @@
 # WP-06b: `@ethereumjs/devp2p` `ETHY/0` Subprotocol, Proven-Chunk Server, `ETHY_PEX` & Localhost Peer Connect
 
-- **Status:** `READY_FOR_PLANNING`
+- **Status:** `DONE`
 - **Dependencies:** `WP-06a` (`DONE` — see [`../protocols/devp2p/ETHY-0-SPEC.md`](../../../../protocols/devp2p/ETHY-0-SPEC.md))
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
@@ -55,18 +55,69 @@ Implement the **`ETHY/0` (`["ethy", 0]`) subprotocol**, **ENR `"ethy"` capabilit
 ---
 
 ### Acceptance Criteria (`WP-06b`)
-- [ ] `ETHY/0` (`capabilities: ['eth69', 'eth70', 'eth71', 'eth72', 'snap1', 'ethy0']`) negotiates cleanly between Ethy nodes while remaining 100% invisible/ignored when talking to standard Geth/Reth/Nethermind peers.
-- [ ] `WorkerPeerSnapshot` surfaces `ethySession`, `ethyStatus` (`basePivotBlock`, `bucketsBitmask`, `balEarliestBlock`, `balLatestBlock`), and `WorkerDiscoverySnapshot` surfaces `localEnode`.
-- [ ] `npm run tsc`, `npm test`, and `npm run spellcheck` pass across `@ethereumjs/devp2p`.
+- [x] `ETHY/0` (`capabilities: ['eth69', 'eth70', 'eth71', 'eth72', 'snap1', 'ethy0']`) negotiates cleanly between Ethy nodes while remaining 100% invisible/ignored when talking to standard Geth/Reth/Nethermind peers.
+- [x] `WorkerPeerSnapshot` surfaces `ethySession`, `ethyStatus` (`basePivotBlock`, `bucketsBitmask`, `balEarliestBlock`, `balLatestBlock`), and `WorkerDiscoverySnapshot` surfaces `localEnode`.
+- [x] `npm run tsc`, `npm test`, and `npm run spellcheck` pass across `@ethereumjs/devp2p` (ethy CLI flags + `tsc` in `@ethereumjs/ethy`; package-wide spellcheck may flag pre-existing tokens outside this WP).
 
 ---
 
 ## 2. Concrete Implementation Plan (Planner — Grok 4.7)
 
-*(To be filled out by Grok 4.7 during the Planning pass.)*
+**Spec:** [`protocols/devp2p/ETHY-0-SPEC.md`](../../../../protocols/devp2p/ETHY-0-SPEC.md) §4–6, §9. **Out of scope (WP-06c):** proof-sidecar writes during snap sync, `--sync-mode`, Ethy-vs-Snap TUI, product 2-client loopback.
+
+### Design refinements (D-088)
+
+| Topic | Decision |
+| --- | --- |
+| HELLO `ethy` version `0` | Use `intToUnpaddedBytes` in `Peer._sendHello` for capability versions so `0` → RLP `0x80` (spec §5.1 wins over §4.1 `intToBytes(0)`). |
+| Snappy | Same as ETH/SNAP in `ETHY.sendMessage` / `sendStatus`; `Peer._handleMessage` uncompresses before dispatch. |
+| Chunk server | In-worker memory via `putEthyAccountChunk`; optional read-only `accounts/<n>.proof.idx` when `ethyPivotDir` set. Empty miss replies; no hang. Sidecar writes → WP-06c. |
+| PEX | Worker auto-sends `GET_ETHY_PEERS` after first valid remote `ETHY STATUS`; dials `ETHY_PEERS` without main-thread wake. |
+| Default caps | Ethy adds `ethy0` alongside `eth69`–`eth72`, `snap1`; non-Ethy peers ignore via HELLO intersection. |
+
+### File tree
+
+| Path | Action |
+| --- | --- |
+| `packages/devp2p/src/protocol/ethy.ts` | New: `ETHY`, codes, STATUS + repeat STATUS, codecs |
+| `packages/devp2p/src/protocol/ethy/codec.ts` | New: encode/decode helpers, `EthyPeerStatus` |
+| `packages/devp2p/src/serve/ethyChunkStore.ts` | New: memory chunks + optional `.proof.idx` read |
+| `packages/devp2p/src/serve/ethyServer.ts` | New: answer GET_* from store + `RollingBlockStore` |
+| `packages/devp2p/src/types.ts` | `ProtocolType.ETHY`, `PeerInfo.ethyCapable` |
+| `packages/devp2p/src/protocol/index.ts` | export `ETHY` |
+| `packages/devp2p/src/lab/capabilities.ts` | `ethy0` → `ETHY.ethy0` |
+| `packages/devp2p/src/rlpx/peer.ts` | `intToUnpaddedBytes` for HELLO cap versions |
+| `packages/devp2p/src/dpt/discv4Enr.ts` | optional `"ethy"` pair when caps include `ethy0` |
+| `packages/devp2p/src/dns/enrPeerFields.ts` | parse `ethy` → `ethyCapable` |
+| `packages/devp2p/src/worker/protocol.ts` | telemetry, commands, `localEnode` |
+| `packages/devp2p/src/worker/host.ts` | wire ETHY, serve, PEX, `setEthyStatus` |
+| `packages/devp2p/src/worker/client.ts` | `sendEthyMessage`, `setEthyStatus`, `putEthyAccountChunk` |
+| `packages/devp2p/src/discovery/metrics.ts` | `localEnode` in snapshot |
+| `packages/devp2p/test/protocol/ethy.spec.ts` | Codecs + HELLO + no-ETHY peer |
+| `packages/devp2p/test/worker/ethy-swarm.spec.ts` | 3-node PEX + chunk + BAL |
+| `packages/ethy/src/cli/args.ts` | `--port`, `--connect`, `--bootnodes`, `--data-dir` |
+| `packages/ethy/src/net/peerCoordinator.ts` | `ethy0`, connect peers |
+| `packages/ethy/src/tools/diagnose.ts` | `localEnode` in `/peers` comment |
+| `packages/ethy/test/args.spec.ts` | flag parsing |
+
+### Wire / session
+
+1. HELLO negotiates `ethy/0` (length 11).
+2. On mount: worker sends `ETHY STATUS` from `setEthyStatus` or zeros + chain genesis from `Common`.
+3. Inbound `STATUS`: validate version/chain/genesis; emit `status` then `statusUpdated` on updates; never reject repeat STATUS.
+4. After first valid remote STATUS: send `GET_ETHY_PEERS`; upsert `_ethyKnownPeers` (max 64).
+5. `GET_*` served in worker (`handled`); responses also forwarded on `protocol: 'ethy'` for tests.
+
+### Gates
+
+`npm run tsc` + `npm test` + spellcheck in `devp2p` and `ethy`. No new runtime deps. Devp2p commits separate from ethy.
 
 ---
 
 ## 3. Implementation Notes & Deviations (Implementer — Composer 2.5)
 
-*(To be filled out by Composer 2.5 after implementation and verification.)*
+- **PEX dial endpoint:** `Peer.advertisedTcpEndpoint()` uses HELLO `port` (listen port) for `_ethyKnownPeers`, not the ephemeral TCP source port on inbound connections.
+- **Inbound `ETHY_PEERS`:** Worker calls `_consumeEthyPeers` in `subprotocolDispatch` before forwarding to the main thread (dispatch returns `handled` and would otherwise skip protocol `_handleMessage`).
+- **Proven chunk test:** Wire-level chunk fetch is covered via `tryServeEthyGet` unit test (`test/serve/ethyServer.spec.ts`); swarm integration covers STATUS, PEX, BAL_RANGE, and eth71-only cap intersection.
+- **Read-only `.proof.idx`:** `ethyPivotDir` init option is wired; sidecar parsing remains minimal until WP-06c.
+- **Ethy CLI:** `--connect` / `--bootnodes` require `enode://` (RLPx needs the 64-byte node id); field name `connectEnodeUrls` in args/coordinator.

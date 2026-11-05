@@ -66,6 +66,7 @@ import {
   wantSnapDiscoveryHold,
 } from './discoveryHold.ts'
 import { p2pHandshakeStatusFields } from './genesisStatus.ts'
+import { parseEnodeUrl } from './parseEnode.ts'
 import {
   EthMessageCodes,
   encodeGetBlockAccessListsPayload,
@@ -131,6 +132,8 @@ export type StartPeerCoordinatorOptions = {
   witnessExecutionHeader?: (blockNumber: bigint, blockHash: Uint8Array) => void
   /** Wipe pivot state before sync (WP-04a). */
   fresh?: boolean
+  /** Direct `enode://` dials after worker start (WP-06b). */
+  connectEnodeUrls?: string[]
 }
 
 export type PeerCoordinatorHandle = {
@@ -1005,7 +1008,8 @@ export async function startPeerCoordinator(
       discoveryLowWaterMark: SYNC_DISCOVERY_LOW_WATER,
       // Current Sepolia clients speak eth/69 and later. eth/68 fills dial slots
       // with peers that cannot serve this chain.
-      capabilities: ['eth69', 'eth70', 'eth71', 'eth72', 'snap1'],
+      capabilities: ['eth69', 'eth70', 'eth71', 'eth72', 'snap1', 'ethy0'],
+      listenPort: opts.listenPort ?? 0,
       goodCitizen: opts.goodCitizen ?? true,
       // An empty account proof is not valid snap, so inbound GETs stay unanswered.
       // Outbound ranges are small, and the pong deadline is 30s, so a busy server can stay up.
@@ -1016,13 +1020,24 @@ export async function startPeerCoordinator(
       chainDirectoryDiscovery: opts.shouldFindNeighbours === true ? false : true,
       clientId: utf8ToBytes(`ethy/v${getEthyClientVersion()}`),
       status,
-      listenPort: opts.listenPort ?? 0,
       endpoint: { address: '0.0.0.0', udpPort: 0, tcpPort: opts.listenPort ?? 0 },
       throttleDiscovery: true,
       nodeStorePath: discoveryNodeStorePath(dataDir, network),
     },
     workerModuleUrl,
   )
+
+  if (opts.connectEnodeUrls !== undefined) {
+    for (const url of opts.connectEnodeUrls) {
+      const enode = parseEnodeUrl(url)
+      client.connectPeer({
+        id: enode.id,
+        address: enode.address,
+        tcpPort: enode.tcpPort,
+        udpPort: enode.udpPort ?? enode.tcpPort,
+      })
+    }
+  }
 
   const maybeEnableRollingStatus = () => {
     if (rollingStatusAdvertised) return

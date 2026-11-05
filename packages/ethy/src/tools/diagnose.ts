@@ -23,7 +23,9 @@ export function peersTableWidget(spine: EthySpine): WidgetSpec {
         s === undefined
           ? 'Serve —'
           : `Serve h:${s.headersServed} b:${s.bodiesServed} r:${s.receiptsServed} bal:${s.accessListsServed}`
-      return `${spine.peers.size} connected peers on ${spine.network}. ${breakdown}. ${window}.`
+      const enode = spine.discovery?.localEnode
+      const enodeLine = enode !== undefined ? ` Local enode: ${enode}.` : ''
+      return `${spine.peers.size} connected peers on ${spine.network}. ${breakdown}. ${window}.${enodeLine}`
     })(),
   }
 }

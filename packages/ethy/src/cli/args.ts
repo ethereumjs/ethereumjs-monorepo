@@ -4,6 +4,9 @@ export interface EthyCliArgs {
   headless: boolean
   fresh: boolean
   dataDir?: string
+  listenPort?: number
+  /** `enode://` URLs for direct dial after P2P start. */
+  connectEnodeUrls: string[]
 }
 
 export function parseEthyArgs(argv: string[]): EthyCliArgs {
@@ -13,13 +16,31 @@ export function parseEthyArgs(argv: string[]): EthyCliArgs {
   let headless = false
   let fresh = false
   let dataDir: string | undefined
+  let listenPort: number | undefined
+  const connectEnodeUrls: string[] = []
 
   for (let i = 0; i < args.length; i++) {
     const a = args[i]
-    if (a === '--datadir') {
+    if (a === '--datadir' || a === '--data-dir') {
       const next = args[++i]
-      if (next === undefined) throw new Error('--datadir requires a path')
+      if (next === undefined) throw new Error(`${a} requires a path`)
       dataDir = next
+      continue
+    }
+    if (a === '--port') {
+      const next = args[++i]
+      if (next === undefined) throw new Error('--port requires a number')
+      listenPort = Number.parseInt(next, 10)
+      if (listenPort < 1 || listenPort > 65535) throw new Error('--port out of range')
+      continue
+    }
+    if (a === '--connect' || a === '--bootnodes') {
+      const next = args[++i]
+      if (next === undefined) throw new Error(`${a} requires an enode URL`)
+      if (!next.startsWith('enode://')) {
+        throw new Error(`${a} requires enode://<id>@host:port (RLPx needs the node id)`)
+      }
+      connectEnodeUrls.push(next)
       continue
     }
     if (a === '--demo') {
@@ -43,14 +64,14 @@ export function parseEthyArgs(argv: string[]): EthyCliArgs {
     network = a
   }
 
-  return { network, demo, headless, fresh, dataDir }
+  return { network, demo, headless, fresh, dataDir, listenPort, connectEnodeUrls }
 }
 
 export function printEthyUsage(): string {
   return `ethy — EthereumJS execution-free state node (Amsterdam focus)
 
 Usage:
-  ethy [network] [--demo] [--headless] [--fresh] [--datadir PATH]
+  ethy [network] [--demo] [--headless] [--fresh] [--datadir PATH] [--port N] [--connect enode://...]
 
 Networks: sepolia (default), mainnet, hoodi, holesky
 `

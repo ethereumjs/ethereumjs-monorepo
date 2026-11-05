@@ -31,4 +31,22 @@ describe('[Ethy/CLI]: args', () => {
   it('parseEthyArgs() rejects unknown flags', () => {
     assert.throws(() => parseEthyArgs(['node', 'ethy', '--nope']), /Unknown flag/)
   })
+
+  it('parseEthyArgs() reads --port and --connect', () => {
+    const a = parseEthyArgs([
+      'node',
+      'ethy',
+      '--port',
+      '30304',
+      '--connect',
+      'enode://' + 'aa'.repeat(64) + '@127.0.0.1:30303',
+    ])
+    assert.equal(a.listenPort, 30304)
+    assert.equal(a.connectEnodeUrls.length, 1)
+  })
+
+  it('parseEthyArgs() accepts --data-dir alias', () => {
+    const a = parseEthyArgs(['node', 'ethy', '--data-dir', '/tmp/x'])
+    assert.equal(a.dataDir, '/tmp/x')
+  })
 })

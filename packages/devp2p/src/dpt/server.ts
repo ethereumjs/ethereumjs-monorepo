@@ -35,6 +35,7 @@ export class Server {
 
   protected _common?: Common
   protected _discoveryMetrics: import('../discovery/metrics.ts').DiscoveryMetrics | undefined
+  protected _ethyDiscoveryTag: boolean
 
   private DEBUG: boolean
 
@@ -66,6 +67,7 @@ export class Server {
 
     this._common = options.common
     this._discoveryMetrics = options.discoveryMetrics
+    this._ethyDiscoveryTag = options.ethyDiscoveryTag === true
 
     this.DEBUG = globalThis.process?.env?.DEBUG?.includes('ethjs') ?? false
   }
@@ -278,11 +280,15 @@ export class Server {
             : pickAdvertisedIPv4()
         this._send(remote, 'enrResponse', {
           requestHash: msg.subarray(0, 32),
-          record: discv4ENRList(this._privateKey, {
-            address,
-            udpPort,
-            tcpPort: this._endpoint.tcpPort ?? udpPort,
-          }),
+          record: discv4ENRList(
+            this._privateKey,
+            {
+              address,
+              udpPort,
+              tcpPort: this._endpoint.tcpPort ?? udpPort,
+            },
+            { includeEthyTag: this._ethyDiscoveryTag },
+          ),
         })
         break
       }

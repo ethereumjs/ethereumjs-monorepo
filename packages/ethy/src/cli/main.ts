@@ -89,6 +89,8 @@ async function main(): Promise<void> {
       snapStore: node.snapStore,
       peerBook: node.peerBook,
       fresh: cli.fresh,
+      listenPort: cli.listenPort,
+      connectEnodeUrls: cli.connectEnodeUrls.length > 0 ? cli.connectEnodeUrls : undefined,
       witnessExecutionHeader,
     })
       .then((handle) => {

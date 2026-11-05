@@ -135,6 +135,7 @@ export class DPT {
       createSocket: options.createSocket,
       common: options.common,
       discoveryMetrics: options.discoveryMetrics,
+      ethyDiscoveryTag: options.ethyDiscoveryTag,
     })
     this._server.events.once('listening', () => this.events.emit('listening'))
     this._server.events.once('close', () => this.events.emit('close'))

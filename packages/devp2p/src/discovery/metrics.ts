@@ -18,6 +18,7 @@ export interface WorkerDiscoverySnapshot {
   boundAddress: string
   boundUdpPort: number
   boundTcpPort: number
+  localEnode?: string
   tablePeers: number
   discoveryPaused?: boolean
   /** Hardfork, EIP-2124 hash, and next fork this node puts in ETH STATUS. */
@@ -70,6 +71,7 @@ export class DiscoveryMetrics {
   boundAddress = ''
   boundUdpPort = 0
   boundTcpPort = 0
+  localEnode?: string
   tablePeers = 0
   discoveryPaused = false
   advertisedHardfork?: string
@@ -215,6 +217,10 @@ export class DiscoveryMetrics {
     this.discoveryPaused = paused
   }
 
+  setLocalEnode(url: string): void {
+    this.localEnode = url
+  }
+
   snapshot(): WorkerDiscoverySnapshot {
     const disconnects: Record<string, number> = {}
     for (const [k, v] of this.rlpxDisconnects) disconnects[k] = v
@@ -232,6 +238,7 @@ export class DiscoveryMetrics {
       boundAddress: this.boundAddress,
       boundUdpPort: this.boundUdpPort,
       boundTcpPort: this.boundTcpPort,
+      ...(this.localEnode !== undefined ? { localEnode: this.localEnode } : {}),
       tablePeers: this.tablePeers,
       ...(this.discoveryPaused ? { discoveryPaused: true } : {}),
       ...(this.advertisedHardfork !== undefined && this.advertisedForkHash !== undefined

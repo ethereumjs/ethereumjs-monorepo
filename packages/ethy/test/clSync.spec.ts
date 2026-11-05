@@ -1,3 +1,7 @@
+import { mkdtempSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+
 import { assert, describe, it } from 'vitest'
 
 import { startConsensusTracker, witnessPeerExecutionHeader } from '../src/cl/consensusTracker.ts'
@@ -33,14 +37,19 @@ describe('[Ethy]: consensus light client witness', () => {
 
   it('unreachable beacon REST leaves p2p_only without throwing', async () => {
     const spine = createSpine('sepolia', 11155111n)
+    const dataDir = mkdtempSync(join(tmpdir(), 'ethy-cl-offline-'))
     const handle = startConsensusTracker({
       spine,
       network: 'sepolia',
+      dataDir,
       fetchImpl: async () => {
         throw new Error('offline')
       },
     })
-    await new Promise((r) => setTimeout(r, 50))
+    const deadline = Date.now() + 3000
+    while (spine.clStatus !== 'p2p_only' && Date.now() < deadline) {
+      await new Promise((r) => setTimeout(r, 25))
+    }
     assert.equal(spine.clStatus, 'p2p_only')
     handle.stop()
   })

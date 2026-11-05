@@ -4,6 +4,7 @@ import type { NestedUint8Array } from '@ethereumjs/rlp'
 import type { DPT } from './dpt/index.ts'
 import type { NodeStore } from './dpt/nodeStore.ts'
 import type { EthMessageCodes } from './protocol/eth.ts'
+import type { EthyMessageCodes } from './protocol/ethy/codes.ts'
 import type { Protocol } from './protocol/protocol.ts'
 import type { SnapMessageCodes } from './protocol/snap.ts'
 import type { Peer } from './rlpx/peer.ts'
@@ -27,22 +28,18 @@ export interface PeerEvent {
 }
 
 export interface ProtocolEvent {
-  message: [code: SnapMessageCodes | EthMessageCodes, payload: Uint8Array | NestedUint8Array]
-  status: {
-    chainId: Uint8Array | Uint8Array[]
-    td: Uint8Array
-    bestHash: Uint8Array
-    genesisHash: Uint8Array
-    forkId?: Uint8Array | Uint8Array[]
-    earliestBlock?: Uint8Array
-    latestBlock?: Uint8Array
-    latestBlockHash?: Uint8Array
-  }
+  message: [
+    code: SnapMessageCodes | EthMessageCodes | EthyMessageCodes,
+    payload: Uint8Array | NestedUint8Array,
+  ]
+  status: unknown
   blockRangeUpdate: {
     earliestBlock: Uint8Array
     latestBlock: Uint8Array
     latestBlockHash: Uint8Array
   }
+  /** ETHY/0 repeat STATUS (spec allows live bitmask updates). */
+  statusUpdated: [status: unknown]
 }
 
 export interface KBucketEvent {
@@ -218,6 +215,9 @@ export interface DPTOptions {
 
   /** Worker discovery counters (optional). */
   discoveryMetrics?: import('./discovery/metrics.ts').DiscoveryMetrics
+
+  /** Include EIP-778 `"ethy"` key in discv4 ENR responses. */
+  ethyDiscoveryTag?: boolean
 }
 
 export interface DPTServerOptions {
@@ -248,6 +248,9 @@ export interface DPTServerOptions {
   common?: Common
 
   discoveryMetrics?: import('./discovery/metrics.ts').DiscoveryMetrics
+
+  /** Include EIP-778 `"ethy"` key in discv4 ENR responses. */
+  ethyDiscoveryTag?: boolean
 }
 
 export type ProtocolType = (typeof ProtocolType)[keyof typeof ProtocolType]
@@ -255,6 +258,7 @@ export type ProtocolType = (typeof ProtocolType)[keyof typeof ProtocolType]
 export const ProtocolType = {
   ETH: 'eth',
   SNAP: 'snap',
+  ETHY: 'ethy',
 } as const
 
 export interface KBucketOptions {
@@ -303,6 +307,8 @@ export interface PeerInfo {
   chainDirectory?: boolean
   /** EIP-868 fork id from ENR `eth` entry when present. */
   ethForkId?: { forkHash: string; nextFork: bigint }
+  /** ENR contains EIP-778 `ethy` key (ETHY/0 capable). */
+  ethyCapable?: boolean
 }
 
 export interface Contact extends PeerInfo {
