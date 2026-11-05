@@ -529,12 +529,21 @@ export class RLPx {
           ? helloClientId.toLowerCase()
           : new TextDecoder().decode(helloClientId).toLowerCase()
         : ''
-    const nonSnapClient = clientStr.includes('eri' + 'gon') || clientStr.includes('scout')
+    const nonSnapClient =
+      clientStr.includes('eri' + 'gon') || clientStr.includes('scout') || clientStr.includes('reth')
     if (nonSnapClient) {
       this._peersLRU.set(peerKey, true)
     } else if (reason === DISCONNECT_REASON.TOO_MANY_PEERS) {
-      this._peersLRU.delete(peerKey)
-      this._peerDialHoldUntil.set(peerKey, Date.now() + TOO_MANY_PEERS_DIAL_HOLD_MS)
+      const getProtocols = peer.getProtocols
+      const protocols = typeof getProtocols === 'function' ? getProtocols.call(peer) : undefined
+      const negotiatedSnap =
+        protocols !== undefined && protocols.some((p) => p.constructor.name === 'SNAP')
+      if (protocols !== undefined && !negotiatedSnap) {
+        this._peersLRU.set(peerKey, true)
+      } else {
+        this._peersLRU.delete(peerKey)
+        this._peerDialHoldUntil.set(peerKey, Date.now() + TOO_MANY_PEERS_DIAL_HOLD_MS)
+      }
     } else if (
       reason === DISCONNECT_REASON.TIMEOUT ||
       reason === DISCONNECT_REASON.NETWORK_ERROR ||

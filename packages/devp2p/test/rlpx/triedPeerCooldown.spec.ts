@@ -68,6 +68,65 @@ describe('[Devp2p/RLPx]: TOO_MANY_PEERS dial hold', () => {
     expect(dialed).toHaveLength(1)
   })
 
+  it('keeps reth in LRU after TOO_MANY_PEERS so DNS does not redial', () => {
+    vi.useFakeTimers()
+    const rlpx = createRlpx()
+    open.push(rlpx)
+    const target = peer(88)
+    const key = bytesToUnprefixedHex(target.id!)
+    rlpx['_peersLRU'].set(key, true)
+
+    rlpx._handlePeerDisconnect(
+      {
+        getId: () => target.id,
+        getHelloMessage: () => ({ clientId: 'Reth/v1.0.0/linux-amd64' }),
+      } as never,
+      DISCONNECT_REASON.TOO_MANY_PEERS,
+      false,
+    )
+
+    expect(rlpx['_peersLRU'].has(key)).toBe(true)
+
+    const dialed: PeerInfo[] = []
+    rlpx['_connectToPeer'] = (p: PeerInfo) => {
+      dialed.push(p)
+    }
+
+    vi.advanceTimersByTime(TOO_MANY_PEERS_DIAL_HOLD_MS * 10)
+    rlpx['_onDiscoveredPeer'](target)
+    expect(dialed).toHaveLength(0)
+  })
+
+  it('keeps eth-only peers in LRU when snap was not negotiated on TOO_MANY_PEERS', () => {
+    vi.useFakeTimers()
+    const rlpx = createRlpx()
+    open.push(rlpx)
+    const target = peer(77)
+    const key = bytesToUnprefixedHex(target.id!)
+    rlpx['_peersLRU'].set(key, true)
+
+    rlpx._handlePeerDisconnect(
+      {
+        getId: () => target.id,
+        getHelloMessage: () => ({ clientId: 'Geth/v1.15.0' }),
+        getProtocols: () => [{ constructor: { name: 'ETH' } }],
+      } as never,
+      DISCONNECT_REASON.TOO_MANY_PEERS,
+      false,
+    )
+
+    expect(rlpx['_peersLRU'].has(key)).toBe(true)
+
+    const dialed: PeerInfo[] = []
+    rlpx['_connectToPeer'] = (p: PeerInfo) => {
+      dialed.push(p)
+    }
+
+    vi.advanceTimersByTime(TOO_MANY_PEERS_DIAL_HOLD_MS * 10)
+    rlpx['_onDiscoveredPeer'](target)
+    expect(dialed).toHaveLength(0)
+  })
+
   it('keeps non-snap clients (e.g. scout) in LRU after TOO_MANY_PEERS so they never redial', () => {
     vi.useFakeTimers()
     const rlpx = createRlpx()
