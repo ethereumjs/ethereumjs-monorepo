@@ -156,6 +156,8 @@ function mapPeer(snapshot: WorkerPeerSnapshot, prev?: PeerTelemetry): PeerTeleme
     clientName: snapshot.clientId || 'unknown',
     caps: [...snapshot.caps],
     snapSession: snapshot.snapSession === true,
+    ethySession: snapshot.ethySession === true,
+    ethyStatus: snapshot.ethyStatus,
     hasHead: snapshot.bestHash !== undefined,
     latestBlock:
       snapshot.latestBlock !== undefined ? BigInt(snapshot.latestBlock) : prev?.latestBlock,

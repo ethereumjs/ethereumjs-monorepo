@@ -352,14 +352,18 @@ export class Devp2pWorkerHost {
       this._rlpx!.events.once('listening', () => resolve())
       this._rlpx!.listen(listenPort, endpoint.address ?? '0.0.0.0')
     })
+    const actualTcpPort = this._rlpx.boundTcpPort() ?? listenPort
+    if (actualTcpPort > 0) {
+      this._rlpx.setListenPort(actualTcpPort)
+    }
 
     void this._dpt.refresh()
 
-    const advertised = this._dpt.syncEndpointFromSocket(listenPort)
+    const advertised = this._dpt.syncEndpointFromSocket(actualTcpPort)
     this._discoveryMetrics.setBoundEndpoint(
       advertised.address ?? '',
       advertised.udpPort ?? 0,
-      advertised.tcpPort ?? listenPort,
+      advertised.tcpPort ?? actualTcpPort,
     )
     const enodeHost =
       advertised.address !== undefined &&
@@ -367,9 +371,14 @@ export class Devp2pWorkerHost {
       advertised.address !== '0.0.0.0'
         ? advertised.address
         : '127.0.0.1'
-    const tcpForEnode = advertised.tcpPort ?? listenPort
+    const tcpForEnode = advertised.tcpPort ?? actualTcpPort
     this._discoveryMetrics.setLocalEnode(
-      privateKeyToEnode(opts.privateKey, enodeHost, tcpForEnode, advertised.udpPort ?? listenPort),
+      privateKeyToEnode(
+        opts.privateKey,
+        enodeHost,
+        tcpForEnode,
+        advertised.udpPort ?? actualTcpPort,
+      ),
     )
 
     for (const boot of resolveWorkerBootnodes(opts, common)) {

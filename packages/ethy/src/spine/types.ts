@@ -15,6 +15,17 @@ export interface PeerTelemetry {
   caps: string[]
   /** Snap subprotocol is on the live session, not only in the HELLO cap list. */
   snapSession?: boolean
+  /** ETHY/0 subprotocol is on the live session. */
+  ethySession?: boolean
+  /** Remote ETHY/0 STATUS snapshot when negotiated. */
+  ethyStatus?: {
+    basePivotBlock: string
+    basePivotStateRoot: string
+    bucketsBitmask: string
+    balEarliestBlock: string
+    balLatestBlock: string
+    latestBlockHash: string
+  }
   /** ETH STATUS completed with a usable head hash. */
   hasHead?: boolean
   /** Latest block number reported by the peer's ETH STATUS / BLOCK_RANGE_UPDATE. */

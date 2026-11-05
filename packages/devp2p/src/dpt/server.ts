@@ -4,7 +4,7 @@ import debugDefault from 'debug'
 import { EventEmitter } from 'eventemitter3'
 import { LRUCache } from 'lru-cache'
 
-import { ethForkIdFromDiscv4Record } from '../dns/enrPeerFields.ts'
+import { ethForkIdFromDiscv4Record, ethyCapableFromDiscv4Record } from '../dns/enrPeerFields.ts'
 import { createDeferred, devp2pDebug, formatLogId, pickAdvertisedIPv4, pk2id } from '../util.ts'
 import { discv4ENRList, tcpPortFromDiscv4Enr } from './discv4Enr.ts'
 import { discv4ExpirationValid } from './packetExpiry.ts'
@@ -305,11 +305,13 @@ export class Server {
           break
         }
         const tcp = tcpPortFromDiscv4Enr(record)
+        const ethyCapable = ethyCapableFromDiscv4Record(record)
         if (tcp !== undefined) {
           this._dpt.updatePeerEndpoint(peerId, {
             address: rinfo.address,
             udpPort: rinfo.port,
             tcpPort: tcp,
+            ...(ethyCapable ? { ethyCapable: true } : {}),
           })
         }
         break

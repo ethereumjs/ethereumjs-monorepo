@@ -156,6 +156,20 @@ export class RLPx {
     if (this._server) this._server.listen(...args)
   }
 
+  /** Actual OS-assigned TCP listen port (useful when `listen(0)` is used). */
+  boundTcpPort(): number | null {
+    const addr = this._server?.address()
+    if (addr !== null && addr !== undefined && typeof addr === 'object') {
+      return addr.port
+    }
+    return this._listenPort
+  }
+
+  /** Update the TCP listen port advertised in outbound RLPx HELLO messages. */
+  setListenPort(port: number | null): void {
+    this._listenPort = port
+  }
+
   destroy(...args: any[]) {
     this._isAliveCheck()
     if (this.DEBUG) {

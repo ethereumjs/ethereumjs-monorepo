@@ -1,7 +1,7 @@
 # WP-06c: Ethy `ETHY/0` Swarm Sync, Proof-Sidecar Persistence, `ETHY/0` vs `SNAP/1` Sync Selector, Adaptive TUI & 2-Client Live Loopback
 
-- **Status:** `BLOCKED_BY_WP-06b`
-- **Dependencies:** `WP-04k` (`DONE`), `WP-05b` (`DONE`), `WP-06a`, `WP-06b`
+- **Status:** `READY_FOR_PLANNING`
+- **Dependencies:** `WP-04k` (`DONE`), `WP-05b` (`DONE`), `WP-06a` (`DONE`), `WP-06b` (`DONE`)
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
 
