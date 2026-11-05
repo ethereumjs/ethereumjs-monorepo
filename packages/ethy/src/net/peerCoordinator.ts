@@ -254,7 +254,6 @@ export async function startPeerCoordinator(
   let snapSync: SnapAccountSynchronizer | undefined
   let codeSync: SnapCodeAndStorageSynchronizer | undefined
   let headFollower: BalChainStreamer | undefined
-  let resumeDecided = false
   let handoffCatchup = false
   let baseSyncCompletePosted = false
   let markingBaseSyncComplete = false
@@ -281,12 +280,16 @@ export async function startPeerCoordinator(
       ],
     }
   }
+  const savedSnapPeek = opts.fresh === true ? undefined : snapStore?.peekActive()
+  if (opts.fresh === true) {
+    snapStore?.discardPivots()
+  }
   /** Saved snap journals replayed from disk (head used only for stale / BAL handoff). */
-  let diskHydrated = false
+  let diskHydrated = savedSnapPeek === undefined
+  let resumeDecided = savedSnapPeek === undefined
   let resumeHeadHandled = false
   let resumeHydrateStarted = false
   let rollingStatusAdvertised = false
-  const savedSnapPeek = opts.fresh === true ? undefined : snapStore?.peekActive()
   const syncMode: SyncMode = opts.syncMode ?? 'auto'
   let firstEthStatusAtMs = 0
   let ethySwarm: EthySwarmSynchronizer | undefined
@@ -364,6 +367,7 @@ export async function startPeerCoordinator(
             blockHash: newPivot.blockHash,
             stateRoot: newPivot.stateRoot,
           })
+          refreshEthyWorkerAdvertisement(clientRef, spine)
           deriveCapabilities(spine)
         },
         onBalBlockBuffered: () => {
@@ -448,6 +452,9 @@ export async function startPeerCoordinator(
         onBalRefreshAccount: (hash) => snapSync?.enqueueAccountRefreshCursor(hash),
       })
       codeSync.start()
+    }
+    if (spine.syncTransport === 'ethy' && codeSync.pendingDone() && getSnapPeers().length === 0) {
+      codeSync.clearPending()
     }
   }
 
@@ -609,6 +616,15 @@ export async function startPeerCoordinator(
   ) => {
     diskHydrated = true
     resumeDecided = true
+    if (snapStore !== undefined) {
+      const mask =
+        spine.ethyBucketsBitmask ?? snapStore.ethyBucketsBitmaskFromBuckets(spine.snapBuckets)
+      if (mask > 0) {
+        spine.ethyBucketsBitmask = mask
+        syncEthyPivotServeDir(client, snapStore.activePivotAccountsDir())
+        refreshEthyWorkerAdvertisement(client, spine)
+      }
+    }
     if (peek.baseSyncComplete) {
       handoffCatchup = true
       if (restored > 0) {
@@ -1096,7 +1112,7 @@ export async function startPeerCoordinator(
       // DNS ENR tree + bootnodes are chain-scoped. Unfiltered discv4 neighbors
       // are other networks and crowd out Sepolia sessions.
       shouldFindNeighbours: opts.shouldFindNeighbours ?? false,
-      chainDirectoryDiscovery: opts.shouldFindNeighbours === true ? false : true,
+      chainDirectoryDiscovery: opts.shouldFindNeighbours === false ? false : true,
       clientId: utf8ToBytes(`ethy/v${getEthyClientVersion()}`),
       status,
       endpoint: { address: '0.0.0.0', udpPort: 0, tcpPort: opts.listenPort ?? 0 },
@@ -1133,8 +1149,16 @@ export async function startPeerCoordinator(
       chunkStateRoot: ethyAnchorRoot,
       pivotBlockNumber: ethyAnchorBlock,
       balThroughBlock: head,
+      onAccountsIngested: (entries) => codeSync?.noteAccounts(entries),
       onBucketDone: (idx) => noteBucketAdvertised(client, idx),
-      onAccountsComplete: () => ensureSnapSync(client),
+      onAccountsComplete: () => {
+        ensureSnapSync(client)
+        maybeMarkBaseSyncComplete()
+      },
+      onSwarmComplete: () => {
+        ensureSnapSync(client)
+        maybeMarkBaseSyncComplete()
+      },
     })
     ethySwarm.start()
     setPhase(spine, 'SNAP_SYNCING')
@@ -1225,6 +1249,10 @@ export async function startPeerCoordinator(
     for (const peer of peerBook.dialCandidates(now)) {
       client.connectPeer(peer)
     }
+  }
+
+  if (opts.fresh !== true && savedSnapPeek !== undefined) {
+    startResumeHydrate()
   }
 
   let pendingTelemetry: WorkerTelemetrySnapshot | undefined

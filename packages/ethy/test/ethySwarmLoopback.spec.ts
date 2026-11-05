@@ -163,11 +163,12 @@ describe('[Ethy/Net]: ETHY/0 swarm loopback', () => {
             clearInterval(tick)
             resolve()
           }
-        }, 100)
+        }, 50)
       })
 
       assert.equal(spine.syncTransport, 'ethy')
       assert.isAtLeast(spine.totalAccountsSynced, seed.accountCount)
+      assert.isTrue(spine.snapBuckets.every((b) => b.status === 'done'))
     } finally {
       handle?.stop()
       seeder.stop()

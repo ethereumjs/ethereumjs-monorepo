@@ -41,7 +41,10 @@ export async function seedDemoEthyPivot(opts: {
   let accountCount = 0
   for (let nibble = 0; nibble < 16; nibble++) {
     const rows = peer.accounts.filter((a) => a.accountHash[0]! >> 4 === nibble)
-    if (rows.length === 0) continue
+    if (rows.length === 0) {
+      markBucketDone(buckets[nibble]!, 0)
+      continue
+    }
     const slab = new Uint8Array(rows.length * 136)
     for (let i = 0; i < rows.length; i++) {
       const off = i * 136
@@ -68,6 +71,8 @@ export async function seedDemoEthyPivot(opts: {
     markBucketDone(buckets[nibble]!, rows.length)
   }
   const mask = store.ethyBucketsBitmaskFromBuckets(buckets)
+  store.flushBuckets(buckets)
+  store.markBaseSyncComplete(pivotBlock)
   store.persistEthyBucketsBitmask(mask)
   const accountsDir = store.activePivotAccountsDir()
   if (accountsDir === undefined) {

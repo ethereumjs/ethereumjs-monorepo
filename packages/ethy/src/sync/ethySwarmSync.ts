@@ -6,18 +6,20 @@ import {
   bigIntToUnpaddedBytes,
   bytesToBigInt,
   bytesToInt,
-  createBlockLevelAccessListFromRLP,
   equalsBytes,
   intToUnpaddedBytes,
 } from '@ethereumjs/util'
 
+import { activeHardfork, chainConfigForNetwork } from '../net/chainHardfork.ts'
 import { peerIdToBytes } from '../net/pivotHeader.ts'
 import type { SnapPivotStore } from '../persist/snapStore.ts'
 import { syncBucketCursorFields } from '../spine/buckets.ts'
 import { recordDiagnostic } from '../spine/diagnostics.ts'
 import type { EthySpine } from '../spine/types.ts'
-import { applySyncedBalDiff } from './balSync.ts'
+import type { IngestedAccountMeta } from './accountSync.ts'
+import { applyBlockBal, pushBalWindow } from './balSync.ts'
 import { verifyProvenAccountChunkJob } from './snapVerifyJob.ts'
+import { incrementKey32, ingestedMetaFromBinarySlab } from './syntheticPeer.ts'
 
 const MAX_CHUNK_PIPELINE = 2
 const MAX_BAL_RANGE = 32
@@ -32,8 +34,10 @@ export type EthySwarmSyncOpts = {
   chunkStateRoot: Uint8Array
   pivotBlockNumber: bigint
   balThroughBlock: bigint
+  onAccountsIngested?: (entries: IngestedAccountMeta[]) => void
   onBucketDone?: (bucketIndex: number) => void
   onAccountsComplete?: () => void
+  onSwarmComplete?: () => void
 }
 
 type ManifestEntry = {
@@ -193,10 +197,13 @@ export class EthySwarmSynchronizer {
   private balInFlight = false
   private accountsPassComplete = false
   private stopped = false
+  private lastRateAt = Date.now()
+  private lastAccountCount = 0
 
   constructor(opts: EthySwarmSyncOpts) {
     this.opts = opts
     this.balNext = opts.pivotBlockNumber + 1n
+    this.lastAccountCount = opts.spine.totalAccountsSynced
   }
 
   start(): void {
@@ -288,14 +295,21 @@ export class EthySwarmSynchronizer {
     const origins = parsed.entries.map((e) => new Uint8Array(e.originHash))
     this.manifestOrigins.set(parsed.bucketIndex, origins)
     if (origins.length === 0) {
-      recordDiagnostic(this.opts.spine, {
-        subsystem: 'devp2p',
-        severity: 'warn',
-        message: `ETHY bucket ${parsed.bucketIndex} manifest empty`,
-        peerId: this.opts.seederPeerId,
-        bucketIndex: parsed.bucketIndex,
-      })
+      const bucket = this.opts.spine.snapBuckets[parsed.bucketIndex]
+      if (bucket !== undefined && !this.bucketsDone.has(parsed.bucketIndex)) {
+        this.bucketsDone.add(parsed.bucketIndex)
+        bucket.status = 'done'
+        bucket.subRanges = []
+        syncBucketCursorFields(bucket)
+        this.opts.onBucketDone?.(parsed.bucketIndex)
+      }
+      this.maybeFinishAccountsPass()
       return
+    }
+    const bucket = this.opts.spine.snapBuckets[parsed.bucketIndex]
+    if (bucket !== undefined && bucket.status === 'pending') {
+      bucket.status = 'syncing'
+      bucket.assignedPeerId = this.opts.seederPeerId
     }
     this.pumpChunks(parsed.bucketIndex)
   }
@@ -305,17 +319,6 @@ export class EthySwarmSynchronizer {
     if (parsed === undefined) return
     this.chunkFlights.delete(this.flightKey(parsed.reqId))
     if (parsed.binaryAccountsSlab.length === 0) {
-      this.pumpChunks(parsed.bucketIndex)
-      return
-    }
-    if (!equalsBytes(parsed.chunkStateRoot, this.opts.chunkStateRoot)) {
-      recordDiagnostic(this.opts.spine, {
-        subsystem: 'devp2p',
-        severity: 'warn',
-        message: 'ETHY chunk state root mismatch',
-        peerId: this.opts.seederPeerId,
-        bucketIndex: parsed.bucketIndex,
-      })
       this.pumpChunks(parsed.bucketIndex)
       return
     }
@@ -343,10 +346,28 @@ export class EthySwarmSynchronizer {
       return
     }
     this.opts.stateManager.putSnapBinaryAccountsFromSlab(result.slab)
+    this.opts.onAccountsIngested?.(ingestedMetaFromBinarySlab(result.slab))
     const bucket = this.opts.spine.snapBuckets[parsed.bucketIndex]
     if (bucket !== undefined) {
       bucket.accountsLoaded += result.count
       this.opts.spine.totalAccountsSynced += result.count
+      if (result.lastKey instanceof Uint8Array) {
+        bucket.currentLastHash = new Uint8Array(result.lastKey)
+        if (bucket.subRanges !== undefined && bucket.subRanges.length > 0) {
+          bucket.subRanges[0]!.origin = incrementKey32(result.lastKey)
+        }
+      }
+    }
+    const now = Date.now()
+    const dt = (now - this.lastRateAt) / 1000
+    if (dt >= 0.25) {
+      const delta = this.opts.spine.totalAccountsSynced - this.lastAccountCount
+      if (delta > 0) {
+        this.opts.spine.accountsPerSec = delta / dt
+        this.opts.spine.accountsPerMin = (delta / dt) * 60
+      }
+      this.lastAccountCount = this.opts.spine.totalAccountsSynced
+      this.lastRateAt = now
     }
     const proof =
       result.rangeOrigin !== undefined && result.lastKey instanceof Uint8Array
@@ -381,6 +402,7 @@ export class EthySwarmSynchronizer {
       this.bucketsDone.add(parsed.bucketIndex)
       if (bucket !== undefined) {
         bucket.status = 'done'
+        bucket.subRanges = []
         syncBucketCursorFields(bucket)
       }
       this.opts.onBucketDone?.(parsed.bucketIndex)
@@ -396,7 +418,12 @@ export class EthySwarmSynchronizer {
       if (!this.bucketsDone.has(b)) return
     }
     this.accountsPassComplete = true
+    this.opts.spine.accountsPerSec = 0
     this.opts.onAccountsComplete?.()
+    if (this.balNext > this.opts.balThroughBlock) {
+      this.opts.onSwarmComplete?.()
+      return
+    }
     this.requestBalRange()
   }
 
@@ -425,19 +452,46 @@ export class EthySwarmSynchronizer {
   private async onBalRange(payload: Uint8Array): Promise<void> {
     this.balInFlight = false
     const blocks = parseBalRange(payload)
-    if (blocks === undefined || blocks.length === 0) return
+    if (blocks === undefined || blocks.length === 0) {
+      this.balNext = this.opts.balThroughBlock + 1n
+      this.opts.onSwarmComplete?.()
+      return
+    }
+    const chain = chainConfigForNetwork(this.opts.spine.network)
+    const hardfork = activeHardfork(chain)
     for (const block of blocks) {
-      if (block.balRlp.length > 0) {
-        await applySyncedBalDiff(
+      if (block.balRlp.length > 0 && block.headerRlp.length > 0) {
+        const applied = await applyBlockBal(
           this.opts.stateManager,
-          createBlockLevelAccessListFromRLP(block.balRlp).toJSON(),
+          block.headerRlp,
+          block.balRlp,
+          chain,
+          hardfork,
           this.opts.spine.snapBuckets,
         )
+        if (!applied.ok) {
+          recordDiagnostic(this.opts.spine, {
+            subsystem: 'bal',
+            severity: 'warn',
+            message: `ETHY BAL_RANGE block #${block.blockNumber.toString()} rejected: ${applied.reason ?? 'invalid'}`,
+            peerId: this.opts.seederPeerId,
+          })
+          return
+        }
+        if (applied.balJson !== undefined) {
+          pushBalWindow(this.opts.spine, block.blockNumber, applied.balJson)
+          this.opts.spine.appliedBalCount = (this.opts.spine.appliedBalCount ?? 0) + 1
+        }
+        this.opts.snapStore?.appendHealBal(block.blockNumber, block.balRlp)
       }
+      this.opts.spine.lastVerifiedBlockNumber = block.blockNumber
+      this.opts.spine.headBlockNumber = block.blockNumber
       this.balNext = block.blockNumber + 1n
     }
     if (this.balNext <= this.opts.balThroughBlock) {
       this.requestBalRange()
+    } else {
+      this.opts.onSwarmComplete?.()
     }
   }
 }

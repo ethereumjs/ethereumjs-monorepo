@@ -459,6 +459,10 @@ export class SnapPivotStore {
       bucket.currentLastHash = unprefixedHexToBytes(saved.currentLastHash.slice(2))
     }
     spine.snapBuckets = buckets
+    if (spine.ethyBucketsBitmask === undefined || spine.ethyBucketsBitmask === 0) {
+      const derivedMask = this.ethyBucketsBitmaskFromBuckets(buckets)
+      if (derivedMask > 0) spine.ethyBucketsBitmask = derivedMask
+    }
 
     let restored = 0
     let sliceStart = Date.now()

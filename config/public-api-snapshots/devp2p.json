@@ -14,6 +14,7 @@
     "ETHY",
     "EthMessageCodeNames",
     "EthMessageCodes",
+    "EthyChunkStore",
     "EthyMessageCodeNames",
     "EthyMessageCodes",
     "JSONNodeStore",
@@ -25,6 +26,7 @@
     "PrefixesNames",
     "ProtocolType",
     "RLPx",
+    "RollingBlockStore",
     "SNAP",
     "Server",
     "SnapMessageCodeNames",
@@ -49,6 +51,7 @@
     "pk2id",
     "requestIdFromPayload",
     "resolveThreadedNetworkModuleUrl",
-    "tcpPortFromDiscv4Enr"
+    "tcpPortFromDiscv4Enr",
+    "tryServeEthyGet"
   ]
 }
