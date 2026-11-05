@@ -280,9 +280,12 @@ export class BalChainStreamer {
     spine.streamedBalCount = blocks.length
     spine.bufferedBalCount = blocks.length
     const last = blocks[blocks.length - 1]!
+    spine.headBlockNumber = last.blockNumber
+    spine.headStateRoot = last.stateRoot
     if (spine.bestPeerHead === undefined || last.blockNumber > spine.bestPeerHead) {
       spine.bestPeerHead = last.blockNumber
     }
+    void this.maybePivotStep()
   }
 
   handleEthMessage(msg: { peerId: string; code: number; payload: Uint8Array }): boolean {
@@ -442,27 +445,28 @@ export class BalChainStreamer {
   private async maybePivotStep(): Promise<void> {
     const { spine } = this.opts
     if (spine.phase !== 'SNAP_SYNCING') return
-    const pivot = spine.pivotBlockNumber
-    if (pivot === undefined || spine.pivotStateRoot === undefined) return
-    if (this.buffered.length < Number(PIVOT_STEP_BLOCKS)) return
-    const first = this.buffered[0]?.blockNumber
-    const last = this.buffered[this.buffered.length - 1]?.blockNumber
-    if (first === undefined || last === undefined) return
-    const targetBlock = pivot + PIVOT_STEP_BLOCKS
-    const best =
-      spine.bestPeerHead !== undefined && spine.bestPeerHead > last ? spine.bestPeerHead : last
-    if (first !== pivot + 1n || last < targetBlock) return
-    if (targetBlock > best - SAFE_HEAD_MARGIN) return
+    while (this.buffered.length >= Number(PIVOT_STEP_BLOCKS)) {
+      const pivot = spine.pivotBlockNumber
+      if (pivot === undefined || spine.pivotStateRoot === undefined) return
+      const first = this.buffered[0]?.blockNumber
+      const last = this.buffered[this.buffered.length - 1]?.blockNumber
+      if (first === undefined || last === undefined) return
+      const targetBlock = pivot + PIVOT_STEP_BLOCKS
+      const best =
+        spine.bestPeerHead !== undefined && spine.bestPeerHead > last ? spine.bestPeerHead : last
+      if (first !== pivot + 1n || last < targetBlock) return
+      if (targetBlock > best - SAFE_HEAD_MARGIN) return
 
-    const window = this.buffered.splice(0, Number(PIVOT_STEP_BLOCKS))
-    spine.pivotStepsCompleted = (spine.pivotStepsCompleted ?? 0) + 1
-    await this.applyBufferedWindow(window, spine.snapBuckets)
-    // Advance Connected Peers' known latestBlock to at least targetBlock once we have verified
-    // that targetBlock + SAFE_HEAD_MARGIN is already live on the network, so snap schedulers
-    // don't skip peers between Geth's 32-block BLOCK_RANGE_UPDATE broadcasts.
-    for (const p of spine.peers.values()) {
-      if (p.hasHead === true && (p.latestBlock === undefined || p.latestBlock < targetBlock)) {
-        p.latestBlock = targetBlock
+      const window = this.buffered.splice(0, Number(PIVOT_STEP_BLOCKS))
+      spine.pivotStepsCompleted = (spine.pivotStepsCompleted ?? 0) + 1
+      await this.applyBufferedWindow(window, spine.snapBuckets)
+      // Advance Connected Peers' known latestBlock to at least targetBlock once we have verified
+      // that targetBlock + SAFE_HEAD_MARGIN is already live on the network, so snap schedulers
+      // don't skip peers between Geth's 32-block BLOCK_RANGE_UPDATE broadcasts.
+      for (const p of spine.peers.values()) {
+        if (p.hasHead === true && (p.latestBlock === undefined || p.latestBlock < targetBlock)) {
+          p.latestBlock = targetBlock
+        }
       }
     }
   }

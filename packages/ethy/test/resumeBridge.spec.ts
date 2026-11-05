@@ -7,7 +7,7 @@ import { BalChainStreamer, type VerifiedBalBlock } from '../src/sync/balSync.ts'
 import { planResumeStart, shouldReleaseSnapBridge } from '../src/sync/resumeCoordinator.ts'
 
 describe('[Ethy/Sync]: bridge-pivot resume', () => {
-  it('restoreBuffered plus pivot steps release snap inside the live window', () => {
+  it('restoreBuffered plus pivot steps release snap inside the live window', async () => {
     const spine = createSpine('sepolia', 11155111n)
     setPhase(spine, 'SNAP_SYNCING')
     const pivot = 10_000n
@@ -28,7 +28,7 @@ describe('[Ethy/Sync]: bridge-pivot resume', () => {
         blockHash: new Uint8Array(32),
         stateRoot: new Uint8Array(32),
         headerRlp: new Uint8Array([0x80]),
-        balRlp: new Uint8Array([0x80]),
+        balRlp: new Uint8Array(0),
       })
     }
 
@@ -53,7 +53,6 @@ describe('[Ethy/Sync]: bridge-pivot resume', () => {
             ...spine.pivotBridging,
             currentBlock: newPivot.blockNumber,
           }
-          spine.pivotBlockNumber = newPivot.blockNumber
           if (shouldReleaseSnapBridge(head, newPivot.blockNumber)) {
             spine.pivotBridging = undefined
             snapReleased = true
@@ -61,11 +60,15 @@ describe('[Ethy/Sync]: bridge-pivot resume', () => {
         }
       },
     })
-    streamer.restoreBuffered(blocks.slice(0, 32))
-    assert.equal(spine.bufferedBalCount, 32)
+    streamer.restoreBuffered(blocks.slice(0, 10))
+    assert.equal(spine.bufferedBalCount, 10)
     assert.isFalse(snapReleased)
+
     streamer.restoreBuffered(blocks)
-    spine.pivotBlockNumber = head - 64n
-    assert.isTrue(shouldReleaseSnapBridge(head, spine.pivotBlockNumber))
+    await new Promise<void>((resolve) => setTimeout(resolve, 20))
+    assert.isTrue(snapReleased)
+    assert.isUndefined(spine.pivotBridging)
+    assert.equal(spine.pivotBlockNumber, 10_240n)
+    assert.equal(spine.pivotStepsCompleted, 15)
   })
 })

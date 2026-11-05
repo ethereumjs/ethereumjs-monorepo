@@ -415,6 +415,10 @@ export class SnapPivotStore {
         spine.pivotCarry = { kind: 'previous', accounts: held }
       }
     }
+    this.restoredHealBlocks = this.readUnappliedHealBundles(
+      BigInt(pivot.blockNumber),
+      active.stateRoot,
+    )
     return restored
   }
 
