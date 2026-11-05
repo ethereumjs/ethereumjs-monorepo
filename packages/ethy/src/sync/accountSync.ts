@@ -99,6 +99,7 @@ export type SnapAccountSynchronizerOpts = {
   verifyPool?: SnapVerifyPool
   onAccountsIngested?: (entries: IngestedAccountMeta[]) => void
   onSlabCommitted?: (flight: InFlightRange, lastKey: Uint8Array) => void
+  onBucketDone?: (bucketIndex: number) => void
 }
 
 export class SnapAccountSynchronizer {
@@ -112,6 +113,7 @@ export class SnapAccountSynchronizer {
   private readonly verifyPool: SnapVerifyPool
   private readonly onAccountsIngested?: (entries: IngestedAccountMeta[]) => void
   private readonly onSlabCommitted?: (flight: InFlightRange, lastKey: Uint8Array) => void
+  private readonly onBucketDone?: (bucketIndex: number) => void
   private reqId = 1n
   private nextCursorId = 256
   private inFlight = new Map<string, InFlightRange>()
@@ -140,6 +142,7 @@ export class SnapAccountSynchronizer {
     this.verifyPool = opts.verifyPool ?? new SnapVerifyPool({ inProcess: true })
     this.onAccountsIngested = opts.onAccountsIngested
     this.onSlabCommitted = opts.onSlabCommitted
+    this.onBucketDone = opts.onBucketDone
   }
 
   /** One-account snap cursor after BAL touched storage/code during account sync (WP-04k). */
@@ -668,11 +671,27 @@ export class SnapAccountSynchronizer {
       this.peerBook?.noteSnapSuccess(peerId, Date.now())
       if (persistSlab !== undefined && persistSlab.length > 0) {
         if (!isRefresh) {
+          const proof =
+            result.proofNodes !== undefined &&
+            result.rangeOrigin !== undefined &&
+            result.lastKey instanceof Uint8Array
+              ? {
+                  slabByteOffset: 0,
+                  slabByteLength: persistSlab.length,
+                  originHash: result.rangeOrigin,
+                  lastHash: result.lastKey,
+                  hasRight: result.hasRight ? 1 : 0,
+                  chunkStateRoot: flight.stateRoot,
+                  chunkBlockNumber: flight.pivotBlockNumber,
+                  proofNodes: result.proofNodes,
+                }
+              : undefined
           void this.snapStore?.appendVerifiedSlabAsync(
             flight.bucket,
             persistSlab,
             this.spine.snapBuckets,
             cursor?.journal ?? 'prefix',
+            proof,
           )
         }
         this.onAccountsIngested?.(ingestedMetaFromBinarySlab(persistSlab))
@@ -698,6 +717,9 @@ export class SnapAccountSynchronizer {
     }
     syncBucketCursorFields(bucket)
     this.refreshBucketSyncStatus(bucket)
+    if (bucket.status === 'done') {
+      this.onBucketDone?.(bucket.index)
+    }
     this.schedule()
   }
 

@@ -151,6 +151,11 @@ export class SyntheticSnapPeer {
     return RLP.encode([reqId, [slots], proof] as never)
   }
 
+  /** Test/demo: trie backing Merkle proofs (WP-06c seed dir). */
+  merkleTrie(): MerklePatriciaTrie {
+    return this.trie
+  }
+
   /** Build ACCOUNT_RANGE RLP for a GET_ACCOUNT_RANGE payload. */
   async buildAccountRangeReply(getPayload: Uint8Array): Promise<Uint8Array> {
     const decoded = RLP.decode(getPayload) as unknown[]

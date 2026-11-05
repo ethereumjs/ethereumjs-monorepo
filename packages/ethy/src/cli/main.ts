@@ -91,6 +91,7 @@ async function main(): Promise<void> {
       fresh: cli.fresh,
       listenPort: cli.listenPort,
       connectEnodeUrls: cli.connectEnodeUrls.length > 0 ? cli.connectEnodeUrls : undefined,
+      syncMode: cli.syncMode,
       witnessExecutionHeader,
     })
       .then((handle) => {

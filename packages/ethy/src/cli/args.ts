@@ -1,3 +1,5 @@
+export type EthySyncMode = 'auto' | 'ethy' | 'snap'
+
 export interface EthyCliArgs {
   network: string
   demo: boolean
@@ -5,6 +7,7 @@ export interface EthyCliArgs {
   fresh: boolean
   dataDir?: string
   listenPort?: number
+  syncMode: EthySyncMode
   /** `enode://` URLs for direct dial after P2P start. */
   connectEnodeUrls: string[]
 }
@@ -17,6 +20,7 @@ export function parseEthyArgs(argv: string[]): EthyCliArgs {
   let fresh = false
   let dataDir: string | undefined
   let listenPort: number | undefined
+  let syncMode: EthySyncMode = 'auto'
   const connectEnodeUrls: string[] = []
 
   for (let i = 0; i < args.length; i++) {
@@ -55,6 +59,14 @@ export function parseEthyArgs(argv: string[]): EthyCliArgs {
       fresh = true
       continue
     }
+    if (a === '--sync-mode') {
+      const next = args[++i]
+      if (next !== 'auto' && next !== 'ethy' && next !== 'snap') {
+        throw new Error('--sync-mode must be auto, ethy, or snap')
+      }
+      syncMode = next
+      continue
+    }
     if (a === '--help' || a === '-h') {
       throw new Error('HELP')
     }
@@ -64,14 +76,14 @@ export function parseEthyArgs(argv: string[]): EthyCliArgs {
     network = a
   }
 
-  return { network, demo, headless, fresh, dataDir, listenPort, connectEnodeUrls }
+  return { network, demo, headless, fresh, dataDir, listenPort, syncMode, connectEnodeUrls }
 }
 
 export function printEthyUsage(): string {
   return `ethy — EthereumJS execution-free state node (Amsterdam focus)
 
 Usage:
-  ethy [network] [--demo] [--headless] [--fresh] [--datadir PATH] [--port N] [--connect enode://...]
+  ethy [network] [--demo] [--headless] [--fresh] [--sync-mode auto|ethy|snap] [--datadir PATH] [--port N] [--connect enode://...]
 
 Networks: sepolia (default), mainnet, hoodi, holesky
 `

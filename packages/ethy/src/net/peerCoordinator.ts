@@ -13,6 +13,7 @@ import {
   type BALJSONBlockAccessList,
   bytesToUnprefixedHex,
   equalsBytes,
+  hexToBytes,
   intToUnpaddedBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
@@ -49,6 +50,7 @@ import {
   startBlockBundleByNumber,
 } from '../sync/blockBundle.ts'
 import { SnapCodeAndStorageSynchronizer } from '../sync/codeAndStorageSync.ts'
+import { EthySwarmSynchronizer } from '../sync/ethySwarmSync.ts'
 import {
   decideSnapResume,
   shouldDeferLivePivotRequest,
@@ -58,6 +60,12 @@ import {
 import { SnapPeerFlightTracker } from '../sync/snapFlight.ts'
 import { createLiveSnapTransport } from '../sync/snapTransport.ts'
 import { SNAP_VERIFY_POOL_MODULE_URL, SnapVerifyPool } from '../sync/snapVerifyWorker.ts'
+import {
+  type EthySeederView,
+  type SyncMode,
+  pickUsableEthySeeder,
+  shouldLockSnapAfterGrace,
+} from '../sync/syncSourceSelector.ts'
 import { activeHardfork, advertisedForkHash, chainConfigForNetwork } from './chainHardfork.ts'
 import {
   VIP_SNAP_PEER_TARGET,
@@ -65,6 +73,7 @@ import {
   shouldVipReconnect,
   wantSnapDiscoveryHold,
 } from './discoveryHold.ts'
+import { refreshEthyWorkerAdvertisement, syncEthyPivotServeDir } from './ethyAdvertise.ts'
 import { p2pHandshakeStatusFields } from './genesisStatus.ts'
 import { parseEnodeUrl } from './parseEnode.ts'
 import {
@@ -134,6 +143,8 @@ export type StartPeerCoordinatorOptions = {
   fresh?: boolean
   /** Direct `enode://` dials after worker start (WP-06b). */
   connectEnodeUrls?: string[]
+  /** Base-state download preference (WP-06c). */
+  syncMode?: SyncMode
 }
 
 export type PeerCoordinatorHandle = {
@@ -184,6 +195,29 @@ function pickBestPeer(
     }
   }
   return best
+}
+
+function ethySeederRows(
+  peers: WorkerPeerSnapshot[],
+): Array<{ peerId: string; seeder: EthySeederView }> {
+  const out: Array<{ peerId: string; seeder: EthySeederView }> = []
+  for (const p of peers) {
+    if (p.ethySession !== true || p.ethyStatus === undefined) continue
+    const st = p.ethyStatus
+    const maskRaw = st.bucketsBitmask
+    const mask = maskRaw.startsWith('0x')
+      ? Number.parseInt(maskRaw, 16)
+      : Number.parseInt(maskRaw, 10)
+    out.push({
+      peerId: p.id,
+      seeder: {
+        bucketsBitmask: mask,
+        basePivotBlock: BigInt(st.basePivotBlock),
+        balEarliestBlock: BigInt(st.balEarliestBlock ?? st.basePivotBlock),
+      },
+    })
+  }
+  return out
 }
 
 function updatePivotStatusHint(spine: EthySpine, peers: WorkerPeerSnapshot[]): void {
@@ -253,6 +287,14 @@ export async function startPeerCoordinator(
   let resumeHydrateStarted = false
   let rollingStatusAdvertised = false
   const savedSnapPeek = opts.fresh === true ? undefined : snapStore?.peekActive()
+  const syncMode: SyncMode = opts.syncMode ?? 'auto'
+  let firstEthStatusAtMs = 0
+  let ethySwarm: EthySwarmSynchronizer | undefined
+  let ethySeederPeerId: string | undefined
+  let ethyAnchorBlock: bigint | undefined
+  let ethyAnchorRoot: Uint8Array | undefined
+  let ethyAnchorPending = false
+  const bucketsAdvertised = new Set<number>()
   const verifyPool = new SnapVerifyPool({
     inProcess: opts.inProcess === true,
     moduleUrl: opts.inProcess === true ? undefined : SNAP_VERIFY_POOL_MODULE_URL,
@@ -333,7 +375,20 @@ export async function startPeerCoordinator(
     headFollower.start()
   }
 
+  const noteBucketAdvertised = (clientRef: Devp2pWorkerClient, bucketIndex: number) => {
+    if (bucketsAdvertised.has(bucketIndex)) return
+    bucketsAdvertised.add(bucketIndex)
+    const mask = snapStore?.ethyBucketsBitmaskFromBuckets(spine.snapBuckets) ?? 0
+    spine.ethyBucketsBitmask = mask
+    snapStore?.persistEthyBucketsBitmask(mask)
+    refreshEthyWorkerAdvertisement(clientRef, spine)
+    syncEthyPivotServeDir(clientRef, snapStore?.activePivotAccountsDir())
+  }
+
   const ensureSnapSync = (clientRef: Devp2pWorkerClient) => {
+    if (spine.syncTransport === 'ethy' && ethySwarm?.isActive()) {
+      return
+    }
     if (
       !shouldEnsureSnapSync({
         pivotStateRoot: spine.pivotStateRoot,
@@ -376,6 +431,7 @@ export async function startPeerCoordinator(
             lastKey,
           )
         },
+        onBucketDone: (bucketIndex) => noteBucketAdvertised(clientRef, bucketIndex),
       })
       snapSync.start()
     }
@@ -736,6 +792,8 @@ export async function startPeerCoordinator(
       })
       // Cursors live in memory. The new directory must not reboot them at nibble zero.
       snapStore?.flushBuckets(spine.snapBuckets)
+      syncEthyPivotServeDir(client, snapStore?.activePivotAccountsDir())
+      refreshEthyWorkerAdvertisement(client, spine)
     }
     recordDiagnostic(spine, {
       subsystem: 'devp2p',
@@ -941,30 +999,49 @@ export async function startPeerCoordinator(
     return false
   }
 
-  const livePivotAllowed = (): boolean =>
-    !shouldDeferLivePivotRequest({
+  const livePivotAllowed = (): boolean => {
+    if (syncMode === 'ethy' && spine.syncTransport === 'unset') return false
+    if (spine.syncTransport === 'ethy' && spine.pivotStateRoot === undefined) return false
+    return !shouldDeferLivePivotRequest({
       fresh: opts.fresh === true,
       diskHydrated,
       spinePivotBlockNumber: spine.pivotBlockNumber,
       saved: snapStore?.peekActive(),
     })
+  }
 
-  const requestPivotFromPeer = (peer: WorkerPeerSnapshot, mode: 'hash' | 'number' = 'hash') => {
-    if (!livePivotAllowed()) return
+  const requestPivotHeaderAt = (
+    peer: WorkerPeerSnapshot,
+    blockNumber: bigint,
+    anchorOpts: { ethyAnchor?: boolean } = {},
+  ) => {
+    if (anchorOpts.ethyAnchor !== true && !livePivotAllowed()) return
     if (inFlightPeerId !== undefined) return
-    if (mode === 'number' && peer.latestBlock === undefined) return
-    if (mode === 'hash' && peer.bestHash === undefined) return
+    if (peer.bestHash === undefined) return
     const ethVersion = highestEthVersion(peer.caps)
     inFlightPeerId = peer.id
     inFlightEthVersion = ethVersion
     inFlightStartedAt = Date.now()
+    inFlightBlockNumber = blockNumber
+    inFlightHash = undefined
+    if (anchorOpts.ethyAnchor === true) ethyAnchorPending = true
+    const payload = encodeGetBlockHeadersByNumberPayload(ethVersion, blockNumber)
+    client.sendEthMessage(peerIdToBytes(peer.id), EthMessageCodes.GET_BLOCK_HEADERS, payload)
+  }
+
+  const requestPivotFromPeer = (peer: WorkerPeerSnapshot, mode: 'hash' | 'number' = 'hash') => {
     if (mode === 'number') {
-      inFlightBlockNumber = BigInt(peer.latestBlock!)
-      inFlightHash = undefined
-      const payload = encodeGetBlockHeadersByNumberPayload(ethVersion, inFlightBlockNumber)
-      client.sendEthMessage(peerIdToBytes(peer.id), EthMessageCodes.GET_BLOCK_HEADERS, payload)
+      if (peer.latestBlock === undefined) return
+      requestPivotHeaderAt(peer, BigInt(peer.latestBlock))
       return
     }
+    if (!livePivotAllowed()) return
+    if (inFlightPeerId !== undefined) return
+    if (peer.bestHash === undefined) return
+    const ethVersion = highestEthVersion(peer.caps)
+    inFlightPeerId = peer.id
+    inFlightEthVersion = ethVersion
+    inFlightStartedAt = Date.now()
     inFlightHash = peer.bestHash
     inFlightBlockNumber = undefined
     const payload = encodeGetBlockHeadersPayload(ethVersion, peer.bestHash!)
@@ -1025,9 +1102,102 @@ export async function startPeerCoordinator(
       endpoint: { address: '0.0.0.0', udpPort: 0, tcpPort: opts.listenPort ?? 0 },
       throttleDiscovery: true,
       nodeStorePath: discoveryNodeStorePath(dataDir, network),
+      ethyPivotDir: snapStore?.activePivotAccountsDir(),
     },
     workerModuleUrl,
   )
+
+  const startEthySwarmSync = () => {
+    if (
+      ethySeederPeerId === undefined ||
+      ethyAnchorBlock === undefined ||
+      ethyAnchorRoot === undefined ||
+      spine.pivotStateRoot === undefined
+    ) {
+      return
+    }
+    const peer = lastTelemetryPeers.find((p) => p.id === ethySeederPeerId)
+    const maskRaw = peer?.ethyStatus?.bucketsBitmask ?? '0'
+    const seedMask = maskRaw.startsWith('0x')
+      ? Number.parseInt(maskRaw, 16)
+      : Number.parseInt(maskRaw, 10)
+    const head = spine.bestPeerHead ?? ethyAnchorBlock
+    ethySwarm?.stop()
+    ethySwarm = new EthySwarmSynchronizer({
+      spine,
+      stateManager,
+      client,
+      snapStore,
+      seederPeerId: ethySeederPeerId,
+      seedBucketsBitmask: seedMask,
+      chunkStateRoot: ethyAnchorRoot,
+      pivotBlockNumber: ethyAnchorBlock,
+      balThroughBlock: head,
+      onBucketDone: (idx) => noteBucketAdvertised(client, idx),
+      onAccountsComplete: () => ensureSnapSync(client),
+    })
+    ethySwarm.start()
+    setPhase(spine, 'SNAP_SYNCING')
+    deriveCapabilities(spine)
+  }
+
+  const anchorEthyPivotFromStatus = (peer: WorkerPeerSnapshot) => {
+    const st = peer.ethyStatus
+    if (st === undefined) return
+    const rootHex = st.basePivotStateRoot
+    if (rootHex.length === 0) return
+    const root = hexToBytes((rootHex.startsWith('0x') ? rootHex : `0x${rootHex}`) as `0x${string}`)
+    const block = BigInt(st.basePivotBlock)
+    ethyAnchorBlock = block
+    ethyAnchorRoot = root
+    commitPivotAnchor(
+      { number: block, hash: new Uint8Array(32), stateRoot: root },
+      null,
+      peer.id,
+      highestEthVersion(peer.caps),
+      { skipServableBundle: true, firstAnchor: true },
+    )
+    startEthySwarmSync()
+  }
+
+  const requestEthyPivotHeader = () => {
+    if (ethySeederPeerId === undefined || ethyAnchorBlock === undefined) return
+    const peer = lastTelemetryPeers.find((p) => p.id === ethySeederPeerId)
+    if (peer === undefined) return
+    requestPivotHeaderAt(peer, ethyAnchorBlock, { ethyAnchor: true })
+  }
+
+  const tryLockSyncTransport = (peers: WorkerPeerSnapshot[]) => {
+    if (spine.syncTransport !== 'unset') return
+    if (!diskHydrated && spine.pivotStateRoot === undefined) return
+    if (syncMode === 'snap') {
+      spine.syncTransport = 'snap'
+      return
+    }
+    const statusOk = spine.discovery?.rlpx.statusOk ?? 0
+    const withHead = peers.filter((p) => p.bestHash !== undefined).length
+    if ((statusOk > 0 || withHead > 0) && firstEthStatusAtMs === 0) {
+      firstEthStatusAtMs = Date.now()
+    }
+    const head = spine.bestPeerHead ?? 0n
+    const pick = pickUsableEthySeeder(ethySeederRows(peers), head, syncMode)
+    if (pick !== undefined) {
+      spine.syncTransport = 'ethy'
+      ethySeederPeerId = pick.peerId
+      ethyAnchorBlock = pick.seeder.basePivotBlock
+      const row = peers.find((p) => p.id === pick.peerId)
+      if (row !== undefined) {
+        anchorEthyPivotFromStatus(row)
+      }
+      return
+    }
+    if (syncMode === 'ethy') return
+    if (firstEthStatusAtMs === 0) return
+    const elapsed = Date.now() - firstEthStatusAtMs
+    if (shouldLockSnapAfterGrace(syncMode, spine.syncTransport, elapsed, false)) {
+      spine.syncTransport = 'snap'
+    }
+  }
 
   if (opts.connectEnodeUrls !== undefined) {
     for (const url of opts.connectEnodeUrls) {
@@ -1114,8 +1284,23 @@ export async function startPeerCoordinator(
         ensureHeadFollower(client)
       }
     }
-    if (inFlightPeerId === undefined && spine.pivotBlockNumber === undefined) {
-      if (bestPeer !== undefined) requestPivotFromPeer(bestPeer)
+    tryLockSyncTransport(snap.peers)
+    if (spine.syncTransport === 'ethy' && spine.pivotStateRoot === undefined) {
+      const row = ethySeederPeerId
+        ? lastTelemetryPeers.find((p) => p.id === ethySeederPeerId)
+        : undefined
+      if (row !== undefined) anchorEthyPivotFromStatus(row)
+    }
+    if (
+      inFlightPeerId === undefined &&
+      spine.pivotBlockNumber === undefined &&
+      !ethyAnchorPending
+    ) {
+      if (spine.syncTransport === 'unset' && syncMode === 'ethy') {
+        // Wait for a usable ETHY STATUS (selector locks transport).
+      } else if (spine.syncTransport !== 'ethy' && bestPeer !== undefined) {
+        requestPivotFromPeer(bestPeer)
+      }
     }
     syncDiscoveryHold(client)
     ensureSnapSync(client)
@@ -1178,6 +1363,10 @@ export async function startPeerCoordinator(
   }
 
   client.events.on('protocol', (msg) => {
+    if (msg.protocol === 'ethy') {
+      ethySwarm?.handleMessage(msg.peerId, msg.code, msg.payload)
+      return
+    }
     if (msg.protocol !== 'eth') return
     if (headFollower?.handleEthMessage(msg)) return
     if (handleBundleEthMessage(msg)) return
@@ -1195,7 +1384,30 @@ export async function startPeerCoordinator(
     const successPeerId = inFlightPeerId
     const successEthVersion = inFlightEthVersion
     const triedByHash = inFlightHash !== undefined
+    const wasEthyAnchor = ethyAnchorPending
     clearPivotInFlight()
+    if (wasEthyAnchor) {
+      ethyAnchorPending = false
+      if (
+        parsed === null ||
+        ethyAnchorRoot === undefined ||
+        !equalsBytes(parsed.stateRoot, ethyAnchorRoot)
+      ) {
+        recordDiagnostic(spine, {
+          subsystem: 'devp2p',
+          severity: 'warn',
+          message: 'ETHY anchor header missing or state root mismatch',
+          peerId: successPeerId,
+        })
+        return
+      }
+      commitPivotAnchor(parsed, headerRlp, successPeerId, successEthVersion, {
+        skipServableBundle: true,
+        firstAnchor: true,
+      })
+      startEthySwarmSync()
+      return
+    }
     if (parsed === null) {
       recordDiagnostic(spine, {
         subsystem: 'devp2p',

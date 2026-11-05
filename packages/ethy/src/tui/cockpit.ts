@@ -94,13 +94,17 @@ function nodePulsePairs(spine: EthySpine): TwoColumnPair[] {
       const rate = Math.round(spine.accountsPerSec).toLocaleString('en-US')
       const pct = computeSnapProgressPct(spine)
       const etaMin = estimateAccountSyncEtaMin(spine)
+      const ethyTransport = spine.syncTransport === 'ethy'
+      const seedBits = (spine.ethyBucketsBitmask ?? 0).toString(2).replace(/0/g, '').length
+      const seedHint =
+        !ethyTransport && seedBits > 0 ? ` · seed ${seedBits}/16` : ethyTransport ? ' (ETHY/0)' : ''
       return [
-        { label: 'Stage', value: 'Snap Sync · Accounts' },
+        { label: 'Stage', value: ethyTransport ? 'Ethy Sync · Accounts' : 'Snap Sync · Accounts' },
         { label: 'Target', value: snapTargetRow(spine) },
         { label: 'Progress', value: formatProgressBar(pct, etaMin) },
         {
           label: 'State',
-          value: `${formatCompactCount(spine.totalAccountsSynced)} acc · ${rate}/s`,
+          value: `${formatCompactCount(spine.totalAccountsSynced)} acc · ${rate}/s${seedHint}`,
         },
       ]
     }

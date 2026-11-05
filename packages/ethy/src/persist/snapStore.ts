@@ -38,6 +38,11 @@ import {
   journalCursorAfterRecords,
   readAccountJournalFile,
 } from './journal.ts'
+import {
+  type ChunkProofFields,
+  appendProofRecordSync,
+  proofSidecarPathForJournal,
+} from './proofSidecar.ts'
 
 export const SNAP_STORE_SCHEMA = 2
 
@@ -52,6 +57,7 @@ type ActiveMeta = {
   previousStateRoot?: string | null
   baseSyncComplete?: boolean
   lastVerifiedBlockNumber?: string
+  ethyBucketsBitmask?: number
 }
 
 type PivotMeta = {
@@ -317,6 +323,9 @@ export class SnapPivotStore {
     }
     spine.headBlockNumber = spine.lastVerifiedBlockNumber ?? spine.pivotBlockNumber
     spine.headStateRoot = spine.pivotStateRoot
+    if (active.ethyBucketsBitmask !== undefined) {
+      spine.ethyBucketsBitmask = active.ethyBucketsBitmask
+    }
 
     const buckets = createSnapBuckets()
     const bucketsPath = path.join(this.pivotDir(active.stateRoot), 'buckets.json')
@@ -430,6 +439,9 @@ export class SnapPivotStore {
     }
     spine.headBlockNumber = spine.lastVerifiedBlockNumber ?? spine.pivotBlockNumber
     spine.headStateRoot = spine.pivotStateRoot
+    if (active.ethyBucketsBitmask !== undefined) {
+      spine.ethyBucketsBitmask = active.ethyBucketsBitmask
+    }
 
     const buckets = createSnapBuckets()
     const bucketsPath = path.join(this.pivotDir(active.stateRoot), 'buckets.json')
@@ -1003,12 +1015,37 @@ export class SnapPivotStore {
     return { recordCount, lastHash }
   }
 
+  /** Active pivot `accounts/` directory for ETHY/0 worker serving (WP-06c). */
+  activePivotAccountsDir(): string | undefined {
+    if (!this.enabled || this.activeStateRoot === undefined) return undefined
+    return path.join(this.pivotDir(this.activeStateRoot), 'accounts')
+  }
+
+  ethyBucketsBitmaskFromBuckets(buckets: readonly SnapBucket[]): number {
+    let mask = 0
+    for (const b of buckets) {
+      if (b.status === 'done') mask |= 1 << b.index
+    }
+    return mask
+  }
+
+  persistEthyBucketsBitmask(mask: number): void {
+    if (!this.enabled) return
+    const active = this.readActive()
+    if (active === undefined) return
+    writeAtomicDoc(path.join(this.networkDir, 'active.json'), {
+      ...active,
+      ethyBucketsBitmask: mask,
+    } satisfies ActiveMeta)
+  }
+
   /** Live path: one async append per verified account slab (magic prefix on empty file). */
   appendVerifiedSlabAsync(
     bucketIndex: number,
     slab: Uint8Array,
     buckets: SnapBucket[],
     journal: 'prefix' | string = 'prefix',
+    proof?: ChunkProofFields,
   ): Promise<void> {
     if (!this.enabled || this.activeStateRoot === undefined || slab.length === 0) {
       return Promise.resolve()
@@ -1020,10 +1057,22 @@ export class SnapPivotStore {
     const prior = this.accountWriteChains.get(file) ?? Promise.resolve()
     const next = prior.then(async () => {
       try {
+        const priorSize = fs.existsSync(file) ? fs.statSync(file).size : 0
+        const slabByteOffset = needMagic
+          ? priorSize + BINARY_ACCOUNT_JOURNAL_MAGIC.length
+          : priorSize
         const body = needMagic
           ? Buffer.concat([Buffer.from(BINARY_ACCOUNT_JOURNAL_MAGIC), Buffer.from(slab)])
           : slab
         await fs.promises.appendFile(file, body)
+        if (proof !== undefined) {
+          const proofFile = proofSidecarPathForJournal(file)
+          appendProofRecordSync(proofFile, {
+            ...proof,
+            slabByteOffset,
+            slabByteLength: slab.length,
+          })
+        }
         this.dirtyAccountBuckets.add(bucketIndex)
         this.pendingMetadataFlush = true
         this.maybeFlushMetadata(false)

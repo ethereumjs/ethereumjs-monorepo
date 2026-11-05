@@ -5,6 +5,8 @@ export type CapabilityId = 'p2p' | 'snap' | 'head' | 'ai'
 
 export type EthyPhase = 'BOOTING' | 'P2P_WARMUP' | 'SNAP_SYNCING' | 'BAL_CATCHUP' | 'HEAD_FOLLOWING'
 
+export type SyncTransport = 'unset' | 'ethy' | 'snap'
+
 export type CapabilityReadiness = 'locked' | 'partial' | 'ready'
 
 export type SnapBucketStatus = 'pending' | 'syncing' | 'verifying_proof' | 'done' | 'stalled'
@@ -112,6 +114,10 @@ export interface EthySpine {
   network: string
   chainId: bigint
   phase: EthyPhase
+  /** Locked base-state download path (WP-06c). Phase stays `SNAP_SYNCING` for both. */
+  syncTransport?: SyncTransport
+  /** Local servable ETHY/0 account buckets (`1 << nibble`). */
+  ethyBucketsBitmask?: number
   currentSlot: number
   pivotBlockNumber?: bigint
   pivotStateRoot?: Uint8Array
