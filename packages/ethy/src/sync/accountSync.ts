@@ -11,10 +11,12 @@ import type { PeerBookStore } from '../persist/peerBook.ts'
 import type { SnapPivotStore } from '../persist/snapStore.ts'
 import { enqueueProtocol } from '../runtime/lanes.ts'
 import {
+  bucketCursorsPendingVerify,
   bucketPosition36,
   compareBytes32,
   computeAccountRangeFraction,
   cursorActive,
+  cursorBlockedForDispatch,
   cursorSpan36,
   ensureBucketSubRanges,
   snapBucketCursorExhausted,
@@ -32,17 +34,17 @@ import {
   peerRestMsForRangeFailure,
   rangeTimeoutForPeer,
   rankSnapPeers,
+  responseBytesForPeer,
 } from './snapSchedulePolicy.ts'
 import type { SnapTransport } from './snapTransport.ts'
 import { snapReplyRequestId } from './snapVerifyJob.ts'
 import { SnapVerifyPool } from './snapVerifyWorker.ts'
-import { incrementKey32, ingestedMetaFromBinarySlab } from './syntheticPeer.ts'
+import {
+  incrementKey32,
+  ingestedMetaFromBinarySlab,
+  peekAccountRangeLastKey,
+} from './syntheticPeer.ts'
 
-/**
- * Bytes we ask a peer to return. 512 KiB is about 8,000 accounts: public nodes
- * stall long enough to miss a ping, and the next request then piles on.
- */
-const RESPONSE_BYTES = 128 * 1024
 const STALL_BASE_MS = 2_000
 const STALL_MAX_MS = 15_000
 /** After this many seconds without new accounts, show 0/s in the TUI. */
@@ -68,6 +70,10 @@ export type InFlightRange = {
   limit: Uint8Array
   stateRoot: Uint8Array
   pivotBlockNumber: bigint
+  /** Cursor origin before speculative peek advance (WP-06e). */
+  priorOrigin?: Uint8Array
+  /** Last key peeked from RLP before verify completed (WP-06e). */
+  speculativeLastKey?: Uint8Array
 }
 
 function inFlightKey(peerId: string, reqId: bigint): string {
@@ -227,7 +233,8 @@ export class SnapAccountSynchronizer {
       if (ranges === undefined) continue
       for (const c of ranges) {
         c.inFlightReqKey = undefined
-        c.verifying = false
+        c.verifyingCount = 0
+        c.pipelinedVerify = false
       }
     }
   }
@@ -248,7 +255,7 @@ export class SnapAccountSynchronizer {
       if (this.bucketStalled(bucket, Date.now())) continue
       for (const c of ensureBucketSubRanges(bucket)) {
         if (!cursorActive(c)) continue
-        if (c.inFlightReqKey === undefined && c.verifying !== true) {
+        if (!cursorBlockedForDispatch(c)) {
           return false
         }
       }
@@ -263,7 +270,7 @@ export class SnapAccountSynchronizer {
       if (this.bucketStalled(bucket, now)) continue
       for (const c of ensureBucketSubRanges(bucket)) {
         if (!cursorActive(c)) continue
-        if (c.inFlightReqKey !== undefined || c.verifying === true) continue
+        if (cursorBlockedForDispatch(c)) continue
         const dedupe = originDedupeKey(bucket.index, c.origin)
         if (this.inFlightOrigins.has(dedupe)) continue
         out.push(c)
@@ -287,6 +294,7 @@ export class SnapAccountSynchronizer {
       for (let i = 0; i < ranges.length; i++) {
         const c = ranges[i]!
         if (!cursorActive(c)) continue
+        if ((c.verifyingCount ?? 0) > 0) continue
         const span = cursorSpan36(c)
         if (span >= MIN_SPLIT_SPAN && span > bestSpan) {
           bestSpan = span
@@ -313,12 +321,16 @@ export class SnapAccountSynchronizer {
   }
 
   private refreshBucketSyncStatus(bucket: SnapBucket): void {
-    if (snapBucketCursorExhausted(bucket)) {
+    if (
+      snapBucketCursorExhausted(bucket) &&
+      !bucketCursorsPendingVerify(bucket) &&
+      !this.bucketHasOpenFlight(bucket.index)
+    ) {
       syncBucketCursorFields(bucket)
       return
     }
     const ranges = ensureBucketSubRanges(bucket)
-    const busy = ranges.some((c) => c.inFlightReqKey !== undefined || c.verifying === true)
+    const busy = ranges.some((c) => c.inFlightReqKey !== undefined || (c.verifyingCount ?? 0) > 0)
     if (busy) {
       bucket.status = 'syncing'
     } else if (bucket.status !== 'stalled') {
@@ -365,7 +377,7 @@ export class SnapAccountSynchronizer {
       this.spine.pivotStateRoot!,
       sentOrigin,
       sentLimit,
-      RESPONSE_BYTES,
+      responseBytesForPeer(peer),
     )
     this.transport.sendAccountRange(peer.id, payload)
     return true
@@ -441,9 +453,47 @@ export class SnapAccountSynchronizer {
   private clearCursorFlight(cursor: SnapRangeCursor | undefined): void {
     if (cursor === undefined) return
     cursor.inFlightReqKey = undefined
-    cursor.verifying = false
+    cursor.verifyingCount = 0
+    cursor.pipelinedVerify = false
     const dedupe = originDedupeKey(cursor.bucketIndex, cursor.origin)
     this.inFlightOrigins.delete(dedupe)
+  }
+
+  private bucketHasOpenFlight(bucketIndex: number): boolean {
+    for (const flight of this.inFlight.values()) {
+      if (flight.bucket === bucketIndex) return true
+    }
+    return false
+  }
+
+  private beginCursorVerify(cursor: SnapRangeCursor, pipelined: boolean): void {
+    cursor.verifyingCount = (cursor.verifyingCount ?? 0) + 1
+    if (pipelined) {
+      cursor.pipelinedVerify = true
+    }
+  }
+
+  private endCursorVerify(cursor: SnapRangeCursor | undefined): void {
+    if (cursor === undefined) return
+    const next = (cursor.verifyingCount ?? 1) - 1
+    cursor.verifyingCount = next > 0 ? next : 0
+    if (cursor.verifyingCount === 0) {
+      cursor.pipelinedVerify = false
+    }
+  }
+
+  private cancelSuccessorFlights(cursorId: number, bucketIndex: number, keepReqId: bigint): void {
+    for (const [key, flight] of [...this.inFlight.entries()]) {
+      if (flight.cursorId !== cursorId || flight.bucket !== bucketIndex) continue
+      if (flight.reqId === keepReqId) continue
+      this.inFlight.delete(key)
+      this.flightTracker.release(flight.peerId, flight.reqId)
+      this.inFlightOrigins.delete(originDedupeKey(flight.bucket, flight.origin))
+      const cursor = this.findCursor(flight.bucket, flight.cursorId)
+      if (cursor !== undefined && cursor.inFlightReqKey === key) {
+        cursor.inFlightReqKey = undefined
+      }
+    }
   }
 
   private expireStaleRanges(livePeerIds: ReadonlySet<string>, now: number): void {
@@ -547,7 +597,7 @@ export class SnapAccountSynchronizer {
       return
     }
     const otherCursorActive = ensureBucketSubRanges(bucket).some(
-      (c) => c.inFlightReqKey !== undefined || c.verifying === true,
+      (c) => c.inFlightReqKey !== undefined || (c.verifyingCount ?? 0) > 0,
     )
     if (otherCursorActive) {
       bucket.lastStallReason = reason
@@ -590,15 +640,39 @@ export class SnapAccountSynchronizer {
     }
     const cursor = this.findCursor(flight.bucket, flight.cursorId)
     if (cursor !== undefined) {
-      cursor.verifying = true
-      cursor.inFlightReqKey = undefined
+      flight.priorOrigin = new Uint8Array(cursor.origin)
+    }
+    const peek = peekAccountRangeLastKey(payload)
+    let pipelined = false
+    if (cursor !== undefined && peek !== undefined) {
+      if (
+        compareBytes32(peek.lastKey, flight.origin) >= 0 &&
+        compareBytes32(peek.lastKey, cursor.limit) < 0
+      ) {
+        flight.speculativeLastKey = new Uint8Array(peek.lastKey)
+        cursor.origin = incrementKey32(peek.lastKey)
+        pipelined = true
+        cursor.inFlightReqKey = undefined
+        this.inFlightOrigins.delete(
+          originDedupeKey(flight.bucket, flight.priorOrigin ?? flight.origin),
+        )
+        this.inFlightOrigins.add(originDedupeKey(flight.bucket, cursor.origin))
+      }
+    }
+    if (cursor !== undefined) {
+      this.beginCursorVerify(cursor, pipelined)
+      if (!pipelined) {
+        cursor.inFlightReqKey = undefined
+      }
     }
     this.inFlight.delete(key)
-    this.inFlightOrigins.delete(originDedupeKey(flight.bucket, flight.origin))
+    if (!pipelined) {
+      this.inFlightOrigins.delete(originDedupeKey(flight.bucket, flight.origin))
+    }
     this.flightTracker.release(peerId, replyId)
     const bucket = this.spine.snapBuckets[flight.bucket]
     if (bucket === undefined) {
-      this.clearCursorFlight(cursor)
+      this.endCursorVerify(cursor)
       return
     }
     bucket.status = 'verifying_proof'
@@ -639,7 +713,8 @@ export class SnapAccountSynchronizer {
     result: Awaited<ReturnType<SnapVerifyPool['verifyAccountRange']>>,
   ): void {
     if (flight.rootGeneration !== this.flightTracker.rootGeneration) {
-      this.clearCursorFlight(cursor)
+      this.endCursorVerify(cursor)
+      cursor && (cursor.inFlightReqKey = undefined)
       this.refreshBucketSyncStatus(bucket)
       return
     }
@@ -651,7 +726,13 @@ export class SnapAccountSynchronizer {
         : flight.limit
 
     if (!result.ok) {
-      this.clearCursorFlight(cursor)
+      this.cancelSuccessorFlights(flight.cursorId, flight.bucket, flight.reqId)
+      if (cursor !== undefined && flight.priorOrigin !== undefined) {
+        cursor.origin = new Uint8Array(flight.priorOrigin)
+        cursor.inFlightReqKey = undefined
+        cursor.pipelinedVerify = false
+      }
+      this.endCursorVerify(cursor)
       this.noteRangeFailure(bucket, peerId, result.reason ?? 'range proof failed')
       this.refreshBucketSyncStatus(bucket)
       this.schedule()
@@ -727,16 +808,8 @@ export class SnapAccountSynchronizer {
     }
 
     if (cursor !== undefined) {
-      cursor.verifying = false
-      if (result.hasRight && result.lastKey instanceof Uint8Array) {
-        if (compareBytes32(result.lastKey, cursor.limit) >= 0) {
-          this.removeCursor(bucket, cursor.id)
-        } else if (compareBytes32(result.lastKey, flight.origin) >= 0) {
-          cursor.origin = incrementKey32(result.lastKey)
-        }
-      } else {
-        this.removeCursor(bucket, cursor.id)
-      }
+      this.reconcileCursorAfterCommit(cursor, bucket, flight, result)
+      this.endCursorVerify(cursor)
     }
     syncBucketCursorFields(bucket)
     this.refreshBucketSyncStatus(bucket)
@@ -744,6 +817,58 @@ export class SnapAccountSynchronizer {
       this.onBucketDone?.(bucket.index)
     }
     this.schedule()
+  }
+
+  private reconcileCursorAfterCommit(
+    cursor: SnapRangeCursor,
+    bucket: SnapBucket,
+    flight: InFlightRange,
+    result: Awaited<ReturnType<SnapVerifyPool['verifyAccountRange']>>,
+  ): void {
+    if (!(result.hasRight && result.lastKey instanceof Uint8Array)) {
+      this.removeCursor(bucket, cursor.id)
+      return
+    }
+    const verifiedLast = result.lastKey
+    const hasSuccessor = [...this.inFlight.values()].some(
+      (f) => f.cursorId === cursor.id && f.bucket === flight.bucket && f.reqId !== flight.reqId,
+    )
+    const speculative = flight.speculativeLastKey
+    if (speculative !== undefined) {
+      const cmpSpec = compareBytes32(verifiedLast, speculative)
+      if (cmpSpec === 0) {
+        // origin already at incrementKey32(speculative) from peek
+      } else if (cmpSpec < 0) {
+        if (hasSuccessor) {
+          this.insertRepairCursor(bucket, incrementKey32(verifiedLast), new Uint8Array(speculative))
+        } else if (compareBytes32(verifiedLast, flight.origin) >= 0) {
+          cursor.origin = incrementKey32(verifiedLast)
+        }
+      } else if (!hasSuccessor) {
+        cursor.origin = incrementKey32(verifiedLast)
+      }
+    } else if (compareBytes32(verifiedLast, cursor.limit) >= 0) {
+      this.removeCursor(bucket, cursor.id)
+      return
+    } else if (compareBytes32(verifiedLast, flight.origin) >= 0) {
+      cursor.origin = incrementKey32(verifiedLast)
+    }
+    if (!cursorActive(cursor)) {
+      this.removeCursor(bucket, cursor.id)
+    }
+  }
+
+  private insertRepairCursor(bucket: SnapBucket, origin: Uint8Array, limit: Uint8Array): void {
+    if (compareBytes32(origin, limit) > 0) return
+    const ranges = ensureBucketSubRanges(bucket)
+    ranges.push({
+      id: this.nextCursorId++,
+      bucketIndex: bucket.index,
+      origin: new Uint8Array(origin),
+      limit: new Uint8Array(limit),
+      journal: segmentJournalKey(origin),
+    })
+    bucket.subRanges = ranges
   }
 
   private removeCursor(bucket: SnapBucket, cursorId: number): void {

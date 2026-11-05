@@ -73,6 +73,20 @@ export function cursorActive(cursor: SnapRangeCursor): boolean {
   return compareBytes32(cursor.origin, cursor.limit) <= 0
 }
 
+/** True when a cursor still has uncommitted Merkle verify work (WP-06e). */
+export function bucketCursorsPendingVerify(bucket: SnapBucket): boolean {
+  const ranges = bucket.subRanges
+  if (ranges === undefined) return false
+  return ranges.some((c) => (c.verifyingCount ?? 0) > 0)
+}
+
+export function cursorBlockedForDispatch(cursor: SnapRangeCursor): boolean {
+  if (cursor.inFlightReqKey !== undefined) return true
+  const pending = cursor.verifyingCount ?? 0
+  if (pending > 0 && cursor.pipelinedVerify !== true) return true
+  return false
+}
+
 export function syncBucketCursorFields(bucket: SnapBucket): void {
   const ranges = bucket.subRanges
   if (ranges === undefined) {
@@ -85,6 +99,10 @@ export function syncBucketCursorFields(bucket: SnapBucket): void {
   const active = ranges.filter((c) => cursorActive(c))
   bucket.subRanges = active
   if (active.length === 0) {
+    if (bucketCursorsPendingVerify(bucket)) {
+      bucket.status = 'verifying_proof'
+      return
+    }
     bucket.currentLastHash = new Uint8Array(bucket.limitHash)
     bucket.status = 'done'
     bucket.assignedPeerId = undefined

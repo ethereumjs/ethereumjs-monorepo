@@ -377,7 +377,7 @@ describe('[Ethy/Persist]: VIP peer backoff', () => {
     assert.equal(firstId, 'bb')
   })
 
-  it('vipDialCandidates caps at four per family when several families qualify', () => {
+  it('vipDialCandidates fills limit with top Nethermind proven peers without family cap', () => {
     const dir = tempDir()
     const book = PeerBookStore.open({
       dataDir: dir,
@@ -386,35 +386,34 @@ describe('[Ethy/Persist]: VIP peer backoff', () => {
       enabled: true,
     })
     const now = Date.now()
-    const nmIds = ['01', '02', '03'].map((n) => `${n.repeat(32)}`)
-    const gtIds = ['04', '05'].map((n) => `${n.repeat(32)}`)
-    for (let i = 0; i < 3; i++) {
+    const nmIds = ['01', '02', '03', '04', '05', '06'].map((n) => `${n.repeat(32)}`)
+    for (let i = 0; i < 6; i++) {
       book.putRow(
         sampleRow({
           id: nmIds[i]!,
           clientFamily: 'Nethermind',
           lastSnapSuccessAt: now - i,
-          snapResponsesOk: 3 - i,
+          snapResponsesOk: 10 - i,
         }),
       )
     }
     for (let i = 0; i < 2; i++) {
       book.putRow(
         sampleRow({
-          id: gtIds[i]!,
-          clientFamily: 'Geth',
-          lastSnapSuccessAt: now - i,
-          snapResponsesOk: 2 - i,
+          id: `${(i + 7).toString(16).padStart(2, '0').repeat(32)}`,
+          clientFamily: 'Besu',
+          lastStatusAt: now,
+          snapTimeouts: 4,
+          snapResponsesOk: 0,
         }),
       )
     }
-    const vips = book.vipDialCandidates(now, 8)
-    assert.equal(vips.length, 5)
-    const picked = new Set(vips.map((p) => bytesToUnprefixedHex(p.id as Uint8Array).toLowerCase()))
-    assert.equal(picked.size, 5)
-    assert.isTrue(picked.has(nmIds[2]!.toLowerCase()))
-    assert.equal([...picked].filter((id) => nmIds.includes(id)).length, 3)
-    assert.equal([...picked].filter((id) => gtIds.includes(id)).length, 2)
+    const vips = book.vipDialCandidates(now, 6)
+    assert.equal(vips.length, 6)
+    for (const p of vips) {
+      const id = bytesToUnprefixedHex(p.id as Uint8Array).toLowerCase()
+      assert.isTrue(nmIds.some((nm) => nm.toLowerCase() === id))
+    }
   })
 
   it('noteDialAttempt enforces a 20s hold before redial', () => {

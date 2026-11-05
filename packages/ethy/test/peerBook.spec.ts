@@ -193,6 +193,46 @@ describe('[Ethy/Persist]: peer book', () => {
     assert.equal(reopened.getRow(id)?.snapCapable, undefined)
   })
 
+  it('excludes reth without proven snap and marks snapCapable false after repeated timeouts', () => {
+    const dir = tempDir()
+    const book = openBook(dir)
+    const now = 1_000_000
+    const rethId = 'd4'.repeat(32)
+    book.putRow(
+      sampleRow({
+        id: rethId,
+        clientFamily: 'Reth',
+        lastStatusAt: now,
+        snapCapable: true,
+      }),
+    )
+    assert.equal(book.dialCandidates(now).length, 0)
+    book.putRow(
+      sampleRow({
+        id: rethId,
+        clientFamily: 'Reth',
+        lastStatusAt: now,
+        lastSnapSuccessAt: now,
+        snapResponsesOk: 1,
+        snapCapable: true,
+      }),
+    )
+    assert.equal(book.dialCandidates(now).length, 1)
+
+    const besuId = 'e5'.repeat(32)
+    book.putRow(
+      sampleRow({
+        id: besuId,
+        clientFamily: 'Besu',
+        lastStatusAt: now,
+        snapCapable: true,
+      }),
+    )
+    book.noteSnapTimeout(besuId)
+    book.noteSnapTimeout(besuId)
+    assert.equal(book.getRow(besuId)?.snapCapable, false)
+  })
+
   it('excludes non-snap client families and clears dialAfter on proven snap peers at startup', () => {
     const dir = tempDir()
     const book = openBook(dir)

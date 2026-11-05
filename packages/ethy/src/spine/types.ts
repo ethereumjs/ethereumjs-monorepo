@@ -48,7 +48,10 @@ export type SnapRangeCursor = {
   /** `prefix` → `accounts/<nibble>.bin`; else segment file key under that nibble. */
   journal: 'prefix' | string
   inFlightReqKey?: string
-  verifying?: boolean
+  /** In-flight Merkle verifies not yet committed (WP-06e). */
+  verifyingCount?: number
+  /** Origin advanced on wire peek while verify runs (WP-06e). */
+  pipelinedVerify?: boolean
   /** One-account storage/code refresh after BAL during snap (WP-04k). */
   refresh?: boolean
 }

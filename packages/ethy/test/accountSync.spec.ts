@@ -3,13 +3,14 @@ import {
   SNAP_BINARY_ACCOUNT_SLAB_RECORD_SIZE,
   createFlatStateManager,
 } from '@ethereumjs/statemanager'
-import { equalsBytes } from '@ethereumjs/util'
+import { bytesToBigInt, bytesToUnprefixedHex, equalsBytes } from '@ethereumjs/util'
 import { assert, describe, it, vi } from 'vitest'
 
 import { createSnapBuckets } from '../src/spine/buckets.ts'
 import { createSpine } from '../src/spine/createSpine.ts'
 import { SnapAccountSynchronizer, encodeGetAccountRange } from '../src/sync/accountSync.ts'
 import { SnapPeerFlightTracker } from '../src/sync/snapFlight.ts'
+import { RESPONSE_BYTES_STANDARD } from '../src/sync/snapSchedulePolicy.ts'
 import type { SnapTransport } from '../src/sync/snapTransport.ts'
 import { SnapVerifyPool } from '../src/sync/snapVerifyWorker.ts'
 
@@ -31,6 +32,7 @@ import {
   incrementKey32,
   ingestAccountRangeReply,
   parseAccountRangeReply,
+  peekAccountRangeLastKey,
 } from '../src/sync/syntheticPeer.ts'
 
 describe('[Ethy/Sync]: synthetic snap account range', () => {
@@ -419,5 +421,154 @@ describe('[Ethy/Sync]: synthetic snap account range', () => {
     sync.stop()
     assert.equal(spine.snapBuckets[0]!.status, 'pending')
     assert.equal(spine.snapBuckets[0]!.lastStallReason, 'snap peer left')
+  })
+
+  it('peekAccountRangeLastKey reads the last hash without decoding bodies', async () => {
+    const trie = await SyntheticSnapPeer.create(4)
+    const bucket0 = createSnapBuckets()[0]!
+    const get = encodeGetAccountRange(
+      1n,
+      trie.rootHash,
+      bucket0.startHash,
+      bucket0.limitHash,
+      128 * 1024,
+    )
+    const reply = await trie.buildAccountRangeReply(get)
+    const peek = peekAccountRangeLastKey(reply)
+    assert.isDefined(peek)
+    assert.equal(peek!.count, 4)
+    assert.equal(peek!.lastKey.length, 32)
+    assert.isUndefined(peekAccountRangeLastKey(new Uint8Array([0x00])))
+  })
+
+  it('pipelines the next GetAccountRange while verify is still in flight', async () => {
+    const trie = await SyntheticSnapPeer.create(8)
+    const spine = createSpine('sepolia', 11155111n)
+    spine.pivotStateRoot = trie.rootHash
+    spine.snapBuckets = createSnapBuckets().slice(0, 1)
+    const peers = [
+      {
+        id: 'aa11',
+        caps: ['snap/1'],
+        snapResponsesOk: 2,
+        snapTimeouts: 0,
+        avgLatencyMs: 10,
+      },
+    ]
+    const sent: Uint8Array[] = []
+    let onRange: (peerId: string, payload: Uint8Array) => void = () => {}
+    let release: () => void = () => {}
+    const gate = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    const sync = new SnapAccountSynchronizer({
+      spine,
+      stateManager: createFlatStateManager(),
+      transport: mockSnapTransport({
+        onAccountRange(cb) {
+          onRange = cb
+          return () => {}
+        },
+        sendAccountRange(_peerId, payload) {
+          sent.push(payload)
+        },
+      }),
+      flightTracker: new SnapPeerFlightTracker(),
+      getSnapPeers: () => peers,
+      verifyPool: {
+        verifyAccountRange: async () => {
+          await gate
+          return { ok: false, hasRight: false, count: 0, reason: 'held' }
+        },
+        close: async () => {},
+      } as unknown as SnapVerifyPool,
+    })
+    const originOf = (payload: Uint8Array) => {
+      const decoded = RLP.decode(payload) as Uint8Array[]
+      return Buffer.from(decoded[2]!).toString('hex')
+    }
+    const responseBytesOf = (payload: Uint8Array) => {
+      const decoded = RLP.decode(payload) as Uint8Array[]
+      return Number(bytesToBigInt(decoded[4]!))
+    }
+    sync.start()
+    await vi.waitFor(() => {
+      assert.isAtLeast(sent.length, 1)
+    })
+    const firstPayload = sent[0]!
+    const firstOrigin = originOf(firstPayload)
+    assert.equal(responseBytesOf(firstPayload), RESPONSE_BYTES_STANDARD)
+    const sentBeforeReply = sent.length
+    const reply = await trie.buildAccountRangeReply(firstPayload)
+    const peek = peekAccountRangeLastKey(reply)
+    assert.isDefined(peek)
+    onRange('aa11', reply)
+    await vi.waitFor(() => {
+      assert.isAbove(sent.length, sentBeforeReply)
+    })
+    const pipelined = sent.slice(sentBeforeReply)
+    assert.isTrue(pipelined.some((payload) => originOf(payload) !== firstOrigin))
+    release()
+    await new Promise((resolve) => setTimeout(resolve, 50))
+    sync.stop()
+  })
+
+  it('rewinds cursor origin when range proof fails after speculative advance', async () => {
+    const trie = await SyntheticSnapPeer.create(4)
+    const spine = createSpine('sepolia', 11155111n)
+    spine.pivotStateRoot = trie.rootHash
+    spine.snapBuckets = createSnapBuckets().slice(0, 1)
+    const peers = [
+      {
+        id: 'aa11',
+        caps: ['snap/1'],
+        snapResponsesOk: 2,
+        snapTimeouts: 0,
+        avgLatencyMs: 10,
+      },
+    ]
+    const sent: Uint8Array[] = []
+    let onRange: (peerId: string, payload: Uint8Array) => void = () => {}
+    const sync = new SnapAccountSynchronizer({
+      spine,
+      stateManager: createFlatStateManager(),
+      transport: mockSnapTransport({
+        onAccountRange(cb) {
+          onRange = cb
+          return () => {}
+        },
+        sendAccountRange(_peerId, payload) {
+          sent.push(payload)
+        },
+      }),
+      flightTracker: new SnapPeerFlightTracker(),
+      getSnapPeers: () => peers,
+      verifyPool: {
+        verifyAccountRange: async () => ({
+          ok: false,
+          hasRight: false,
+          count: 0,
+          reason: 'bad proof',
+        }),
+        close: async () => {},
+      } as unknown as SnapVerifyPool,
+    })
+    const originOf = (payload: Uint8Array) => {
+      const decoded = RLP.decode(payload) as Uint8Array[]
+      return Buffer.from(decoded[2]!).toString('hex')
+    }
+    sync.start()
+    const firstOrigin = originOf(sent[0]!)
+    const reply = await trie.buildAccountRangeReply(sent[0]!)
+    onRange('aa11', reply)
+    await vi.waitFor(() => {
+      assert.isAtLeast(sent.length, 2)
+    })
+    await vi.waitFor(() => {
+      const cursor = spine.snapBuckets[0]!.subRanges?.[0]
+      assert.isDefined(cursor)
+      assert.equal(bytesToUnprefixedHex(cursor!.origin), firstOrigin)
+    })
+    sync.stop()
   })
 })

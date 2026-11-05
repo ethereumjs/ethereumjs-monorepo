@@ -1,6 +1,6 @@
 # WP-06e: 3×–5× Sync Throughput Engine — Client-Aware Peer Affinity (Nethermind Priority), Adaptive Request Sizing, Speculative Cursor Advancement & Zero-Copy Worker Transfers
 
-- **Status:** `READY_FOR_PLANNING`
+- **Status:** `DONE`
 - **Dependencies:** `WP-04h` (`DONE`), `WP-04i` (`DONE`), `WP-06c` (`DONE`), `WP-06d` (`DONE`)
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
@@ -150,22 +150,25 @@ Eliminate the 30–60ms verification bubble and allow a single fast peer to pipe
 
 ## 5. Acceptance Criteria (`WP-06e`)
 
-- [ ] `peerBook.ts` removes the `capPerFamily = 4` cap on proven peers, excludes `reth` (unless proven `snapResponsesOk > 0`), marks peers with `snapTimeouts >= 2 && snapResponsesOk === 0` as `snapCapable = false`, and ranks Nethermind/Geth proven peers by effective throughput.
-- [ ] `RLPx._handlePeerDisconnect` keeps peers that never negotiated `snap/1` (or identify as `reth`/`erigon`/`scout`) in `_peersLRU` on `TOO_MANY_PEERS` so discovery never redials non-snap nodes.
-- [ ] `snapSchedulePolicy.ts` implements `responseBytesForPeer` (`128 KiB` → `256 KiB` → `384 KiB`) and raises `MAX_IN_FLIGHT_FAST_PROVEN` to `6`, sorting proven peers by timeout rate, client affinity, and RTT.
-- [ ] `SnapAccountSynchronizer` speculatively advances `cursor.origin` on `peekAccountRangeLastKey` as soon as the RLP packet arrives (dispatching the next range immediately while the worker verifies the proof) and cleanly restores `[flight.origin .. lastKey]` if a proof ever fails.
-- [ ] `snapVerifyWorkerEntry.ts` transfers `result.slab.buffer` zero-copy back to the main thread, and `defaultSnapVerifyPoolSize` scales up to `6` workers.
-- [ ] Deterministic unit tests lock down: (a) speculative cursor advancement + rollback on proof failure, (b) adaptive `128/256/384 KiB` request sizing and depth `6`, (c) Nethermind/Geth ranking + Reth/timeout exclusion in `peerBook.spec.ts`.
-- [ ] `npm run tsc`, `npm test`, and `npm run spellcheck` pass across `@ethereumjs/devp2p` and `@ethereumjs/ethy`.
+- [x] `peerBook.ts` removes the `capPerFamily = 4` cap on proven peers, excludes `reth` (unless proven `snapResponsesOk > 0`), marks peers with `snapTimeouts >= 2 && snapResponsesOk === 0` as `snapCapable = false`, and ranks Nethermind/Geth proven peers by effective throughput.
+- [x] `RLPx._handlePeerDisconnect` keeps peers that never negotiated `snap/1` (or identify as `reth`/`erigon`/`scout`) in `_peersLRU` on `TOO_MANY_PEERS` so discovery never redials non-snap nodes.
+- [x] `snapSchedulePolicy.ts` implements `responseBytesForPeer` (`128 KiB` → `256 KiB` → `384 KiB`) and raises `MAX_IN_FLIGHT_FAST_PROVEN` to `6`, sorting proven peers by timeout rate, client affinity, and RTT.
+- [x] `SnapAccountSynchronizer` speculatively advances `cursor.origin` on `peekAccountRangeLastKey` as soon as the RLP packet arrives (dispatching the next range immediately while the worker verifies the proof) and cleanly restores `[flight.origin .. lastKey]` if a proof ever fails.
+- [x] `snapVerifyWorkerEntry.ts` transfers `result.slab.buffer` zero-copy back to the main thread, and `defaultSnapVerifyPoolSize` scales up to `6` workers.
+- [x] Deterministic unit tests lock down: (a) speculative cursor advancement + rollback on proof failure, (b) adaptive `128/256/384 KiB` request sizing and depth `6`, (c) Nethermind/Geth ranking + Reth/timeout exclusion in `peerBook.spec.ts`.
+- [x] `npm run tsc`, `npm test`, and `npm run spellcheck` pass across `@ethereumjs/devp2p` and `@ethereumjs/ethy`.
 
 ---
 
 ## 6. Concrete Implementation Plan (Planner — Grok 4.7)
 
-*(To be filled by Grok 4.7 during the planning pass.)*
+See **D-093** in `PROGRESS.md`. File tree: `peerBook.ts`, `devp2p` `rlpx.ts`, `snapSchedulePolicy.ts`, `peerCoordinator.ts`, `syntheticPeer.ts` (`peekAccountRangeLastKey`), `accountSync.ts` (speculative cursor + `verifyingCount`), `spine/types.ts` + `buckets.ts`, `snapVerifyWorker.ts`; tests in `syncScaling`, `peerBook`, `p2pReliability`, `accountSync`, `devp2p` `triedPeerCooldown.spec.ts`; `ethy-architecture.mdc` pipeline depth note.
 
 ---
 
 ## 7. Implementation Notes & Deviations (Implementer — Composer 2.5)
 
-*(To be filled by Composer 2.5 during the implementation pass.)*
+- Account slab return path in `snapVerifyWorkerEntry.ts` already transferred `result.slab.buffer`; only main-thread payload copy removal and pool size bump were needed.
+- `SnapRangeCursor` uses `verifyingCount` + `pipelinedVerify` instead of a boolean `verifying`; `beginCursorVerify` only sets `pipelinedVerify` when a peek advance succeeds (never clears it on a stacked verify).
+- Proof failure cancels successor flights on the same cursor and rewinds `origin` to `flight.priorOrigin`.
+- `multiPeerSwarm.spec.ts` full-sync leg uses `accountsPerBucket = 10` so one batch completes per bucket under the held-reply harness (32-account buckets stalled at 320 synced in CI).

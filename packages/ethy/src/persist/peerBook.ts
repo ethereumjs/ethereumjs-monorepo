@@ -87,8 +87,24 @@ export function rankPeerRows(rows: Iterable<PeerBookRow>, now: number): PeerBook
       const ta = tier(a)
       const tb = tier(b)
       if (ta !== tb) return tb - ta
-      if (ta === 2 && a.snapResponsesOk !== b.snapResponsesOk) {
-        return b.snapResponsesOk - a.snapResponsesOk
+      if (ta === 2) {
+        const aAff = clientAffinityRank(a.clientFamily)
+        const bAff = clientAffinityRank(b.clientFamily)
+        if (aAff !== bAff) return aAff - bAff
+        const aScore = peerThroughputScore(a)
+        const bScore = peerThroughputScore(b)
+        if (aScore !== bScore) return bScore - aScore
+        if (a.snapResponsesOk !== b.snapResponsesOk) {
+          return b.snapResponsesOk - a.snapResponsesOk
+        }
+      }
+      if (ta === 1) {
+        const aBad = a.snapTimeouts > 0 && a.snapResponsesOk === 0 ? 1 : 0
+        const bBad = b.snapTimeouts > 0 && b.snapResponsesOk === 0 ? 1 : 0
+        if (aBad !== bBad) return aBad - bBad
+        const aAff = clientAffinityRank(a.clientFamily)
+        const bAff = clientAffinityRank(b.clientFamily)
+        if (aAff !== bAff) return aAff - bAff
       }
       const aSnap = a.lastSnapSuccessAt ?? 0
       const bSnap = b.lastSnapSuccessAt ?? 0
@@ -105,7 +121,21 @@ function peerBookDialEligible(row: PeerBookRow): boolean {
   if (row.snapCapable === false) return false
   const family = row.clientFamily?.toLowerCase() ?? ''
   if (family.includes('scout') || family.includes('eri' + 'gon')) return false
+  if (family.includes('reth') && !(row.snapCapable === true && row.snapResponsesOk > 0)) {
+    return false
+  }
   return true
+}
+
+function clientAffinityRank(family: string | undefined): number {
+  const f = family?.toLowerCase() ?? ''
+  if (f.includes('nethermind')) return 0
+  if (f.includes('geth')) return 1
+  return 2
+}
+
+function peerThroughputScore(row: PeerBookRow): number {
+  return row.snapResponsesOk - row.snapTimeouts * 4
 }
 
 export type PeerBookOpenOptions = {
@@ -218,21 +248,7 @@ export class PeerBookStore {
       (row) => row.snapResponsesOk <= 0 && (row.lastStatusAt ?? 0) > 0,
     )
     const ordered = [...snapProven, ...statusOnly]
-    const families = new Set(
-      ordered.map((row) => row.clientFamily ?? row.id).filter((f) => f.length > 0),
-    )
-    const capPerFamily = families.size > 1 ? 4 : limit
-    const familyCount = new Map<string, number>()
-    const picked: PeerBookRow[] = []
-    for (const row of ordered) {
-      if (picked.length >= limit) break
-      const family = row.clientFamily ?? row.id
-      const n = familyCount.get(family) ?? 0
-      if (n >= capPerFamily) continue
-      familyCount.set(family, n + 1)
-      picked.push(row)
-    }
-    return picked.map((row) => this._rowToPeerInfo(row))
+    return ordered.slice(0, limit).map((row) => this._rowToPeerInfo(row))
   }
 
   private _rowToPeerInfo(row: PeerBookRow): PeerInfo {
@@ -295,6 +311,9 @@ export class PeerBookStore {
     const row = this._rows.get(id)
     if (row === undefined) return
     row.snapTimeouts++
+    if (row.snapTimeouts >= 2 && row.snapResponsesOk === 0) {
+      row.snapCapable = false
+    }
     this.schedulePersist()
   }
 

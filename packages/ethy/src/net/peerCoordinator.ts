@@ -26,7 +26,11 @@ import {
   syncP2pLinkNotices,
 } from '../notify/p2pLink.ts'
 import { resolveEthyDataDir } from '../persist/ethyDataRoot.ts'
-import { PEER_BOOK_STARTUP_DIALS, discoveryNodeStorePath } from '../persist/peerBook.ts'
+import {
+  PEER_BOOK_STARTUP_DIALS,
+  clientFamilyFromClientId,
+  discoveryNodeStorePath,
+} from '../persist/peerBook.ts'
 import type { PeerBookStore } from '../persist/peerBook.ts'
 import { SnapPivotStore, snapBucketsUnfinished } from '../persist/snapStore.ts'
 import { enqueueProtocol } from '../runtime/lanes.ts'
@@ -483,6 +487,7 @@ export async function startPeerCoordinator(
           snapTimeouts: p.snapTimeouts,
           avgLatencyMs: p.avgLatencyMs,
           latestBlock: p.latestBlock,
+          clientFamily: clientFamilyFromClientId(p.clientName),
         }))
     if (snapSync === undefined) {
       snapSync = new SnapAccountSynchronizer({
