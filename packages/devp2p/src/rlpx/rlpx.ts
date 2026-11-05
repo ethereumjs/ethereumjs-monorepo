@@ -41,6 +41,8 @@ const MAX_DIAL_LATER = 2048
 const DIAL_TCP_TIMEOUT_MS = 5_000
 /** Maximum simultaneous outbound TCP dials in flight so we don't trigger firewall storms or flood maxPeers. */
 const MAX_CONCURRENT_PENDING_DIALS = 6
+/** After remote TOO_MANY_PEERS, skip this id until hold expires (not a process-lifetime LRU pin). */
+export const TOO_MANY_PEERS_DIAL_HOLD_MS = 180_000
 
 /** RLPx transport: encrypted TCP sessions, HELLO/capability negotiation, and sub-protocol multiplexing. */
 export class RLPx {
@@ -62,6 +64,8 @@ export class RLPx {
   protected _dpt: DPT | null
 
   protected _peersLRU: LRUCache<string, boolean>
+  /** Short post-TOO_MANY_PEERS dial skip; cleared from LRU so DNS can retry later. */
+  protected _peerDialHoldUntil = new Map<string, number>()
   protected _peersQueue: { peer: PeerInfo; ts: number }[]
   /** Bonded peers we have not dialed yet. Kept off the LRU so a full queue does not drop them. */
   protected _peersDeferred: PeerInfo[]
@@ -293,6 +297,11 @@ export class RLPx {
     // Using deprecated bytesToUnprefixedHex for performance: used as LRU cache keys for peer tracking.
     const key = bytesToUnprefixedHex(peer.id)
     if (this._peersLRU.has(key)) return
+    const holdUntil = this._peerDialHoldUntil.get(key)
+    if (holdUntil !== undefined) {
+      if (holdUntil > Date.now()) return
+      this._peerDialHoldUntil.delete(key)
+    }
 
     const directory = isChainDirectoryPeer(peer)
     const holdForDirectory = !directory && this._hasReadyDirectoryPeer()
@@ -498,22 +507,43 @@ export class RLPx {
 
       const id = peer.getId()
       if (id) {
-        // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for peer lookups.
-        const peerKey = bytesToUnprefixedHex(id)
-        this._peers.delete(peerKey)
-        // Retry after a transport timeout. A remote "too many peers" stays in the
-        // LRU so the next DNS wave dials someone else instead of the same full node.
-        if (
-          reason === DISCONNECT_REASON.TIMEOUT ||
-          reason === DISCONNECT_REASON.NETWORK_ERROR ||
-          reason === DISCONNECT_REASON.CLIENT_QUITTING
-        ) {
-          this._peersLRU.delete(peerKey)
-        }
-        this.events.emit('peer:removed', peer, reason, disconnectWe)
-        this._syncDiscoveryThrottle()
+        this._handlePeerDisconnect(peer, reason as DISCONNECT_REASON | undefined, disconnectWe)
       }
     })
+  }
+
+  _handlePeerDisconnect(
+    peer: Peer,
+    reason: DISCONNECT_REASON | undefined,
+    disconnectWe: boolean | null,
+  ): void {
+    const id = peer.getId()
+    if (!id) return
+    // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for peer lookups.
+    const peerKey = bytesToUnprefixedHex(id)
+    this._peers.delete(peerKey)
+    const helloClientId = peer.getHelloMessage()?.clientId
+    const clientStr =
+      helloClientId !== undefined
+        ? typeof helloClientId === 'string'
+          ? helloClientId.toLowerCase()
+          : new TextDecoder().decode(helloClientId).toLowerCase()
+        : ''
+    const nonSnapClient = clientStr.includes('eri' + 'gon') || clientStr.includes('scout')
+    if (nonSnapClient) {
+      this._peersLRU.set(peerKey, true)
+    } else if (reason === DISCONNECT_REASON.TOO_MANY_PEERS) {
+      this._peersLRU.delete(peerKey)
+      this._peerDialHoldUntil.set(peerKey, Date.now() + TOO_MANY_PEERS_DIAL_HOLD_MS)
+    } else if (
+      reason === DISCONNECT_REASON.TIMEOUT ||
+      reason === DISCONNECT_REASON.NETWORK_ERROR ||
+      reason === DISCONNECT_REASON.CLIENT_QUITTING
+    ) {
+      this._peersLRU.delete(peerKey)
+    }
+    this.events.emit('peer:removed', peer, reason!, disconnectWe)
+    this._syncDiscoveryThrottle()
   }
 
   _connectedPeerCount(): number {

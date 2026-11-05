@@ -53,4 +53,46 @@ describe('[Devp2p/DPT]: DNS direct dial', () => {
     dpt.destroy()
     addPeerSpy.mockRestore()
   })
+
+  it('bonds up to 4 DNS seeds into DPT when shouldFindNeighbours is enabled and bootstraps stored nodes on listening', async () => {
+    const storedId = 'aa'.repeat(64)
+    const mockStore = {
+      get: () => undefined,
+      put: () => {},
+      remove: () => {},
+      list: () => [
+        {
+          id: storedId,
+          address: '10.0.0.1',
+          udpPort: 30303,
+          tcpPort: 30303,
+          failCount: 0,
+        },
+      ],
+    }
+    const dpt = new DPT(genPrivateKey(), {
+      common: new Common({ chain: Sepolia, hardfork: 'amsterdam' }),
+      endpoint: { address: '127.0.0.1', udpPort: 0, tcpPort: 0 },
+      shouldFindNeighbours: true,
+      shouldGetDnsPeers: false,
+      nodeStore: mockStore,
+    })
+
+    const bootstrapSpy = vi.spyOn(dpt, 'bootstrap').mockResolvedValue(undefined)
+    dpt['_server'].events.emit('listening')
+    assert.strictEqual(bootstrapSpy.mock.calls.length, 1, 'bootstraps stored node on listening')
+
+    const dnsBatch = Array.from({ length: 6 }, (_, i) => ({
+      id: new Uint8Array(64).fill(i + 1),
+      address: `10.0.1.${i + 1}`,
+      tcpPort: 30303,
+      udpPort: 30303,
+      ethForkId: { forkHash: '0x6c1d9423', nextFork: 0n },
+    }))
+    dpt._feedDnsDirectoryPeers(dnsBatch)
+    assert.strictEqual(bootstrapSpy.mock.calls.length, 1 + 4, 'bonds up to 4 DNS seeds per refresh')
+
+    dpt.destroy()
+    bootstrapSpy.mockRestore()
+  })
 })

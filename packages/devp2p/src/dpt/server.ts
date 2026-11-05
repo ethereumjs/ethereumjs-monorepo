@@ -157,6 +157,11 @@ export class Server {
     this._send(peer, 'findneighbours', { id })
   }
 
+  requestEnr(peer: PeerInfo) {
+    this._isAliveCheck()
+    this._send(peer, 'enrRequest', {})
+  }
+
   _isAliveCheck() {
     if (this._socket === null) throw EthereumJSErrorWithoutCode('Server already destroyed')
   }
@@ -226,6 +231,18 @@ export class Server {
           },
           hash: msg.subarray(0, 32),
         })
+        // When a remote node pings us (e.g. a bootnode completing its endpoint bond),
+        // confirm it and re-query findneighbours after its ENR/bond completes.
+        if (peer !== null && this._dpt.id !== undefined) {
+          this._dpt.confirmPeer(bytesToUnprefixedHex(peerId))
+          setTimeout(() => {
+            try {
+              this.findneighbours(remote, this._dpt.id!)
+            } catch {
+              // ignore if destroyed
+            }
+          }, 250)
+        }
         break
       }
 
@@ -296,23 +313,31 @@ export class Server {
       case 'enrResponse': {
         const record = info.data.record as Uint8Array[]
         const ethForkId = ethForkIdFromDiscv4Record(record)
-        if (
-          ethForkId !== undefined &&
-          this._common !== undefined &&
-          this._common.hardforkForForkHash(ethForkId.forkHash) === null
-        ) {
-          this._dpt.banPeer(peerId, 300000)
-          break
+        if (this._common !== undefined) {
+          if (
+            ethForkId === undefined ||
+            this._common.hardforkForForkHash(ethForkId.forkHash) === null
+          ) {
+            this._dpt.banPeer(peerId, 300000)
+            break
+          }
+          this._dpt.confirmPeer(bytesToUnprefixedHex(peerId))
         }
         const tcp = tcpPortFromDiscv4Enr(record)
         const ethyCapable = ethyCapableFromDiscv4Record(record)
         if (tcp !== undefined) {
-          this._dpt.updatePeerEndpoint(peerId, {
+          const verifiedPeer: PeerInfo = {
+            id: peerId,
             address: rinfo.address,
             udpPort: rinfo.port,
             tcpPort: tcp,
+            ethForkId,
             ...(ethyCapable ? { ethyCapable: true } : {}),
-          })
+          }
+          this._dpt.updatePeerEndpoint(peerId, verifiedPeer)
+          if (this._common !== undefined) {
+            this._dpt.events.emit('peer:new', verifiedPeer)
+          }
         }
         break
       }

@@ -88,6 +88,9 @@ export class DPT {
 
   private DEBUG: boolean
 
+  /** Stored nodes loaded from disk at startup; verified into k-bucket once the UDP socket binds. */
+  protected _storedBootstrapNodes: PeerInfo[] = []
+
   constructor(privateKey: Uint8Array, options: DPTOptions) {
     this.events = new EventEmitter<DPTEvent>()
     this._privateKey = privateKey
@@ -129,6 +132,28 @@ export class DPT {
     this._kbucket.events.on('removed', (peer: PeerInfo) => this.events.emit('peer:removed', peer))
     this._kbucket.events.on('ping', this._onKBucketPing.bind(this))
 
+    if (this._shouldFindNeighbours) {
+      for (const n of this._nodeStore.list()) {
+        if (n.failCount >= 3 || !routableDiscoveryAddress(n.address) || !(n.udpPort > 0)) continue
+        try {
+          const idHex = n.id.startsWith('0x') ? n.id.slice(2) : n.id
+          if (idHex.length !== 128) continue
+          const id = new Uint8Array(64)
+          for (let i = 0; i < 64; i++) {
+            id[i] = Number.parseInt(idHex.slice(i * 2, i * 2 + 2), 16)
+          }
+          this._storedBootstrapNodes.push({
+            id,
+            address: n.address,
+            udpPort: n.udpPort,
+            tcpPort: n.tcpPort ?? n.udpPort,
+          })
+        } catch {
+          // ignore malformed stored node
+        }
+      }
+    }
+
     this._server = new DPTServer(this, this._privateKey, {
       timeout: options.timeout,
       endpoint: options.endpoint,
@@ -137,7 +162,15 @@ export class DPT {
       discoveryMetrics: options.discoveryMetrics,
       ethyDiscoveryTag: options.ethyDiscoveryTag,
     })
-    this._server.events.once('listening', () => this.events.emit('listening'))
+    this._server.events.once('listening', () => {
+      this.events.emit('listening')
+      if (this._shouldFindNeighbours && this._storedBootstrapNodes.length > 0) {
+        const seeds = this._storedBootstrapNodes.splice(0, 8)
+        for (const seed of seeds) {
+          void this.bootstrap(seed).catch(() => {})
+        }
+      }
+    })
     this._server.events.once('close', () => this.events.emit('close'))
     this._server.events.on('error', (err) => this.events.emit('error', err))
     this._debug = devp2pDebug.extend(DEBUG_BASE_NAME)
@@ -261,7 +294,13 @@ export class DPT {
     }
     if (!this.id) return
     if (this._shouldFindNeighbours) {
+      // Rotate random target IDs after the initial self-ID lookup so k-buckets fill across the full key space
       this._server.findneighbours(peer, this.id)
+      setTimeout(() => {
+        if (this._shouldFindNeighbours && !this._discoveryPaused) {
+          this._server.findneighbours(peer, randomBytes(64))
+        }
+      }, 1500)
     }
   }
 
@@ -315,7 +354,6 @@ export class DPT {
     try {
       const peer = (await this._server.ping(obj)) as PeerInfo
       if (obj.chainDirectory === true) peer.chainDirectory = true
-      this.events.emit('peer:new', peer)
       this._kbucket.add(peer)
       if (peer.id !== undefined) {
         this._nodeStore.put({
@@ -326,6 +364,17 @@ export class DPT {
           lastPong: Date.now(),
           failCount: 0,
         })
+      }
+      // When a Common instance is set, verify the neighbour's EIP-868 eth forkHash via ENRRequest
+      // before emitting peer:new to RLPx so alien chains (Mainnet/Polygon/BSC) never touch TCP!
+      if (
+        this._common !== undefined &&
+        obj.chainDirectory !== true &&
+        obj.ethForkId === undefined
+      ) {
+        this._server.requestEnr(peer)
+      } else {
+        this.events.emit('peer:new', peer)
       }
       return peer
     } catch (err: any) {
@@ -532,9 +581,10 @@ export class DPT {
     }
   }
 
-  /** Verified EIP-1459 peers dial on TCP directly; skip UDP bonding and the k-bucket. */
+  /** Verified EIP-1459 peers dial on TCP directly; also bond up to 4 seeds per refresh into DPT when neighbour discovery is on. */
   _feedDnsDirectoryPeers(dnsPeers: PeerInfo[]): void {
     let emitted = 0
+    let bondedSeeds = 0
     for (const raw of dnsPeers) {
       if (emitted >= MAX_DNS_PEER_NEW_PER_REFRESH) break
       const peer = markChainDirectoryPeer({ ...raw })
@@ -545,6 +595,16 @@ export class DPT {
       }
       emitted++
       this.events.emit('peer:new', peer)
+      if (
+        this._shouldFindNeighbours &&
+        bondedSeeds < 4 &&
+        typeof peer.udpPort === 'number' &&
+        peer.udpPort > 0 &&
+        this._kbucket.getAll().length < 64
+      ) {
+        bondedSeeds++
+        void this.bootstrap(peer).catch(() => {})
+      }
     }
   }
 }
