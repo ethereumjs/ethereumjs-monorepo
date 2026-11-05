@@ -161,6 +161,14 @@ Every Work Package delivers a **runnable, observable, and live-testable incremen
                       │         Pivot Bridging & Slot Alignment │                 │
                       └───────────────────┬─────────────────────┘                 │
                                           │                                       │
+                                          ▼                                       │
+                      ┌─────────────────────────────────────────┐                 │
+                      │ WP-06e: 3x-5x Sync Throughput Engine —  │                 │
+                      │         Client Affinity (Nethermind),   │                 │
+                      │         384KiB Chunks & Speculative     │                 │
+                      │         Zero-Bubble Cursor Pipelining   │                 │
+                      └───────────────────┬─────────────────────┘                 │
+                                          │                                       │
                                           └───────────────────┬───────────────────┘
                                                               ▼
                                           ┌─────────────────────────────────────────┐
