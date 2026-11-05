@@ -154,6 +154,13 @@ Every Work Package delivers a **runnable, observable, and live-testable incremen
                       │         Adaptive TUI & 2-Node Loopback  │                 │
                       └───────────────────┬─────────────────────┘                 │
                                           │                                       │
+                                          ▼                                       │
+                      ┌─────────────────────────────────────────┐                 │
+                      │ WP-06d: Stateful Session Resume         │                 │
+                      │         Coordinator, Multi-Hour BAL     │                 │
+                      │         Pivot Bridging & Slot Alignment │                 │
+                      └───────────────────┬─────────────────────┘                 │
+                                          │                                       │
                                           └───────────────────┬───────────────────┘
                                                               ▼
                                           ┌─────────────────────────────────────────┐
