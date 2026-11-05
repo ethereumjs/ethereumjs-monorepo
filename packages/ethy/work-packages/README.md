@@ -133,19 +133,47 @@ Every Work Package delivers a **runnable, observable, and live-testable incremen
                       │         & Ethy Consensus Anchor (/cl)   │                 │
                       └───────────────────┬─────────────────────┘                 │
                                           │                                       │
+                                          ▼                                       │
+                      ┌─────────────────────────────────────────┐                 │
+                      │ WP-06a: ETHY/0 DevP2P Protocol Spec     │                 │
+                      │         (ethereumjs/protocols Repo &    │                 │
+                      │         devp2p/ETHY-0-SPEC.md)          │                 │
+                      └───────────────────┬─────────────────────┘                 │
+                                          │                                       │
+                                          ▼                                       │
+                      ┌─────────────────────────────────────────┐                 │
+                      │ WP-06b: @ethereumjs/devp2p ETHY/0       │                 │
+                      │         Subprotocol, Proven-Chunk       │                 │
+                      │         Server, ETHY_PEX & --connect    │                 │
+                      └───────────────────┬─────────────────────┘                 │
+                                          │                                       │
+                                          ▼                                       │
+                      ┌─────────────────────────────────────────┐                 │
+                      │ WP-06c: Ethy ETHY/0 Swarm Sync, Proof   │                 │
+                      │         Sidecars, ETHY vs SNAP Selector,│                 │
+                      │         Adaptive TUI & 2-Node Loopback  │                 │
+                      └───────────────────┬─────────────────────┘                 │
+                                          │                                       │
                                           └───────────────────┬───────────────────┘
                                                               ▼
                                           ┌─────────────────────────────────────────┐
-                                          │ WP-06: Bidirectional Local LLM          │
+                                          │ WP-07: Bidirectional Local LLM          │
                                           │        IntentEngine (<ethy_state>       │
                                           │        & Dynamic Tool Gating)           │
                                           └───────────────────┬─────────────────────┘
                                                               │
                                                               ▼
                                           ┌─────────────────────────────────────────┐
-                                          │ WP-07: On-Demand @ethereumjs/evm        │
-                                          │        Sandbox & Headless SDK           │
-                                          │        (FYP / MCP Ready)                │
+                                          │ WP-08: On-Demand @ethereumjs/evm        │
+                                          │        Sandbox, P2P Tx Broadcast &      │
+                                          │        Headless SDK (FYP / MCP Ready)   │
+                                          └───────────────────┬─────────────────────┘
+                                                              │
+                                                              ▼ (Optional)
+                                          ┌─────────────────────────────────────────┐
+                                          │ WP-09: Optional ETHY/0 Discovery Infra  │
+                                          │        (--rendezvous Seed & Signed      │
+                                          │        EIP-1459 DNS ENR Tree)           │
                                           └─────────────────────────────────────────┘
 ```
 

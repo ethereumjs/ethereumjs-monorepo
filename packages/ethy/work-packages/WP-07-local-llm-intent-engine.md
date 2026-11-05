@@ -1,7 +1,7 @@
-# WP-06: Bidirectional Local LLM `IntentEngine` (`<ethy_state>`, Dynamic Tool Gating & Fixture Replay)
+# WP-07: Bidirectional Local LLM `IntentEngine` (`<ethy_state>`, Dynamic Tool Gating & Fixture Replay)
 
-- **Status:** `READY_FOR_PLANNING`
-- **Dependencies:** `WP-01` (`DONE`), `WP-02` (`DONE`), `WP-04a` (`DONE`), `WP-04b` (`DONE`), `WP-04c` (`DONE`), `WP-04d` (`DONE`), `WP-04e` (`DONE`), `WP-04f` (`DONE`), `WP-04g` (`DONE`), `WP-04h` (`DONE`), `WP-04i` (`DONE`), `WP-04j` (`DONE`), `WP-04k` (`DONE`), `WP-05a` (`DONE`), `WP-05b` (`DONE`)
+- **Status:** `BLOCKED_BY_WP-06c`
+- **Dependencies:** `WP-01` (`DONE`), `WP-02` (`DONE`), `WP-04a` (`DONE`), `WP-04b` (`DONE`), `WP-04c` (`DONE`), `WP-04d` (`DONE`), `WP-04e` (`DONE`), `WP-04f` (`DONE`), `WP-04g` (`DONE`), `WP-04h` (`DONE`), `WP-04i` (`DONE`), `WP-04j` (`DONE`), `WP-04k` (`DONE`), `WP-05a` (`DONE`), `WP-05b` (`DONE`), `WP-06a`, `WP-06b`, `WP-06c`
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
 
