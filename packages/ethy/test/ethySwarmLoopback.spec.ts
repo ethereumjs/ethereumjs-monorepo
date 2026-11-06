@@ -158,7 +158,12 @@ describe('[Ethy/Net]: ETHY/0 swarm loopback', () => {
           45_000,
         )
         const tick = setInterval(() => {
-          if (spine.syncTransport === 'ethy' && spine.totalAccountsSynced >= seed.accountCount) {
+          const bucketsDone = spine.snapBuckets.every((b) => b.status === 'done')
+          if (
+            spine.syncTransport === 'ethy' &&
+            spine.totalAccountsSynced >= seed.accountCount &&
+            bucketsDone
+          ) {
             clearTimeout(timer)
             clearInterval(tick)
             resolve()
