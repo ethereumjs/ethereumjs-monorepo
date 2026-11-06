@@ -241,7 +241,9 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
         const msg = Legacy.errorMsg(this, 'versioned hash is invalid length')
         throw EthereumJSErrorWithoutCode(msg)
       }
-      if (BigInt(parseInt(hash.slice(2, 4))) !== this.common.param('blobCommitmentVersionKzg')) {
+      if (
+        BigInt(parseInt(hash.slice(2, 4), 16)) !== this.common.param('blobCommitmentVersionKzg')
+      ) {
         // We check the first "byte" of the hash (starts at position 2 since hash is a PrefixedHexString)
         const msg = Legacy.errorMsg(
           this,
