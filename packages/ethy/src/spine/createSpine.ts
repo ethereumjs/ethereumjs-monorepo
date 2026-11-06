@@ -55,6 +55,8 @@ export function createSpine(network: string, chainId: bigint): EthySpine {
     network,
     chainId,
     phase: 'BOOTING',
+    syncTransport: 'unset',
+    ethyBucketsBitmask: 0,
     currentSlot: 0,
     capabilities: {
       p2p: { status: 'locked', label: 'Starting' },

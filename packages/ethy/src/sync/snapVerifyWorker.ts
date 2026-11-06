@@ -64,7 +64,7 @@ type WorkerRequest =
 
 export function defaultSnapVerifyPoolSize(parallelism?: number): number {
   const p = parallelism ?? availableParallelism()
-  return Math.min(4, Math.max(2, Math.floor(p / 2)))
+  return Math.min(6, Math.max(2, p - 2))
 }
 
 export type SnapVerifyPoolOpts = {
@@ -114,13 +114,13 @@ export class SnapVerifyPool {
     if (this.inProcess) {
       return verifyAccountRangeJob(opts)
     }
-    const payloadCopy = new Uint8Array(opts.payload)
+    const payload = this.payloadForWorkerTransfer(opts.payload)
     return this.runWorker({
       id: this.nextId++,
       kind: 'account',
       stateRoot: opts.stateRoot,
       origin: opts.origin,
-      payload: payloadCopy,
+      payload,
     }) as Promise<AccountRangeVerifyResult>
   }
 
@@ -136,13 +136,13 @@ export class SnapVerifyPool {
         replyPayload: opts.payload,
       })
     }
-    const payloadCopy = new Uint8Array(opts.payload)
+    const payload = this.payloadForWorkerTransfer(opts.payload)
     return this.runWorker({
       id: this.nextId++,
       kind: 'storage',
       storageRoot: opts.storageRoot,
       origin: opts.origin,
-      payload: payloadCopy,
+      payload,
     }) as Promise<StorageRangeVerifyResult>
   }
 
@@ -155,6 +155,13 @@ export class SnapVerifyPool {
       p.reject(new Error('SnapVerifyPool closed'))
     }
     this.pending.clear()
+  }
+
+  private payloadForWorkerTransfer(payload: Uint8Array): Uint8Array {
+    if (payload.byteOffset === 0 && payload.byteLength === payload.buffer.byteLength) {
+      return payload
+    }
+    return new Uint8Array(payload)
   }
 
   private pickSlot(): WorkerSlot {

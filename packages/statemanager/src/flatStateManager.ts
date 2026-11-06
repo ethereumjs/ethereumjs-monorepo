@@ -171,7 +171,7 @@ export class FlatStateManager implements StateManagerInterface {
     this._arena!.write(slot, binary)
     shard.set(key, slot)
     this._residentCount++
-    this.maybeEvictResidents()
+    this.maybeEvictResidents(key)
   }
 
   private assignOverlayAccountShard(key: string, binary: Uint8Array | undefined): void {
@@ -218,7 +218,7 @@ export class FlatStateManager implements StateManagerInterface {
     }
   }
 
-  private maybeEvictResidents(): void {
+  private maybeEvictResidents(exemptKey?: string): void {
     if (
       this._maxResidentAccounts === undefined ||
       this._deltaStack.length > 0 ||
@@ -227,11 +227,11 @@ export class FlatStateManager implements StateManagerInterface {
       return
     }
     while (this._residentCount > this._maxResidentAccounts) {
-      if (!this.evictOneUnpinned()) break
+      if (!this.evictOneUnpinned(exemptKey)) break
     }
   }
 
-  private evictOneUnpinned(): boolean {
+  private evictOneUnpinned(exemptKey?: string): boolean {
     if (this._slotShards === undefined || this._residentCount === 0) return false
     for (let i = 0; i < ACCOUNT_SHARD_COUNT; i++) {
       const idx = (this._evictShardCursor + i) & 0xff
@@ -239,6 +239,7 @@ export class FlatStateManager implements StateManagerInterface {
       if (shard.size === 0) continue
       for (const [key, slot] of shard) {
         if (this._pinnedKeys.has(key)) continue
+        if (exemptKey !== undefined && key === exemptKey) continue
         shard.delete(key)
         this._arena!.release(slot)
         this._residentCount--
@@ -670,6 +671,33 @@ export class FlatStateManager implements StateManagerInterface {
       return
     }
     this._logicalAccountCount = count
+  }
+
+  /** Reset all in-memory accounts, storage, and code when discarding a stale snap pivot. */
+  clearAccountsAndStorage(): void {
+    if (this._parent !== undefined) {
+      this._parent.clearAccountsAndStorage()
+      return
+    }
+    if (this._slotShards !== undefined && this._arena !== undefined) {
+      for (const shard of this._slotShards) {
+        for (const slot of shard.values()) {
+          this._arena.release(slot)
+        }
+        shard.clear()
+      }
+    }
+    for (const shard of this._overlayAccountShards) shard.clear()
+    this._residentCount = 0
+    this._logicalAccountCount = 0
+    this._tombstones.clear()
+    this._pinnedKeys.clear()
+    this._hashToAddress.clear()
+    this._storage.clear()
+    this._code.clear()
+    this._deltaStack.length = 0
+    this._overlayFrames.length = 0
+    this.originalStorageCache.clear()
   }
 
   /** Evict unpinned residents down to `maxKeep` (memory watchdog). Returns slots freed. */

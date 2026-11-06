@@ -2,7 +2,8 @@ import type { EthySpine, WidgetSpec } from '../spine/types.ts'
 
 export function buildHelpWidget(spine: EthySpine): WidgetSpec {
   const rows: string[][] = [
-    ['/peers', 'Peer table (latency, caps)'],
+    ['/peers', 'Peer table (latency, caps, ETHY seed bits)'],
+    ['/ethy', 'ETHY/0 transport, local seed, serve counters'],
     ['/buckets, /snap', '16-bucket snap progress'],
     ['/diag', 'Diagnostic ring buffer'],
     ['/cl', 'Consensus light client (BLS / finality)'],

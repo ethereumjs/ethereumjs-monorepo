@@ -42,6 +42,7 @@ export function syncSpineFromClient(
   }
   spine.clStatus = spine.clStatus === 'mismatch' ? 'mismatch' : 'verified'
   spine.clOptimisticSlot = head.slot
+  spine.currentSlot = head.slot
   if (head.blockNumber > 0) {
     spine.clOptimisticBlockNumber = BigInt(head.blockNumber)
   }

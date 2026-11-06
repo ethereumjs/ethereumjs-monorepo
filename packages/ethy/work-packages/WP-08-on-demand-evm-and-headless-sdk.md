@@ -1,7 +1,7 @@
-# WP-07: On-Demand `@ethereumjs/evm` Sandbox & Headless SDK
+# WP-08: On-Demand `@ethereumjs/evm` Sandbox, P2P Transaction Broadcast & Headless SDK
 
-- **Status:** `BLOCKED_BY_WP-06`
-- **Dependencies:** `WP-04d` (`DONE`), `WP-04e` (`DONE`), `WP-04f` (`DONE`), `WP-04g` (`DONE`), `WP-04h` (`DONE`), `WP-04i` (`DONE`), `WP-04j` (`DONE`), `WP-04k`, `WP-05a`, `WP-05b`, `WP-06`
+- **Status:** `BLOCKED_BY_WP-07`
+- **Dependencies:** `WP-04d` (`DONE`), `WP-04e` (`DONE`), `WP-04f` (`DONE`), `WP-04g` (`DONE`), `WP-04h` (`DONE`), `WP-04i` (`DONE`), `WP-04j` (`DONE`), `WP-04k` (`DONE`), `WP-05a` (`DONE`), `WP-05b` (`DONE`), `WP-06a`, `WP-06b`, `WP-06c`, `WP-07`
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
 

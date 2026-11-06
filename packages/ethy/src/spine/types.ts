@@ -5,6 +5,8 @@ export type CapabilityId = 'p2p' | 'snap' | 'head' | 'ai'
 
 export type EthyPhase = 'BOOTING' | 'P2P_WARMUP' | 'SNAP_SYNCING' | 'BAL_CATCHUP' | 'HEAD_FOLLOWING'
 
+export type SyncTransport = 'unset' | 'ethy' | 'snap'
+
 export type CapabilityReadiness = 'locked' | 'partial' | 'ready'
 
 export type SnapBucketStatus = 'pending' | 'syncing' | 'verifying_proof' | 'done' | 'stalled'
@@ -15,6 +17,17 @@ export interface PeerTelemetry {
   caps: string[]
   /** Snap subprotocol is on the live session, not only in the HELLO cap list. */
   snapSession?: boolean
+  /** ETHY/0 subprotocol is on the live session. */
+  ethySession?: boolean
+  /** Remote ETHY/0 STATUS snapshot when negotiated. */
+  ethyStatus?: {
+    basePivotBlock: string
+    basePivotStateRoot: string
+    bucketsBitmask: string
+    balEarliestBlock: string
+    balLatestBlock: string
+    latestBlockHash: string
+  }
   /** ETH STATUS completed with a usable head hash. */
   hasHead?: boolean
   /** Latest block number reported by the peer's ETH STATUS / BLOCK_RANGE_UPDATE. */
@@ -35,7 +48,10 @@ export type SnapRangeCursor = {
   /** `prefix` → `accounts/<nibble>.bin`; else segment file key under that nibble. */
   journal: 'prefix' | string
   inFlightReqKey?: string
-  verifying?: boolean
+  /** In-flight Merkle verifies not yet committed (WP-06e). */
+  verifyingCount?: number
+  /** Origin advanced on wire peek while verify runs (WP-06e). */
+  pipelinedVerify?: boolean
   /** One-account storage/code refresh after BAL during snap (WP-04k). */
   refresh?: boolean
 }
@@ -86,6 +102,13 @@ export type PivotHealProgress = {
   toBlock: bigint
 }
 
+/** Fast-forward saved pivot via BALs before resuming `snap/1` (WP-06d). */
+export type PivotBridgingProgress = {
+  fromBlock: bigint
+  currentBlock: bigint
+  targetBlock: bigint
+}
+
 /**
  * Accounts that survived a finished heal (`kept`), or journals on the previous
  * pivot that resume did not load (`previous`).
@@ -101,6 +124,10 @@ export interface EthySpine {
   network: string
   chainId: bigint
   phase: EthyPhase
+  /** Locked base-state download path (WP-06c). Phase stays `SNAP_SYNCING` for both. */
+  syncTransport?: SyncTransport
+  /** Local servable ETHY/0 account buckets (`1 << nibble`). */
+  ethyBucketsBitmask?: number
   currentSlot: number
   pivotBlockNumber?: bigint
   pivotStateRoot?: Uint8Array
@@ -108,8 +135,12 @@ export interface EthySpine {
   pivotStatusHint?: string
   /** Set while a rolling pivot heal is walking blocks. Cleared when it finishes or fails. */
   pivotHeal?: PivotHealProgress
+  /** BAL bridge into the live snap window; snap schedulers stay idle (WP-06d). */
+  pivotBridging?: PivotBridgingProgress
   /** Set after a heal that held accounts, or when the previous pivot still has unloaded journals. */
   pivotCarry?: PivotCarry
+  /** `--demo` uses {@link currentSlot} as a synthetic clock in the capability bar. */
+  demoClock?: boolean
   headBlockNumber?: bigint
   headStateRoot?: Uint8Array
   /** Last block whose header+BAL were verified and applied (persisted on disk). */
@@ -141,6 +172,8 @@ export interface EthySpine {
   /** Rolling-window eth serve telemetry from the worker (live P2P only). */
   serving?: WorkerServingSnapshot
   snapBuckets: SnapBucket[]
+  /** Snap peers currently rested after a range timeout (live scheduler). */
+  snapPeersResting?: number
   totalAccountsSynced: number
   accountsPerSec: number
   /** Smoothed per-minute account rate (refreshed every ~5s to stay steady in the TUI). */
@@ -170,6 +203,10 @@ export interface EthySpine {
   /** Finalized EL block hash from BLS-verified light client header. */
   clFinalizedBlockHash?: Uint8Array
   clEndpoint?: string
+  /** Optional sink hook for the persistent Flight Recorder log files. */
+  onDiagnosticRecorded?: (entry: DiagnosticEvent) => void
+  /** Active logs directory path (`~/.ethy/networks/<net>/logs`). */
+  logsDirPath?: string
 }
 
 export type WidgetSpec =

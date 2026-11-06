@@ -24,6 +24,14 @@ describe('[Ethy/Intent]: routing', () => {
     assert.include(r.widget.kind === 'table' ? (r.widget.title ?? '') : '', 'Peer')
   })
 
+  it('/ethy routes to ETHY overview', () => {
+    const spine = createSpine('sepolia', 11155111n)
+    advanceDemo(spine, 5000)
+    const r = engine.handle({ text: '/ethy', spine })
+    assert.equal(r.widget.kind, 'table')
+    assert.include(r.widget.kind === 'table' ? (r.widget.title ?? '') : '', 'ETHY')
+  })
+
   it('keyword "stalled" routes to bucket table', () => {
     const spine = createSpine('sepolia', 11155111n)
     advanceDemo(spine, 5000)

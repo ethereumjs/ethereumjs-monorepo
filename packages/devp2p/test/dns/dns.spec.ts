@@ -1,6 +1,6 @@
 import { assert, describe, it, vi } from 'vitest'
 
-import { DNS } from '../../src/dns/index.ts'
+import { DNS, SEEN_DNS_TTL_MS } from '../../src/dns/dns.ts'
 
 import { devp2pTestData } from '@ethereumjs/testdata'
 
@@ -192,6 +192,32 @@ describe('[Devp2p/DNS]: client', () => {
     )
     const peers = await dns.getPeers(1, [mockData.enrTree])
     assert.deepEqual(peers, [])
+  })
+
+  it('expires seen DNS addresses after SEEN_DNS_TTL_MS so small trees can be rediscovered', async () => {
+    vi.useFakeTimers()
+    try {
+      mockDns.resolve.mockImplementation((domain: string) => {
+        if (domain === `${rootDomain}.${host}`) return Promise.resolve([[singleBranch]])
+        if (domain === `${branchDomainA}.${host}`) return Promise.resolve([[mockData.enrA]])
+        return Promise.resolve([[mockData.enrRoot]])
+      })
+
+      initializeDns()
+      const first = await dns.getPeers(1, [mockData.enrTree])
+      assert.strictEqual(first.length, 1)
+
+      // Within TTL: suppressed
+      const withinTtl = await dns.getPeers(1, [mockData.enrTree])
+      assert.strictEqual(withinTtl.length, 0)
+
+      // After TTL: rediscovered without clearing _seenAddresses manually
+      vi.advanceTimersByTime(SEEN_DNS_TTL_MS + 1)
+      const afterTtl = await dns.getPeers(1, [mockData.enrTree])
+      assert.strictEqual(afterTtl.length, 1)
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it('should reset mocks', () => {

@@ -9,6 +9,7 @@ import { ipToBytes } from '../util.ts'
 export function discv4ENRList(
   privateKey: Uint8Array,
   endpoint: { address: string; udpPort: number; tcpPort: number },
+  opts?: { includeEthyTag?: boolean },
 ): Uint8Array[] {
   const seq = intToBytes(1)
   const port = (value: number) => Uint8Array.from([(value >>> 8) & 0xff, value & 0xff])
@@ -24,6 +25,9 @@ export function discv4ENRList(
     utf8ToBytes('udp'),
     port(endpoint.udpPort),
   ]
+  if (opts?.includeEthyTag === true) {
+    pairs.push(utf8ToBytes('ethy'), new Uint8Array(0))
+  }
   const content = RLP.encode([seq, ...pairs])
   const sigBytes = secp256k1.sign(keccak_256(content), privateKey, {
     format: 'recovered',

@@ -4,7 +4,7 @@ import debugDefault from 'debug'
 import { EventEmitter } from 'eventemitter3'
 import { LRUCache } from 'lru-cache'
 
-import { ethForkIdFromDiscv4Record } from '../dns/enrPeerFields.ts'
+import { ethForkIdFromDiscv4Record, ethyCapableFromDiscv4Record } from '../dns/enrPeerFields.ts'
 import { createDeferred, devp2pDebug, formatLogId, pickAdvertisedIPv4, pk2id } from '../util.ts'
 import { discv4ENRList, tcpPortFromDiscv4Enr } from './discv4Enr.ts'
 import { discv4ExpirationValid } from './packetExpiry.ts'
@@ -35,6 +35,7 @@ export class Server {
 
   protected _common?: Common
   protected _discoveryMetrics: import('../discovery/metrics.ts').DiscoveryMetrics | undefined
+  protected _ethyDiscoveryTag: boolean
 
   private DEBUG: boolean
 
@@ -66,6 +67,7 @@ export class Server {
 
     this._common = options.common
     this._discoveryMetrics = options.discoveryMetrics
+    this._ethyDiscoveryTag = options.ethyDiscoveryTag === true
 
     this.DEBUG = globalThis.process?.env?.DEBUG?.includes('ethjs') ?? false
   }
@@ -155,6 +157,11 @@ export class Server {
     this._send(peer, 'findneighbours', { id })
   }
 
+  requestEnr(peer: PeerInfo) {
+    this._isAliveCheck()
+    this._send(peer, 'enrRequest', {})
+  }
+
   _isAliveCheck() {
     if (this._socket === null) throw EthereumJSErrorWithoutCode('Server already destroyed')
   }
@@ -224,6 +231,18 @@ export class Server {
           },
           hash: msg.subarray(0, 32),
         })
+        // When a remote node pings us (e.g. a bootnode completing its endpoint bond),
+        // confirm it and re-query findneighbours after its ENR/bond completes.
+        if (peer !== null && this._dpt.id !== undefined) {
+          this._dpt.confirmPeer(bytesToUnprefixedHex(peerId))
+          setTimeout(() => {
+            try {
+              this.findneighbours(remote, this._dpt.id!)
+            } catch {
+              // ignore if destroyed
+            }
+          }, 250)
+        }
         break
       }
 
@@ -278,11 +297,15 @@ export class Server {
             : pickAdvertisedIPv4()
         this._send(remote, 'enrResponse', {
           requestHash: msg.subarray(0, 32),
-          record: discv4ENRList(this._privateKey, {
-            address,
-            udpPort,
-            tcpPort: this._endpoint.tcpPort ?? udpPort,
-          }),
+          record: discv4ENRList(
+            this._privateKey,
+            {
+              address,
+              udpPort,
+              tcpPort: this._endpoint.tcpPort ?? udpPort,
+            },
+            { includeEthyTag: this._ethyDiscoveryTag },
+          ),
         })
         break
       }
@@ -290,21 +313,31 @@ export class Server {
       case 'enrResponse': {
         const record = info.data.record as Uint8Array[]
         const ethForkId = ethForkIdFromDiscv4Record(record)
-        if (
-          ethForkId !== undefined &&
-          this._common !== undefined &&
-          this._common.hardforkForForkHash(ethForkId.forkHash) === null
-        ) {
-          this._dpt.banPeer(peerId, 300000)
-          break
+        if (this._common !== undefined) {
+          if (
+            ethForkId === undefined ||
+            this._common.hardforkForForkHash(ethForkId.forkHash) === null
+          ) {
+            this._dpt.banPeer(peerId, 300000)
+            break
+          }
+          this._dpt.confirmPeer(bytesToUnprefixedHex(peerId))
         }
         const tcp = tcpPortFromDiscv4Enr(record)
+        const ethyCapable = ethyCapableFromDiscv4Record(record)
         if (tcp !== undefined) {
-          this._dpt.updatePeerEndpoint(peerId, {
+          const verifiedPeer: PeerInfo = {
+            id: peerId,
             address: rinfo.address,
             udpPort: rinfo.port,
             tcpPort: tcp,
-          })
+            ethForkId,
+            ...(ethyCapable ? { ethyCapable: true } : {}),
+          }
+          this._dpt.updatePeerEndpoint(peerId, verifiedPeer)
+          if (this._common !== undefined) {
+            this._dpt.events.emit('peer:new', verifiedPeer)
+          }
         }
         break
       }

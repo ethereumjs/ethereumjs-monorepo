@@ -29,10 +29,13 @@ import { SnapPivotStore } from '../src/persist/snapStore.ts'
 import { createSpine } from '../src/spine/createSpine.ts'
 import { type InFlightBlockBundle, advanceBlockBundleEthMessage } from '../src/sync/blockBundle.ts'
 import {
+  MAX_BAL_BRIDGE_BLOCKS,
   SNAP_RESUME_MAX_GAP,
+  SNAP_UNSERVED_PIVOT_MS,
   decideSnapResume,
   shouldDeferLivePivotRequest,
   shouldEnsureSnapSync,
+  shouldRefreshStaleSnapPivot,
 } from '../src/sync/resumePolicy.ts'
 import { PROVEN_PEER_REST_MS, peerRestMsForRangeFailure } from '../src/sync/snapSchedulePolicy.ts'
 
@@ -75,14 +78,9 @@ describe('[Ethy/P2P]: resume policy', () => {
       wantSnapDiscoveryHold({ snapSessions: 1, servingSnapPeers: 1, held: false }),
       false,
     )
-    assert.equal(
-      wantSnapDiscoveryHold({ snapSessions: 2, servingSnapPeers: 0, held: false }),
-      false,
-    )
-    assert.equal(wantSnapDiscoveryHold({ snapSessions: 1, servingSnapPeers: 8, held: false }), true)
-    assert.equal(wantSnapDiscoveryHold({ snapSessions: 4, servingSnapPeers: 8, held: false }), true)
-    assert.equal(wantSnapDiscoveryHold({ snapSessions: 3, servingSnapPeers: 6, held: true }), true)
-    assert.equal(wantSnapDiscoveryHold({ snapSessions: 3, servingSnapPeers: 5, held: true }), false)
+    assert.equal(wantSnapDiscoveryHold({ snapSessions: 4, servingSnapPeers: 4, held: false }), true)
+    assert.equal(wantSnapDiscoveryHold({ snapSessions: 3, servingSnapPeers: 2, held: true }), true)
+    assert.equal(wantSnapDiscoveryHold({ snapSessions: 3, servingSnapPeers: 1, held: true }), false)
   })
 
   it('shouldVipReconnect dials below VIP_SNAP_PEER_TARGET even when discovery is held', () => {
@@ -160,7 +158,24 @@ describe('[Ethy/P2P]: resume policy', () => {
         saved: { pivotBlockNumber: 50n, baseSyncComplete: false, bucketsDoneCount: 0 },
         head: 50n + SNAP_RESUME_MAX_GAP + 1n,
       }),
+      'bridge-pivot',
+    )
+    assert.equal(
+      decideSnapResume({
+        fresh: false,
+        saved: { pivotBlockNumber: 50n, baseSyncComplete: false, bucketsDoneCount: 0 },
+        head: 50n + MAX_BAL_BRIDGE_BLOCKS + 1n,
+      }),
       'reset-stale',
+    )
+    assert.equal(
+      decideSnapResume({
+        fresh: false,
+        saved: { pivotBlockNumber: 50n, baseSyncComplete: false, bucketsDoneCount: 0 },
+        head: 50n + 1_000n,
+        ethyBalTail: true,
+      }),
+      'bridge-pivot',
     )
     assert.equal(
       decideSnapResume({
@@ -169,6 +184,48 @@ describe('[Ethy/P2P]: resume policy', () => {
         head: 100n,
       }),
       'handoff-catchup',
+    )
+  })
+
+  it('shouldRefreshStaleSnapPivot replaces a far pivot that nobody is serving', () => {
+    const pivot = 100n
+    const bridgeHead = pivot + SNAP_RESUME_MAX_GAP + 1n
+    const staleHead = pivot + MAX_BAL_BRIDGE_BLOCKS + 1n
+    assert.isFalse(
+      shouldRefreshStaleSnapPivot({
+        phase: 'SNAP_SYNCING',
+        handoffCatchup: false,
+        pivotBridging: true,
+        pivotBlock: pivot,
+        headBlock: staleHead,
+        servingSnapPeers: 0,
+        msSinceProgress: SNAP_UNSERVED_PIVOT_MS,
+        msSinceBalProgress: SNAP_UNSERVED_PIVOT_MS,
+      }),
+    )
+    assert.isFalse(
+      shouldRefreshStaleSnapPivot({
+        phase: 'SNAP_SYNCING',
+        handoffCatchup: false,
+        pivotBridging: false,
+        pivotBlock: pivot,
+        headBlock: bridgeHead,
+        servingSnapPeers: 0,
+        msSinceProgress: SNAP_UNSERVED_PIVOT_MS,
+        msSinceBalProgress: SNAP_UNSERVED_PIVOT_MS,
+      }),
+    )
+    assert.isTrue(
+      shouldRefreshStaleSnapPivot({
+        phase: 'SNAP_SYNCING',
+        handoffCatchup: false,
+        pivotBridging: false,
+        pivotBlock: pivot,
+        headBlock: staleHead,
+        servingSnapPeers: 0,
+        msSinceProgress: SNAP_UNSERVED_PIVOT_MS,
+        msSinceBalProgress: SNAP_UNSERVED_PIVOT_MS,
+      }),
     )
   })
 
@@ -320,7 +377,7 @@ describe('[Ethy/Persist]: VIP peer backoff', () => {
     assert.equal(firstId, 'bb')
   })
 
-  it('vipDialCandidates caps at four per family when several families qualify', () => {
+  it('vipDialCandidates fills limit with top Nethermind proven peers without family cap', () => {
     const dir = tempDir()
     const book = PeerBookStore.open({
       dataDir: dir,
@@ -329,35 +386,34 @@ describe('[Ethy/Persist]: VIP peer backoff', () => {
       enabled: true,
     })
     const now = Date.now()
-    const nmIds = ['01', '02', '03'].map((n) => `${n.repeat(32)}`)
-    const gtIds = ['04', '05'].map((n) => `${n.repeat(32)}`)
-    for (let i = 0; i < 3; i++) {
+    const nmIds = ['01', '02', '03', '04', '05', '06'].map((n) => `${n.repeat(32)}`)
+    for (let i = 0; i < 6; i++) {
       book.putRow(
         sampleRow({
           id: nmIds[i]!,
           clientFamily: 'Nethermind',
           lastSnapSuccessAt: now - i,
-          snapResponsesOk: 3 - i,
+          snapResponsesOk: 10 - i,
         }),
       )
     }
     for (let i = 0; i < 2; i++) {
       book.putRow(
         sampleRow({
-          id: gtIds[i]!,
-          clientFamily: 'Geth',
-          lastSnapSuccessAt: now - i,
-          snapResponsesOk: 2 - i,
+          id: `${(i + 7).toString(16).padStart(2, '0').repeat(32)}`,
+          clientFamily: 'Besu',
+          lastStatusAt: now,
+          snapTimeouts: 4,
+          snapResponsesOk: 0,
         }),
       )
     }
-    const vips = book.vipDialCandidates(now, 8)
-    assert.equal(vips.length, 5)
-    const picked = new Set(vips.map((p) => bytesToUnprefixedHex(p.id as Uint8Array).toLowerCase()))
-    assert.equal(picked.size, 5)
-    assert.isTrue(picked.has(nmIds[2]!.toLowerCase()))
-    assert.equal([...picked].filter((id) => nmIds.includes(id)).length, 3)
-    assert.equal([...picked].filter((id) => gtIds.includes(id)).length, 2)
+    const vips = book.vipDialCandidates(now, 6)
+    assert.equal(vips.length, 6)
+    for (const p of vips) {
+      const id = bytesToUnprefixedHex(p.id as Uint8Array).toLowerCase()
+      assert.isTrue(nmIds.some((nm) => nm.toLowerCase() === id))
+    }
   })
 
   it('noteDialAttempt enforces a 20s hold before redial', () => {

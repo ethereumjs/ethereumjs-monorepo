@@ -41,6 +41,7 @@ async function main(): Promise<void> {
     headless: cli.headless,
     fresh: cli.fresh,
     dataDir: cli.dataDir,
+    enableFlightRecorder: !cli.demo,
   })
 
   let coordinatorStop: (() => void) | undefined
@@ -89,6 +90,9 @@ async function main(): Promise<void> {
       snapStore: node.snapStore,
       peerBook: node.peerBook,
       fresh: cli.fresh,
+      listenPort: cli.listenPort,
+      connectEnodeUrls: cli.connectEnodeUrls.length > 0 ? cli.connectEnodeUrls : undefined,
+      syncMode: cli.syncMode,
       witnessExecutionHeader,
     })
       .then((handle) => {
@@ -102,6 +106,7 @@ async function main(): Promise<void> {
   const shutdown = () => {
     coordinatorStop?.()
     consensusStop?.()
+    node.flightRecorder?.stop()
   }
 
   if (cli.headless) {

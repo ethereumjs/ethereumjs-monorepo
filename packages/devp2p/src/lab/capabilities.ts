@@ -1,4 +1,4 @@
-import { ETH, SNAP } from '../protocol/index.ts'
+import { ETH, ETHY, SNAP } from '../protocol/index.ts'
 
 import type { Capabilities } from '../types.ts'
 
@@ -16,6 +16,7 @@ const CAP_MAP: Record<string, Capabilities> = {
   eth72: ETH.eth72,
   snap1: SNAP.snap,
   snap: SNAP.snap,
+  ethy0: ETHY.ethy0,
 }
 
 export function resolveCapabilities(names: string[]): Capabilities[] {

@@ -90,6 +90,10 @@ export function peerFieldsFromEnrPairs(obj: Record<string, unknown>): PeerInfo {
   const ethForkId = decodeEthForkIdFromEnrValue(obj.eth)
   if (ethForkId !== undefined) peerInfo.ethForkId = ethForkId
 
+  if (obj.ethy !== undefined) {
+    peerInfo.ethyCapable = true
+  }
+
   return peerInfo
 }
 
@@ -102,6 +106,15 @@ export function enrPairsFromKvs(kvs: unknown[]): Record<string, unknown> {
     obj[bytesToUtf8(key)] = kvs[i + 1]
   }
   return obj
+}
+
+/** True when discv4 ENR record lists an `ethy` key. */
+export function ethyCapableFromDiscv4Record(record: Uint8Array[]): boolean {
+  for (let i = 2; i + 1 < record.length; i += 2) {
+    const key = new TextDecoder().decode(record[i]!)
+    if (key === 'ethy') return true
+  }
+  return false
 }
 
 /** Read EIP-868 fork id from a discv4 ENRResponse RLP record list. */

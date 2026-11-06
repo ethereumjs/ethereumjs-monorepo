@@ -16,13 +16,14 @@ type SearchContext = {
 }
 
 /** EIP-1459 DNS discovery client that walks ENR trees and returns verified peer records. */
-const SEEN_DNS_ADDRESS_CAP = 500
+export const SEEN_DNS_ADDRESS_CAP = 500
+export const SEEN_DNS_TTL_MS = 300_000
 
 export class DNS {
   protected _DNSTreeCache: { [key: string]: string }
   protected readonly _errorTolerance: number = 10
-  /** Dedupe ENR TCP endpoints across successive {@link getPeers} calls (WP-04f). */
-  protected _seenAddresses = new Set<string>()
+  /** Dedupe ENR TCP endpoints across successive {@link getPeers} calls with a 60s expiry (WP-04f). */
+  protected _seenAddresses = new Map<string, number>()
 
   protected _common?: Common
 
@@ -60,7 +61,7 @@ export class DNS {
       throw EthereumJSErrorWithoutCode('Could not parse ENR tree entry')
     }
 
-    while (peers.length < maxQuantity && totalSearches < maxQuantity + this._errorTolerance) {
+    while (peers.length < maxQuantity && totalSearches < maxQuantity * 3 + this._errorTolerance) {
       const context: SearchContext = {
         domain,
         publicKey,
@@ -227,8 +228,10 @@ export class DNS {
   private _rememberDnsPeerAddress(peer: PeerInfo): boolean {
     if (peer.address === undefined || peer.tcpPort === undefined) return true
     const key = `${peer.address}:${peer.tcpPort}`
-    if (this._seenAddresses.has(key)) return false
-    this._seenAddresses.add(key)
+    const now = Date.now()
+    const seenAt = this._seenAddresses.get(key)
+    if (seenAt !== undefined && now - seenAt < SEEN_DNS_TTL_MS) return false
+    this._seenAddresses.set(key, now)
     if (this._seenAddresses.size >= SEEN_DNS_ADDRESS_CAP) {
       this._seenAddresses.clear()
     }

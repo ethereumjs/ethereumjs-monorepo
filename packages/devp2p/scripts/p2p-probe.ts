@@ -464,6 +464,7 @@ async function stage4FunnelSoak(chainName: string, soakSec: number): Promise<num
   )
   console.log(JSON.stringify({ stage: 'funnel-soak', soakSec, ...score }, null, 2))
   client.stop()
+  if (score.statusValidated === 0) return 1
   return 0
 }
 

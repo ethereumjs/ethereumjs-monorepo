@@ -63,15 +63,18 @@ function snapTargetRow(spine: EthySpine): string {
   if (pivot === undefined) {
     return spine.pivotStatusHint ?? 'Awaiting peer head…'
   }
+  const bridging = spine.pivotBridging
+  if (bridging !== undefined) {
+    const remaining =
+      bridging.targetBlock > bridging.currentBlock
+        ? bridging.targetBlock - bridging.currentBlock
+        : 0n
+    return `${formatBlockNum(bridging.fromBlock)} → ${formatBlockNum(bridging.targetBlock)} (+${remaining.toLocaleString('en-US')} BALs)`
+  }
+  const tip = spine.bestPeerHead ?? spine.headBlockNumber ?? pivot
   const buffered = spine.bufferedBalCount ?? 0
   const steps = spine.pivotStepsCompleted ?? 0
-  if ((spine.streamedBalCount ?? 0) > 0) {
-    return `${formatBlockNum(pivot)} · +${buffered} BALs · pivot #${steps}`
-  }
-  const head = spine.bestPeerHead ?? spine.headBlockNumber ?? pivot
-  const drift = head > pivot ? head - pivot : 0n
-  if (drift > 0n) return `${formatBlockNum(pivot)} (+${drift.toLocaleString('en-US')} blk)`
-  return formatBlockNum(pivot)
+  return `${formatBlockNum(pivot)} → ${formatBlockNum(tip)} · +${buffered} BALs · step ${steps}`
 }
 
 function nodePulsePairs(spine: EthySpine): TwoColumnPair[] {
@@ -89,18 +92,39 @@ function nodePulsePairs(spine: EthySpine): TwoColumnPair[] {
   }
 
   if (phase === 'SNAP_SYNCING') {
+    if (spine.pivotBridging !== undefined) {
+      const bridge = spine.pivotBridging
+      const span =
+        bridge.targetBlock > bridge.fromBlock ? bridge.targetBlock - bridge.fromBlock : 1n
+      const done =
+        bridge.currentBlock > bridge.fromBlock ? bridge.currentBlock - bridge.fromBlock : 0n
+      const pct = span > 0n ? Number((done * 100n) / span) : 0
+      return [
+        { label: 'Stage', value: 'Snap Resume · Bridging' },
+        { label: 'Target', value: snapTargetRow(spine) },
+        { label: 'Progress', value: formatProgressBar(pct) },
+        {
+          label: 'State',
+          value: `${formatCompactCount(spine.totalAccountsSynced)} acc kept · applying BALs`,
+        },
+      ]
+    }
     const allBucketsDone = snapBucketsDoneCount(spine.snapBuckets) === 16
     if (!allBucketsDone) {
       const rate = Math.round(spine.accountsPerSec).toLocaleString('en-US')
       const pct = computeSnapProgressPct(spine)
       const etaMin = estimateAccountSyncEtaMin(spine)
+      const ethyTransport = spine.syncTransport === 'ethy'
+      const seedBits = (spine.ethyBucketsBitmask ?? 0).toString(2).replace(/0/g, '').length
+      const seedHint =
+        !ethyTransport && seedBits > 0 ? ` · seed ${seedBits}/16` : ethyTransport ? ' (ETHY/0)' : ''
       return [
-        { label: 'Stage', value: 'Snap Sync · Accounts' },
+        { label: 'Stage', value: ethyTransport ? 'Ethy Sync · Accounts' : 'Snap Sync · Accounts' },
         { label: 'Target', value: snapTargetRow(spine) },
         { label: 'Progress', value: formatProgressBar(pct, etaMin) },
         {
           label: 'State',
-          value: `${formatCompactCount(spine.totalAccountsSynced)} acc · ${rate}/s`,
+          value: `${formatCompactCount(spine.totalAccountsSynced)} acc · ${rate}/s${seedHint}`,
         },
       ]
     }
@@ -200,6 +224,23 @@ function snapSessionCount(spine: EthySpine): number {
   return n
 }
 
+function ethySessionCount(spine: EthySpine): number {
+  let n = 0
+  for (const p of spine.peers.values()) {
+    if (p.ethySession === true) n++
+  }
+  return n
+}
+
+function localEthySeedBits(spine: EthySpine): number {
+  const mask = spine.ethyBucketsBitmask ?? 0
+  let n = 0
+  for (let b = 0; b < 16; b++) {
+    if ((mask & (1 << b)) !== 0) n++
+  }
+  return n
+}
+
 function formatServeBytes(bytes: number): string {
   if (bytes >= 1_048_576) return `${(bytes / 1_048_576).toFixed(1)} MB`
   if (bytes >= 1024) return `${(bytes / 1024).toFixed(1)} KB`
@@ -209,8 +250,15 @@ function formatServeBytes(bytes: number): string {
 function servedMetric(spine: EthySpine): string {
   const s = spine.serving
   if (s === undefined) return '0 replies'
+  const ethyParts: string[] = []
+  if ((s.ethyChunksServed ?? 0) > 0) ethyParts.push(`${s.ethyChunksServed} chunks`)
+  if ((s.ethyBalBlocksServed ?? 0) > 0) ethyParts.push(`${s.ethyBalBlocksServed} BALs`)
+  const ethySuffix = ethyParts.length > 0 ? ` · ${ethyParts.join(' · ')}` : ''
   if (s.totalRequestsServed > 0) {
-    return `${s.totalRequestsServed} replies · ${formatServeBytes(s.totalBytesServed)}`
+    return `${s.totalRequestsServed} replies · ${formatServeBytes(s.totalBytesServed)}${ethySuffix}`
+  }
+  if (ethyParts.length > 0) {
+    return `${ethyParts.join(' · ')} · ${formatServeBytes(s.ethyBytesServed ?? 0)}`
   }
   if (s.blocksStored > 0) return '0 replies (ready)'
   return '0 replies'
@@ -265,6 +313,7 @@ function commandPairs(domain: CapabilityId, phase: EthyPhase): TwoColumnPair[] {
     case 'p2p':
       return [
         { label: '/peers', value: 'client table' },
+        { label: '/ethy', value: 'swarm status' },
         { label: '/diag', value: 'anomalies' },
         { label: '/drop', value: 'disconnect' },
         { label: '/help', value: 'commands' },
@@ -313,7 +362,7 @@ function metricsPairs(spine: EthySpine, domain: CapabilityId): TwoColumnPair[] {
       return [
         {
           label: 'Peers',
-          value: `${spine.peers.size} connected (${snapSessionCount(spine)} snap)`,
+          value: `${spine.peers.size} connected (${ethySessionCount(spine)} ethy · ${snapSessionCount(spine)} snap)`,
         },
         { label: 'Served', value: servedMetric(spine) },
         { label: 'Latency', value: avgLatency(spine) },
@@ -323,11 +372,27 @@ function metricsPairs(spine: EthySpine, domain: CapabilityId): TwoColumnPair[] {
       const done = snapBucketsDoneCount(spine.snapBuckets)
       const syncing = spine.snapBuckets.filter((b) => b.status === 'syncing').length
       const stalled = spine.snapBuckets.filter((b) => b.status === 'stalled').length
+      const seedBits = localEthySeedBits(spine)
+      const protocolRow =
+        spine.syncTransport === 'ethy'
+          ? {
+              label: 'Protocol',
+              value: `ETHY/0 Swarm (${ethySessionCount(spine)} peers)`,
+            }
+          : seedBits > 0
+            ? {
+                label: 'Protocol',
+                value: `SNAP/1 + ETHY/0 Seed (${seedBits}/16 ready)`,
+              }
+            : {
+                label: 'Speed',
+                value: `${Math.round(spine.accountsPerSec)} acc/s`,
+              }
       return [
         { label: 'Progress', value: `${Math.round((done / 16) * 100)}% (${done}/16 complete)` },
         { label: 'Active', value: `${syncing} syncing · ${stalled} stalled` },
         { label: 'Pivot Root', value: shortHash(spine.pivotStateRoot) },
-        { label: 'Speed', value: `${Math.round(spine.accountsPerSec)} acc/s` },
+        protocolRow,
       ]
     }
     case 'head': {

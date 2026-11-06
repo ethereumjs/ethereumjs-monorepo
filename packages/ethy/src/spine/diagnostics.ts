@@ -19,4 +19,5 @@ export function recordDiagnostic(
   while (spine.diagnosticRingBuffer.length > DIAGNOSTIC_RING_CAPACITY) {
     spine.diagnosticRingBuffer.shift()
   }
+  spine.onDiagnosticRecorded?.(entry)
 }

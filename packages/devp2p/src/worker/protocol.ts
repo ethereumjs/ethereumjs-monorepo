@@ -44,6 +44,28 @@ export interface ThreadedNetworkInitOptions {
   chainDirectoryDiscovery?: boolean
   /** Persist DPT bond store to this path (JSON). */
   nodeStorePath?: string
+  /** Read-only pivot dir for `accounts/*.proof.idx` (optional). */
+  ethyPivotDir?: string
+}
+
+/** Remote ETHY/0 STATUS fields exposed on worker telemetry. */
+export interface WorkerEthyPeerStatus {
+  basePivotBlock: string
+  basePivotStateRoot: string
+  bucketsBitmask: string
+  balEarliestBlock: string
+  balLatestBlock: string
+  latestBlockHash: string
+}
+
+/** Local ETHY/0 advertisement pushed via {@link setEthyStatus}. */
+export interface WorkerEthyLocalStatus {
+  basePivotBlock?: string
+  basePivotStateRoot?: string
+  bucketsBitmask?: string
+  balEarliestBlock?: string
+  balLatestBlock?: string
+  latestBlockHash?: string
 }
 
 export type WorkerCommand =
@@ -55,6 +77,22 @@ export type WorkerCommand =
   | { type: 'disconnectPeer'; peerId: Uint8Array; reason?: number }
   | { type: 'sendEthMessage'; peerId: Uint8Array; code: number; payload: Uint8Array }
   | { type: 'sendSnapMessage'; peerId: Uint8Array; code: number; payload: Uint8Array }
+  | { type: 'sendEthyMessage'; peerId: Uint8Array; code: number; payload: Uint8Array }
+  | { type: 'setEthyStatus'; status: WorkerEthyLocalStatus }
+  | { type: 'setEthyPivotAccountsDir'; dir?: string }
+  | {
+      type: 'putEthyAccountChunk'
+      chunk: {
+        bucketIndex: number
+        originHash: Uint8Array
+        lastHash: Uint8Array
+        hasRight: number
+        chunkStateRoot: Uint8Array
+        chunkBlockNumber: string
+        binaryAccountsSlab: Uint8Array
+        proofNodes: Uint8Array[]
+      }
+    }
   | {
       type: 'setBlockRange'
       earliest: Uint8Array
@@ -85,6 +123,9 @@ export interface WorkerServingSnapshot {
   accessListsServed: number
   totalRequestsServed: number
   totalBytesServed: number
+  ethyChunksServed: number
+  ethyBalBlocksServed: number
+  ethyBytesServed: number
 }
 
 export interface WorkerPeerSnapshot {
@@ -102,6 +143,8 @@ export interface WorkerPeerSnapshot {
   address?: string
   udpPort?: number
   tcpPort?: number
+  ethySession?: boolean
+  ethyStatus?: WorkerEthyPeerStatus
 }
 
 export interface WorkerDiagnosticEntry {
@@ -161,6 +204,8 @@ export interface WorkerDiscoverySnapshot {
   boundAddress: string
   boundUdpPort: number
   boundTcpPort: number
+  /** `enode://` URL for this node (loopback-friendly). */
+  localEnode?: string
   tablePeers: number
   /** True when DPT neighbour lookup and DNS batches are paused. */
   discoveryPaused?: boolean
@@ -183,7 +228,7 @@ export type WorkerEvent =
   | { type: 'ready'; udpPort: number; tcpPort: number }
   | {
       type: 'protocol'
-      protocol: 'eth' | 'snap'
+      protocol: 'eth' | 'snap' | 'ethy'
       peerId: string
       code: number
       payload: Uint8Array

@@ -24,12 +24,18 @@ import { createSpine } from '../src/spine/createSpine.ts'
 import { SnapAccountSynchronizer } from '../src/sync/accountSync.ts'
 import { SnapPeerFlightTracker } from '../src/sync/snapFlight.ts'
 import {
+  MAX_IN_FLIGHT_FAST_PROVEN,
+  MAX_IN_FLIGHT_PROBE,
   MAX_IN_FLIGHT_PROVEN,
   PROVEN_RANGE_TIMEOUT_MS,
+  RESPONSE_BYTES_FAST,
+  RESPONSE_BYTES_PROBE,
+  RESPONSE_BYTES_STANDARD,
   UNPROVEN_RANGE_TIMEOUT_MS,
   maxInFlightForPeer,
   rangeTimeoutForPeer,
   rankSnapPeers,
+  responseBytesForPeer,
 } from '../src/sync/snapSchedulePolicy.ts'
 
 const provenPeer = {
@@ -48,28 +54,45 @@ const unprovenPeer = {
   avgLatencyMs: 40,
 }
 
-describe('[Ethy/Sync]: snap schedule policy (WP-04c)', () => {
-  it('allows two in-flight account ranges for proven peers only', () => {
-    assert.equal(maxInFlightForPeer(provenPeer), MAX_IN_FLIGHT_PROVEN)
-    assert.equal(maxInFlightForPeer({ ...provenPeer, snapResponsesOk: 1 }), 1)
-    assert.equal(maxInFlightForPeer({ ...provenPeer, snapTimeouts: 1 }), 1)
-    assert.equal(maxInFlightForPeer(unprovenPeer), 1)
+describe('[Ethy/Sync]: snap schedule policy (WP-04c, WP-06e)', () => {
+  it('uses probe tier for unproven and high-latency peers', () => {
+    assert.equal(maxInFlightForPeer(unprovenPeer), MAX_IN_FLIGHT_PROBE)
+    assert.equal(responseBytesForPeer(unprovenPeer), RESPONSE_BYTES_PROBE)
+    assert.equal(maxInFlightForPeer({ ...provenPeer, avgLatencyMs: 450 }), MAX_IN_FLIGHT_PROBE)
+    assert.equal(maxInFlightForPeer({ ...provenPeer, snapResponsesOk: 1 }), MAX_IN_FLIGHT_PROBE)
+    assert.equal(maxInFlightForPeer({ ...provenPeer, snapTimeouts: 1 }), MAX_IN_FLIGHT_PROBE)
   })
 
-  it('ranks proven peers by latency before unproven peers', () => {
-    const slow = { ...provenPeer, id: 'slow', avgLatencyMs: 90 }
-    const fast = { ...provenPeer, id: 'fast', avgLatencyMs: 20 }
+  it('uses standard tier for proven peers with clean timeout ratio', () => {
+    assert.equal(maxInFlightForPeer(provenPeer), MAX_IN_FLIGHT_PROVEN)
+    assert.equal(responseBytesForPeer(provenPeer), RESPONSE_BYTES_STANDARD)
+  })
+
+  it('uses fast tier for six clean low-latency responses or proven Nethermind', () => {
+    const fast = { ...provenPeer, snapResponsesOk: 6, snapTimeouts: 0, avgLatencyMs: 200 }
+    assert.equal(maxInFlightForPeer(fast), MAX_IN_FLIGHT_FAST_PROVEN)
+    assert.equal(responseBytesForPeer(fast), RESPONSE_BYTES_FAST)
+    const nm = {
+      ...provenPeer,
+      clientFamily: 'Nethermind',
+      snapResponsesOk: 2,
+      avgLatencyMs: 300,
+    }
+    assert.equal(maxInFlightForPeer(nm), MAX_IN_FLIGHT_FAST_PROVEN)
+    assert.equal(responseBytesForPeer(nm), RESPONSE_BYTES_FAST)
+  })
+
+  it('ranks proven peers by clean timeouts, client affinity, then latency', () => {
+    const slow = { ...provenPeer, id: 'slow', avgLatencyMs: 90, clientFamily: 'Geth' }
+    const fast = { ...provenPeer, id: 'fast', avgLatencyMs: 20, clientFamily: 'Geth' }
+    const nm = { ...provenPeer, id: 'nm', avgLatencyMs: 50, clientFamily: 'Nethermind' }
+    const dirty = { ...provenPeer, id: 'dirty', snapTimeouts: 1 }
     const unknownRtt = { ...provenPeer, id: 'unknown', avgLatencyMs: 0 }
-    const ranked = rankSnapPeers([unprovenPeer, slow, fast, unknownRtt])
+    const ranked = rankSnapPeers([unprovenPeer, slow, fast, unknownRtt, dirty, nm])
     assert.deepEqual(
       ranked.map((p) => p.id),
-      ['fast', 'slow', 'unknown', 'zombie'],
+      ['nm', 'fast', 'slow', 'unknown', 'dirty', 'zombie'],
     )
-  })
-
-  it('allows four in-flight ranges for fast proven peers', () => {
-    const fast = { ...provenPeer, snapResponsesOk: 4, snapTimeouts: 0 }
-    assert.equal(maxInFlightForPeer(fast), 4)
   })
 
   it('uses a 4s range timeout for unproven peers and 8s for proven peers', () => {

@@ -7,13 +7,16 @@ import type { PeerInfo } from '../types.ts'
 import type {
   ThreadedNetworkInitOptions,
   WorkerCommand,
+  WorkerEthyLocalStatus,
   WorkerEvent,
   WorkerTelemetrySnapshot,
 } from './protocol.ts'
 
 export interface Devp2pWorkerClientEvents {
   ready: [{ udpPort: number; tcpPort: number }]
-  protocol: [{ protocol: 'eth' | 'snap'; peerId: string; code: number; payload: Uint8Array }]
+  protocol: [
+    { protocol: 'eth' | 'snap' | 'ethy'; peerId: string; code: number; payload: Uint8Array },
+  ]
   telemetry: [WorkerTelemetrySnapshot]
   error: [Error]
   stopped: []
@@ -142,6 +145,59 @@ export class Devp2pWorkerClient {
   sendSnapMessage(peerId: Uint8Array, code: number, rlpPayload: Uint8Array): void {
     const payload = copyForSend(rlpPayload)
     this._send({ type: 'sendSnapMessage', peerId, code, payload }, [payload.buffer as ArrayBuffer])
+  }
+
+  sendEthyMessage(peerId: Uint8Array, code: number, rlpPayload: Uint8Array): void {
+    const payload = copyForSend(rlpPayload)
+    this._send({ type: 'sendEthyMessage', peerId, code, payload }, [payload.buffer as ArrayBuffer])
+  }
+
+  setEthyStatus(status: WorkerEthyLocalStatus): void {
+    this._send({ type: 'setEthyStatus', status })
+  }
+
+  setEthyPivotAccountsDir(dir: string | undefined): void {
+    this._send({ type: 'setEthyPivotAccountsDir', dir })
+  }
+
+  putEthyAccountChunk(chunk: {
+    bucketIndex: number
+    originHash: Uint8Array
+    lastHash: Uint8Array
+    hasRight: number
+    chunkStateRoot: Uint8Array
+    chunkBlockNumber: bigint
+    binaryAccountsSlab: Uint8Array
+    proofNodes: Uint8Array[]
+  }): void {
+    const originHash = copyForSend(chunk.originHash)
+    const lastHash = copyForSend(chunk.lastHash)
+    const chunkStateRoot = copyForSend(chunk.chunkStateRoot)
+    const binaryAccountsSlab = copyForSend(chunk.binaryAccountsSlab)
+    const proofNodes = chunk.proofNodes.map((p) => copyForSend(p))
+    const transfer = [
+      originHash.buffer,
+      lastHash.buffer,
+      chunkStateRoot.buffer,
+      binaryAccountsSlab.buffer,
+      ...proofNodes.map((p) => p.buffer),
+    ] as ArrayBuffer[]
+    this._send(
+      {
+        type: 'putEthyAccountChunk',
+        chunk: {
+          bucketIndex: chunk.bucketIndex,
+          originHash,
+          lastHash,
+          hasRight: chunk.hasRight,
+          chunkStateRoot,
+          chunkBlockNumber: chunk.chunkBlockNumber.toString(),
+          binaryAccountsSlab,
+          proofNodes,
+        },
+      },
+      transfer,
+    )
   }
 
   setBlockRange(earliest: Uint8Array, latest: Uint8Array, latestHash: Uint8Array): void {

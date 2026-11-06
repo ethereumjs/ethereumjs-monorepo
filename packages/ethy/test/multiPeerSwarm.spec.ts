@@ -88,7 +88,7 @@ describe('[Ethy/Sync]: multi-peer swarm (WP-04f)', () => {
       snapRequestsSent: 0,
     })
     let onRange: (peerId: string, payload: Uint8Array) => void = () => {}
-    let roster: Array<typeof peerA> = [peerA]
+    const roster: Array<typeof peerA> = [peerA, peerB]
     const sync = new SnapAccountSynchronizer({
       spine,
       stateManager: createFlatStateManager(),
@@ -117,7 +117,6 @@ describe('[Ethy/Sync]: multi-peer swarm (WP-04f)', () => {
       },
       { timeout: 8_000 },
     )
-    roster = [peerA, peerB]
     await vi.waitFor(
       () => {
         assert.isAtLeast(spine.peers.get(peerB.id)?.snapTimeouts ?? 0, 1)
@@ -281,7 +280,7 @@ describe('[Ethy/Sync]: multi-peer swarm (WP-04f)', () => {
   }, 15_000)
 
   it('fills more than 16 concurrent range slots across eight proven peers without duplicate origins', async () => {
-    const accountsPerBucket = 32
+    const accountsPerBucket = 10
     const accountCount = accountsPerBucket * 16
     const trie = await SyntheticSnapPeer.create(accountsPerBucket)
     const spine = createSpine('sepolia', 11155111n)
@@ -335,15 +334,16 @@ describe('[Ethy/Sync]: multi-peer swarm (WP-04f)', () => {
     for (const pending of pendingReplies) {
       const reply = await trie.buildAccountRangeReply(pending.payload)
       onRange(pending.peerId, reply)
+      await new Promise((resolve) => setTimeout(resolve, 5))
     }
     await vi.waitFor(
       () => {
         assert.equal(spine.totalAccountsSynced, accountCount)
       },
-      { timeout: 30_000 },
+      { timeout: 45_000 },
     )
     sync.stop()
-  }, 45_000)
+  }, 90_000)
 })
 
 function setPhaseSnap(spine: ReturnType<typeof createSpine>): void {

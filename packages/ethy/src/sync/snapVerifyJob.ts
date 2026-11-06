@@ -2,7 +2,7 @@ import { type HashKeysFunction, verifyMerkleRangeProof } from '@ethereumjs/mpt'
 
 import { RLP } from '@ethereumjs/rlp'
 import { SNAP_BINARY_ACCOUNT_SLAB_RECORD_SIZE } from '@ethereumjs/statemanager'
-import { bytesToBigInt } from '@ethereumjs/util'
+import { binaryAccountToRLP, bytesToBigInt, equalsBytes } from '@ethereumjs/util'
 import { ethyKeccak256, initEthyKeccak } from '../crypto/keccak.ts'
 
 import {
@@ -19,6 +19,19 @@ export type AccountRangeVerifyResult = {
   lastKey?: Uint8Array
   /** Verified rows packed as `32` hash + `104` binary per account. */
   slab?: Uint8Array
+  /** Range origin used for Merkle verify (request origin or first key). */
+  rangeOrigin?: Uint8Array
+  proofNodes?: Uint8Array[]
+}
+
+export type ProvenChunkVerifyResult = {
+  ok: boolean
+  hasRight: boolean
+  count: number
+  reason?: string
+  lastKey?: Uint8Array
+  slab?: Uint8Array
+  rangeOrigin?: Uint8Array
 }
 
 export type StorageRangeVerifyResult = {
@@ -112,12 +125,73 @@ export async function verifyAccountRangeJob(
       useKeyHashingFunction,
     )
     const lastKeyCopy = new Uint8Array(lastKey)
+    const originCopy = new Uint8Array(firstKey)
+    const proofCopy = proof.map((node) => {
+      const copy = new Uint8Array(node.length)
+      copy.set(node)
+      return copy
+    })
     return {
       ok: true,
       hasRight,
       count: keys.length,
       lastKey: lastKeyCopy,
       slab,
+      rangeOrigin: originCopy,
+      proofNodes: proofCopy,
+    }
+  } catch (err: unknown) {
+    return { ok: false, hasRight: false, count: 0, reason: errorText(err) }
+  }
+}
+
+/** CPU-heavy ETHY/0 PROVEN_ACCOUNT_CHUNK verify (safe off the main thread). */
+export async function verifyProvenAccountChunkJob(
+  opts: {
+    chunkStateRoot: Uint8Array
+    originHash: Uint8Array
+    binaryAccountsSlab: Uint8Array
+    proofNodes: Uint8Array[]
+    hasRightHint: boolean
+  },
+  useKeyHashingFunction: HashKeysFunction = ethyKeccak256,
+): Promise<ProvenChunkVerifyResult> {
+  await initEthyKeccak()
+  const slab = opts.binaryAccountsSlab
+  if (slab.length === 0 || slab.length % SNAP_BINARY_ACCOUNT_SLAB_RECORD_SIZE !== 0) {
+    return { ok: false, hasRight: false, count: 0, reason: 'invalid proven chunk slab length' }
+  }
+  const count = slab.length / SNAP_BINARY_ACCOUNT_SLAB_RECORD_SIZE
+  const keys: Uint8Array[] = []
+  const values: Uint8Array[] = []
+  for (let i = 0; i < count; i++) {
+    const off = i * SNAP_BINARY_ACCOUNT_SLAB_RECORD_SIZE
+    const accountHash = slab.subarray(off, off + 32)
+    keys.push(new Uint8Array(accountHash))
+    values.push(binaryAccountToRLP(slab, off + 32))
+  }
+  if (!equalsBytes(keys[0]!, opts.originHash)) {
+    return { ok: false, hasRight: false, count: 0, reason: 'chunk origin mismatch' }
+  }
+  const lastKey = keys[keys.length - 1]!
+  try {
+    const hasRight = await verifyMerkleRangeProof(
+      opts.chunkStateRoot,
+      opts.originHash,
+      lastKey,
+      keys,
+      values,
+      opts.proofNodes,
+      useKeyHashingFunction,
+    )
+    const ownedSlab = new Uint8Array(slab)
+    return {
+      ok: true,
+      hasRight: opts.hasRightHint || hasRight,
+      count,
+      lastKey: new Uint8Array(lastKey),
+      slab: ownedSlab,
+      rangeOrigin: new Uint8Array(opts.originHash),
     }
   } catch (err: unknown) {
     return { ok: false, hasRight: false, count: 0, reason: errorText(err) }

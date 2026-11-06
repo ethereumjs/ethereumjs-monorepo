@@ -130,7 +130,7 @@ npx devp2p peer add 127.0.0.1 30302 --tcp 30302 --wait
 npx devp2p peer list
 ```
 
-(`--wait` until RLPx is up. Both daemons send a default mainnet genesis **STATUS** on connect so the link is not dropped after 5 seconds (`TIMEOUT`). A later `eth send STATUS` is a no-op if that already happened. **`peer list`** should still show index `0`. Redial after every daemon restart.)
+(`--wait` until RLPx is up. Both daemons send a default mainnet genesis **STATUS** on connect so the link is not dropped after 10 seconds (`TIMEOUT`). A later `eth send STATUS` is a no-op if that already happened. **`peer list`** should still show index `0`. Redial after every daemon restart.)
 
 ```bash
 npx devp2p eth send STATUS --json '{"td":"0x040000000000","bestHash":"0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3","genesisHash":"0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3"}'

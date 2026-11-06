@@ -6,6 +6,7 @@ import type { CapabilityId, EthySpine, TuiViewState } from '../spine/types.ts'
 import { BOLD, DIM, RESET, visibleWidth } from './ansi.ts'
 import { capabilityMark } from './capabilityMark.ts'
 import { COCKPIT_COLUMN_GAP, cockpitColumnWidths, renderCockpit } from './cockpit.ts'
+import { capabilityBarClockLabel } from './headerClock.ts'
 import {
   composeBrandAndRightPills,
   composeFixedRow,
@@ -71,7 +72,7 @@ function renderCapabilityBar(spine: EthySpine, cols: number): string[] {
     pillTexts,
     CAPABILITY_PILL_WIDTHS,
     CAPABILITY_PILL_GAP,
-    { text: `Slot ${spine.currentSlot}`, gap: SLOT_GAP },
+    { text: capabilityBarClockLabel(spine), gap: SLOT_GAP },
   )
   return [line]
 }

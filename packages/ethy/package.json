@@ -51,6 +51,7 @@
     "test": "npm run test:node",
     "p2p:canary": "tsx scripts/p2p-canary.ts",
     "sync:bench": "tsx scripts/sync-bench.ts",
+    "ethy:swarm-smoke": "tsx scripts/ethy-swarm-smoke.ts",
     "test:node": "vitest run test/* -c ../../config/vitest.config.mts",
     "tsc": "../../config/cli/ts-compile.sh"
   },

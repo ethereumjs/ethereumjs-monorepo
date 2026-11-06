@@ -151,6 +151,11 @@ export class SyntheticSnapPeer {
     return RLP.encode([reqId, [slots], proof] as never)
   }
 
+  /** Test/demo: trie backing Merkle proofs (WP-06c seed dir). */
+  merkleTrie(): MerklePatriciaTrie {
+    return this.trie
+  }
+
   /** Build ACCOUNT_RANGE RLP for a GET_ACCOUNT_RANGE payload. */
   async buildAccountRangeReply(getPayload: Uint8Array): Promise<Uint8Array> {
     const decoded = RLP.decode(getPayload) as unknown[]
@@ -252,6 +257,19 @@ export type DecodedAccountRangePayload = {
   reqId: bigint
   accountsRaw: Array<[unknown, unknown]>
   proof: Uint8Array[]
+}
+
+/** Last account hash in an ACCOUNT_RANGE reply without decoding account bodies (WP-06e). */
+export function peekAccountRangeLastKey(
+  payload: Uint8Array,
+): { lastKey: Uint8Array; count: number } | undefined {
+  const decoded = decodeAccountRangePayload(payload)
+  if (decoded === undefined || decoded.accountsRaw.length === 0) return undefined
+  const lastPair = decoded.accountsRaw[decoded.accountsRaw.length - 1]
+  if (!Array.isArray(lastPair) || lastPair.length < 1) return undefined
+  const accountHash = asBytes(lastPair[0])
+  if (accountHash === undefined || accountHash.length !== 32) return undefined
+  return { lastKey: new Uint8Array(accountHash), count: decoded.accountsRaw.length }
 }
 
 /** Outer ACCOUNT_RANGE RLP (reqId, account pairs, proof nodes). */
