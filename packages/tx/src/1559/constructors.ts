@@ -62,7 +62,17 @@ export function create1559FeeMarketTxFromBytesArray(values: TxValuesArray, opts:
   ] = values
 
   validateNotArray({ chainId, v })
-  validateNoLeadingZeroes({ nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, value, v, r, s })
+  validateNoLeadingZeroes({
+    chainId,
+    nonce,
+    maxPriorityFeePerGas,
+    maxFeePerGas,
+    gasLimit,
+    value,
+    v,
+    r,
+    s,
+  })
 
   return new FeeMarket1559Tx(
     {
