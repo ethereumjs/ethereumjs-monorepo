@@ -53,34 +53,36 @@ export const fetchFromProvider = async (
     timer = setTimeout(() => controller.abort(), timeout)
   }
 
-  const res = await fetch(url, {
-    headers: {
-      'content-type': 'application/json',
-    },
-    method: 'POST',
-    body: data,
-    signal,
-  }).finally(() => {
+  try {
+    const res = await fetch(url, {
+      headers: {
+        'content-type': 'application/json',
+      },
+      method: 'POST',
+      body: data,
+      signal,
+    })
+    if (!res.ok) {
+      throw EthereumJSErrorWithoutCode(
+        `JSONRPCError: ${JSON.stringify(
+          {
+            method: params.method,
+            status: res.status,
+            message: await res.text().catch(() => {
+              return 'Could not parse error message likely because of a network error'
+            }),
+          },
+          null,
+          2,
+        )}`,
+      )
+    }
+    const json = await res.json()
+    // TODO we should check json.error here
+    return json.result
+  } finally {
     if (timer !== undefined) clearTimeout(timer)
-  })
-  if (!res.ok) {
-    throw EthereumJSErrorWithoutCode(
-      `JSONRPCError: ${JSON.stringify(
-        {
-          method: params.method,
-          status: res.status,
-          message: await res.text().catch(() => {
-            return 'Could not parse error message likely because of a network error'
-          }),
-        },
-        null,
-        2,
-      )}`,
-    )
   }
-  const json = await res.json()
-  // TODO we should check json.error here
-  return json.result
 }
 
 /**
