@@ -363,9 +363,8 @@ export class Devp2pWorkerHost {
       this._rlpx.setListenPort(actualTcpPort)
     }
 
-    void this._dpt.refresh()
-
     const advertised = this._dpt.syncEndpointFromSocket(actualTcpPort)
+    void this._dpt.refresh()
     this._discoveryMetrics.setBoundEndpoint(
       advertised.address ?? '',
       advertised.udpPort ?? 0,

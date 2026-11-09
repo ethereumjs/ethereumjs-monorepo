@@ -73,7 +73,12 @@ export class Server {
   }
 
   syncEndpointFromSocket(tcpListenPort: number): PeerInfo {
-    const bound = this._socket?.address()
+    let bound: ReturnType<DgramSocket['address']> | undefined
+    try {
+      bound = this._socket?.address()
+    } catch {
+      // socket not bound in synthetic tests
+    }
     let udpPort = this._endpoint.udpPort ?? 0
     let address = this._endpoint.address ?? '0.0.0.0'
     if (bound !== undefined && typeof bound === 'object') {
