@@ -6,6 +6,7 @@ import { ethyKeccak256 } from '../crypto/keccak.ts'
 
 import { DeterministicIntentEngine } from '../ai/deterministicEngine.ts'
 import type { IntentEngine } from '../ai/intentEngine.ts'
+import { ETHEconomyDataManager } from '../economy/economyDataManager.ts'
 import { activeHardfork, advertisedForkHash, chainConfigForNetwork } from '../net/chainHardfork.ts'
 import { networkGenesisHash } from '../net/genesisStatus.ts'
 import { NoticeBoard } from '../notify/board.ts'
@@ -40,6 +41,7 @@ export interface EthyNode {
   snapStore?: SnapPivotStore
   peerBook?: PeerBookStore
   flightRecorder?: EthyFlightRecorder
+  economy: ETHEconomyDataManager
 }
 
 export function createEthyNode(opts: CreateEthyNodeOptions): EthyNode {
@@ -91,6 +93,7 @@ export function createEthyNode(opts: CreateEthyNodeOptions): EthyNode {
     spine.onDiagnosticRecorded = (entry) => flightRecorder.recordDiagnostic(entry)
     flightRecorder.start()
   }
+  const economy = new ETHEconomyDataManager({ spine, chain, hardfork })
   // Disk restore and resume policy run in `startPeerCoordinator` once a peer head is known.
   const node: EthyNode = {
     spine,
@@ -102,6 +105,7 @@ export function createEthyNode(opts: CreateEthyNodeOptions): EthyNode {
     snapStore,
     peerBook,
     flightRecorder,
+    economy,
   }
   return node
 }

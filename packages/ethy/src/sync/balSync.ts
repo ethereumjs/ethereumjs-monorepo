@@ -10,6 +10,7 @@ import {
   equalsBytes,
 } from '@ethereumjs/util'
 
+import type { ETHEconomyDataManager } from '../economy/economyDataManager.ts'
 import { compareBytes32 } from '../spine/buckets.ts'
 import { setPhase } from '../spine/createSpine.ts'
 import type { EthySpine, SnapBucket } from '../spine/types.ts'
@@ -224,6 +225,7 @@ export type HeadFollowerOpts = {
   onBalBlockBuffered?: (entry: VerifiedBalBlock) => void
   /** WP-05b: cross-check EL block hash against consensus light client. */
   onVerifiedExecutionHeader?: (blockNumber: bigint, blockHash: Uint8Array) => void
+  economy?: ETHEconomyDataManager
 }
 
 type HeadCatchUp = {
@@ -343,6 +345,7 @@ export class BalChainStreamer {
       appendHealBundle: this.opts.appendHealBundle,
       syncBuckets: snapStreaming ? spine.snapBuckets : undefined,
       deferStateApply: snapStreaming,
+      economy: this.opts.economy,
     })
     const fields =
       bundle.headerRlp !== undefined

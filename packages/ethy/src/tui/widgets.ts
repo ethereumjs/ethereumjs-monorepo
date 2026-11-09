@@ -53,10 +53,28 @@ export function renderWidgetLines(
       }
       break
     case 'table':
+      if (widget.preface !== undefined && widget.preface.length > 0) {
+        const pairs: TwoColumnPair[] = widget.preface.map((e) => ({
+          label: `${DIM}${e.key}${RESET}`,
+          value: e.value,
+        }))
+        const lw = maxLabelWidth(pairs)
+        for (const row of formatTwoColumnRows(pairs, lw, w)) {
+          lines.push(fixedLine(row, w))
+        }
+        lines.push('')
+      }
       if (widget.title) {
         lines.push(fixedLine(`${BOLD}${widget.title}${RESET}`, w))
       }
       lines.push(...renderTable(widget.headers, widget.rows, w))
+      if (widget.secondaryTable !== undefined) {
+        lines.push('')
+        if (widget.secondaryTable.title) {
+          lines.push(fixedLine(`${BOLD}${widget.secondaryTable.title}${RESET}`, w))
+        }
+        lines.push(...renderTable(widget.secondaryTable.headers, widget.secondaryTable.rows, w))
+      }
       break
     case 'key_value':
       if (widget.title) {

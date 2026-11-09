@@ -9,6 +9,7 @@ import {
   ethyOverviewWidget,
   peersTableWidget,
 } from '../tools/diagnose.ts'
+import { economyDeepViewWidget } from '../tools/economyTools.ts'
 import { headLockedWidget, inspectLatestBALStub, simulateTxOnHeadStub } from '../tools/gated.ts'
 import { inspectAccount, inspectLatestBAL } from '../tools/headTools.ts'
 import { buildHelpWidget } from '../tools/help.ts'
@@ -54,6 +55,18 @@ export class DeterministicIntentEngine implements IntentEngine {
 
     if (trimmed.startsWith('/')) {
       widget = this.routeSlash(trimmed, spine, req)
+    } else if (
+      matchKeywords(trimmed, [
+        'economy',
+        'base fee',
+        'basefee',
+        'gwei',
+        'tps',
+        'eth volume',
+        'hot contract',
+      ])
+    ) {
+      widget = economyDeepViewWidget(spine)
     } else if (matchKeywords(trimmed, ['peer', 'client', 'latency'])) {
       widget = peersTableWidget(spine)
     } else if (matchKeywords(trimmed, ['bucket', 'stalled', 'why', 'snap'])) {
@@ -115,6 +128,8 @@ export class DeterministicIntentEngine implements IntentEngine {
         return inspectLatestBAL(spine)
       case '/cl':
         return clMicroscopeWidget(spine)
+      case '/economy':
+        return economyDeepViewWidget(spine)
       case '/simulate':
         if (spine.capabilities.head.status === 'locked') {
           return simulateTxOnHeadStub(spine)

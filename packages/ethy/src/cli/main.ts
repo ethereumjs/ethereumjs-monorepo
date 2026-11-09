@@ -94,6 +94,7 @@ async function main(): Promise<void> {
       connectEnodeUrls: cli.connectEnodeUrls.length > 0 ? cli.connectEnodeUrls : undefined,
       syncMode: cli.syncMode,
       witnessExecutionHeader,
+      economy: node.economy,
     })
       .then((handle) => {
         bindPeerCoordinator(handle)

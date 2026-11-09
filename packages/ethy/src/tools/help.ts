@@ -6,6 +6,7 @@ export function buildHelpWidget(spine: EthySpine): WidgetSpec {
     ['/ethy', 'ETHY/0 transport, local seed, serve counters'],
     ['/buckets, /snap', '16-bucket snap progress'],
     ['/diag', 'Diagnostic ring buffer'],
+    ['/economy', 'Gas, ETH volume, hot contracts'],
     ['/cl', 'Consensus light client (BLS / finality)'],
     ['/drop <peerId>', 'Remove peer (dev)'],
     ['/reassign <bucket>', 'Reassign bucket (dev)'],

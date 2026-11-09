@@ -1,6 +1,6 @@
 # WP-07a: `ETHEconomyDataManager`, Structured Domain Data Managers & Live Economic / Transactional Telemetry
 
-- **Status:** `READY_FOR_PLANNING`
+- **Status:** `DONE`
 - **Dependencies:** `WP-04k` (`DONE`), `WP-06f` (`DONE`)
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
@@ -86,20 +86,24 @@ And running **`/economy`** (or pressing `e` / asking about network activity) ope
 
 ## 5. Acceptance Criteria (`WP-07a`)
 
-- [ ] `ETHEconomyDataManager` (`src/economy/economyDataManager.ts`) decodes `headerRlp`, `bodyRlp`, `receiptsEth69Rlp`, and `balJson` on every verified block bundle (both during `SNAP_SYNCING` parallel BAL streaming and `HEAD_FOLLOWING`) and maintains a bounded 64-block rolling window + Top Contracts leaderboard in `O(1)` memory.
-- [ ] `src/domains/domainManagers.ts` exposes `EthyDomainSnapshots` (`read`-only) and separates `permission: 'read' | 'write'` tool descriptors.
-- [ ] `/economy` slash tool (`src/tools/economyTools.ts`) and `/e` slash autocomplete are wired into `DeterministicIntentEngine` and return structured table data for the Interaction View.
-- [ ] Unit tests (`test/economyDataManager.spec.ts`) verify fee trend calculation, ETH transfer volume aggregation, BAL hot-contract ranking, and read/write permission boundaries.
-- [ ] `npm run tsc`, `npm test`, and `npm run spellcheck` pass in `@ethereumjs/ethy`.
+- [x] `ETHEconomyDataManager` (`src/economy/economyDataManager.ts`) decodes `headerRlp`, `bodyRlp`, `receiptsEth69Rlp`, and `balJson` on every verified block bundle (both during `SNAP_SYNCING` parallel BAL streaming and `HEAD_FOLLOWING`) and maintains a bounded 64-block rolling window + Top Contracts leaderboard in `O(1)` memory.
+- [x] `src/domains/domainManagers.ts` exposes `EthyDomainSnapshots` (`read`-only) and separates `permission: 'read' | 'write'` tool descriptors.
+- [x] `/economy` slash tool (`src/tools/economyTools.ts`) and `/e` slash autocomplete are wired into `DeterministicIntentEngine` and return structured table data for the Interaction View.
+- [x] Unit tests (`test/economyDataManager.spec.ts`) verify fee trend calculation, ETH transfer volume aggregation, BAL hot-contract ranking, and read/write permission boundaries.
+- [x] `npm run tsc`, `npm test`, and `npm run spellcheck` pass in `@ethereumjs/ethy`.
 
 ---
 
 ## 6. Concrete Implementation Plan (Planner — Grok 4.7)
 
-*(To be filled by Grok 4.7 during planning)*
+See attached plan (2026-11-09): **D-097** rolling 64-block economy lens on `finalizeBlockBundle` / ETHY BAL tail; BAL-only contract leaderboard (no `FlatStateManager` cold lookup); `readDomainSnapshots` + `SLASH_TOOL_REGISTRY`; `/economy` deep view with `preface` / `secondaryTable` widget fields; runtime dep `@ethereumjs/tx` for body decode. Cockpit spatial layout unchanged (WP-07b).
 
 ---
 
 ## 7. Implementation Notes & Deviations (Implementer — Composer 2.5)
 
-*(To be filled by Composer 2.5 during implementation)*
+- **Ingest wiring:** single `ETHEconomyDataManager` on `EthyNode`, passed into `startPeerCoordinator`, `BalChainStreamer`, `EthySwarmSynchronizer`, and `finalizeBlockBundle` (`economy` optional hook).
+- **Deferred snap BAL:** economy ingest still runs when `deferStateApply` is true (header/body/receipts + `balRlp` verify); state apply unchanged.
+- **ETHY tail:** `noteBundle` without body sets `hasTxBody: false` so cockpit Activity stays `—` until a full bundle is tip.
+- **Widget:** extended `WidgetSpec` `table` with `preface` and `secondaryTable`; rendered in `widgets.ts`.
+- **Gates (2026-11-09):** `npm run tsc`, `npm test` (221), `npm run spellcheck:ts` green in `@ethereumjs/ethy`.

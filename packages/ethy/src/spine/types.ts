@@ -1,6 +1,8 @@
 import type { WorkerDiscoverySnapshot, WorkerServingSnapshot } from '@ethereumjs/devp2p'
 import type { BALJSONBlockAccessList } from '@ethereumjs/util'
 
+import type { EconomySnapshot } from '../economy/types.ts'
+
 export type CapabilityId = 'p2p' | 'snap' | 'head' | 'ai'
 
 export type EthyPhase = 'BOOTING' | 'P2P_WARMUP' | 'SNAP_SYNCING' | 'BAL_CATCHUP' | 'HEAD_FOLLOWING'
@@ -197,6 +199,8 @@ export interface EthySpine {
   storageEtaMinutes?: number
   /** Rolling BAL summaries for `/bal` and `/account` (newest first, max 64). */
   balWindow: BalWindowEntry[]
+  /** Live Ethereum economy lens (WP-07a). */
+  economy?: EconomySnapshot
   snapPaused: boolean
   diagnosticRingBuffer: DiagnosticEvent[]
   /** Consensus light client witness (WP-05b). */
@@ -232,6 +236,12 @@ export type WidgetSpec =
       assistantComment?: string
       /** Live P2P counters, drawn in reserved rows under the table. */
       footer?: 'discovery'
+      preface?: Array<{ key: string; value: string }>
+      secondaryTable?: {
+        title?: string
+        headers: string[]
+        rows: string[][]
+      }
     }
   | {
       kind: 'key_value'

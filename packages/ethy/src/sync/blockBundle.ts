@@ -25,6 +25,7 @@ import {
 import type { EthySpine, SnapBucket } from '../spine/types.ts'
 import type { VerifiedBalBlock } from './balSync.ts'
 
+import type { ETHEconomyDataManager } from '../economy/economyDataManager.ts'
 import { applyBlockBal, pushBalWindow } from './balSync.ts'
 
 export type BlockBundleStage = 'headers' | 'bodies' | 'receipts' | 'bal'
@@ -71,6 +72,7 @@ export type FinalizeBlockBundleOpts = {
   syncBuckets?: SnapBucket[]
   /** When true, servable registration runs but state apply is deferred to pivot step. */
   deferStateApply?: boolean
+  economy?: ETHEconomyDataManager
 }
 
 /** Register servable bundle and apply BAL when present. */
@@ -107,6 +109,7 @@ export async function finalizeBlockBundle(opts: FinalizeBlockBundleOpts): Promis
       })
     }
   }
+  let economyBalJson: BALJSONBlockAccessList | undefined
   if (opts.deferStateApply !== true) {
     const applied = await applyBlockBal(
       opts.stateManager,
@@ -117,10 +120,19 @@ export async function finalizeBlockBundle(opts: FinalizeBlockBundleOpts): Promis
       opts.syncBuckets,
     )
     if (applied.balJson !== undefined) {
+      economyBalJson = applied.balJson
       pushBalWindow(opts.spine, bundle.blockNumber, applied.balJson)
       opts.onBalApplied?.(applied.balJson)
     }
   }
+  opts.economy?.noteBundle({
+    blockNumber: bundle.blockNumber,
+    headerRlp: bundle.headerRlp,
+    bodyRlp: bundle.bodyRlp,
+    receiptsEth69Rlp: bundle.receiptsEth69Rlp,
+    balJson: economyBalJson,
+    balRlp: bundle.balRlp,
+  })
 }
 
 export function headFieldsFromHeaderRlp(

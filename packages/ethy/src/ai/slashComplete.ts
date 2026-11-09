@@ -1,4 +1,4 @@
-const SLASH_COMMANDS = [
+export const SLASH_COMMANDS = [
   '/peers',
   '/ethy',
   '/buckets',
@@ -15,9 +15,11 @@ const SLASH_COMMANDS = [
   '/simulate',
   '/help',
   '/cl',
+  '/economy',
 ] as const
 
 const SHORT_EXPAND: Record<string, string> = {
+  '/e': '/economy',
   '/p': '/peers',
   '/b': '/buckets',
   '/d': '/diag',
