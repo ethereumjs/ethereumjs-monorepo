@@ -1,6 +1,6 @@
 # WP-07c: Local LLM Dual-Mode Engine — 30–60s Read-Only Situational Pulse, Interactive `IntentEngine`, Privacy-Scoped Prompt Memory & Dynamic UI Composition
 
-- **Status:** `PLANNED`
+- **Status:** `DONE`
 - **Dependencies:** `WP-07a`, `WP-07b`
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
@@ -74,11 +74,11 @@ In addition to calling pre-built slash tools (`/peers`, `/buckets`, `/economy`, 
 
 ## 3. Acceptance Criteria (`WP-07c`)
 
-- [ ] Zero new runtime dependencies added to `package.json`.
-- [ ] `AiPulseNarrator` polls the local LLM every 30–60s (and on phase transitions) with **read-only** `EthyDomainSnapshots` + `SystemUsageGuide`, enforcing `<= 280` chars and updating the vertically-centered `AI Overview` box (with seamless fallback to `buildDeterministicOverview` when offline).
-- [ ] `LocalHttpIntentEngine` routes user natural-language queries, sets the synchronized Interaction View box title (`"Can you give me the most used peers?"` → `"Most used peers"`), supports both tool calls and on-the-fly `TableUIComponent` / `KeyValueUIComponent` composition, and enforces `read` vs `write` tool gating.
-- [ ] Ephemeral 3-turn RAM-only prompt context works for follow-up questions and respects `--no-ai-history`, while never exposing user prompts to disk logs or the background pulse.
-- [ ] `npm run tsc`, `npm test`, and `npm run spellcheck` pass in `@ethereumjs/ethy` with 100% offline deterministic CI fixtures.
+- [x] Zero new runtime dependencies added to `package.json`.
+- [x] `AiPulseNarrator` polls the local LLM every 30–60s (and on phase transitions) with **read-only** `EthyDomainSnapshots` + `SystemUsageGuide`, enforcing `<= 280` chars and updating the vertically-centered `AI Overview` box (with seamless fallback to `buildDeterministicOverview` when offline).
+- [x] `LocalHttpIntentEngine` routes user natural-language queries, sets the synchronized Interaction View box title (`"Can you give me the most used peers?"` → `"Most used peers"`), supports both tool calls and on-the-fly `TableUIComponent` / `KeyValueUIComponent` composition, and enforces `read` vs `write` tool gating.
+- [x] Ephemeral 3-turn RAM-only prompt context works for follow-up questions and respects `--no-ai-history`, while never exposing user prompts to disk logs or the background pulse.
+- [x] `npm run tsc`, `npm test`, and `npm run spellcheck` pass in `@ethereumjs/ethy` with 100% offline deterministic CI fixtures.
 
 ---
 
@@ -187,4 +187,9 @@ WP-07d contract lens, new dependencies, embedded GGUF, real EVM `/simulate`, eco
 
 ## 5. Implementation Notes & Deviations (Implementer — Composer 2.5)
 
-*(To be filled by Composer 2.5 during implementation)*
+**Status:** Shipped 2026-11-09. Gates: `npm run tsc`, `npm test` (238), `npm run spellcheck:ts`.
+
+- `HybridIntentEngine` is always the node `intentEngine` (deterministic path when no URL or unhealthy probe).
+- Grounded compose datasets live in `composeView.ts`; model literal tables are clamped.
+- `spine.llmPulseReady` preserves AI pill `ready` / `Local LLM` across `deriveCapabilities`.
+- Pulse interval `AI_PULSE_INTERVAL_MS = 45_000`; offline overview refresh stays 30s when `--llm-url` absent.

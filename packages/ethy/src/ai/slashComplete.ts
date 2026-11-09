@@ -16,6 +16,8 @@ export const SLASH_COMMANDS = [
   '/help',
   '/cl',
   '/economy',
+  '/clear',
+  '/ai ',
 ] as const
 
 const SHORT_EXPAND: Record<string, string> = {

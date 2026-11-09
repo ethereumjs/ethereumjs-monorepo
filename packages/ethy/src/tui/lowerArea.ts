@@ -75,7 +75,12 @@ export function renderLowerArea(
     view.interactionPage,
     marks,
   )
-  const title = interactionViewTitle(widget, view.interactionPage, view.interactionLabel)
+  const title = interactionViewTitle(
+    widget,
+    view.interactionPage,
+    view.interactionLabel,
+    view.interactionTitle,
+  )
   const leftBox = buildVariableBox(leftW, fillRows, title, bodyLines)
 
   let rightBox: string[] = []

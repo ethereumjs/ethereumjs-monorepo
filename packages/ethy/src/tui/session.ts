@@ -1,7 +1,8 @@
 import { stdin as input, stdout as output } from 'node:process'
 import readline from 'node:readline'
 
-import { buildDeterministicOverview } from '../ai/overviewNarrator.ts'
+import { MAX_AI_OVERVIEW_CHARS, buildDeterministicOverview } from '../ai/overviewNarrator.ts'
+import { AiPulseNarrator } from '../ai/pulseNarrator.ts'
 import type { EthyNode } from '../core/createEthyNode.ts'
 import { advanceDemo } from '../demo/advanceDemo.ts'
 import { readDomainSnapshots } from '../domains/domainManagers.ts'
@@ -24,6 +25,14 @@ import {
 } from './prompt.ts'
 import { promptCaretPosition, renderFrame } from './renderFrame.ts'
 
+const ASKING_LLM_NOTE = 'Asking the local model…'
+
+function clampOverviewNote(text: string): string {
+  const t = text.replace(/\s+/g, ' ').trim()
+  if (t.length <= MAX_AI_OVERVIEW_CHARS) return t
+  return `${t.slice(0, MAX_AI_OVERVIEW_CHARS - 1)}…`
+}
+
 /**
  * Presentation clock. This function only reads spine state, paints, and
  * handles keys. Sync and discovery must not run synchronous disk or ingest
@@ -39,6 +48,10 @@ export async function runEthySession(node: EthyNode): Promise<void> {
   let lastAllBucketsDone = node.spine.snapBuckets.every((b) => b.status === 'done')
   let lastOverviewMs = Date.now()
   const OVERVIEW_INTERVAL_MS = 30_000
+  const llmConfigured = node.llm !== undefined
+  let intentGeneration = 0
+  let savedOverviewForIntent = ''
+  let pulseNarrator: AiPulseNarrator | undefined
 
   const refreshOverview = (trigger: 'welcome' | 'pulse') => {
     const snapshots = readDomainSnapshots(node.spine)
@@ -62,19 +75,32 @@ export async function runEthySession(node: EthyNode): Promise<void> {
     const now = Date.now()
     const hasBlocks = node.spine.economy?.hasBlocks === true
     const allBucketsDone = node.spine.snapBuckets.every((b) => b.status === 'done')
-    if (
-      node.spine.phase !== lastPhase ||
-      hasBlocks !== lastEconomyHasBlocks ||
-      allBucketsDone !== lastAllBucketsDone
-    ) {
-      lastPhase = node.spine.phase
-      lastEconomyHasBlocks = hasBlocks
-      lastAllBucketsDone = allBucketsDone
-      refreshOverview('pulse')
-      lastOverviewMs = now
-    } else if (now - lastOverviewMs >= OVERVIEW_INTERVAL_MS) {
-      refreshOverview('pulse')
-      lastOverviewMs = now
+    if (!llmConfigured) {
+      if (
+        node.spine.phase !== lastPhase ||
+        hasBlocks !== lastEconomyHasBlocks ||
+        allBucketsDone !== lastAllBucketsDone
+      ) {
+        lastPhase = node.spine.phase
+        lastEconomyHasBlocks = hasBlocks
+        lastAllBucketsDone = allBucketsDone
+        refreshOverview('pulse')
+        lastOverviewMs = now
+      } else if (now - lastOverviewMs >= OVERVIEW_INTERVAL_MS) {
+        refreshOverview('pulse')
+        lastOverviewMs = now
+      }
+    } else {
+      if (
+        node.spine.phase !== lastPhase ||
+        hasBlocks !== lastEconomyHasBlocks ||
+        allBucketsDone !== lastAllBucketsDone
+      ) {
+        lastPhase = node.spine.phase
+        lastEconomyHasBlocks = hasBlocks
+        lastAllBucketsDone = allBucketsDone
+        pulseNarrator?.notePhase(node.spine)
+      }
     }
     const flip = node.spine.headFlipSummary
     if (view.activeWidget === null && flip !== undefined) {
@@ -92,6 +118,68 @@ export async function runEthySession(node: EthyNode): Promise<void> {
     output.write(cursorTo(caret.row, caret.col))
     output.write(syncOutputEnd())
     output.write(CURSOR_SHOW)
+  }
+
+  const applyIntentResult = (
+    gen: number,
+    result: Awaited<ReturnType<typeof node.intentEngine.handle>>,
+    label: string,
+    isNl: boolean,
+  ) => {
+    if (gen !== intentGeneration) return
+    lastQuerySlot = result.querySlot
+    view = {
+      ...view,
+      activeWidget: result.widget,
+      interactionPage: 'main',
+      interactionLabel: label,
+      interactionTitle: isNl ? result.viewTitle : undefined,
+      aiOverview:
+        result.overviewNote !== undefined
+          ? clampOverviewNote(result.overviewNote)
+          : view.aiOverview,
+    }
+    node.hybridEngine?.noteIntentInflight(-1)
+    draw()
+  }
+
+  const runIntent = (text: string, gen: number, isNl: boolean) => {
+    if (isNl) {
+      pulseNarrator?.abortInFlight()
+      savedOverviewForIntent = view.aiOverview ?? savedOverviewForIntent
+      view = { ...view, aiOverview: clampOverviewNote(ASKING_LLM_NOTE) }
+      node.hybridEngine?.noteIntentInflight(1)
+      draw()
+    }
+    void node.intentEngine
+      .handle({
+        text,
+        spine: node.spine,
+        lastQuerySlot,
+      })
+      .then((result) => {
+        applyIntentResult(gen, result, text, isNl)
+      })
+      .catch(() => {
+        if (gen !== intentGeneration) return
+        node.hybridEngine?.noteIntentInflight(-1)
+        view = { ...view, aiOverview: savedOverviewForIntent || view.aiOverview }
+        draw()
+      })
+  }
+
+  if (llmConfigured && node.llm !== undefined && !node.demo && !node.headless) {
+    pulseNarrator = new AiPulseNarrator({
+      transport: node.llm.transport,
+      onOverview: (text) => {
+        view = { ...view, aiOverview: text }
+        draw()
+      },
+      onUnhealthy: () => {
+        refreshOverview('pulse')
+      },
+    })
+    pulseNarrator.start(node.spine)
   }
 
   draw()
@@ -149,32 +237,13 @@ export async function runEthySession(node: EthyNode): Promise<void> {
         }
         if (openDeepView === true) {
           const cmd = deepViewCommand(view.activeDomain)
-          const result = node.intentEngine.handle({
-            text: cmd,
-            spine: node.spine,
-            lastQuerySlot,
-          })
-          lastQuerySlot = result.querySlot
-          view = {
-            ...view,
-            activeWidget: result.widget,
-            interactionPage: 'main',
-            interactionLabel: cmd,
-          }
+          const gen = ++intentGeneration
+          runIntent(cmd, gen, false)
         }
         if (submittedLine !== undefined) {
-          const result = node.intentEngine.handle({
-            text: submittedLine,
-            spine: node.spine,
-            lastQuerySlot,
-          })
-          lastQuerySlot = result.querySlot
-          view = {
-            ...view,
-            activeWidget: result.widget,
-            interactionPage: 'main',
-            interactionLabel: submittedLine,
-          }
+          const gen = ++intentGeneration
+          const isNl = !submittedLine.trim().startsWith('/')
+          runIntent(submittedLine, gen, isNl)
         }
         if (view.shouldExit) {
           finish()
@@ -192,6 +261,8 @@ export async function runEthySession(node: EthyNode): Promise<void> {
       clearInterval(refreshTimer)
       output.off('resize', onResize)
       input.off('data', onData)
+      pulseNarrator?.stop()
+      node.hybridEngine?.clearMemory()
       if (input.isTTY) input.setRawMode(false)
       output.write(CURSOR_SHOW)
       output.write(ALT_SCREEN_OFF)

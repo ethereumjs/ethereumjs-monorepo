@@ -20,6 +20,8 @@ const READ_COMMANDS = [
   '/simulate',
   '/cl',
   '/economy',
+  '/clear',
+  '/ai',
 ] as const
 
 const WRITE_COMMANDS = ['/drop', '/reassign', '/pause', '/resume'] as const

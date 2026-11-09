@@ -45,7 +45,11 @@ export function deriveCapabilities(spine: EthySpine): void {
       break
   }
 
-  spine.capabilities.ai = { status: 'partial', label: 'Slash/Rule Mode' }
+  if (spine.llmPulseReady === true) {
+    spine.capabilities.ai = { status: 'ready', label: 'Local LLM' }
+  } else {
+    spine.capabilities.ai = { status: 'partial', label: 'Slash/Rule Mode' }
+  }
 }
 
 export function createSpine(network: string, chainId: bigint): EthySpine {

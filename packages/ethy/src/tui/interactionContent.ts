@@ -117,6 +117,7 @@ export function interactionViewTitle(
   widget: WidgetSpec | null,
   page: InteractionPage,
   lastSubmitted?: string,
+  nlTitle?: string,
 ): string {
   if (widget === null) return `${BOLD}Welcome${RESET}`
   const hasDebug = (widget.debugPage?.length ?? 0) > 0
@@ -127,7 +128,9 @@ export function interactionViewTitle(
         : `${DIM} · [1/2 Table · Ctrl+D Debug]${RESET}`
       : ''
   let base = ''
-  if (lastSubmitted?.startsWith('/') === true) {
+  if (nlTitle !== undefined && nlTitle.length > 0 && lastSubmitted?.startsWith('/') !== true) {
+    base = `${BOLD}${nlTitle}${RESET}`
+  } else if (lastSubmitted?.startsWith('/') === true) {
     const cmd = lastSubmitted.split(/\s+/)[0] ?? lastSubmitted
     const sub =
       widget.kind === 'table' && widget.title

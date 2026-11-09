@@ -199,10 +199,10 @@ Only tools whose capability stage is active (`ready` or `partial`) are registere
 
 - **`DeterministicIntentEngine` (Built-in, 0 deps):**
   - Parses slash commands (`/peers`, `/buckets`, `/diag`, `/sample`, `/account <addr>`, `/drop <peerId>`, `/help`) and natural-language keyword patterns from second 0. Used in all CI runs and when no local LLM is configured.
-- **`LocalHttpLlmEngine` (Built-in `fetch`, 0 deps):**
-  - Speaks to any local OpenAI / `llama-server` compatible endpoint (`http://127.0.0.1:11434` or `127.0.0.1:8080`) with strict JSON schema output (`response_format` / `tools`) for ~1 GB local instruct models (1.5B–2B parameters).
-- **Optional Embedded Local Model Adapter (`node-llama-cpp`):**
-  - Can be added later (only with explicit human dependency approval) behind the exact same `IntentEngine` interface.
+- **`HybridIntentEngine` + `LocalHttpIntentEngine` (Built-in `fetch`, 0 deps, WP-07c):**
+  - With `--llm-url`, routes natural language through a loopback OpenAI-compatible endpoint (`/v1/chat/completions`, `response_format: json_object`). Slash commands stay deterministic. `AiPulseNarrator` refreshes the read-only **AI Overview** every 45s (and on phase change) from `EthyDomainSnapshots` + `ETHY_USAGE_PLAYBOOK`; offline or missing URL keeps the deterministic `buildDeterministicOverview` path.
+- **Optional embedded weights (`node-llama-cpp`):**
+  - Not shipped; requires explicit human dependency approval behind the same `IntentEngine` interface.
 
 ---
 

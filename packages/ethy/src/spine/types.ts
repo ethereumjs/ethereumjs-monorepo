@@ -202,6 +202,8 @@ export interface EthySpine {
   /** Live Ethereum economy lens (WP-07a). */
   economy?: EconomySnapshot
   snapPaused: boolean
+  /** When true, deriveCapabilities shows AI pill as Local LLM (WP-07c pulse). */
+  llmPulseReady?: boolean
   diagnosticRingBuffer: DiagnosticEvent[]
   /** Consensus light client witness (WP-05b). */
   clStatus?: 'verified' | 'syncing' | 'p2p_only' | 'mismatch'
@@ -273,4 +275,6 @@ export interface TuiViewState {
   shouldExit: boolean
   /** Last command or prompt that opened the interaction view (title chrome). */
   interactionLabel?: string
+  /** LLM-suggested short title for NL queries (WP-07c). */
+  interactionTitle?: string
 }

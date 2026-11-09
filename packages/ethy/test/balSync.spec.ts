@@ -63,12 +63,12 @@ describe('[Ethy/Sync]: BAL window and head phase', () => {
     assert.equal(flatAcc!.balance, hexToBigInt('0x01ec30'))
   })
 
-  it('/bal works when head capability is ready', () => {
+  it('/bal works when head capability is ready', async () => {
     const spine = createSpine('sepolia', 11155111n)
     setPhase(spine, 'HEAD_FOLLOWING')
     pushBalWindow(spine, 200n, balSimpleJSON as BALJSONBlockAccessList)
     const engine = new DeterministicIntentEngine({ stateManager: new FlatStateManager() })
-    const r = engine.handle({ text: '/bal', spine })
+    const r = await engine.handle({ text: '/bal', spine })
     assert.equal(r.widget.kind, 'table')
   })
 })

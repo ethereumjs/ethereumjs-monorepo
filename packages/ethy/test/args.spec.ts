@@ -49,4 +49,16 @@ describe('[Ethy/CLI]: args', () => {
     const a = parseEthyArgs(['node', 'ethy', '--data-dir', '/tmp/x'])
     assert.equal(a.dataDir, '/tmp/x')
   })
+
+  it('parseEthyArgs() reads llm and ai-memory flags', () => {
+    const a = parseEthyArgs([
+      'node',
+      'ethy',
+      '--llm-url',
+      'http://127.0.0.1:8080',
+      '--no-ai-history',
+    ])
+    assert.equal(a.llmUrl, 'http://127.0.0.1:8080')
+    assert.equal(a.aiMemory, 'off')
+  })
 })
