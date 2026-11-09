@@ -179,9 +179,23 @@ Every Work Package delivers a **runnable, observable, and live-testable incremen
                                           └───────────────────┬───────────────────┘
                                                               ▼
                                           ┌─────────────────────────────────────────┐
-                                          │ WP-07: Bidirectional Local LLM          │
-                                          │        IntentEngine (<ethy_state>       │
-                                          │        & Dynamic Tool Gating)           │
+                                          │ WP-07a: ETHEconomyDataManager,          │
+                                          │         Permission-Structured Domain    │
+                                          │         Snapshots & /economy Tool       │
+                                          └───────────────────┬─────────────────────┘
+                                                              │
+                                                              ▼
+                                          ┌─────────────────────────────────────────┐
+                                          │ WP-07b: Spatial Cockpit Redesign        │
+                                          │         (Economy + AI Overview +        │
+                                          │         TableUIComponent + Ctrl+D Debug)│
+                                          └───────────────────┬─────────────────────┘
+                                                              │
+                                                              ▼
+                                          ┌─────────────────────────────────────────┐
+                                          │ WP-07c: Local LLM Dual-Mode Engine      │
+                                          │         (30-60s Read-Only Pulse,        │
+                                          │         IntentEngine & UI Composer)     │
                                           └───────────────────┬─────────────────────┘
                                                               │
                                                               ▼
