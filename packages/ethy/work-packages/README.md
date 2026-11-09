@@ -200,6 +200,14 @@ Every Work Package delivers a **runnable, observable, and live-testable incremen
                                                               │
                                                               ▼
                                           ┌─────────────────────────────────────────┐
+                                          │ WP-07d: Dynamic Contract Intelligence   │
+                                          │         (Bytecode PUSH4/Proxy Scanner,  │
+                                          │         Local ABI Lens, BAL Classifier  │
+                                          │         & /contract Microscope)         │
+                                          └───────────────────┬─────────────────────┘
+                                                              │
+                                                              ▼
+                                          ┌─────────────────────────────────────────┐
                                           │ WP-08: On-Demand @ethereumjs/evm        │
                                           │        Sandbox, P2P Tx Broadcast &      │
                                           │        Headless SDK (FYP / MCP Ready)   │
