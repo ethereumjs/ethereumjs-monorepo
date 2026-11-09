@@ -1,4 +1,6 @@
+import type { ChainConfig } from '@ethereumjs/common'
 import type { FlatStateManager } from '@ethereumjs/statemanager'
+import type { ETHEconomyDataManager } from '../economy/economyDataManager.ts'
 
 import { DeterministicIntentEngine } from './deterministicEngine.ts'
 import type { LlmTransport } from './fixtureEngine.ts'
@@ -15,6 +17,8 @@ export type HybridIntentEngineOpts = {
   transport?: LlmTransport
   llmBase?: string
   memoryMode?: AiMemoryMode
+  economy?: ETHEconomyDataManager
+  chain?: ChainConfig
 }
 
 export class HybridIntentEngine implements IntentEngine {
@@ -30,7 +34,11 @@ export class HybridIntentEngine implements IntentEngine {
   constructor(opts: HybridIntentEngineOpts) {
     this.memoryMode = opts.memoryMode ?? 'ephemeral'
     this.memory = new TurnMemoryRing()
-    this.deterministic = new DeterministicIntentEngine({ stateManager: opts.stateManager })
+    this.deterministic = new DeterministicIntentEngine({
+      stateManager: opts.stateManager,
+      economy: opts.economy,
+      chain: opts.chain,
+    })
     this.llmBase = opts.llmBase
     if (opts.transport !== undefined) {
       this.local = new LocalHttpIntentEngine({
@@ -38,6 +46,8 @@ export class HybridIntentEngine implements IntentEngine {
         stateManager: opts.stateManager,
         fallback: this.deterministic,
         getTurns: () => (this.memoryMode === 'ephemeral' ? this.memory.snapshot() : []),
+        economy: opts.economy,
+        chain: opts.chain,
       })
     }
   }

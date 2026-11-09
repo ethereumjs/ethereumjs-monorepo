@@ -38,7 +38,11 @@ export type BlockEconomyRecord = {
   storageReads?: number
   newDeployments?: number
   contractContributions: ContractBlockContribution[]
+  observations?: BlockContractObservations
+  balSnapshots?: Array<{ address: string; code?: Uint8Array; implSlot?: string }>
 }
+
+export type ContractConfidence = 'high' | 'medium' | 'low'
 
 export type TopContractRow = {
   address: string
@@ -46,6 +50,40 @@ export type TopContractRow = {
   storageWrites: number
   storageReads: number
   netEthDeltaWei: bigint
+  archetype?: string
+  confidence?: ContractConfidence
+  knownName?: string
+  topSelectors?: string[]
+  proxyKind?: string
+  proxyTarget?: string
+}
+
+export type TxCallObservation = {
+  to: string
+  selector: string
+  data: Uint8Array
+}
+
+export type LogObservation = {
+  emitter: string
+  topic0: string
+  topics: string[]
+  data: Uint8Array
+  transferDestinations: string[]
+}
+
+export type TxObservationSlice = {
+  to?: string
+  selector?: string
+  data?: Uint8Array
+  logs: LogObservation[]
+}
+
+export type BlockContractObservations = {
+  calls: TxCallObservation[]
+  logs: LogObservation[]
+  blockAddresses: string[]
+  txSlices: TxObservationSlice[]
 }
 
 export type EconomyRecentBlockRow = {

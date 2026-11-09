@@ -1,4 +1,6 @@
+import type { ChainConfig } from '@ethereumjs/common'
 import type { FlatStateManager } from '@ethereumjs/statemanager'
+import type { ETHEconomyDataManager } from '../economy/economyDataManager.ts'
 
 import { buildCompactDomainContext } from './compactContext.ts'
 import { composeViewFromRequest, parseComposeAction } from './composeView.ts'
@@ -35,6 +37,8 @@ export type LocalHttpIntentEngineOpts = {
   disconnectPeer?: (peerId: string) => void
   fallback: IntentEngine
   getTurns: () => readonly TurnRecord[]
+  economy?: ETHEconomyDataManager
+  chain?: ChainConfig
 }
 
 export class LocalHttpIntentEngine implements IntentEngine {
@@ -43,6 +47,8 @@ export class LocalHttpIntentEngine implements IntentEngine {
   private disconnectPeer?: (peerId: string) => void
   private readonly fallback: IntentEngine
   private readonly getTurns: () => readonly TurnRecord[]
+  private readonly economy?: ETHEconomyDataManager
+  private readonly chain?: ChainConfig
 
   constructor(opts: LocalHttpIntentEngineOpts) {
     this.transport = opts.transport
@@ -50,6 +56,8 @@ export class LocalHttpIntentEngine implements IntentEngine {
     this.disconnectPeer = opts.disconnectPeer
     this.fallback = opts.fallback
     this.getTurns = opts.getTurns
+    this.economy = opts.economy
+    this.chain = opts.chain
   }
 
   setDisconnectPeer(fn: (peerId: string) => void): void {
@@ -105,7 +113,13 @@ export class LocalHttpIntentEngine implements IntentEngine {
           }
           const args = typeof act.args === 'string' ? act.args.trim() : ''
           const line = args.length > 0 ? `${slash}${args}` : slash
-          const widget = dispatchSlashWidget(line, spine, this.stateManager, this.disconnectPeer)
+          const widget = dispatchSlashWidget(line, {
+            spine,
+            stateManager: this.stateManager,
+            disconnectPeer: this.disconnectPeer,
+            economy: this.economy,
+            chain: this.chain,
+          })
           return { widget, stateHeader, querySlot, viewTitle, overviewNote }
         }
         const compose = parseComposeAction(act, viewTitle)

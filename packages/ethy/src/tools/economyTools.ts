@@ -43,13 +43,21 @@ export function economyDeepViewWidget(spine: EthySpine): WidgetSpec {
       value: `${snap.activeAccounts} acc · ${snap.storageWrites ?? 0} writes · ${snap.storageReads ?? 0} reads`,
     })
   }
-  const rows = snap.topContracts.map((c) => [
-    shortAddress(c.address),
-    String(c.blocksActive),
-    String(c.storageWrites),
-    String(c.storageReads),
-    formatSignedEthFromWei(c.netEthDeltaWei),
-  ])
+  const rows = snap.topContracts.map((c) => {
+    const label =
+      c.knownName !== undefined
+        ? `${c.knownName} ${shortAddress(c.address)}`
+        : c.archetype !== undefined
+          ? `${shortAddress(c.address)} [${c.archetype}]`
+          : shortAddress(c.address)
+    return [
+      label,
+      String(c.blocksActive),
+      String(c.storageWrites),
+      String(c.storageReads),
+      formatSignedEthFromWei(c.netEthDeltaWei),
+    ]
+  })
   const recent = snap.recentBlocks.map((b) => [
     `#${BigInt(b.blockNumber).toLocaleString('en-US')}`,
     b.baseFeeGwei === '—' ? '—' : `${b.baseFeeGwei} Gwei`,

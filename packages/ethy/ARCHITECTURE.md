@@ -204,6 +204,11 @@ Only tools whose capability stage is active (`ready` or `partial`) are registere
 - **Optional embedded weights (`node-llama-cpp`):**
   - Not shipped; requires explicit human dependency approval behind the same `IntentEngine` interface.
 
+### 4. Contract intelligence (`WP-07d`)
+
+- `ETHEconomyDataManager` enriches the rolling top-contract leaderboard with local archetype labels (ERC-20, DEX Router, proxy kinds, and similar) from bytecode fingerprint, capped calldata/log observations, and BAL co-touch — zero new npm deps (`src/contracts/*`).
+- `/contract` (and `/co`) opens a microscope on rank `#1..#10` or a `0x` address using resident `FlatStateManager` code when synced, with `Ctrl+D` debug for raw `PUSH4` selectors and opcode counts. Available during snap when economy bundles are streaming; unlike `/account`, it is not head-gated.
+
 ---
 
 ## 5. Sync, Consensus & Storage Strategy

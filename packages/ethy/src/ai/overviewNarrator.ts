@@ -66,8 +66,11 @@ export function buildDeterministicOverview(
     const trend = econ.trend === 'up' ? 'rising' : econ.trend === 'down' ? 'falling' : 'flat'
     const tps = econ.tps !== undefined ? `${econ.tps.toFixed(1)} TPS` : 'activity on chain'
     const vol = econ.ethTransferredWindowEth ?? '0 ETH'
-    const hot = econ.topContracts[0]?.address
-    const hotBit = hot !== undefined ? ` Hottest contract ${hot.slice(0, 6)}…${hot.slice(-4)}.` : ''
+    const hotRow = econ.topContracts[0]
+    const hotBit =
+      hotRow !== undefined
+        ? ` Hottest: ${hotRow.archetype ?? 'contract'} ${hotRow.address.slice(0, 6)}…${hotRow.address.slice(-4)} — /contract.`
+        : ''
     return clampProse(
       `Head following — base fee ${econ.baseFeeGwei} Gwei (${trend}), ${tps}, ${vol} (64 blk).${hotBit}`,
     )

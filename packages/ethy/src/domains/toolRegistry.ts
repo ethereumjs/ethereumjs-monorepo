@@ -20,6 +20,7 @@ const READ_COMMANDS = [
   '/simulate',
   '/cl',
   '/economy',
+  '/contract',
   '/clear',
   '/ai',
 ] as const

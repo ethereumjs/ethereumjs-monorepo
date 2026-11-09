@@ -16,12 +16,14 @@ export const SLASH_COMMANDS = [
   '/help',
   '/cl',
   '/economy',
+  '/contract ',
   '/clear',
   '/ai ',
 ] as const
 
 const SHORT_EXPAND: Record<string, string> = {
   '/e': '/economy',
+  '/co': '/contract ',
   '/p': '/peers',
   '/b': '/buckets',
   '/d': '/diag',

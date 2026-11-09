@@ -264,6 +264,7 @@
     "bytecodes",
     "headerfetcher",
     "reverseblockfetcher",
+    "multicall",
     "multiaccount",
     "slotset",
     "hashset",

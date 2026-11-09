@@ -1,8 +1,11 @@
+import type { ChainConfig } from '@ethereumjs/common'
 import type { FlatStateManager } from '@ethereumjs/statemanager'
 
+import type { ETHEconomyDataManager } from '../economy/economyDataManager.ts'
 import type { WidgetSpec } from '../spine/types.ts'
 import type { EthySpine } from '../spine/types.ts'
 import { clMicroscopeWidget } from '../tools/clTools.ts'
+import { contractMicroscopeWidget } from '../tools/contractTools.ts'
 import { dropPeer, pauseSnapSync, reassignBucket, resumeSnapSync } from '../tools/devActions.ts'
 import {
   bucketsTableWidget,
@@ -31,15 +34,21 @@ function matchKeywords(text: string, words: string[]): boolean {
 export type DeterministicIntentEngineOpts = {
   stateManager: FlatStateManager
   disconnectPeer?: (peerId: string) => void
+  economy?: ETHEconomyDataManager
+  chain?: ChainConfig
 }
 
 /** Shared slash router for deterministic and LLM tool dispatch. */
-export function dispatchSlashWidget(
-  line: string,
-  spine: EthySpine,
-  stateManager: FlatStateManager,
-  disconnectPeer?: (peerId: string) => void,
-): WidgetSpec {
+export type SlashDispatchCtx = {
+  spine: EthySpine
+  stateManager: FlatStateManager
+  disconnectPeer?: (peerId: string) => void
+  economy?: ETHEconomyDataManager
+  chain?: ChainConfig
+}
+
+export function dispatchSlashWidget(line: string, ctx: SlashDispatchCtx): WidgetSpec {
+  const { spine, stateManager, disconnectPeer, economy, chain } = ctx
   const parts = line.split(/\s+/)
   const cmd = parts[0]?.toLowerCase() ?? ''
 
@@ -83,6 +92,14 @@ export function dispatchSlashWidget(
       return clMicroscopeWidget(spine)
     case '/economy':
       return economyDeepViewWidget(spine)
+    case '/contract':
+    case '/co': {
+      const arg = parts.slice(1).join(' ')
+      if (economy === undefined || chain === undefined) {
+        return economyDeepViewWidget(spine)
+      }
+      return contractMicroscopeWidget(spine, stateManager, chain, economy, arg)
+    }
     case '/simulate':
       if (spine.capabilities.head.status === 'locked') {
         return simulateTxOnHeadStub(spine)
@@ -118,10 +135,14 @@ export function dispatchSlashWidget(
 
 export class DeterministicIntentEngine implements IntentEngine {
   private readonly stateManager: FlatStateManager
+  private readonly economy?: ETHEconomyDataManager
+  private readonly chain?: ChainConfig
   private disconnectPeer?: (peerId: string) => void
 
   constructor(opts: DeterministicIntentEngineOpts) {
     this.stateManager = opts.stateManager
+    this.economy = opts.economy
+    this.chain = opts.chain
     this.disconnectPeer = opts.disconnectPeer
   }
 
@@ -138,17 +159,25 @@ export class DeterministicIntentEngine implements IntentEngine {
     let widget: WidgetSpec
 
     if (trimmed.startsWith('/')) {
-      widget = dispatchSlashWidget(trimmed, spine, this.stateManager, this.disconnectPeer)
+      widget = dispatchSlashWidget(trimmed, {
+        spine,
+        stateManager: this.stateManager,
+        disconnectPeer: this.disconnectPeer,
+        economy: this.economy,
+        chain: this.chain,
+      })
     } else if (
-      matchKeywords(trimmed, [
-        'economy',
-        'base fee',
-        'basefee',
-        'gwei',
-        'tps',
-        'eth volume',
-        'hot contract',
-      ])
+      matchKeywords(trimmed, ['hottest contract', 'explain contract', 'what is contract']) ||
+      (/0x[0-9a-f]{40}/i.test(trimmed) && matchKeywords(trimmed, ['contract', 'explain', 'what']))
+    ) {
+      const addr = trimmed.match(/0x[0-9a-f]{40}/i)?.[0] ?? ''
+      if (this.economy !== undefined && this.chain !== undefined) {
+        widget = contractMicroscopeWidget(spine, this.stateManager, this.chain, this.economy, addr)
+      } else {
+        widget = economyDeepViewWidget(spine)
+      }
+    } else if (
+      matchKeywords(trimmed, ['economy', 'base fee', 'basefee', 'gwei', 'tps', 'eth volume'])
     ) {
       widget = economyDeepViewWidget(spine)
     } else if (matchKeywords(trimmed, ['peer', 'client', 'latency'])) {

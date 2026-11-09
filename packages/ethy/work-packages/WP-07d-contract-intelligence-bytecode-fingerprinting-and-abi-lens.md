@@ -1,6 +1,6 @@
 # WP-07d: Dynamic Contract Intelligence — Bytecode Selector/Proxy Fingerprinting, Local Zero-Dep ABI Lens, BAL Behavioral Classification & `/contract` Microscope
 
-- **Status:** `READY_FOR_PLANNING`
+- **Status:** `DONE`
 - **Dependencies:** `WP-07a` (`DONE`), `WP-07b`, `WP-07c`
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
@@ -120,21 +120,91 @@ Even when a contract is an **unverified custom contract** (like an MEV bot or cu
 
 ## 3. Acceptance Criteria (`WP-07d`)
 
-- [ ] `src/contracts/localAbi.ts` and `src/contracts/signatureCatalog.ts` decode standard 4-byte selectors, 32-byte event `topic0` hashes, and static/dynamic ABI parameters with zero external npm dependencies and strict bounds safety on malformed input.
-- [ ] `src/contracts/bytecodeFingerprint.ts` performs an instruction-aware single-pass scan of contract bytecode to extract `PUSH4` dispatcher selectors, detect `EIP-1167`, `EIP-1967`, and `EIP-7702` proxies/delegations, and classify structural ERC/protocol interfaces.
-- [ ] `src/contracts/contractIntelligence.ts` combines bytecode fingerprints, decoded calldata, receipt `topic0` logs, and EIP-7928 BAL footprint metrics to classify contracts dynamically and enrich `TopContractRow` in `ETHEconomyDataManager`.
-- [ ] `/contract [address | rank]` slash tool (and `/co` autocomplete + natural-language `IntentEngine` routing) opens the Contract Microscope in the Interaction View (`TableUIComponent` core view + `Ctrl+D` `DebugPageUIComponent` with raw selectors/opcodes/proxy slots).
-- [ ] Unit tests (`test/contractIntelligence.spec.ts`) cover `localAbi` decoding, `PUSH4` extraction (verifying `PUSH32` data containing `0x63` is skipped), EIP-1167/1967/7702 detection, ERC-20/DEX/MEV behavioral classification, and `/contract` view rendering.
-- [ ] `npm run tsc`, `npm test`, and `npm run spellcheck` pass in `@ethereumjs/ethy`.
+- [x] `src/contracts/localAbi.ts` and `src/contracts/signatureCatalog.ts` decode standard 4-byte selectors, 32-byte event `topic0` hashes, and static/dynamic ABI parameters with zero external npm dependencies and strict bounds safety on malformed input.
+- [x] `src/contracts/bytecodeFingerprint.ts` performs an instruction-aware single-pass scan of contract bytecode to extract `PUSH4` dispatcher selectors, detect `EIP-1167`, `EIP-1967`, and `EIP-7702` proxies/delegations, and classify structural ERC/protocol interfaces.
+- [x] `src/contracts/contractIntelligence.ts` combines bytecode fingerprints, decoded calldata, receipt `topic0` logs, and EIP-7928 BAL footprint metrics to classify contracts dynamically and enrich `TopContractRow` in `ETHEconomyDataManager`.
+- [x] `/contract [address | rank]` slash tool (and `/co` autocomplete + natural-language `IntentEngine` routing) opens the Contract Microscope in the Interaction View (`TableUIComponent` core view + `Ctrl+D` `DebugPageUIComponent` with raw selectors/opcodes/proxy slots).
+- [x] Unit tests (`test/contractIntelligence.spec.ts`) cover `localAbi` decoding, `PUSH4` extraction (verifying `PUSH32` data containing `0x63` is skipped), EIP-1167/1967/7702 detection, ERC-20/DEX/MEV behavioral classification, and `/contract` view rendering.
+- [x] `npm run tsc`, `npm test`, and `npm run spellcheck` pass in `@ethereumjs/ethy`.
 
 ---
 
 ## 4. Concrete Implementation Plan (Planner — Grok 4.7)
 
-*(To be filled by Grok 4.7 during planning)*
+**Zero new npm dependencies.** Contract modules stay terminal-agnostic (no TUI imports). **WP-08** stays blocked until WP-07d ships.
+
+### 4.1 Baseline
+
+| Area | Current code |
+| --- | --- |
+| Leaderboard | [`TopContractRow`](../src/economy/types.ts), [`buildTopContracts`](../src/economy/economyDataManager.ts); BAL-only, no calldata/logs |
+| Decode | [`decodeBundle`](../src/economy/decodeBundle.ts) — txs + receipt status, drops `data` / logs |
+| Cockpit hot line | [`economyCockpitPairs`](../src/economy/cockpitPairs.ts) — `shortAddress (slots/blk)` |
+| Slash | [`dispatchSlashWidget`](../src/ai/deterministicEngine.ts); `/account` head-gated; `/economy` not |
+| Bytecode | [`FlatStateManager.getCodeByHash`](../statemanager) + BAL `codeChanges` |
+| LLM | [`buildCompactDomainContext`](../src/ai/compactContext.ts) top-5 contracts (**D-004**, **D-100**) |
+
+### 4.2 Design refinements (Decision **D-101**)
+
+1. **Bounded observe, lazy fingerprint.** `noteBundle` records capped call/log counts; no bytecode scan on ingest. `publish` fingerprints top 10 rows + `/contract` target; cache by code hash (cap 256); skip code &gt; 48 KiB.
+2. **Code source order.** Resident `getCodeByHash` → newest BAL `codeChanges` in window. EIP-1967 from `PUSH32` slot constant or BAL `postValue` (last 20 bytes). No `getStorage`.
+3. **Catalog from signature strings.** `keccak256(signature)` for selectors/topics; 250–350 entries; tests lock canonical vectors.
+4. **Tx-scoped logs, block-scoped BAL.** Batch write rule: sole `tx.to` in block for ≥15 slot writes.
+5. **One proxy hop.** `proxyKind` + `proxyTarget`; archetype from implementation when available.
+6. **Optional fields on `TopContractRow`:** publisher always sets; tests may omit.
+7. **`narrateContract` ≤280 chars** for offline + `overviewNote`; compact context enrichment only.
+8. **`/contract` not head-gated** (economy data during snap).
+
+### 4.3 New modules (`src/contracts/`)
+
+| File | Responsibility |
+| --- | --- |
+| `signatureCatalog.ts` | Canonical signatures → selector / `topic0` maps, lookup names |
+| `localAbi.ts` | `decodeAbiWords`, format call/event strings; never throws |
+| `bytecodeFingerprint.ts` | Single-pass `PUSH4`, 1167/1967/7702, opcode counts, interface flags |
+| `contractIntelligence.ts` | Archetype classification, `enrichTopContracts`, `ContractProfile`, `narrateContract` |
+| `knownContracts.ts` | Mainnet + Sepolia WETH / USDC / EntryPoint map |
+
+### 4.4 Economy & tools wiring
+
+- Extend [`decodeBundle`](../src/economy/decodeBundle.ts): capped tx calldata + receipt logs (64 calls / 128 logs per block).
+- [`ETHEconomyDataManager`](../src/economy/economyDataManager.ts): per-address agg (selectors, topics, co-touch, transfer-in-tx max); optional `CodeLookup`; enrich on `publish`.
+- [`cockpitPairs`](../src/economy/cockpitPairs.ts), [`economyTools`](../src/tools/economyTools.ts): archetype in hot line + contract column.
+- [`contractTools.ts`](../src/tools/contractTools.ts): `/contract`, rank `1`–`10`, address arg; `TableUIComponent` + `debugPage`.
+
+### 4.5 Intent / registry
+
+- [`slashComplete.ts`](../src/ai/slashComplete.ts): `/contract `, `/co`; [`toolRegistry.ts`](../src/domains/toolRegistry.ts); [`toolCatalog.ts`](../src/ai/toolCatalog.ts) `contract` read, not head-gated.
+- [`deterministicEngine.ts`](../src/ai/deterministicEngine.ts): slash + NL keywords; move `hot contract` from economy route.
+- [`overviewNarrator.ts`](../src/ai/overviewNarrator.ts): archetype + `/contract` hint.
+- [`help.ts`](../src/tools/help.ts), [`usagePlaybook.ts`](../src/ai/usagePlaybook.ts).
+
+### 4.6 Tests
+
+[`test/contractIntelligence.spec.ts`](../test/contractIntelligence.spec.ts): ABI bounds, catalog vectors, PUSH32 skip, proxies, archetypes, widget render, 24 KiB scan &lt; 5ms.
+
+### 4.7 Out of scope
+
+WP-08 `/simulate`, external ABI APIs, multi-hop proxy walk, full ABI encoder, fingerprint-all-BAL on ingest.
+
+### 4.8 Gates
+
+`npm run tsc`, `npm test`, `npm run spellcheck` in `packages/ethy`.
+
+### 4.9 Suggested implementation order
+
+1. `signatureCatalog` + `localAbi` + tests  
+2. `bytecodeFingerprint` + tests  
+3. `decodeBundle` observations + `contractIntelligence`  
+4. Economy enrich, cockpit, `/contract`, slash/NL  
+5. Narrator, help, ARCHITECTURE, gates  
 
 ---
 
 ## 5. Implementation Notes & Deviations (Implementer — Composer 2.5)
 
-*(To be filled by Composer 2.5 during implementation)*
+**Status:** Shipped 2026-11-09. Gates: `npm run tsc`, `npm test` (249), `npm run spellcheck:ts`.
+
+- Lazy fingerprint on `publish` for top-10 rows only; `stateManager` wired via `createEthyNode` into `ETHEconomyDataManager` and `DeterministicIntentEngine`.
+- Receipt log parse follows eth/69 typed-receipt strip when present.
+- `narrateContract` feeds `/contract` `assistantComment` (offline-friendly); compact LLM context uses enriched `topContracts` rows.

@@ -104,7 +104,7 @@ export function createEthyNode(opts: CreateEthyNodeOptions): EthyNode {
     spine.onDiagnosticRecorded = (entry) => flightRecorder.recordDiagnostic(entry)
     flightRecorder.start()
   }
-  const economy = new ETHEconomyDataManager({ spine, chain, hardfork })
+  const economy = new ETHEconomyDataManager({ spine, chain, hardfork, stateManager })
 
   let llm: EthyNode['llm']
   let hybridEngine: HybridIntentEngine | undefined
@@ -126,12 +126,16 @@ export function createEthyNode(opts: CreateEthyNodeOptions): EthyNode {
       transport,
       llmBase: base,
       memoryMode: opts.aiMemory ?? 'ephemeral',
+      economy,
+      chain,
     })
     intentEngine = hybridEngine
   } else {
     hybridEngine = new HybridIntentEngineClass({
       stateManager,
       memoryMode: opts.aiMemory ?? 'ephemeral',
+      economy,
+      chain,
     })
     intentEngine = hybridEngine
   }

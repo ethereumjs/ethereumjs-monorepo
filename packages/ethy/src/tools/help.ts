@@ -7,6 +7,7 @@ export function buildHelpWidget(spine: EthySpine): WidgetSpec {
     ['/buckets, /snap', '16-bucket snap progress'],
     ['/diag', 'Diagnostic ring buffer'],
     ['/economy', 'Gas, ETH volume, hot contracts'],
+    ['/contract [rank|addr]', 'Contract microscope (default #1 hot)'],
     ['/cl', 'Consensus light client (BLS / finality)'],
     ['/drop <peerId>', 'Remove peer (dev)'],
     ['/reassign <bucket>', 'Reassign bucket (dev)'],

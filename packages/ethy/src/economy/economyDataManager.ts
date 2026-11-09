@@ -1,6 +1,14 @@
 import type { ChainConfig } from '@ethereumjs/common'
+import type { FlatStateManager } from '@ethereumjs/statemanager'
 import type { BALJSONBlockAccessList } from '@ethereumjs/util'
 
+import {
+  type ContractAddressAgg,
+  buildCodeLookup,
+  createFingerprintCache,
+  enrichTopContracts,
+} from '../contracts/contractIntelligence.ts'
+import { TOPIC } from '../contracts/signatureCatalog.ts'
 import type { EthySpine } from '../spine/types.ts'
 import type { TwoColumnPair } from '../tui/layout.ts'
 import { economyCockpitPairs } from './cockpitPairs.ts'
@@ -39,20 +47,42 @@ export type ETHEconomyDataManagerOpts = {
   spine: EthySpine
   chain: ChainConfig
   hardfork: string
+  stateManager?: FlatStateManager
+}
+
+function emptyContractAgg(): ContractAddressAgg {
+  return {
+    selectorCounts: new Map(),
+    topicCounts: new Map(),
+    coTouched: new Set(),
+    maxTransferLogsInTx: 0,
+    soleCalleeBlocks: 0,
+    inboundCalls: 0,
+    swapEmittersInTx: new Set(),
+  }
 }
 
 export class ETHEconomyDataManager {
   private readonly spine: EthySpine
   private readonly chain: ChainConfig
   private readonly hardfork: string
+  private readonly stateManager?: FlatStateManager
   private readonly ring: BlockEconomyRecord[] = []
   private readonly addressAgg = new Map<string, AddressAgg>()
+  private readonly contractAgg = new Map<string, ContractAddressAgg>()
+  private readonly fingerprintCache = createFingerprintCache()
   private newestIngested: bigint | undefined
 
   constructor(opts: ETHEconomyDataManagerOpts) {
     this.spine = opts.spine
     this.chain = opts.chain
     this.hardfork = opts.hardfork
+    this.stateManager = opts.stateManager
+  }
+
+  /** Exposed for `/contract` microscope (read-only). */
+  getContractAgg(address: string): ContractAddressAgg | undefined {
+    return this.contractAgg.get(address.toLowerCase())
   }
 
   /** Ingest one verified block; never throws. */
@@ -77,6 +107,7 @@ export class ETHEconomyDataManager {
         if (dropped !== undefined) this.revertBlock(dropped)
       }
       this.applyBlock(record)
+      this.applyContractSignals(record)
       this.enforceAddressCap()
       if (this.newestIngested === undefined || input.blockNumber >= this.newestIngested) {
         this.newestIngested = input.blockNumber
@@ -132,9 +163,88 @@ export class ETHEconomyDataManager {
       if (row.slotReads < 0) row.slotReads = 0
       if (row.blocksActive <= 0) {
         this.addressAgg.delete(c.address)
+        this.contractAgg.delete(c.address)
       } else {
         this.refreshBalanceBounds(c.address)
       }
+    }
+    this.rebuildContractAgg()
+  }
+
+  private bumpMap(map: Map<string, number>, key: string, delta = 1): void {
+    const k = key.toLowerCase()
+    map.set(k, (map.get(k) ?? 0) + delta)
+  }
+
+  private ensureContractAgg(address: string): ContractAddressAgg {
+    const key = address.toLowerCase()
+    let row = this.contractAgg.get(key)
+    if (row === undefined) {
+      row = emptyContractAgg()
+      this.contractAgg.set(key, row)
+    }
+    return row
+  }
+
+  private applyContractSignals(record: BlockEconomyRecord): void {
+    const obs = record.observations
+    if (obs !== undefined) {
+      const touchAddresses = obs.blockAddresses
+      for (let i = 0; i < touchAddresses.length; i++) {
+        const a = touchAddresses[i]!
+        const agg = this.ensureContractAgg(a)
+        for (let j = 0; j < touchAddresses.length; j++) {
+          if (i === j) continue
+          agg.coTouched.add(touchAddresses[j]!)
+        }
+      }
+      for (const call of obs.calls) {
+        const agg = this.ensureContractAgg(call.to)
+        this.bumpMap(agg.selectorCounts, call.selector)
+        agg.inboundCalls += 1
+      }
+      for (const log of obs.logs) {
+        const agg = this.ensureContractAgg(log.emitter)
+        this.bumpMap(agg.topicCounts, log.topic0)
+      }
+      for (const slice of obs.txSlices) {
+        if (slice.to === undefined) continue
+        const agg = this.ensureContractAgg(slice.to)
+        let transfers = 0
+        const swapEmitters = new Set<string>()
+        for (const log of slice.logs) {
+          if (log.topic0.toLowerCase() === TOPIC.transferErc20.toLowerCase()) transfers += 1
+          if (
+            log.topic0.toLowerCase() === TOPIC.swapV2.toLowerCase() ||
+            log.topic0.toLowerCase() === TOPIC.swapV3.toLowerCase()
+          ) {
+            swapEmitters.add(log.emitter)
+          }
+        }
+        if (transfers > agg.maxTransferLogsInTx) agg.maxTransferLogsInTx = transfers
+        if (swapEmitters.size >= 2) {
+          for (const e of swapEmitters) agg.swapEmittersInTx.add(e)
+        }
+        const txsTo = obs.txSlices.filter((s) => s.to === slice.to).length
+        if (txsTo === 1) {
+          const contrib = record.contractContributions.find((c) => c.address === slice.to)
+          if (contrib !== undefined && contrib.writes >= 15) agg.soleCalleeBlocks += 1
+        }
+      }
+    }
+    if (record.balSnapshots !== undefined) {
+      for (const snap of record.balSnapshots) {
+        const agg = this.ensureContractAgg(snap.address)
+        if (snap.code !== undefined) agg.latestBalCode = snap.code
+        if (snap.implSlot !== undefined) agg.implSlotValue = snap.implSlot
+      }
+    }
+  }
+
+  private rebuildContractAgg(): void {
+    this.contractAgg.clear()
+    for (const block of this.ring) {
+      this.applyContractSignals(block)
     }
   }
 
@@ -249,6 +359,13 @@ export class ETHEconomyDataManager {
     return rows.slice(0, ECONOMY_LEADERBOARD_SIZE)
   }
 
+  private enrichedTopContracts(): TopContractRow[] {
+    const rows = this.buildTopContracts()
+    if (this.stateManager === undefined) return rows
+    const lookup = buildCodeLookup(this.stateManager, this.chain)
+    return enrichTopContracts(rows, this.contractAgg, lookup, this.fingerprintCache)
+  }
+
   private publish(): void {
     const latest = this.ring[0]
     if (latest === undefined) {
@@ -282,7 +399,7 @@ export class ETHEconomyDataManager {
       storageWrites: latest.storageWrites,
       storageReads: latest.storageReads,
       newDeployments: latest.newDeployments,
-      topContracts: this.buildTopContracts(),
+      topContracts: this.enrichedTopContracts(),
       recentBlocks: this.ring.slice(0, 10).map((b) => ({
         blockNumber: b.blockNumber.toString(),
         baseFeeGwei:
