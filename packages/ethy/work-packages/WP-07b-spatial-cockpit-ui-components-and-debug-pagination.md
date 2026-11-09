@@ -1,6 +1,6 @@
 # WP-07b: Spatial Cockpit Redesign (Sketch Layout), `TableUIComponent`, `DebugPageUIComponent` (`Ctrl+D` Toggle) & Vertically-Centered `AI Prose Overview`
 
-- **Status:** `READY_FOR_PLANNING`
+- **Status:** `PLANNED`
 - **Dependencies:** `WP-07a`
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
@@ -128,7 +128,89 @@ Even before the Local LLM is connected in `WP-07c` (or whenever the user runs Et
 
 ## 6. Concrete Implementation Plan (Planner — Grok 4.7)
 
-*(To be filled by Grok 4.7 during planning)*
+**Baseline (2026-11-09):** Top row is still `Node Pulse | <Domain> Commands | <Domain> Metrics`; fill band is full-width `renderWidgetLines` plus optional `formatDiscoveryLines` footer ([`renderFrame.ts`](../src/tui/renderFrame.ts), [`cockpit.ts`](../src/tui/cockpit.ts)). Economy telemetry from **WP-07a** is on `spine.economy` and `ETHEconomyDataManager.cockpitPairs()`. Today `\u0004` maps to `exit` in [`prompt.ts`](../src/tui/prompt.ts) — this WP remaps it to debug-page toggle.
+
+### 6.1 Design refinements (**D-099**)
+
+| Topic | Decision |
+| --- | --- |
+| **Ctrl+D** | Toggle `interactionPage` between `main` and `debug`. `\u0004` no longer exits. Exit: Ctrl+C and Esc only. Works with a non-empty draft (no character inserted). No bare `d` key. No-op when `debugPage` is empty. |
+| **Short terminals** | Fixed overhead **16** rows → `fillRows = rows - 16`. Commands box (8 lines) only when `fillRows >= 13`. If `10 <= fillRows < 13`, AI box ≥ 5 lines and commands shrink. Below 10, omit AI box; commands fill `fillRows`. |
+| **Economy box** | Four rows from `economyCockpitPairs(snap)` only (Gas / Base, Activity, State / BAL, Hot Contract). No fifth Volume row (Activity already carries ETH volume). |
+| **Top-row labels** | Shared `maxLabelWidth` across the three top boxes only. Commands box in lower-right sizes its own labels. P2P commands box: four rows (`/peers`, `/ethy`, `/diag`, `/drop`); `/help` typed, not a fifth row. |
+| **Interaction title** | Slash: `` `/peers · Peer health` ``. NL query: `widget.title` or first five words of the question. Page hint: `[1/2 Table · Ctrl+D Debug]` or `[2/2 Debug · Ctrl+D Table]` when `debugPage` present. New widget → `interactionPage: 'main'`. |
+| **Main vs debug** | Remove `assistantComment` and `footer: 'discovery'` from main render. Keep `preface` + `secondaryTable` on main (`/economy`). Telemetry prose → `debugPage`. |
+| **Narrator** | `buildDeterministicOverview(EthyDomainSnapshots, 'welcome' \| 'pulse')` only; session stores `view.aiOverview`; refresh on first paint, `spine.phase` change, 30s timer — not inside `renderFrame`. `MAX_AI_OVERVIEW_CHARS = 280`; inner horizontal pad `3`; vertical center via `topPad = Math.floor((innerHeight - wrappedLines) / 2)`. |
+| **NoticeBoard** | Footer right cell width `w2`, under commands box (unchanged). |
+| **Empty interaction** | Rounded box title `Welcome`; body = onboarding carousel. Welcome copy in AI Overview only. |
+| **Docs** | [`ethy-tui.mdc`](../.cursor/rules/ethy-tui.mdc) bands 2–3 + key table; [`.cursor/rules/ethy-architecture.mdc`](../../../.cursor/rules/ethy-architecture.mdc) §2 middle box = Economy; fix [`ARCHITECTURE.md`](../ARCHITECTURE.md) if it still says Commands are middle box. |
+
+### 6.2 Target layout (fill band)
+
+```text
+leftW = w0 + COCKPIT_COLUMN_GAP + w1   rightW = w2
+╭─ <Dynamic Title> ─╮                 ╭─ AI Overview ─╮  (fillRows - 8, or degraded)
+│ TableUI / KV /    │                 ╰──────────────────╯
+│ DebugPage         │                 ╭─ <Domain> Commands ─╮ (8 lines)
+╰───────────────────╯                 ╰────────────────────╯
+```
+
+### 6.3 Types & view state
+
+[`src/spine/types.ts`](../src/spine/types.ts):
+
+- `DebugSectionSpec = { title: string; entries: Array<{ key: string; value: string }> }`
+- Add optional `debugPage?: DebugSectionSpec[]` to every `WidgetSpec` variant.
+- `TuiViewState`: `interactionPage: 'main' | 'debug'`; `aiOverview?: string`.
+
+### 6.4 New / refactored TUI modules
+
+| File | Responsibility |
+| --- | --- |
+| `src/tui/roundedBox.ts` | Extract `boxTop` / `boxRow` / `boxBottom` / `renderBox` from cockpit (shared by interaction, AI, commands). |
+| `src/tui/components/TableUIComponent.ts` | Bold headers, dim column underlines, 2-space gaps, no `┌┐│`; numeric columns right-aligned; clip rows + `+N more`; reuse `layoutTableColumns` without border width fudge. |
+| `src/tui/components/KeyValueUIComponent.ts` | Inner two-column rows, no nested box. |
+| `src/tui/components/DebugPageUIComponent.ts` | Section titles + KV grids, height-clipped. |
+| `src/economy/cockpitPairs.ts` | Pure `economyCockpitPairs(snap)`; `ETHEconomyDataManager.cockpitPairs()` delegates. |
+| `src/tui/cockpit.ts` | Top row: Pulse \| Economy \| domain Metrics; remove commands from this band. |
+| `src/tui/lowerArea.ts` | `renderLowerArea(spine, view, contentWidth, fillRows)` — interaction left, AI + commands right. |
+| `src/tui/renderFrame.ts` | Fill = `renderLowerArea`; drop discovery footer band; footer hints include **Ctrl+D debug page**. |
+| `src/tui/widgets.ts` | Dispatch inner bodies only; delete bordered `renderTable` + `assistantComment` tail (keep `layoutTableColumns`, carousel). |
+| `src/ai/overviewNarrator.ts` | Deterministic overview strings (welcome, snap, head phases). |
+
+### 6.5 Input & session
+
+- [`prompt.ts`](../src/tui/prompt.ts): `KeyAction` `toggleDebug`; `\u0004` → that action; `createInitialViewState()` sets `interactionPage: 'main'`.
+- [`session.ts`](../src/tui/session.ts): handle `toggleDebug`; new widget resets `main`; narrator refresh on phase + 30s interval.
+
+### 6.6 Tool / widget migrations
+
+| Tool | Main page | `debugPage` |
+| --- | --- | --- |
+| `peersTableWidget` | Peer table | Discovery funnel, serving telemetry, enode + logs |
+| `diagnosticsTableWidget` | Ring table | Discovery lines + flight recorder path (remove `footer: 'discovery'`) |
+| `bucketsTableWidget` | 16-bucket table | Cursor stats per prefix; code/storage spine totals |
+| `economyDeepViewWidget` | Preface + both tables | Net-ETH methodology (from `assistantComment`) |
+| Others (`/ethy`, `/range`, `/sample`, `/bal`, `/account`, `/cl`, `/help`, write actions) | Interaction box render | Only when a real second telemetry block exists today |
+
+### 6.7 Tests
+
+- [`test/tui.spec.ts`](../test/tui.spec.ts): geometry at 100×40 / 100×60 / 80×24; Economy in top middle; commands lower-right; AI vertical center; Tab preserves `activeWidget`; peers/diag main lacks enode/discovery; debug page has them; Ctrl+D toggling.
+- [`test/tui.spec.ts`](../test/tui.spec.ts) prompt: Ctrl+C exit; Ctrl+D `toggleDebug` without mutating draft.
+- New `test/overviewNarrator.spec.ts`: length ≤ 280; phase-appropriate nouns.
+
+### 6.8 Gates & out of scope
+
+- **Gates:** `npm run tsc`, `npm test`, `npm run spellcheck` in `packages/ethy`.
+- **Out of scope:** new npm deps; LLM client / `IntentEngine` composer (**WP-07c**); `/contract` microscope (**WP-07d**); economy ingest math changes.
+
+### 6.9 Implementation order (suggested)
+
+1. Types + `roundedBox` + components (unit-test layout helpers).
+2. `cockpit.ts` + `economy/cockpitPairs.ts` + `lowerArea.ts` + `renderFrame` wiring.
+3. `prompt` / `session` + `overviewNarrator`.
+4. Tool `debugPage` migrations (peers, diag, buckets, economy first).
+5. Rules/docs + framebuffer tests.
 
 ---
 
