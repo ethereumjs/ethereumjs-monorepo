@@ -42,6 +42,40 @@ const TABLE_PLANS: Record<string, ColPlan[]> = {
     { min: 8, flex: 0 },
     { min: 20, flex: 3 },
   ],
+  'Peer|Client|Caps|Ethy|Avg ms|Last issue': [
+    { min: 14, flex: 1 },
+    { min: 16, flex: 2 },
+    { min: 16, flex: 2 },
+    { min: 6, flex: 0 },
+    { min: 7, flex: 0 },
+    { min: 14, flex: 2 },
+  ],
+  'Contract|Blocks|S-Writes|S-Reads|Net ETH': [
+    { min: 16, flex: 2 },
+    { min: 8, flex: 0 },
+    { min: 10, flex: 0 },
+    { min: 10, flex: 0 },
+    { min: 14, flex: 1 },
+  ],
+  'Block|Base|Full|Txs|ETH': [
+    { min: 14, flex: 1 },
+    { min: 12, flex: 1 },
+    { min: 8, flex: 0 },
+    { min: 8, flex: 0 },
+    { min: 14, flex: 1 },
+  ],
+  'Address|Balance|Nonce|S-Writes|S-Reads|Code': [
+    { min: 16, flex: 2 },
+    { min: 14, flex: 1 },
+    { min: 8, flex: 0 },
+    { min: 9, flex: 0 },
+    { min: 9, flex: 0 },
+    { min: 6, flex: 0 },
+  ],
+  'Field|Value': [
+    { min: 24, flex: 0 },
+    { min: 20, flex: 1 },
+  ],
   'Bucket|Status|Peer|Accounts|Issue': [
     { min: 8, flex: 0 },
     { min: 16, flex: 0 },
@@ -105,7 +139,8 @@ export function layoutTableColumns(
   borderPadding = 4,
 ): number[] {
   const inner = Math.max(headers.length, maxWidth - borderPadding)
-  const gapTotal = Math.max(0, headers.length - 1) * 3
+  const colGap = borderPadding === 0 ? 2 : 3
+  const gapTotal = Math.max(0, headers.length - 1) * colGap
   const budget = Math.max(headers.length, inner - gapTotal)
   const plans = planFor(headers)
   const widths = plans.map((plan) => plan.min)

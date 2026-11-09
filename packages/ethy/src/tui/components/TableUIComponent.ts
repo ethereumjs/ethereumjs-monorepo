@@ -8,6 +8,9 @@ const RIGHT_ALIGN_HEADERS = new Set([
   'Blocks',
   'S-Writes',
   'S-Reads',
+  'Net ETH',
+  'ETH',
+  'Base',
   'Nonce',
   'Txs',
   'Full',
@@ -40,7 +43,7 @@ export function renderTableUIComponent(input: TableUIComponentInput, innerWidth:
     const right = RIGHT_ALIGN_HEADERS.has(h)
     return alignCell(`${BOLD}${h}${RESET}`, colWidths[i] ?? 8, right)
   })
-  const underline = colWidths.map((cw) => `${DIM}${'─'.repeat(Math.max(1, cw))}`).join(gap)
+  const underline = colWidths.map((cw) => `${DIM}${'─'.repeat(Math.max(1, cw))}${RESET}`).join(gap)
   const lines: string[] = [fixedLine(headerCells.join(gap), w), fixedLine(underline, w)]
   const bodyRows =
     input.rows.length === 0 && input.emptyMessage ? [[input.emptyMessage]] : input.rows

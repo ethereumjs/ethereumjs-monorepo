@@ -50,12 +50,14 @@ function snapSessionCount(spine: EthySpine): number {
 
 /** Read-only domain facade for TUI and future LLM pulse (no write handles). */
 export function readDomainSnapshots(spine: EthySpine): EthyDomainSnapshots {
+  const bucketsDone = snapBucketsDoneCount(spine.snapBuckets)
   const pulse: NodePulseSnapshot = {
     phase: spine.phase,
     pivotBlockNumber: spine.pivotBlockNumber?.toString(),
     headBlockNumber: spine.headBlockNumber?.toString(),
     progressPct: computeSnapProgressPct(spine),
-    snapEtaMinutes: spine.snapEtaMinutes,
+    snapEtaMinutes:
+      bucketsDone === 16 ? (spine.storageEtaMinutes ?? spine.snapEtaMinutes) : spine.snapEtaMinutes,
     snapPaused: spine.snapPaused,
     snapPeersResting: spine.snapPeersResting,
   }

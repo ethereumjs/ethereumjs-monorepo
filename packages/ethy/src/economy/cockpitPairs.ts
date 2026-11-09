@@ -14,7 +14,7 @@ export function economyCockpitPairs(snap: EconomySnapshot | undefined): TwoColum
   }
   const gas =
     snap.baseFeeGwei !== undefined
-      ? `${snap.baseFeeGwei}${trendArrow(snap.trend)} · ${snap.gasFullPct ?? 0}% full`
+      ? `${snap.baseFeeGwei} Gwei${trendArrow(snap.trend)} · ${snap.gasFullPct ?? 0}% full`
       : `${snap.gasFullPct ?? 0}% full`
   const activity =
     snap.hasTxBody === true && snap.txCount !== undefined && snap.tps !== undefined

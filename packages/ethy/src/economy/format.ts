@@ -11,9 +11,17 @@ export function formatGwei(wei: bigint | undefined): string {
 
 export function formatEthFromWei(wei: bigint): string {
   if (wei === 0n) return '0 ETH'
-  const ethWhole = Number(wei) / 1e18
-  if (ethWhole < 0.1) return `${ethWhole.toFixed(3)} ETH`
-  return `${ethWhole.toFixed(1)} ETH`
+  const sign = wei < 0n ? '-' : ''
+  const absWei = wei < 0n ? -wei : wei
+  const ethWhole = Number(absWei) / 1e18
+  if (ethWhole < 0.1) return `${sign}${ethWhole.toFixed(3)} ETH`
+  return `${sign}${ethWhole.toFixed(1)} ETH`
+}
+
+export function formatSignedEthFromWei(wei: bigint): string {
+  if (wei === 0n) return '0 ETH'
+  const formatted = formatEthFromWei(wei)
+  return wei > 0n ? `+${formatted}` : formatted
 }
 
 export function shortAddress(addr: string): string {

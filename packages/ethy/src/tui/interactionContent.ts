@@ -67,24 +67,36 @@ export function renderInteractionWidgetBody(
           budget -= 1
         }
       }
+      const hasSecondary = widget.secondaryTable !== undefined
+      const reservedForSecondary = hasSecondary
+        ? Math.min(8, Math.max(4, Math.floor(budget * 0.45)))
+        : 0
+      const mainLineBudget = Math.max(3, budget - reservedForSecondary)
+      // Header + underline take 2 lines; if rows exceed remaining space, reserve 1 line for "+N more rows"
+      const rawMainCap = Math.max(1, mainLineBudget - 2)
+      const mainMaxBodyRows =
+        widget.rows.length > rawMainCap ? Math.max(1, rawMainCap - 1) : rawMainCap
       const mainTable = renderTableUIComponent(
-        { headers: widget.headers, rows: widget.rows, maxBodyRows: budget - 1 },
+        { headers: widget.headers, rows: widget.rows, maxBodyRows: mainMaxBodyRows },
         w,
       )
       pushLines(mainTable)
-      if (widget.secondaryTable !== undefined && budget > 0) {
+      if (widget.secondaryTable !== undefined && budget >= 4) {
         lines.push(fixedLine('', w))
         budget -= 1
         if (widget.secondaryTable.title && budget > 0) {
           lines.push(fixedLine(`${BOLD}${widget.secondaryTable.title}${RESET}`, w))
           budget -= 1
         }
+        const rawSecCap = Math.max(1, budget - 2)
+        const secMaxBodyRows =
+          widget.secondaryTable.rows.length > rawSecCap ? Math.max(1, rawSecCap - 1) : rawSecCap
         pushLines(
           renderTableUIComponent(
             {
               headers: widget.secondaryTable.headers,
               rows: widget.secondaryTable.rows,
-              maxBodyRows: budget,
+              maxBodyRows: secMaxBodyRows,
             },
             w,
           ),

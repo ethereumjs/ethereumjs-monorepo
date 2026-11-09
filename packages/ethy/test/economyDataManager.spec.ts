@@ -20,9 +20,11 @@ import {
 } from '../src/domains/toolRegistry.ts'
 import { decodeBundle } from '../src/economy/decodeBundle.ts'
 import { ETHEconomyDataManager } from '../src/economy/economyDataManager.ts'
+import { formatEthFromWei, formatSignedEthFromWei } from '../src/economy/format.ts'
 import { activeHardfork, chainConfigForNetwork } from '../src/net/chainHardfork.ts'
 import { createSpine } from '../src/spine/createSpine.ts'
 import { economyDeepViewWidget } from '../src/tools/economyTools.ts'
+import { renderInteractionWidgetBody } from '../src/tui/interactionContent.ts'
 import { renderWidgetLines } from '../src/tui/widgets.ts'
 
 function headerAt(
@@ -213,6 +215,12 @@ describe('[Ethy/Economy]: snapshots and tools', () => {
       const plain = lines.join('\n')
       assert.include(plain, 'S-Writes')
       assert.include(plain, 'Gwei')
+      const bounded = renderInteractionWidgetBody(widget, 80, 18, 'main').join('\n')
+      assert.include(bounded, 'Recent blocks')
     }
+    const pairs = mgr.cockpitPairs()
+    assert.include(pairs[0]?.value, 'Gwei')
+    assert.equal(formatEthFromWei(-5_000_000_000_000_000_000n), '-5.0 ETH')
+    assert.equal(formatSignedEthFromWei(5_000_000_000_000_000_000n), '+5.0 ETH')
   })
 })

@@ -1,4 +1,4 @@
-import { DIM } from '../ansi.ts'
+import { DIM, RESET } from '../ansi.ts'
 import { type TwoColumnPair, fixedLine, formatTwoColumnRows, maxLabelWidth } from '../layout.ts'
 
 export function renderKeyValueUIComponent(
@@ -6,7 +6,7 @@ export function renderKeyValueUIComponent(
   innerWidth: number,
 ): string[] {
   const w = Math.max(20, innerWidth)
-  if (entries.length === 0) return [fixedLine(`${DIM}(empty)${''}`, w)]
+  if (entries.length === 0) return [fixedLine(`${DIM}(empty)${RESET}`, w)]
   const pairs: TwoColumnPair[] = entries.map((e) => ({
     label: e.key,
     value: e.value,

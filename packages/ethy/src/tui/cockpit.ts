@@ -297,10 +297,10 @@ export function domainCommandPairs(domain: CapabilityId, phase: EthyPhase): TwoC
       ]
     case 'head':
       return [
-        { label: '/account', value: 'inspect' },
+        { label: '/economy', value: 'chain activity' },
         { label: '/bal', value: 'head summary' },
-        { label: '/simulate', value: 'tx sandbox' },
-        { label: '/help', value: 'commands' },
+        { label: '/account', value: 'inspect' },
+        { label: '/cl', value: 'light client' },
       ]
     case 'ai':
       return phase === 'P2P_WARMUP'

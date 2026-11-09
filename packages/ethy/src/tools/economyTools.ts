@@ -1,4 +1,4 @@
-import { formatEthFromWei, shortAddress } from '../economy/format.ts'
+import { formatSignedEthFromWei, shortAddress } from '../economy/format.ts'
 import type { EthySpine, WidgetSpec } from '../spine/types.ts'
 
 export function economyDeepViewWidget(spine: EthySpine): WidgetSpec {
@@ -48,7 +48,7 @@ export function economyDeepViewWidget(spine: EthySpine): WidgetSpec {
     String(c.blocksActive),
     String(c.storageWrites),
     String(c.storageReads),
-    formatEthFromWei(c.netEthDeltaWei),
+    formatSignedEthFromWei(c.netEthDeltaWei),
   ])
   const recent = snap.recentBlocks.map((b) => [
     `#${BigInt(b.blockNumber).toLocaleString('en-US')}`,

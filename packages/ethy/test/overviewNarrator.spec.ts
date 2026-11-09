@@ -39,5 +39,22 @@ describe('[Ethy/AI]: overviewNarrator', () => {
     const text = buildDeterministicOverview(readDomainSnapshots(spine), 'pulse')
     assert.isAtMost(text.length, MAX_AI_OVERVIEW_CHARS)
     assert.match(text, /base fee|Gwei/i)
+    assert.notInclude(text, 'ETH ETH')
+  })
+
+  it('snap-syncing overview narrates bytecode and storage when 16/16 buckets are done', () => {
+    const spine = createSpine('sepolia', 11155111n)
+    setPhase(spine, 'SNAP_SYNCING')
+    for (const b of spine.snapBuckets) b.status = 'done'
+    spine.codesSynced = 713_700
+    spine.codesTotal = 751_500
+    spine.storageAccountsSynced = 36_300
+    spine.storageAccountsTotal = 57_700
+    spine.storageEtaMinutes = 7
+    const text = buildDeterministicOverview(readDomainSnapshots(spine), 'pulse')
+    assert.isAtMost(text.length, MAX_AI_OVERVIEW_CHARS)
+    assert.include(text, 'Accounts 16/16 complete!')
+    assert.include(text, '713,700/751,500')
+    assert.include(text, 'ETA ~7m')
   })
 })

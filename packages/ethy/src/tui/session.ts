@@ -35,7 +35,9 @@ export async function runEthySession(node: EthyNode): Promise<void> {
   let lastQuerySlot: number | undefined
   let escapeBuf = ''
   let lastPhase = node.spine.phase
-  let lastOverviewMs = 0
+  let lastEconomyHasBlocks = node.spine.economy?.hasBlocks === true
+  let lastAllBucketsDone = node.spine.snapBuckets.every((b) => b.status === 'done')
+  let lastOverviewMs = Date.now()
   const OVERVIEW_INTERVAL_MS = 30_000
 
   const refreshOverview = (trigger: 'welcome' | 'pulse') => {
@@ -58,8 +60,16 @@ export async function runEthySession(node: EthyNode): Promise<void> {
       advanceDemo(node.spine, Date.now() - demoStart)
     }
     const now = Date.now()
-    if (node.spine.phase !== lastPhase) {
+    const hasBlocks = node.spine.economy?.hasBlocks === true
+    const allBucketsDone = node.spine.snapBuckets.every((b) => b.status === 'done')
+    if (
+      node.spine.phase !== lastPhase ||
+      hasBlocks !== lastEconomyHasBlocks ||
+      allBucketsDone !== lastAllBucketsDone
+    ) {
       lastPhase = node.spine.phase
+      lastEconomyHasBlocks = hasBlocks
+      lastAllBucketsDone = allBucketsDone
       refreshOverview('pulse')
       lastOverviewMs = now
     } else if (now - lastOverviewMs >= OVERVIEW_INTERVAL_MS) {
