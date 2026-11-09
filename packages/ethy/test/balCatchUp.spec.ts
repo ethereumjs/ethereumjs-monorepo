@@ -75,7 +75,7 @@ describe('[Ethy/Sync]: BAL catch-up oracle', () => {
     assert.equal(flat.accountCount(), before)
   })
 
-  it('computeSnapProgressPct rises with bucket cursor and stays under 85 until done', () => {
+  it('computeSnapProgressPct rises with bucket cursor and stays under 75 until done', () => {
     const spine = createSpine('sepolia', 11155111n)
     setPhase(spine, 'SNAP_SYNCING')
     const b = spine.snapBuckets[0]!
@@ -86,12 +86,16 @@ describe('[Ethy/Sync]: BAL catch-up oracle', () => {
     b.subRanges![0]!.origin = new Uint8Array(b.currentLastHash)
     const midFrac = computeSnapProgressPct(spine)
     assert.isAbove(midFrac, startFrac)
-    assert.isAtMost(midFrac, 85)
+    assert.isAtMost(midFrac, 75)
     for (const bucket of spine.snapBuckets) bucket.status = 'done'
+    spine.codesTotal = 8
     spine.codesSynced = 4
     spine.codesQueued = 4
+    spine.storageAccountsTotal = 4
+    spine.storageAccountsSynced = 0
+    spine.storageQueued = 4
     const storagePct = computeSnapProgressPct(spine)
-    assert.isAbove(storagePct, 85)
+    assert.isAbove(storagePct, 75)
     assert.isAtMost(storagePct, 100)
     assert.equal(bucketCursorFraction(createSnapBuckets()[0]!), 0)
   })

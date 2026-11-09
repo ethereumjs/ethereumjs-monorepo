@@ -132,23 +132,31 @@ export class SyntheticSnapPeer {
     const accountHashes = decoded[2] as Uint8Array[]
     const origin = decoded[3] as Uint8Array
     const limit = decoded[4] as Uint8Array
-    const accountHash = accountHashes[0]
-    if (accountHash === undefined) {
+    if (accountHashes.length === 0) {
       return RLP.encode([reqId, [[]], []] as never)
     }
-    const row = this.accounts.find((a) => equalsAccountHash(a.accountHash, accountHash))
-    if (row?.storageTrie === undefined) {
-      return RLP.encode([reqId, [[]], []] as never)
+    const ranges: Array<Array<[Uint8Array, Uint8Array]>> = []
+    for (const accountHash of accountHashes) {
+      const row = this.accounts.find((a) => equalsAccountHash(a.accountHash, accountHash))
+      if (row?.storageTrie === undefined) {
+        ranges.push([])
+        continue
+      }
+      const trie = row.storageTrie
+      const slotHash = keccak_256(new Uint8Array([0x01]))
+      if (compareBytes32(slotHash, origin) < 0 || compareBytes32(slotHash, limit) > 0) {
+        ranges.push([])
+        continue
+      }
+      const slotRlp = RLP.encode(new Uint8Array([0x02]))
+      const slots: Array<[Uint8Array, Uint8Array]> = [[slotHash, slotRlp]]
+      if (accountHashes.length === 1) {
+        const proof = await createMerkleProof(trie, slotHash)
+        return RLP.encode([reqId, [slots], proof] as never)
+      }
+      ranges.push(slots)
     }
-    const trie = row.storageTrie
-    const slotHash = keccak_256(new Uint8Array([0x01]))
-    if (compareBytes32(slotHash, origin) < 0 || compareBytes32(slotHash, limit) > 0) {
-      return RLP.encode([reqId, [[]], []] as never)
-    }
-    const slotRlp = RLP.encode(new Uint8Array([0x02]))
-    const proof = await createMerkleProof(trie, slotHash)
-    const slots: Array<[Uint8Array, Uint8Array]> = [[slotHash, slotRlp]]
-    return RLP.encode([reqId, [slots], proof] as never)
+    return RLP.encode([reqId, ranges, []] as never)
   }
 
   /** Test/demo: trie backing Merkle proofs (WP-06c seed dir). */

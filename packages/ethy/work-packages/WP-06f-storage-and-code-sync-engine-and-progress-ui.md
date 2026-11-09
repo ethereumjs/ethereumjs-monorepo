@@ -1,6 +1,6 @@
 # WP-06f: Storage & Code Sync Engine — Pre-hashed Storage Trie Fix, Multi-Account Storage Batching (`16` Accounts/Req), Parallel Pipelining, Total Contract Accounting & Honest TUI Progress
 
-- **Status:** `READY_FOR_PLANNING`
+- **Status:** `DONE`
 - **Dependencies:** `WP-04g` (`DONE`), `WP-04i` (`DONE`), `WP-06e` (`DONE`)
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
@@ -28,7 +28,7 @@ This work package fixes **five concrete root causes** across the cryptographic v
 
 ### The 5 Root Causes of the "98%–99% Storage & Code Wall"
 
-#### Root Cause 1 (CRITICAL BUG): Double-Keccak on Complete Storage Proofs + Infinite Retry Loop (`snapVerifyJob.ts` & `codeAndStorageSync.ts`)
+#### Root Cause 1 (CRITICAL BUG): Stale `storageRoot` on `done` Buckets After Rolling Pivot + Infinite Retry Loop (`accountSync.ts` & `codeAndStorageSync.ts`)
 At `09:18:23.736Z` (the exact second `codeQueue` emptied and `SnapCodeAndStorageSynchronizer` began dispatching `GetStorageRanges`), the log erupted with **16,700+ consecutive warnings** across every single peer (`Nethermind` and `Geth` alike):
 ```text
 [WARN] [snap] invalid all elements proof: root mismatch (peer=02b9e31f8f41)
@@ -36,58 +36,55 @@ At `09:18:23.736Z` (the exact second `codeQueue` emptied and `SnapCodeAndStorage
 [WARN] [snap] invalid all elements proof: root mismatch (peer=2671639e2c4b)
 [WARN] [snap] invalid all elements proof: root mismatch (peer=88e881f9a31c)
 ```
-**Why did every complete storage range proof fail with `invalid all elements proof: root mismatch`?**
-1. Look at `verifyStorageRangeJob` (`packages/ethy/src/sync/snapVerifyJob.ts:256–265`):
-   ```ts
-   if (proof !== null && proof.length === 0 && keys.length > 0) {
-     hasRight = await verifyMerkleRangeProof(
-       opts.storageRoot,
-       null,
-       null,
-       keys,
-       values,
-       null,
-       useKeyHashingFunction,
-     )
-   }
-   ```
-2. And look at `verifyMerkleRangeProof` (`packages/mpt/src/proof/range.ts:452–458`):
-   ```ts
-   if (proof === null && firstKey === null && lastKey === null) {
-     const trie = new MerklePatriciaTrie({ useKeyHashingFunction })
-     await trie.putSortedLeaves(keysRaw, values, keys)
-     if (!equalsBytes(rootHash, trie.root())) {
-       throw EthereumJSErrorWithoutCode('invalid all elements proof: root mismatch')
+**Why did `verifyStorageRangeJob` fail with `invalid all elements proof: root mismatch` 16,700+ times in a row?**
+1. Look at what happens when a rolling-pivot BAL (`WP-04k`, steps `1..21`, `#12,096,381 → #12,096,717`) modifies the storage of an account whose bucket has already finished (`bucket.status === 'done'`):
+   - `codeAndStorageSync.noteBalApplied` (`codeAndStorageSync.ts:242`) calls `this.onBalRefreshAccount?.(accountHash)` (`accountSync.enqueueAccountRefreshCursor(accountHash)`), and then calls `this.invalidateAccount(accountHash)`.
+   - Look at `SnapAccountSynchronizer.enqueueAccountRefreshCursor` (`packages/ethy/src/sync/accountSync.ts:160`):
+     ```ts
+     if (bucket === undefined || bucket.status === 'done') return
+     ```
+     **And** look at `SnapAccountSynchronizer.schedule()` (`packages/ethy/src/sync/accountSync.ts:431–439`):
+     ```ts
+     if (
+       this.spine.snapBuckets.length > 0 &&
+       this.spine.snapBuckets.every((b) => b.status === 'done')
+     ) {
+       ...
+       return
      }
-     return false
-   }
-   ```
-   Wait: `new MerklePatriciaTrie({ useKeyHashingFunction })` defaults to **`useKeyHashing: true`**!
-   And inside `putSortedLeaves` (`packages/mpt/src/mpt.ts:346`):
-   - When `keysRaw.length === 1` (`1` storage slot in the contract — the most common storage contract on Ethereum!), `putSortedLeaves` has a fast path:
-   ```ts
-   if (keysRaw.length === 1) {
-     await this.put(keysRaw[0]!, values[0]!)
-     return
-   }
-   ```
-   - And `this.put(keysRaw[0], values[0])` **hashes `keysRaw[0]` a SECOND time with `keccak256` because `useKeyHashing` is `true` by default on `new MerklePatriciaTrie({ useKeyHashingFunction })`**, whereas `snap/1` `StorageRanges` keys (`slotHashRaw`) are **already 32-byte `keccak256(slot)` hashes**!
-   - Even for `keysRaw.length > 1` or two-edge proofs (`createMPTFromProof`), any `trie.put(key, val)` or `verifyMPTWithMerkleProof` in `range.ts` that doesn't disable key hashing (or where `putSortedLeaves` falls back to `this.put`) hashes the 32-byte `slotHash` again!
-3. **And why did it loop forever?**
-   Look at `handleStorageRanges` (`packages/ethy/src/sync/codeAndStorageSync.ts:444–452`):
-   ```ts
-   if (!result.ok) {
-     recordDiagnostic(this.spine, {
-       subsystem: 'snap',
-       severity: 'warn',
-       peerId,
-       message: result.reason ?? 'storage range failed',
-     })
-     return
-   }
-   ```
-   When `!result.ok`, `handleStorageRanges` **never increments `task.missRetries` and never deletes `task` from `this.pendingStorage`**! So the exact same 1-slot storage contract stays at the head of `this.pendingStorage` and is re-requested **10 times per second forever**!
-   And if a contract's `storageRoot` changed during the 35-minute account sync (because its account was ingested in Bucket `0x0` at `08:38`, and a later BAL modified its storage at `09:00` — remember `consumeBAL` updates slot values in `FlatStateManager` without recomputing the MPT `storageRoot`!), a peer serving at the newer `pivotStateRoot` (#12,096,717) has the **new** storage trie while `task.storageRoot` still holds the **old** root from `08:38`! When the peer returns the new slots with `proof = []`, `trie.root()` equals the **new** `storageRoot`, which mismatches `task.storageRoot`!
+     ```
+   - Because `enqueueAccountRefreshCursor` returns early whenever `bucket.status === 'done'`, **every single BAL that touched storage in an already-completed bucket (e.g. Bucket `0x0`, which finished 2 minutes into the 35-minute sync!) was silently ignored!**
+   - Meanwhile, `FlatStateManager.consumeBAL` updates the storage slot values in memory, **not** the 32-byte MPT `storageRoot` stored inside the 104-byte `BinaryAccount`.
+   - So `invalidateAccount(accountHash)` (`codeAndStorageSync.ts:264`) reads `getBinaryAccountStorageRoot(binary)` from `FlatStateManager` — which is **still the stale `storageRoot` from when Bucket `0x0` was synced at `#12,096,381`**!
+2. Then, at `09:18:23`, `SnapCodeAndStorageSynchronizer` sends `GetStorageRanges` for that contract against the **new rolling `this.spine.pivotStateRoot` (`#12,096,573` / `#12,096,717`)**:
+   - The peer returns the contract's complete storage slots (`proof = []`) at `#12,096,573`.
+   - `verifyStorageRangeJob` (`snapVerifyJob.ts:256`) calls `verifyMerkleRangeProof(opts.storageRoot, null, null, keys, values, null)` which builds the storage trie from those slots (computing the **new** storage root at `#12,096,573`) and compares it to `opts.storageRoot` (the **stale** `08:38` storage root from `#12,096,381`) → throwing **`invalid all elements proof: root mismatch`**!
+3. **And why did it loop 16,700+ times forever and block the entire storage queue?**
+   - Look at `handleStorageRanges` (`packages/ethy/src/sync/codeAndStorageSync.ts:444–452`):
+     ```ts
+     if (!result.ok) {
+       recordDiagnostic(this.spine, {
+         subsystem: 'snap',
+         severity: 'warn',
+         peerId,
+         message: result.reason ?? 'storage range failed',
+       })
+       return
+     }
+     ```
+   - And look at `nextStorageTask()` (`codeAndStorageSync.ts:322–330`):
+     ```ts
+     private nextStorageTask(): StorageTask | undefined {
+       const inFlight = this.storageKeysInFlight()
+       for (const task of this.pendingStorage.values()) {
+         const key = accountHashKey(task.accountHash)
+         if (task.verifying || inFlight.has(key)) continue
+         return task
+       }
+       return undefined
+     }
+     ```
+   - Because `handleStorageRanges` **never increments `task.missRetries`, never refreshes `task.storageRoot`, and never removes `task` from `this.pendingStorage`**, that single stale-root contract remains the **very first entry in `this.pendingStorage`** (`Map` iteration order!) and is re-dispatched to every peer 10 times per second forever!
 
 ---
 
@@ -129,13 +126,27 @@ Look at what happens on the Main Thread for every single bytecode and storage re
 
 ---
 
-#### Root Cause 4: Unknown Total Contract / Storage Counts Due to `16,384` Cap & Lazy Disk Scan (`accountSync.ts`, `codeAndStorageSync.ts`, `snapStore.ts`)
-Why did the progress bar jump from `85%` to `98%` and then sit at `98%–99%` forever while the user had no idea how many contracts/storage accounts remained?
-1. Look at `codeAndStorageSync.ts:150` & `172`:
-   - During account sync, `codeQueue` and `pendingStorage` are capped at `MAX_IN_MEMORY_CONTRACT_TASKS = 16,384`.
-   - Once `16,384` contracts are queued (which happens in the first 2% of Sepolia account sync!), `noteAccounts` calls `this.snapStore.enableContractScan()` and **stops counting or queueing any further contracts**!
-   - Then, during `Snap Sync · Storage`, `refillContractTasksFromDisk()` (`codeAndStorageSync.ts:554`) lazily scans `512` rows at a time from the 16 `.bin` account journals whenever `codeQueue.size + pendingStorage.size < 16,384`.
-2. Look at `computeSnapProgressPct(spine)` (`buckets.ts:326–331`):
+#### Root Cause 4: Duplicate Bytecode Re-Downloads & Unknown Total Contract Counts Due to `16,384` Cap (`codeAndStorageSync.ts`, `snapStore.ts`, `buckets.ts`)
+Why did `codesSynced` reach `641k–813k` while the progress bar jumped from `85%` to `98%` and then sat at `98%–99%` with no total denominator?
+1. **Missing `stateManager.getCodeByHash` Check & Full Re-Scan from Bucket `0` (`codeAndStorageSync.ts:148–160` & `554–565`):**
+   - Look at `noteAccounts` (`codeAndStorageSync.ts:148`):
+     ```ts
+     if (!equalsBytes(codeHash, KECCAK256_NULL)) {
+       const key = codeHashKey(codeHash)
+       if (!this.codeQueue.has(key)) {
+         if (this.codeQueue.size >= this.maxInMemoryContractTasks) {
+           if (this.snapStore !== undefined) {
+             this.snapStore.enableContractScan()
+           } ...
+           continue
+         }
+         this.codeQueue.set(key, { codeHash: new Uint8Array(codeHash), missRetries: 0 })
+       }
+     }
+     ```
+   - Once a `codeHash` is downloaded in `handleByteCodes` (`line 497`), it is **deleted from `this.codeQueue`** (`this.codeQueue.delete(codeHashKey(hash))`), and `noteAccounts` **never checks `if (this.stateManager.getCodeByHash(codeHash) !== undefined)`**!
+   - Worse: when `enableContractScan()` is armed after the first `16,384` tasks, `this.contractScan` starts at **`{ bucket: 0, byteOffset: 8 }`** (the very beginning of Bucket `0`, including the first `16,384` contracts that were already queued in memory!), and hundreds of thousands of Sepolia contracts share identical proxy/ERC-20 `codeHash`es. Because `noteAccounts` only checks `!this.codeQueue.has(key)`, every shared bytecode and every re-scanned early contract gets **re-queued and re-downloaded over the network**!
+2. **Hidden Disk Backlog (`16,384` Cap) & Unit Mismatch in `computeSnapProgressPct(spine)` (`buckets.ts:326–331`):**
    ```ts
    const codeTotal = spine.codesSynced + spine.codesQueued
    const codeFrac = codeTotal <= 0 ? 1 : spine.codesSynced / codeTotal
@@ -165,35 +176,38 @@ State     641.4k code · 113.4k slots
 
 ## 3. Architectural Design (`WP-06f`)
 
-### 3.1 Exact Total Contract & Storage-Account Counting During Account Ingest (`spine/types.ts`, `accountSync.ts`, `codeAndStorageSync.ts`, `snapStore.ts`)
+### 3.1 Exact Total Contract & Storage-Account Counting + Bytecode Deduplication (`spine/types.ts`, `accountSync.ts`, `codeAndStorageSync.ts`, `snapStore.ts`)
 We already inspect every single `BinaryAccount` in `ingestedMetaFromBinarySlab(slab)` (`syntheticPeer.ts:400`) when accounts are ingested!
-1. Add monotonic total counters to `EthySpine`:
-   - `codesTotal: number` — total contract accounts with non-empty `codeHash` discovered across synced buckets (or unique `codeHash` tasks queued + completed).
+1. **Skip Already-Synced Bytecode Blobs (`codeAndStorageSync.ts:148`):**
+   - In `noteAccounts`, before adding `codeHash` to `this.codeQueue`, check **`if (this.stateManager.getCodeByHash(codeHash) !== undefined) continue`**! That immediately prevents re-downloading shared proxy/ERC-20 bytecode blobs or re-downloading the first `16,384` contracts when `contractScan` sweeps from Bucket `0`.
+2. **Add Monotonic Total Counters to `EthySpine`:**
+   - `codesTotal: number` — total contract accounts (or unique `codeHash` tasks) discovered across synced buckets.
    - `storageAccountsTotal: number` — total accounts with non-empty `storageRoot` discovered across synced buckets.
    - `storageAccountsSynced: number` — number of storage-bearing accounts whose storage trie has been completed.
    - `contractsPerSec: number` — combined rate of `(codesSynced + storageAccountsSynced) / s` during `Snap Sync · Storage`, plus `storageEtaMinutes?: number`.
-2. In `SnapCodeAndStorageSynchronizer`:
-   - Distinguish **initial account-ingest discovery** (`noteAccounts(entries, { fromDiskRefill?: boolean })`) from **disk-scan refill** (`refillContractTasksFromDisk`):
-     - On initial account ingest (or on disk resume in `SnapPivotStore`), count every contract (`!equalsBytes(codeHash, KECCAK256_NULL)`) toward `spine.codesTotal` and every storage-bearing account (`!equalsBytes(storageRoot, KECCAK256_RLP)`) toward `spine.storageAccountsTotal` **before** checking the `16,384` in-memory spill cap!
-     - Persist `codesTotal`, `codesSynced`, `storageAccountsTotal`, `storageAccountsSynced`, and `storageSlotsSynced` in `contract-scan.json` / `buckets.json` so session resume (`WP-06d`) restores exact totals immediately.
+3. **Distinguish Live Ingest Discovery from Disk-Scan Refill (`SnapCodeAndStorageSynchronizer`):**
+   - In `noteAccounts(entries, { fromDiskRefill?: boolean })`:
+     - On initial account ingest (`fromDiskRefill !== true`), count every storage-bearing account (`!equalsBytes(storageRoot, KECCAK256_RLP)`) toward `spine.storageAccountsTotal` and every new contract code toward `spine.codesTotal` **before** checking the `16,384` in-memory spill cap!
+     - Track `completedStorageAccounts = new Set<string>()` (or check whether `accountHash` was already completed before `enableContractScan`) so `refillContractTasksFromDisk` never re-queues a storage account that already finished in the initial `16,384` window!
+     - On session resume (`SnapPivotStore`), compute or restore `codesTotal`, `codesSynced`, `storageAccountsTotal`, `storageAccountsSynced`, and `storageSlotsSynced` so `Node Pulse` has exact denominators immediately after restart.
 
-### 3.2 Fix Storage Range Verification (`@ethereumjs/mpt` & `snapVerifyJob.ts`) + Bounded Retry / BAL Root Reconciliation
-1. **Fix `verifyMerkleRangeProof` All-Elements & Single-Element Pre-Hashed Keys (`packages/mpt/src/proof/range.ts` & `packages/ethy/src/sync/snapVerifyJob.ts`):**
-   - In `verifyMerkleRangeProof` (`packages/mpt/src/proof/range.ts:453`):
-     - The keys passed into `verifyMerkleRangeProof` (`keysRaw`) are **already trie-path keys** (32-byte `accountHash` or 32-byte `slotHash`, converted to 64 nibbles in `keys = keysRaw.map(bytesToNibbles)`).
-     - `useKeyHashingFunction` is needed solely for **hashing RLP-encoded trie nodes (`keccak256(rlpNode)`)**, **NOT** for hashing leaf keys a second time (`useKeyHashing: false`)!
-     - In `range.ts:453`, `new MerklePatriciaTrie({ useKeyHashingFunction })` omitted `useKeyHashing: false`, which defaulted `useKeyHashing` to `true`! Whenever `putSortedLeaves` took its `keysRaw.length === 1` fast path (`await this.put(keysRaw[0]!, values[0]!)`), `trie.put` hashed the 32-byte `slotHash` a **second time**, producing a completely wrong root and throwing `invalid all elements proof: root mismatch` on **every single 1-slot contract on Ethereum**!
-     - Fix `range.ts` so `new MerklePatriciaTrie({ useKeyHashing: false, useKeyHashingFunction })` (and `createMPTFromProof` in `range.ts`) uses `useKeyHashing: false` for leaf keys while keeping `useKeyHashingFunction` for node hashing!
-2. **Multi-Account `STORAGE_RANGES` Verification (`snapVerifyJob.ts`):**
+### 3.2 Fix Stale-Root Storage Verification, Allow Refresh Cursors on `done` Buckets & Bound Retries (`accountSync.ts`, `snapVerifyJob.ts`, `codeAndStorageSync.ts`)
+1. **Allow 1-Account Refresh Cursors Even When `bucket.status === 'done'` (`accountSync.ts:156–178` & `431–439`):**
+   - In `SnapAccountSynchronizer.enqueueAccountRefreshCursor(accountHash)`:
+     - Remove `if (bucket.status === 'done') return`! A point-refresh cursor (`refresh: true`, `origin = accountHash`, `limit = accountHash`) is specifically needed for buckets whose initial sweep is already `'done'` when a rolling-pivot BAL modifies an account's storage or code!
+     - Keep `bucket.status = 'done'` when only `refresh: true` cursors exist in `bucket.subRanges` (so `snapBucketsDoneCount` stays `16/16` and `Snap Sync · Storage` does not flip back to `Snap Sync · Accounts`), **and** in `SnapAccountSynchronizer.schedule()` (`line 431`), continue scheduling whenever any bucket has an active `refresh: true` cursor!
+     - When `commitVerifiedAccountRange` commits a `refresh: true` cursor, update `FlatStateManager` (`putSnapBinaryAccountsFromSlab(persistSlab)`) AND call `this.onAccountsIngested?.(ingestedMetaFromBinarySlab(persistSlab))` so `codeSync.noteAccounts` updates `existing.storageRoot` in `pendingStorage` to the latest pivot's `storageRoot`!
+2. **Bounded Retry & Stale-Root Recovery in `SnapCodeAndStorageSynchronizer` (`codeAndStorageSync.ts:444`):**
+   - When `handleStorageRanges` receives `!result.ok` (e.g. `invalid all elements proof: root mismatch` because `task.storageRoot` was from an earlier pivot before a BAL modified that contract's storage):
+     - Increment `task.missRetries++`.
+     - Re-insert `task` at the **back** of `this.pendingStorage` (`this.pendingStorage.delete(key); this.pendingStorage.set(key, task)`) so a failing task never blocks the head of the queue!
+     - On first failure (`task.missRetries === 1`), trigger `this.onBalRefreshAccount?.(task.accountHash)` to fetch the contract's current `storageRoot` at the latest `pivotStateRoot`!
+     - If `task.missRetries > 2`, delete the task from `this.pendingStorage` (and increment `spine.storageAccountsSynced`) with a rate-limited diagnostic so no contract can ever spin in an infinite loop!
+3. **Multi-Account `STORAGE_RANGES` Verification (`snapVerifyJob.ts`):**
    - Under `snap/1`, `StorageRanges` (`[reqId, slots[][], proof[]]`) returns `slots` as a list of slot-lists — **one slot-list per completed/last account** in `accountHashes[]`:
      - For indices `0 .. ranges.length - 2` (and index `ranges.length - 1` when `proof.length === 0`), each `ranges[i]` is a **complete storage trie** for `accountHashes[i]` (`proof = null`, verified against `storageRoots[i]`).
      - Only when `proof.length > 0` is the **last** entry `ranges[ranges.length - 1]` (or empty range when `ranges.length === 0`) a partial/split storage trie for `accountHashes[ranges.length - 1]` verified with two-edge `proof` against `storageRoots[ranges.length - 1]` from `origin`!
-   - Extend `verifyStorageRangeJob` to accept `accounts: Array<{ accountHash: Uint8Array; storageRoot: Uint8Array }>` + `origin: Uint8Array` and verify all returned accounts in one worker job!
-3. **Bounded Retry & Stale-Root Recovery in `SnapCodeAndStorageSynchronizer` (`codeAndStorageSync.ts`):**
-   - If a storage account fails proof verification (e.g. because its `storageRoot` changed during rolling-pivot BAL steps while `SNAP_SYNCING` was in progress, or a peer returned a bad proof):
-     - Increment `task.missRetries++`.
-     - On first failure (`missRetries === 1`), enqueue a 1-account refresh cursor (`this.onBalRefreshAccount?.(task.accountHash)`) so we fetch the account's current `storageRoot` at the latest `pivotStateRoot`!
-     - If `task.missRetries > 2`, drop the task from `pendingStorage` (and increment `storageAccountsSynced`) with a rate-limited diagnostic so a single missing or stale contract can **never** spin in an infinite loop!
+   - Extend `verifyStorageRangeJob` to accept `accounts: Array<{ accountHash: Uint8Array; storageRoot: Uint8Array }>` + `origin: Uint8Array` and verify each returned account's slot list independently (so if 1 account in a 16-account batch has a stale `storageRoot`, the other 15 valid accounts in the batch still commit cleanly!).
 
 ### 3.3 Multi-Account Storage Batching (`16` Accounts/Req) & Parallel Pipelining (`codeAndStorageSync.ts`)
 Accelerate `Snap Sync · Storage` by **30×–50×**:
@@ -231,21 +245,26 @@ Eliminate the 800,000 tiny `.bin` files and synchronous `fs.fsyncSync` calls on 
 
 ## 4. Acceptance Criteria (`WP-06f`)
 
-- [ ] `@ethereumjs/mpt` `verifyMerkleRangeProof` sets `useKeyHashing: false` on the internal proof tries so 1-element and all-elements proofs over pre-hashed 32-byte keys (`slotHash` / `accountHash`) never double-hash the key (`invalid all elements proof: root mismatch` regression test for 1-slot and multi-slot storage tries!).
-- [ ] `SnapCodeAndStorageSynchronizer` batches up to `16` fresh storage accounts per `GetStorageRanges` request (`256 KiB`), pipelines up to `4` requests per peer (`inFlightKey(peerId, reqId)`), and bounds per-task retries (`missRetries <= 2` + `onBalRefreshAccount` on first mismatch) so no storage task can loop infinitely.
-- [ ] `SnapPivotStore.appendCode` and `appendStorageSlots` remove synchronous per-contract `fs.fsyncSync` from the main thread.
-- [ ] `EthySpine` tracks `codesTotal`, `storageAccountsTotal`, `storageAccountsSynced`, `contractsPerSec`, and `storageEtaMinutes` across live ingest, disk contract scan, and session resume.
-- [ ] `computeSnapProgressPct` uses `codesSynced / codesTotal` and `storageAccountsSynced / storageAccountsTotal` (never mixing slots with accounts), and `Node Pulse` displays `synced/total` for code and storage accounts, live ETA, and clamped `pivot → tip`.
-- [ ] `npm run tsc`, `npm test`, and `npm run spellcheck` pass across `@ethereumjs/mpt` and `@ethereumjs/ethy`.
+- [x] `SnapAccountSynchronizer.enqueueAccountRefreshCursor` and `schedule()` allow `refresh: true` 1-account cursors to run even when `bucket.status === 'done'` (without flipping `bucket.status` away from `'done'`), updating `FlatStateManager` and `pendingStorage` with the contract's current `storageRoot` after a BAL modifies storage.
+- [x] `SnapCodeAndStorageSynchronizer.noteAccounts` skips bytecode blobs already present in `stateManager.getCodeByHash(codeHash)` (preventing duplicate downloads of shared proxy/ERC-20 bytecode blobs and re-scans from Bucket `0`).
+- [x] `SnapCodeAndStorageSynchronizer` batches up to `16` fresh storage accounts per `GetStorageRanges` request (`256 KiB`), pipelines up to `4` requests per peer (`inFlightKey(peerId, reqId)`), rotates failing tasks to the back of `pendingStorage`, triggers `onBalRefreshAccount` on first mismatch, and bounds `missRetries <= 2` so no storage task can ever block the queue or loop infinitely.
+- [x] `SnapPivotStore.appendCode` and `appendStorageSlots` remove synchronous per-contract `fs.fsyncSync` from the main thread.
+- [x] `EthySpine` tracks `codesTotal`, `storageAccountsTotal`, `storageAccountsSynced`, `contractsPerSec`, and `storageEtaMinutes` across live ingest, disk contract scan, and session resume.
+- [x] `computeSnapProgressPct` uses `codesSynced / codesTotal` and `storageAccountsSynced / storageAccountsTotal` (never mixing slots with accounts), and `Node Pulse` displays `synced/total` for code and storage accounts, live ETA, and clamped `pivot → tip`.
+- [x] `npm run tsc`, `npm test`, and `npm run spellcheck` pass across `@ethereumjs/ethy`.
 
 ---
 
 ## 5. Concrete Implementation Plan (Planner — Grok 4.7)
 
-*(To be filled by Grok 4.7 during planning)*
+See attached plan (2026-11-09): **no `@ethereumjs/mpt` changes.** Root cause is stale `storageRoot` on `done` buckets (refresh cursor dropped), head-of-queue infinite retry, bytecode re-queue without `getCodeByHash`, 1-account/depth-1 `GetStorageRanges`, per-contract `fsyncSync`, and progress unit mismatch. Workstreams: (1) refresh cursors on `done` buckets + `syncBucketCursorFields` / `schedule` guards, (2) `noteAccounts` dedupe + spine totals + `contract-scan.json`, (3) batch-16 / depth-4 / bounded retry / multi-account verify, (4) async sharded code+storage append logs, (5) 75/25 progress + Node Pulse denominators/ETA/tip clamp, (6) tests + `tsc` + spellcheck in `@ethereumjs/ethy` only.
 
 ---
 
 ## 6. Implementation Notes & Deviations (Implementer — Composer 2.5)
 
-*(To be filled by Composer 2.5 during implementation)*
+- **No `@ethereumjs/mpt` changes** — root cause was stale `storageRoot` on `done` buckets (refresh cursor dropped) plus scheduler/UI issues, not trie `useKeyHashing` defaults.
+- **`verifyStorageRangeJob`** returns flight-level `ok: true` with per-account `perAccount[].ok` so one stale root in a batch does not discard sibling accounts; callers must consult `perAccount`.
+- **`ensureBucketSubRanges`** on `bucket.status === 'done'` keeps an empty `subRanges` array instead of re-opening a prefix sweep cursor.
+- **Async persistence:** append-only `code/shard-XX.bin` and `storage/shard-XX.bin`; `contract-scan.json` restores spine code/storage totals on resume.
+- **Gates (2026-11-09):** `packages/ethy` `npm run tsc`, `npm test` (212), root `npm run spellcheck` green.

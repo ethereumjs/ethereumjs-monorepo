@@ -572,4 +572,24 @@ describe('[Ethy/Sync]: synthetic snap account range', () => {
     })
     sync.stop()
   })
+
+  it('enqueueAccountRefreshCursor queues on a done bucket without reopening sweep', () => {
+    const spine = createSpine('sepolia', 11155111n)
+    const bucket = spine.snapBuckets[0]!
+    bucket.status = 'done'
+    bucket.currentLastHash = new Uint8Array(bucket.limitHash)
+    bucket.subRanges = []
+    const sync = new SnapAccountSynchronizer({
+      spine,
+      stateManager: createFlatStateManager(),
+      transport: mockSnapTransport(),
+      flightTracker: new SnapPeerFlightTracker(),
+      getSnapPeers: () => [],
+    })
+    const accountHash = new Uint8Array(32)
+    accountHash[0] = 0x01
+    sync.enqueueAccountRefreshCursor(accountHash)
+    assert.equal(bucket.status, 'done')
+    assert.isTrue(bucket.subRanges?.some((c) => c.refresh === true))
+  })
 })

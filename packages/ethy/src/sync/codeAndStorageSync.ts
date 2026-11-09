@@ -22,14 +22,19 @@ import { recordDiagnostic } from '../spine/diagnostics.ts'
 import type { EthySpine } from '../spine/types.ts'
 import type { IngestedAccountMeta } from './accountSync.ts'
 import type { SnapPeerFlightTracker } from './snapFlight.ts'
+import { type SnapSchedulePeer, maxInFlightForPeer } from './snapSchedulePolicy.ts'
 import type { SnapTransport } from './snapTransport.ts'
 import { snapReplyRequestId, verifyStorageRangeJob } from './snapVerifyJob.ts'
 import { SnapVerifyPool } from './snapVerifyWorker.ts'
 import { isAccountHashSynced } from './syncedAccountHash.ts'
 import { incrementKey32 } from './syntheticPeer.ts'
 
-const RESPONSE_BYTES = 128 * 1024
+const CODE_RESPONSE_BYTES = 128 * 1024
+const STORAGE_RESPONSE_BYTES = 256 * 1024
 const MAX_CODE_HASHES = 64
+const MAX_STORAGE_ACCOUNTS_PER_REQ = 16
+const CODE_STORAGE_PIPELINE_CAP = 4
+const CONTRACT_RATE_IDLE_SEC = 5
 /** In-memory contract/storage task cap before disk spill (WP-04g). */
 export const MAX_IN_MEMORY_CONTRACT_TASKS = 16_384
 const CONTRACT_SPILL_ROW_BYTES = 96
@@ -53,10 +58,27 @@ type CodeTask = {
 type InFlightStorage = {
   reqId: bigint
   sentAt: number
-  accountKey: string
+  accountKeys: string[]
+  origin: Uint8Array
   rootGeneration: number
 }
 type InFlightCodes = { reqId: bigint; sentAt: number; hashes: Uint8Array[]; rootGeneration: number }
+
+function inFlightKey(peerId: string, reqId: bigint): string {
+  return `${peerId}:${reqId.toString()}`
+}
+
+function peerIdFromFlightKey(key: string): string {
+  const i = key.lastIndexOf(':')
+  return i >= 0 ? key.slice(0, i) : key
+}
+
+function isFreshStorageOrigin(origin: Uint8Array): boolean {
+  for (const b of origin) {
+    if (b !== 0) return false
+  }
+  return true
+}
 
 function accountHashKey(accountHash: Uint8Array): string {
   return bytesToUnprefixedHex(accountHash)
@@ -71,7 +93,7 @@ export type SnapCodeAndStorageSynchronizerOpts = {
   stateManager: FlatStateManager
   transport: SnapTransport
   flightTracker: SnapPeerFlightTracker
-  getSnapPeers: () => Array<{ id: string; caps: string[] }>
+  getSnapPeers: () => SnapSchedulePeer[]
   snapStore?: SnapPivotStore
   peerBusy: (peerId: string) => boolean
   verifyPool?: SnapVerifyPool
@@ -86,7 +108,7 @@ export class SnapCodeAndStorageSynchronizer {
   private readonly stateManager: FlatStateManager
   private readonly transport: SnapTransport
   private readonly flightTracker: SnapPeerFlightTracker
-  private readonly getSnapPeers: () => Array<{ id: string; caps: string[] }>
+  private readonly getSnapPeers: () => SnapSchedulePeer[]
   private readonly snapStore?: SnapPivotStore
   private readonly peerBusy: (peerId: string) => boolean
   private readonly verifyPool: SnapVerifyPool
@@ -96,6 +118,11 @@ export class SnapCodeAndStorageSynchronizer {
   private contractsSpilledOnDisk = 0
   private contractSpillReadOffset = 0
   private readonly contractSpillBuffer: Uint8Array[] = []
+  private readonly completedStorageAccounts = new Set<string>()
+  private readonly countedCodeHashes = new Set<string>()
+  private readonly countedStorageAccounts = new Set<string>()
+  private lastContractsDone = 0
+  private lastContractRateAt = Date.now()
   private reqId = 1n
   private readonly codeQueue = new Map<string, CodeTask>()
   private readonly pendingStorage = new Map<string, StorageTask>()
@@ -141,11 +168,21 @@ export class SnapCodeAndStorageSynchronizer {
     if (this.tickTimer !== undefined) clearInterval(this.tickTimer)
   }
 
-  noteAccounts(entries: IngestedAccountMeta[]): void {
+  noteAccounts(entries: IngestedAccountMeta[], opts?: { fromDiskRefill?: boolean }): void {
+    const fromDiskRefill = opts?.fromDiskRefill === true
     for (const { accountHash, codeHash, storageRoot } of entries) {
       const ownedHash = new Uint8Array(accountHash)
       if (!equalsBytes(codeHash, KECCAK256_NULL)) {
         const key = codeHashKey(codeHash)
+        if (!fromDiskRefill && !this.countedCodeHashes.has(key)) {
+          this.countedCodeHashes.add(key)
+          if (this.stateManager.getCodeByHash(codeHash) === undefined) {
+            this.spine.codesTotal = (this.spine.codesTotal ?? 0) + 1
+          }
+        }
+        if (this.stateManager.getCodeByHash(codeHash) !== undefined) {
+          continue
+        }
         if (!this.codeQueue.has(key)) {
           if (this.codeQueue.size >= this.maxInMemoryContractTasks) {
             if (this.snapStore !== undefined) {
@@ -160,6 +197,13 @@ export class SnapCodeAndStorageSynchronizer {
       }
       if (!equalsBytes(storageRoot, KECCAK256_RLP)) {
         const key = accountHashKey(ownedHash)
+        if (!fromDiskRefill && !this.countedStorageAccounts.has(key)) {
+          this.countedStorageAccounts.add(key)
+          this.spine.storageAccountsTotal = (this.spine.storageAccountsTotal ?? 0) + 1
+        }
+        if (this.completedStorageAccounts.has(key)) {
+          continue
+        }
         const existing = this.pendingStorage.get(key)
         if (existing !== undefined) {
           if (!equalsBytes(existing.storageRoot, storageRoot)) {
@@ -303,7 +347,7 @@ export class SnapCodeAndStorageSynchronizer {
   private storageKeysInFlight(): Set<string> {
     const keys = new Set<string>()
     for (const flight of this.storageInFlight.values()) {
-      keys.add(flight.accountKey)
+      for (const k of flight.accountKeys) keys.add(k)
     }
     return keys
   }
@@ -319,14 +363,48 @@ export class SnapCodeAndStorageSynchronizer {
     return batch
   }
 
-  private nextStorageTask(): StorageTask | undefined {
+  private nextStorageBatch(max: number): StorageTask[] {
     const inFlight = this.storageKeysInFlight()
+    const batch: StorageTask[] = []
     for (const task of this.pendingStorage.values()) {
       const key = accountHashKey(task.accountHash)
       if (task.verifying || inFlight.has(key)) continue
-      return task
+      if (batch.length === 0) {
+        batch.push(task)
+        if (!isFreshStorageOrigin(task.origin)) break
+        continue
+      }
+      if (!isFreshStorageOrigin(task.origin)) break
+      batch.push(task)
+      if (batch.length >= max) break
     }
-    return undefined
+    return batch
+  }
+
+  private refreshContractRate(now: number): void {
+    const done = this.spine.codesSynced + (this.spine.storageAccountsSynced ?? 0)
+    const dt = (now - this.lastContractRateAt) / 1000
+    if (dt >= CONTRACT_RATE_IDLE_SEC) {
+      const delta = done - this.lastContractsDone
+      this.spine.contractsPerSec = delta > 0 ? delta / dt : 0
+      this.lastContractsDone = done
+      this.lastContractRateAt = now
+      const codeRem = Math.max(
+        0,
+        Math.max(this.spine.codesTotal ?? 0, this.spine.codesSynced + this.spine.codesQueued) -
+          this.spine.codesSynced,
+      )
+      const storRem = Math.max(
+        0,
+        Math.max(
+          this.spine.storageAccountsTotal ?? 0,
+          (this.spine.storageAccountsSynced ?? 0) + this.spine.storageQueued,
+        ) - (this.spine.storageAccountsSynced ?? 0),
+      )
+      const rem = codeRem + storRem
+      const rate = (this.spine.contractsPerSec ?? 0) * 60
+      this.spine.storageEtaMinutes = rate > 0 && rem > 0 ? rem / rate : undefined
+    }
   }
 
   private schedule(): void {
@@ -340,43 +418,52 @@ export class SnapCodeAndStorageSynchronizer {
     if (snapBucketsUnfinished(this.spine.snapBuckets)) return
     this.refillContractTasksFromDisk()
     const now = Date.now()
+    this.refreshContractRate(now)
     this.expireStale(now)
     const peers = this.getSnapPeers().filter((p) => p.caps.some((c) => c.startsWith('snap')))
     if (peers.length === 0) return
 
     for (const peer of peers) {
-      if (this.flightTracker.has(peer.id) || this.peerBusy(peer.id)) continue
-      if (this.codesInFlight.has(peer.id)) continue
-      if (this.storageInFlight.has(peer.id)) continue
-
-      const codeBatch = this.nextCodeBatch(MAX_CODE_HASHES)
-      if (codeBatch.length > 0) {
-        const hashes = codeBatch.map((t) => t.codeHash)
-        const reqId = this.reqId++
-        if (!this.flightTracker.tryClaim(peer.id, { kind: 'byteCodes', reqId, sentAt: now })) {
+      if (this.peerBusy(peer.id)) continue
+      const depth = Math.min(CODE_STORAGE_PIPELINE_CAP, maxInFlightForPeer(peer))
+      while (this.flightTracker.inFlightCount(peer.id) < depth) {
+        const codeBatch = this.nextCodeBatch(MAX_CODE_HASHES)
+        if (codeBatch.length > 0) {
+          const hashes = codeBatch.map((t) => t.codeHash)
+          const reqId = this.reqId++
+          if (
+            !this.flightTracker.tryClaim(peer.id, { kind: 'byteCodes', reqId, sentAt: now }, depth)
+          ) {
+            break
+          }
+          const flightKey = inFlightKey(peer.id, reqId)
+          this.codesInFlight.set(flightKey, {
+            reqId,
+            sentAt: now,
+            hashes,
+            rootGeneration: this.flightTracker.rootGeneration,
+          })
+          this.transport.sendByteCodes(
+            peer.id,
+            encodeGetByteCodes(reqId, hashes, CODE_RESPONSE_BYTES),
+          )
           continue
         }
-        this.codesInFlight.set(peer.id, {
-          reqId,
-          sentAt: now,
-          hashes,
-          rootGeneration: this.flightTracker.rootGeneration,
-        })
-        this.transport.sendByteCodes(peer.id, encodeGetByteCodes(reqId, hashes, RESPONSE_BYTES))
-        continue
-      }
-
-      const task = this.nextStorageTask()
-      if (task !== undefined) {
-        const accountKey = accountHashKey(task.accountHash)
+        const batch = this.nextStorageBatch(MAX_STORAGE_ACCOUNTS_PER_REQ)
+        if (batch.length === 0) break
         const reqId = this.reqId++
-        if (!this.flightTracker.tryClaim(peer.id, { kind: 'storage', reqId, sentAt: now })) {
-          continue
+        if (!this.flightTracker.tryClaim(peer.id, { kind: 'storage', reqId, sentAt: now }, depth)) {
+          break
         }
-        this.storageInFlight.set(peer.id, {
+        const accountKeys = batch.map((t) => accountHashKey(t.accountHash))
+        const origin = new Uint8Array(batch[0]!.origin)
+        for (const t of batch) t.verifying = true
+        const flightKey = inFlightKey(peer.id, reqId)
+        this.storageInFlight.set(flightKey, {
           reqId,
           sentAt: now,
-          accountKey,
+          accountKeys,
+          origin,
           rootGeneration: this.flightTracker.rootGeneration,
         })
         this.transport.sendStorageRanges(
@@ -384,77 +471,158 @@ export class SnapCodeAndStorageSynchronizer {
           encodeGetStorageRanges(
             reqId,
             this.spine.pivotStateRoot,
-            [task.accountHash],
-            task.origin,
+            batch.map((t) => t.accountHash),
+            origin,
             STORAGE_LIMIT,
-            RESPONSE_BYTES,
+            STORAGE_RESPONSE_BYTES,
           ),
         )
+        break
       }
     }
   }
 
   private expireStale(now: number): void {
-    for (const [peerId, flight] of this.storageInFlight) {
+    for (const [key, flight] of this.storageInFlight) {
       if (now - flight.sentAt < RANGE_TIMEOUT_MS) continue
-      this.storageInFlight.delete(peerId)
-      this.flightTracker.release(peerId, flight.reqId)
+      this.storageInFlight.delete(key)
+      this.flightTracker.release(peerIdFromFlightKey(key), flight.reqId)
+      for (const accKey of flight.accountKeys) {
+        const task = this.pendingStorage.get(accKey)
+        if (task !== undefined) task.verifying = false
+      }
     }
-    for (const [peerId, flight] of this.codesInFlight) {
+    for (const [key, flight] of this.codesInFlight) {
       if (now - flight.sentAt < RANGE_TIMEOUT_MS) continue
-      this.codesInFlight.delete(peerId)
-      this.flightTracker.release(peerId, flight.reqId)
+      this.codesInFlight.delete(key)
+      this.flightTracker.release(peerIdFromFlightKey(key), flight.reqId)
+    }
+  }
+
+  private markStorageAccountDone(accountKey: string): void {
+    this.pendingStorage.delete(accountKey)
+    this.completedStorageAccounts.add(accountKey)
+    this.spine.storageAccountsSynced = (this.spine.storageAccountsSynced ?? 0) + 1
+  }
+
+  private handleStorageProofFailure(
+    task: StorageTask,
+    accountKey: string,
+    peerId: string,
+    reason?: string,
+  ): void {
+    task.verifying = false
+    task.missRetries++
+    this.pendingStorage.delete(accountKey)
+    this.pendingStorage.set(accountKey, task)
+    if (task.missRetries === 1) {
+      this.onBalRefreshAccount?.(task.accountHash)
+    }
+    if (task.missRetries > 2) {
+      this.markStorageAccountDone(accountKey)
+      recordDiagnostic(this.spine, {
+        subsystem: 'snap',
+        severity: 'warn',
+        peerId,
+        message: reason ?? 'storage range failed',
+      })
     }
   }
 
   private async handleStorageRanges(peerId: string, payload: Uint8Array): Promise<void> {
-    const flight = this.storageInFlight.get(peerId)
-    if (flight === undefined || this.spine.pivotStateRoot === undefined) return
+    const replyId = snapReplyRequestId(payload)
+    if (replyId === undefined || this.spine.pivotStateRoot === undefined) return
+    const flightKey = inFlightKey(peerId, replyId)
+    const flight = this.storageInFlight.get(flightKey)
+    if (flight === undefined) return
     if (flight.rootGeneration !== this.flightTracker.rootGeneration) {
-      this.storageInFlight.delete(peerId)
+      this.storageInFlight.delete(flightKey)
       this.flightTracker.release(peerId, flight.reqId)
+      for (const accKey of flight.accountKeys) {
+        const task = this.pendingStorage.get(accKey)
+        if (task !== undefined) task.verifying = false
+      }
       return
     }
-    const replyId = snapReplyRequestId(payload)
-    if (replyId === undefined || replyId !== flight.reqId) return
-    this.storageInFlight.delete(peerId)
+    this.storageInFlight.delete(flightKey)
     this.flightTracker.release(peerId, flight.reqId)
-    const task = this.pendingStorage.get(flight.accountKey)
-    if (task === undefined) return
-    task.verifying = true
+    const tasks = flight.accountKeys
+      .map((k) => this.pendingStorage.get(k))
+      .filter((t): t is StorageTask => t !== undefined)
+    if (tasks.length === 0) return
 
+    const accounts = tasks.map((t) => ({
+      accountHash: t.accountHash,
+      storageRoot: t.storageRoot,
+    }))
     let result: Awaited<ReturnType<SnapVerifyPool['verifyStorageRange']>>
     try {
       result = await this.verifyPool.verifyStorageRange({
-        storageRoot: task.storageRoot,
-        origin: task.origin,
+        accounts,
+        origin: flight.origin,
         payload,
       })
-    } finally {
-      task.verifying = false
+    } catch {
+      for (const t of tasks) {
+        const key = accountHashKey(t.accountHash)
+        this.handleStorageProofFailure(t, key, peerId, 'storage verify threw')
+      }
+      await new Promise<void>((resolve) => {
+        enqueueProtocol(() => {
+          this.publishPending()
+          resolve()
+        })
+      })
+      return
     }
     await new Promise<void>((resolve) => {
       enqueueProtocol(() => {
         try {
-          if (result.ok && result.slots !== undefined && result.slots.length > 0) {
-            this.stateManager.putSnapStorageBatch(task.accountHash, result.slots)
-            this.spine.storageSlotsSynced += result.slots.length
-            this.snapStore?.appendStorageSlots(task.accountHash, result.slots)
-          }
           if (!result.ok) {
             recordDiagnostic(this.spine, {
               subsystem: 'snap',
               severity: 'warn',
               peerId,
-              message: result.reason ?? 'storage range failed',
+              message: result.reason ?? 'storage range decode failed',
             })
+            for (const t of tasks) {
+              const key = accountHashKey(t.accountHash)
+              t.verifying = false
+            }
+            this.publishPending()
             return
           }
-          if (result.hasRight && result.lastKey !== undefined) {
-            task.origin = incrementKey32(result.lastKey)
-          } else {
-            this.pendingStorage.delete(flight.accountKey)
+          const rows = result.perAccount ?? []
+          for (const row of rows) {
+            const task = tasks[row.accountIndex]
+            if (task === undefined) continue
+            const accKey = accountHashKey(task.accountHash)
+            if (!row.ok) {
+              this.handleStorageProofFailure(task, accKey, peerId, row.reason)
+              continue
+            }
+            task.verifying = false
+            if (row.slots !== undefined && row.slots.length > 0) {
+              this.stateManager.putSnapStorageBatch(task.accountHash, row.slots)
+              this.spine.storageSlotsSynced += row.slots.length
+              this.snapStore?.appendStorageSlots(task.accountHash, row.slots)
+            }
+            if (row.hasRight && row.lastKey !== undefined) {
+              task.origin = incrementKey32(row.lastKey)
+            } else {
+              this.markStorageAccountDone(accKey)
+            }
           }
+          for (const t of tasks) {
+            if (t.verifying) t.verifying = false
+          }
+          this.snapStore?.persistContractProgress(
+            this.spine.codesTotal ?? 0,
+            this.spine.codesSynced,
+            this.spine.storageAccountsTotal ?? 0,
+            this.spine.storageAccountsSynced ?? 0,
+            this.spine.storageSlotsSynced,
+          )
           this.publishPending()
         } finally {
           resolve()
@@ -464,16 +632,17 @@ export class SnapCodeAndStorageSynchronizer {
   }
 
   private handleByteCodes(peerId: string, payload: Uint8Array): void {
-    const flight = this.codesInFlight.get(peerId)
+    const replyId = snapReplyRequestId(payload)
+    if (replyId === undefined) return
+    const flightKey = inFlightKey(peerId, replyId)
+    const flight = this.codesInFlight.get(flightKey)
     if (flight === undefined) return
     if (flight.rootGeneration !== this.flightTracker.rootGeneration) {
-      this.codesInFlight.delete(peerId)
+      this.codesInFlight.delete(flightKey)
       this.flightTracker.release(peerId, flight.reqId)
       return
     }
-    const replyId = snapReplyRequestId(payload)
-    if (replyId === undefined || replyId !== flight.reqId) return
-    this.codesInFlight.delete(peerId)
+    this.codesInFlight.delete(flightKey)
     this.flightTracker.release(peerId, flight.reqId)
 
     let decoded: unknown[]
@@ -560,7 +729,7 @@ export class SnapCodeAndStorageSynchronizer {
       if (this.snapStore !== undefined) {
         const batch = this.snapStore.nextContractScanBatch(512)
         if (batch.length === 0) break
-        this.noteAccounts(batch)
+        this.noteAccounts(batch, { fromDiskRefill: true })
         continue
       }
       if (this.contractSpillPath === undefined || !fs.existsSync(this.contractSpillPath)) break
@@ -593,8 +762,24 @@ export class SnapCodeAndStorageSynchronizer {
           storageRoot: new Uint8Array(buf.subarray(base + 64, base + 96)),
         })
       }
-      this.noteAccounts(entries)
+      this.noteAccounts(entries, { fromDiskRefill: true })
     }
+  }
+
+  /** Restore contract totals after session resume (WP-06f). */
+  restoreContractTotals(totals: {
+    codesTotal: number
+    codesSynced: number
+    storageAccountsTotal: number
+    storageAccountsSynced: number
+    storageSlotsSynced: number
+  }): void {
+    this.spine.codesTotal = totals.codesTotal
+    this.spine.codesSynced = totals.codesSynced
+    this.spine.storageAccountsTotal = totals.storageAccountsTotal
+    this.spine.storageAccountsSynced = totals.storageAccountsSynced
+    this.spine.storageSlotsSynced = totals.storageSlotsSynced
+    this.lastContractsDone = totals.codesSynced + totals.storageAccountsSynced
   }
 }
 

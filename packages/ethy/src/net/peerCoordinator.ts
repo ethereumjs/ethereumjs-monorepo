@@ -526,6 +526,10 @@ export async function startPeerCoordinator(
         peerBusy: (peerId) => snapSync?.peerBusy(peerId) ?? false,
         onBalRefreshAccount: (hash) => snapSync?.enqueueAccountRefreshCursor(hash),
       })
+      const contractProgress = snapStore?.takeContractProgress()
+      if (contractProgress !== undefined) {
+        codeSync.restoreContractTotals(contractProgress)
+      }
       codeSync.start()
     }
     if (spine.syncTransport === 'ethy' && codeSync.pendingDone() && getSnapPeers().length === 0) {

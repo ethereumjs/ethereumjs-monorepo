@@ -12,6 +12,7 @@ import type { SnapPivotStore } from '../persist/snapStore.ts'
 import { enqueueProtocol } from '../runtime/lanes.ts'
 import {
   bucketCursorsPendingVerify,
+  bucketHasActiveRefreshCursors,
   bucketPosition36,
   compareBytes32,
   computeAccountRangeFraction,
@@ -20,6 +21,7 @@ import {
   cursorSpan36,
   ensureBucketSubRanges,
   snapBucketCursorExhausted,
+  spineHasActiveRefreshCursors,
   syncBucketCursorFields,
 } from '../spine/buckets.ts'
 import { setPhase } from '../spine/createSpine.ts'
@@ -157,7 +159,7 @@ export class SnapAccountSynchronizer {
     if (accountHash.length !== 32) return
     const bucketIndex = accountHash[0]! >> 4
     const bucket = this.spine.snapBuckets[bucketIndex]
-    if (bucket === undefined || bucket.status === 'done') return
+    if (bucket === undefined) return
     const ranges = ensureBucketSubRanges(bucket)
     const key = bytesToUnprefixedHex(accountHash)
     if (ranges.some((c) => c.refresh && bytesToUnprefixedHex(c.origin) === key)) return
@@ -251,7 +253,8 @@ export class SnapAccountSynchronizer {
 
   private allCursorsBusy(): boolean {
     for (const bucket of this.spine.snapBuckets) {
-      if (bucket.status === 'done') continue
+      const hasRefresh = bucketHasActiveRefreshCursors(bucket)
+      if (bucket.status === 'done' && !hasRefresh) continue
       if (this.bucketStalled(bucket, Date.now())) continue
       for (const c of ensureBucketSubRanges(bucket)) {
         if (!cursorActive(c)) continue
@@ -266,9 +269,11 @@ export class SnapAccountSynchronizer {
   private listFreeCursors(now: number): SnapRangeCursor[] {
     const out: SnapRangeCursor[] = []
     for (const bucket of this.spine.snapBuckets) {
-      if (bucket.status === 'done') continue
+      const hasRefresh = bucketHasActiveRefreshCursors(bucket)
+      if (bucket.status === 'done' && !hasRefresh) continue
       if (this.bucketStalled(bucket, now)) continue
       for (const c of ensureBucketSubRanges(bucket)) {
+        if (bucket.status === 'done' && c.refresh !== true) continue
         if (!cursorActive(c)) continue
         if (cursorBlockedForDispatch(c)) continue
         const dedupe = originDedupeKey(bucket.index, c.origin)
@@ -293,6 +298,7 @@ export class SnapAccountSynchronizer {
       const ranges = ensureBucketSubRanges(bucket)
       for (let i = 0; i < ranges.length; i++) {
         const c = ranges[i]!
+        if (c.refresh === true) continue
         if (!cursorActive(c)) continue
         if ((c.verifyingCount ?? 0) > 0) continue
         const span = cursorSpan36(c)
@@ -329,11 +335,16 @@ export class SnapAccountSynchronizer {
       syncBucketCursorFields(bucket)
       return
     }
+    if (bucket.status === 'done' && bucketHasActiveRefreshCursors(bucket)) {
+      return
+    }
     const ranges = ensureBucketSubRanges(bucket)
-    const busy = ranges.some((c) => c.inFlightReqKey !== undefined || (c.verifyingCount ?? 0) > 0)
+    const busy = ranges.some(
+      (c) => c.refresh !== true && (c.inFlightReqKey !== undefined || (c.verifyingCount ?? 0) > 0),
+    )
     if (busy) {
       bucket.status = 'syncing'
-    } else if (bucket.status !== 'stalled') {
+    } else if (bucket.status !== 'stalled' && bucket.status !== 'done') {
       bucket.status = 'pending'
     }
   }
@@ -430,7 +441,8 @@ export class SnapAccountSynchronizer {
     this.refreshAccountRate(now)
     if (
       this.spine.snapBuckets.length > 0 &&
-      this.spine.snapBuckets.every((b) => b.status === 'done')
+      this.spine.snapBuckets.every((b) => b.status === 'done') &&
+      !spineHasActiveRefreshCursors(this.spine.snapBuckets)
     ) {
       this.spine.accountsPerSec = 0
       this.spine.accountsPerMin = 0
@@ -832,9 +844,10 @@ export class SnapAccountSynchronizer {
       this.reconcileCursorAfterCommit(cursor, bucket, flight, result)
       this.endCursorVerify(cursor)
     }
+    const wasDone = bucket.status === 'done'
     syncBucketCursorFields(bucket)
     this.refreshBucketSyncStatus(bucket)
-    if (bucket.status === 'done') {
+    if (bucket.status === 'done' && !wasDone) {
       this.onBucketDone?.(bucket.index)
     }
     this.schedule()

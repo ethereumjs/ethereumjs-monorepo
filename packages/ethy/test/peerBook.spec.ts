@@ -263,4 +263,51 @@ describe('[Ethy/Persist]: peer book', () => {
     const candidates = book.dialCandidates(now)
     assert.equal(candidates.length, 1)
   })
+
+  it('never deletes proven or snapCapable VIP peers on repeated ECONNRESET and retains HELLO-proven snapCapable peers across pruneOnStart', () => {
+    const dir = tempDir()
+    const book = openBook(dir)
+    const now = 1_000_000
+    const vipId = 'f1'.repeat(32)
+    const helloSnapId = 'f2'.repeat(32)
+
+    book.putRow(
+      sampleRow({
+        id: vipId,
+        clientFamily: 'Nethermind',
+        lastStatusAt: now,
+        lastSnapSuccessAt: now,
+        snapResponsesOk: 500,
+        snapCapable: true,
+      }),
+    )
+    book.putRow(
+      sampleRow({
+        id: helloSnapId,
+        clientFamily: 'Nethermind',
+        snapCapable: true,
+        tooManyPeersStreak: 15,
+      }),
+    )
+
+    // 5 consecutive TCP resets must apply backoff, never delete the VIP peer!
+    for (let i = 0; i < 5; i++) {
+      book.noteDisconnect(vipId, 'Remote 1.2.3.4:30303: peer unreachable (ECONNRESET)', now + i)
+    }
+    const survived = book.getRow(vipId)
+    assert.isDefined(survived)
+    assert.equal(survived?.snapResponsesOk, 500)
+    assert.isAbove(survived!.dialAfter, now)
+
+    // noteSnapSuccess resets resetStreak and dialAfter
+    book.noteSnapSuccess(vipId, now + 100)
+    assert.equal(book.getRow(vipId)?.resetStreak, 0)
+    assert.equal(book.getRow(vipId)?.dialAfter, 0)
+
+    // pruneOnStart keeps helloSnapId (Tier 1 snapCapable) and resets tooManyPeersStreak
+    book.pruneOnStart(now + 200)
+    assert.isDefined(book.getRow(helloSnapId))
+    assert.equal(book.getRow(helloSnapId)?.tooManyPeersStreak, 0)
+    assert.equal(book.vipDialCandidates(now + 200, 10).length, 2)
+  })
 })

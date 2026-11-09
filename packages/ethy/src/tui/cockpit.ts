@@ -71,7 +71,8 @@ function snapTargetRow(spine: EthySpine): string {
         : 0n
     return `${formatBlockNum(bridging.fromBlock)} → ${formatBlockNum(bridging.targetBlock)} (+${remaining.toLocaleString('en-US')} BALs)`
   }
-  const tip = spine.bestPeerHead ?? spine.headBlockNumber ?? pivot
+  const rawTip = spine.bestPeerHead ?? spine.headBlockNumber ?? pivot
+  const tip = rawTip > pivot ? rawTip : pivot
   const buffered = spine.bufferedBalCount ?? 0
   const steps = spine.pivotStepsCompleted ?? 0
   return `${formatBlockNum(pivot)} → ${formatBlockNum(tip)} · +${buffered} BALs · step ${steps}`
@@ -128,13 +129,23 @@ function nodePulsePairs(spine: EthySpine): TwoColumnPair[] {
         },
       ]
     }
+    const codeTotal = Math.max(spine.codesTotal ?? 0, spine.codesSynced + spine.codesQueued)
+    const storSynced = spine.storageAccountsSynced ?? 0
+    const storTotal = Math.max(spine.storageAccountsTotal ?? 0, storSynced + spine.storageQueued)
+    const bytecodePending = codeTotal > 0 && spine.codesSynced < codeTotal
+    const stage = bytecodePending ? 'Snap Sync · Bytecode' : 'Snap Sync · Storage'
+    const rate =
+      (spine.contractsPerSec ?? 0) > 0 ? ` · ${Math.round(spine.contractsPerSec ?? 0)}/s` : ''
     return [
-      { label: 'Stage', value: 'Snap Sync · Storage' },
+      { label: 'Stage', value: stage },
       { label: 'Target', value: snapTargetRow(spine) },
-      { label: 'Progress', value: formatProgressBar(computeSnapProgressPct(spine)) },
+      {
+        label: 'Progress',
+        value: formatProgressBar(computeSnapProgressPct(spine), spine.storageEtaMinutes),
+      },
       {
         label: 'State',
-        value: `${formatCompactCount(spine.codesSynced)} code · ${formatCompactCount(spine.storageSlotsSynced)} slots`,
+        value: `code ${formatCompactCount(spine.codesSynced)}/${formatCompactCount(codeTotal)} · stor ${formatCompactCount(storSynced)}/${formatCompactCount(storTotal)} (${formatCompactCount(spine.storageSlotsSynced)} slots)${rate}`,
       },
     ]
   }

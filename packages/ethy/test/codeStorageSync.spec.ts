@@ -77,6 +77,41 @@ describe('[Ethy/Sync]: code and storage snap helpers', () => {
     assert.equal(result.ok, true)
   })
 
+  it('noteAccounts skips bytecode already in FlatStateManager', () => {
+    const spine = createSpine('sepolia', 11155111n)
+    const sm = createFlatStateManager()
+    const code = new Uint8Array([0x60, 0x00])
+    const codeHash = keccak_256(code)
+    sm.putCodeByHash(codeHash, code)
+    const transport: SnapTransport = {
+      snapPeers: () => [],
+      sendAccountRange: () => {},
+      onAccountRange: () => () => {},
+      sendStorageRanges: () => {},
+      onStorageRanges: () => () => {},
+      sendByteCodes: () => {},
+      onByteCodes: () => () => {},
+    }
+    const sync = new SnapCodeAndStorageSynchronizer({
+      spine,
+      stateManager: sm,
+      transport,
+      flightTracker: new SnapPeerFlightTracker(),
+      getSnapPeers: () => [],
+      peerBusy: () => false,
+    })
+    const accountHash = new Uint8Array(32).fill(0x02)
+    sync.noteAccounts([
+      {
+        accountHash,
+        codeHash,
+        storageRoot: new Uint8Array(32).fill(0x01),
+      },
+    ])
+    assert.equal(spine.codesQueued, 0)
+    assert.equal(spine.codesTotal, 0)
+  })
+
   it('Map-backed contract queues dedupe and clear in O(1)', () => {
     const spine = createSpine('sepolia', 11155111n)
     const sm = createFlatStateManager()

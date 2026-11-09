@@ -85,24 +85,25 @@ describe('[Ethy/Crypto]: @awasm/noble keccak', () => {
     const storageReply = await peer.buildStorageRangesReply(storageReq)
     const storageOk = await verifyStorageRangeJob(
       {
-        storageRoot: account.account.storageRoot,
+        accounts: [{ accountHash: account.accountHash, storageRoot: account.account.storageRoot }],
         replyPayload: storageReply,
         origin: new Uint8Array(32),
       },
       countingHash,
     )
     assert.strictEqual(storageOk.ok, true)
+    assert.strictEqual(storageOk.perAccount?.[0]?.ok, true)
 
     const wrongStorageRoot = new Uint8Array(account.account.storageRoot)
     wrongStorageRoot[0]! ^= 0xff
     const storageBad = await verifyStorageRangeJob(
       {
-        storageRoot: wrongStorageRoot,
+        accounts: [{ accountHash: account.accountHash, storageRoot: wrongStorageRoot }],
         replyPayload: storageReply,
         origin: new Uint8Array(32),
       },
       countingHash,
     )
-    assert.strictEqual(storageBad.ok, false)
+    assert.strictEqual(storageBad.perAccount?.[0]?.ok, false)
   })
 })

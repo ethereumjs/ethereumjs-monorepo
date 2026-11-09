@@ -14,9 +14,10 @@ type WorkerRequest =
   | {
       id: number
       kind: 'storage'
-      storageRoot: Uint8Array
       origin: Uint8Array
       payload: Uint8Array
+      accounts?: Array<{ accountHash: Uint8Array; storageRoot: Uint8Array }>
+      storageRoot?: Uint8Array
     }
 
 type WorkerResponse = {
@@ -54,6 +55,7 @@ port.on('message', async (msg: WorkerRequest) => {
     }
     const result = await verifyStorageRangeJob({
       storageRoot: msg.storageRoot,
+      accounts: msg.accounts,
       origin: msg.origin,
       replyPayload: msg.payload,
     })

@@ -181,11 +181,20 @@ export interface EthySpine {
   /** Smoothed ETA in minutes for the active snap sync stage (refreshed every ~5s). */
   snapEtaMinutes?: number
   codesSynced: number
+  /** Total unique contract code hashes discovered (WP-06f). */
+  codesTotal?: number
   /** Code hashes still queued or in flight. */
   codesQueued: number
   storageSlotsSynced: number
+  /** Storage-bearing accounts completed (WP-06f). */
+  storageAccountsSynced?: number
+  /** Total storage-bearing accounts discovered (WP-06f). */
+  storageAccountsTotal?: number
   /** Storage accounts still queued or in flight. */
   storageQueued: number
+  /** Combined code + storage account completion rate during code/storage phase (WP-06f). */
+  contractsPerSec?: number
+  storageEtaMinutes?: number
   /** Rolling BAL summaries for `/bal` and `/account` (newest first, max 64). */
   balWindow: BalWindowEntry[]
   snapPaused: boolean
