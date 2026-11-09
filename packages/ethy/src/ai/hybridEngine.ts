@@ -148,6 +148,22 @@ export class HybridIntentEngine implements IntentEngine {
       return result
     }
 
-    return this.deterministic.handle(req)
+    const fallbackResult = await this.deterministic.handle(req)
+    if (this.memoryMode === 'ephemeral' && !req.text.trim().startsWith('/')) {
+      const toolCalled =
+        fallbackResult.viewTitle ??
+        (fallbackResult.widget.kind === 'table'
+          ? fallbackResult.widget.title
+          : fallbackResult.widget.kind === 'key_value'
+            ? fallbackResult.widget.title
+            : undefined) ??
+        'view'
+      this.memory.push({
+        userQuery: req.text.trim(),
+        viewTitle: fallbackResult.viewTitle ?? toolCalled,
+        toolCalled: String(toolCalled),
+      })
+    }
+    return fallbackResult
   }
 }

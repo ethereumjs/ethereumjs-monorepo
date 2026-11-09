@@ -31,7 +31,12 @@ export function economyCockpitPairs(snap: EconomySnapshot | undefined): TwoColum
           const w = hot.storageWrites + hot.storageReads
           const slots = Math.round(w / Math.max(1, hot.blocksActive))
           const label = hot.knownName ?? shortAddress(hot.address)
-          const arch = hot.archetype !== undefined ? ` [${hot.archetype}]` : ''
+          const arch =
+            hot.archetype !== undefined &&
+            hot.archetype !== 'Contract' &&
+            hot.archetype !== hot.knownName
+              ? ` [${hot.archetype}]`
+              : ''
           return `${label}${arch} (${slots}w)`
         })()
       : '—'

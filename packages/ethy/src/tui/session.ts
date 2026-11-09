@@ -128,25 +128,32 @@ export async function runEthySession(node: EthyNode): Promise<void> {
   ) => {
     if (gen !== intentGeneration) return
     lastQuerySlot = result.querySlot
+    const nextOverview =
+      result.overviewNote !== undefined
+        ? clampOverviewNote(result.overviewNote)
+        : isNl && view.aiOverview === ASKING_LLM_NOTE
+          ? savedOverviewForIntent || view.aiOverview
+          : view.aiOverview
     view = {
       ...view,
       activeWidget: result.widget,
       interactionPage: 'main',
       interactionLabel: label,
       interactionTitle: isNl ? result.viewTitle : undefined,
-      aiOverview:
-        result.overviewNote !== undefined
-          ? clampOverviewNote(result.overviewNote)
-          : view.aiOverview,
+      aiOverview: nextOverview,
     }
-    node.hybridEngine?.noteIntentInflight(-1)
+    if (isNl) {
+      node.hybridEngine?.noteIntentInflight(-1)
+    }
     draw()
   }
 
   const runIntent = (text: string, gen: number, isNl: boolean) => {
     if (isNl) {
       pulseNarrator?.abortInFlight()
-      savedOverviewForIntent = view.aiOverview ?? savedOverviewForIntent
+      if (view.aiOverview !== ASKING_LLM_NOTE && view.aiOverview !== undefined) {
+        savedOverviewForIntent = view.aiOverview
+      }
       view = { ...view, aiOverview: clampOverviewNote(ASKING_LLM_NOTE) }
       node.hybridEngine?.noteIntentInflight(1)
       draw()
@@ -239,11 +246,13 @@ export async function runEthySession(node: EthyNode): Promise<void> {
           const cmd = deepViewCommand(view.activeDomain)
           const gen = ++intentGeneration
           runIntent(cmd, gen, false)
+          dirty = false
         }
         if (submittedLine !== undefined) {
           const gen = ++intentGeneration
           const isNl = !submittedLine.trim().startsWith('/')
           runIntent(submittedLine, gen, isNl)
+          dirty = false
         }
         if (view.shouldExit) {
           finish()

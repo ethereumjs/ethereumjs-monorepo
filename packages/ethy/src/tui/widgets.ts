@@ -76,6 +76,26 @@ const TABLE_PLANS: Record<string, ColPlan[]> = {
     { min: 24, flex: 0 },
     { min: 20, flex: 1 },
   ],
+  'Call|Count': [
+    { min: 28, flex: 1 },
+    { min: 10, flex: 0 },
+  ],
+  'Event|Count': [
+    { min: 28, flex: 1 },
+    { min: 10, flex: 0 },
+  ],
+  'Client family|Peers|Avg latency|Snap OK': [
+    { min: 18, flex: 2 },
+    { min: 8, flex: 0 },
+    { min: 14, flex: 0 },
+    { min: 12, flex: 1 },
+  ],
+  'Contract|Blocks|Writes|Reads': [
+    { min: 18, flex: 2 },
+    { min: 8, flex: 0 },
+    { min: 10, flex: 0 },
+    { min: 10, flex: 0 },
+  ],
   'Bucket|Status|Peer|Accounts|Issue': [
     { min: 8, flex: 0 },
     { min: 16, flex: 0 },

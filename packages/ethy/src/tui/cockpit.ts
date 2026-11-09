@@ -298,9 +298,9 @@ export function domainCommandPairs(domain: CapabilityId, phase: EthyPhase): TwoC
     case 'head':
       return [
         { label: '/economy', value: 'chain activity' },
+        { label: '/contract', value: 'hot microscope' },
         { label: '/bal', value: 'head summary' },
         { label: '/account', value: 'inspect' },
-        { label: '/cl', value: 'light client' },
       ]
     case 'ai':
       return phase === 'P2P_WARMUP'

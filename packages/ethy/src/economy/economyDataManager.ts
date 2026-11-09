@@ -8,6 +8,7 @@ import {
   createFingerprintCache,
   enrichTopContracts,
 } from '../contracts/contractIntelligence.ts'
+import { formatCalldataPreview, formatLogPreview } from '../contracts/localAbi.ts'
 import { TOPIC } from '../contracts/signatureCatalog.ts'
 import type { EthySpine } from '../spine/types.ts'
 import type { TwoColumnPair } from '../tui/layout.ts'
@@ -59,6 +60,8 @@ function emptyContractAgg(): ContractAddressAgg {
     soleCalleeBlocks: 0,
     inboundCalls: 0,
     swapEmittersInTx: new Set(),
+    callPreviews: [],
+    eventPreviews: [],
   }
 }
 
@@ -202,10 +205,22 @@ export class ETHEconomyDataManager {
         const agg = this.ensureContractAgg(call.to)
         this.bumpMap(agg.selectorCounts, call.selector)
         agg.inboundCalls += 1
+        if (call.data.length >= 4) {
+          const preview = formatCalldataPreview(call.data, 64)
+          if (!agg.callPreviews.includes(preview)) {
+            agg.callPreviews.unshift(preview)
+            if (agg.callPreviews.length > 5) agg.callPreviews.pop()
+          }
+        }
       }
       for (const log of obs.logs) {
         const agg = this.ensureContractAgg(log.emitter)
         this.bumpMap(agg.topicCounts, log.topic0)
+        const preview = formatLogPreview(log.topics, log.data, 64)
+        if (!agg.eventPreviews.includes(preview)) {
+          agg.eventPreviews.unshift(preview)
+          if (agg.eventPreviews.length > 5) agg.eventPreviews.pop()
+        }
       }
       for (const slice of obs.txSlices) {
         if (slice.to === undefined) continue

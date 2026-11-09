@@ -120,6 +120,19 @@ export function contractMicroscopeWidget(
       entries: [{ key: 'Addresses', value: co }],
     })
   }
+  if (profile.callPreviews.length > 0 || profile.eventPreviews.length > 0) {
+    const decodedEntries: Array<{ key: string; value: string }> = []
+    for (let i = 0; i < profile.callPreviews.length; i++) {
+      decodedEntries.push({ key: `Call #${i + 1}`, value: profile.callPreviews[i]! })
+    }
+    for (let i = 0; i < profile.eventPreviews.length; i++) {
+      decodedEntries.push({ key: `Event #${i + 1}`, value: profile.eventPreviews[i]! })
+    }
+    debugSections.push({
+      title: 'Decoded ABI samples',
+      entries: decodedEntries,
+    })
+  }
   const overviewNote = narrateContract(profile)
   return {
     kind: 'table',

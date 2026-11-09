@@ -139,6 +139,8 @@ function erc20Agg(): ContractAddressAgg {
     soleCalleeBlocks: 0,
     inboundCalls: 0,
     swapEmittersInTx: new Set(),
+    callPreviews: [],
+    eventPreviews: [],
   }
 }
 

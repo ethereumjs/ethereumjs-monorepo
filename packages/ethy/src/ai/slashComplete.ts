@@ -23,7 +23,7 @@ export const SLASH_COMMANDS = [
 
 const SHORT_EXPAND: Record<string, string> = {
   '/e': '/economy',
-  '/co': '/contract ',
+  '/co': '/contract',
   '/p': '/peers',
   '/b': '/buckets',
   '/d': '/diag',
@@ -49,12 +49,24 @@ export function completeSlashDraft(draft: string): string | null {
 /** Expand unambiguous short slash prefixes before intent routing. */
 export function expandSlashCommand(line: string): string {
   const trimmed = line.trim()
-  const lower = trimmed.toLowerCase()
-  const direct = SHORT_EXPAND[lower]
-  if (direct !== undefined) return direct
+  const parts = trimmed.split(/\s+/)
+  const first = parts[0]?.toLowerCase() ?? ''
+  if (parts.length > 1) {
+    const shortFirst = SHORT_EXPAND[first]?.trim()
+    if (shortFirst !== undefined) {
+      return `${shortFirst} ${parts.slice(1).join(' ')}`
+    }
+    const matches = SLASH_COMMANDS.filter((c) => c.startsWith(first))
+    if (matches.length === 1) {
+      return `${matches[0]!.trim()} ${parts.slice(1).join(' ')}`
+    }
+    return trimmed
+  }
+  const direct = SHORT_EXPAND[first]
+  if (direct !== undefined) return direct.trim()
   const completed = completeSlashDraft(trimmed)
   if (completed !== null && completed !== trimmed) {
-    return completed
+    return completed.trim()
   }
   return trimmed
 }

@@ -112,7 +112,7 @@ export class LocalHttpIntentEngine implements IntentEngine {
             return this.fallback.handle(req)
           }
           const args = typeof act.args === 'string' ? act.args.trim() : ''
-          const line = args.length > 0 ? `${slash}${args}` : slash
+          const line = args.length > 0 ? `${slash} ${args}` : slash
           const widget = dispatchSlashWidget(line, {
             spine,
             stateManager: this.stateManager,
@@ -120,12 +120,24 @@ export class LocalHttpIntentEngine implements IntentEngine {
             economy: this.economy,
             chain: this.chain,
           })
-          return { widget, stateHeader, querySlot, viewTitle, overviewNote }
+          return {
+            widget,
+            stateHeader,
+            querySlot,
+            viewTitle,
+            overviewNote: overviewNote ?? widget.assistantComment,
+          }
         }
         const compose = parseComposeAction(act, viewTitle)
         if (compose !== undefined) {
           const widget = composeViewFromRequest(spine, this.stateManager, compose)
-          return { widget, stateHeader, querySlot, viewTitle, overviewNote }
+          return {
+            widget,
+            stateHeader,
+            querySlot,
+            viewTitle,
+            overviewNote: overviewNote ?? widget.assistantComment,
+          }
         }
       }
     } catch {

@@ -4,7 +4,7 @@ const PULSE_TIMEOUT_MS = 8_000
 const INTENT_TIMEOUT_MS = 12_000
 const HEALTH_TIMEOUT_MS = 1_500
 
-const LOOPBACK_HOSTS = new Set(['127.0.0.1', 'localhost', '::1'])
+const LOOPBACK_HOSTS = new Set(['127.0.0.1', 'localhost', '::1', '[::1]'])
 
 export function assertLlmBaseUrl(baseUrl: string, allowRemote: boolean): URL {
   let url: URL
@@ -25,7 +25,8 @@ export function assertLlmBaseUrl(baseUrl: string, allowRemote: boolean): URL {
 }
 
 export function normalizeLlmBase(url: URL): string {
-  return url.origin.replace(/\/$/, '')
+  const path = url.pathname.replace(/\/+$/, '').replace(/\/v1$/i, '')
+  return `${url.origin}${path}`.replace(/\/$/, '')
 }
 
 async function fetchWithTimeout(
@@ -100,9 +101,15 @@ export async function postChatCompletion(
 /** Strip optional markdown fences and parse JSON object from model output. */
 export function parseLlmJSONObject(raw: string): Record<string, unknown> {
   let text = raw.trim()
-  const fence = /^```(?:json)?\s*([\s\S]*?)```$/i.exec(text)
+  const fence = /```(?:json)?\s*([\s\S]*?)```/i.exec(text)
   if (fence !== null) {
     text = fence[1]!.trim()
+  } else {
+    const firstBrace = text.indexOf('{')
+    const lastBrace = text.lastIndexOf('}')
+    if (firstBrace >= 0 && lastBrace > firstBrace) {
+      text = text.slice(firstBrace, lastBrace + 1)
+    }
   }
   const parsed = JSON.parse(text) as unknown
   if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {

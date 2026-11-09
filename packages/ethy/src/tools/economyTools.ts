@@ -44,10 +44,12 @@ export function economyDeepViewWidget(spine: EthySpine): WidgetSpec {
     })
   }
   const rows = snap.topContracts.map((c) => {
+    const hasSpecificArch =
+      c.archetype !== undefined && c.archetype !== 'Contract' && c.archetype !== c.knownName
     const label =
       c.knownName !== undefined
-        ? `${c.knownName} ${shortAddress(c.address)}`
-        : c.archetype !== undefined
+        ? `${c.knownName} ${shortAddress(c.address)}${hasSpecificArch ? ` [${c.archetype}]` : ''}`
+        : hasSpecificArch
           ? `${shortAddress(c.address)} [${c.archetype}]`
           : shortAddress(c.address)
     return [

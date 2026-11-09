@@ -192,6 +192,11 @@ export class DeterministicIntentEngine implements IntentEngine {
       widget = buildHelpWidget(spine)
     }
 
-    return Promise.resolve({ widget, stateHeader, querySlot })
+    return Promise.resolve({
+      widget,
+      stateHeader,
+      querySlot,
+      overviewNote: widget.assistantComment,
+    })
   }
 }

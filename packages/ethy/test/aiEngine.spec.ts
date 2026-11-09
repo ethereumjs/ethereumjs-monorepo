@@ -6,8 +6,7 @@ import { buildCompactDomainContext } from '../src/ai/compactContext.ts'
 import { composeViewFromRequest } from '../src/ai/composeView.ts'
 import { FixtureReplayTransport } from '../src/ai/fixtureEngine.ts'
 import { HybridIntentEngine } from '../src/ai/hybridEngine.ts'
-import { assertLlmBaseUrl } from '../src/ai/llmClient.ts'
-import { parseLlmJSONObject } from '../src/ai/llmClient.ts'
+import { assertLlmBaseUrl, normalizeLlmBase, parseLlmJSONObject } from '../src/ai/llmClient.ts'
 import { LocalHttpIntentEngine } from '../src/ai/localHttpEngine.ts'
 import { MAX_AI_OVERVIEW_CHARS } from '../src/ai/overviewNarrator.ts'
 import { AiPulseNarrator } from '../src/ai/pulseNarrator.ts'
@@ -26,9 +25,17 @@ describe('[Ethy/AI]: llm client', () => {
     assert.equal(url.hostname, '127.0.0.1')
   })
 
-  it('parseLlmJSONObject strips fences', () => {
-    const obj = parseLlmJSONObject('```json\n{"overviewText":"hi"}\n```')
+  it('parseLlmJSONObject strips fences and surrounding prose', () => {
+    const obj = parseLlmJSONObject('Here is the JSON:\n```json\n{"overviewText":"hi"}\n```\nDone.')
     assert.equal(obj.overviewText, 'hi')
+    const rawProse = parseLlmJSONObject('Sure! {"overviewText":"hello"}')
+    assert.equal(rawProse.overviewText, 'hello')
+  })
+
+  it('normalizeLlmBase strips trailing /v1 so /v1/models does not double', () => {
+    const url = assertLlmBaseUrl('http://localhost:11434/v1/', false)
+    assert.equal(url.hostname, 'localhost')
+    assert.equal(normalizeLlmBase(url), 'http://localhost:11434')
   })
 })
 
@@ -77,6 +84,28 @@ describe('[Ethy/AI]: intent engine fixtures', () => {
     assert.equal(r.viewTitle, 'Most used peers')
     assert.equal(r.widget.kind, 'table')
     vi.unstubAllGlobals()
+  })
+
+  it('routes tool call with args cleanly and falls back to widget.assistantComment', async () => {
+    const spine = createSpine('sepolia', 11155111n)
+    advanceDemo(spine, 8000)
+    const stateManager = createFlatStateManager()
+    const transport = new FixtureReplayTransport([
+      JSON.stringify({
+        viewTitle: 'Peer Table',
+        action: { type: 'tool', name: 'ethy' },
+      }),
+    ])
+    const fallback = new HybridIntentEngine({ stateManager })
+    const engine = new LocalHttpIntentEngine({
+      transport,
+      stateManager,
+      fallback,
+      getTurns: () => [],
+    })
+    const r = await engine.handle({ text: 'show ethy swarm', spine })
+    assert.equal(r.viewTitle, 'Peer Table')
+    assert.isDefined(r.overviewNote)
   })
 
   it('compose peersByClient from live spine', () => {

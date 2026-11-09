@@ -32,6 +32,8 @@ export type ContractAddressAgg = {
   swapEmittersInTx: Set<string>
   latestBalCode?: Uint8Array
   implSlotValue?: string
+  callPreviews: string[]
+  eventPreviews: string[]
 }
 
 export type CodeLookup = {
@@ -196,7 +198,7 @@ function pass2Behavior(
       const label = peerArchetypes?.get(peer)
       if (label === 'DEX Pool' || label === 'ERC-20') pools += 1
     }
-    if (pools >= 2) {
+    if (pools >= 2 || agg.coTouched.size >= 2) {
       return { archetype: 'DEX Router', confidence: 'medium' }
     }
   }
@@ -337,10 +339,16 @@ export function narrateContract(profile: ContractProfile): string {
       ? ` (${profile.proxyKind} → ${shortAddress(profile.proxyTarget)})`
       : ''
   const calls =
-    profile.topSelectors?.[0] !== undefined ? profile.topSelectors[0]!.split(' (')[0] : 'calls'
-  const callCount = profile.topSelectors?.[0]?.match(/\((\d+)x\)/)?.[1] ?? '0'
+    profile.topSelectors?.[0] !== undefined ? profile.topSelectors[0]!.split(' (')[0] : undefined
+  const callCount = profile.topSelectors?.[0]?.match(/\((\d+)x\)/)?.[1]
+  const callClause =
+    calls !== undefined && callCount !== undefined
+      ? `${callCount} ${calls} call${callCount === '1' ? '' : 's'} in window, `
+      : ''
   const slots = profile.storageWrites
-  let text = `Contract ${addr} is a ${arch}${proxy} · ${conf}. ${callCount} ${calls} in window, ${slots} storage writes. /contract for detail.`
+  const label =
+    profile.knownName !== undefined ? `${profile.knownName} (${addr})` : `Contract ${addr}`
+  let text = `${label} is a ${arch}${proxy} · ${conf} confidence. ${callClause}${slots} storage writes across ${profile.blocksActive} blk. Press Ctrl+D for selectors & opcodes.`
   text = text.replace(/\s+/g, ' ').trim()
   if (text.length <= MAX_AI_OVERVIEW_CHARS) return text
   return `${text.slice(0, MAX_AI_OVERVIEW_CHARS - 1)}…`
@@ -355,17 +363,21 @@ export function buildContractProfile(
   const code = resolveCodeForAddress(row.address, lookup, agg)
   const fingerprint =
     code !== undefined && code.length > 0 ? fingerprintWithCache(code, cache) : undefined
-  const callPreviews: string[] = []
-  const eventPreviews: string[] = []
-  for (const [sel] of countMapTop(agg.selectorCounts, 3)) {
-    const entry = lookupFunctionSelector(sel)
-    if (entry !== undefined) {
-      callPreviews.push(entry.name)
+  const callPreviews: string[] = [...(agg.callPreviews ?? [])]
+  if (callPreviews.length === 0) {
+    for (const [sel] of countMapTop(agg.selectorCounts, 3)) {
+      const entry = lookupFunctionSelector(sel)
+      if (entry !== undefined) {
+        callPreviews.push(entry.name)
+      }
     }
   }
-  for (const [topic] of countMapTop(agg.topicCounts, 3)) {
-    const entry = lookupEventTopic0(topic)
-    if (entry !== undefined) eventPreviews.push(entry.name)
+  const eventPreviews: string[] = [...(agg.eventPreviews ?? [])]
+  if (eventPreviews.length === 0) {
+    for (const [topic] of countMapTop(agg.topicCounts, 3)) {
+      const entry = lookupEventTopic0(topic)
+      if (entry !== undefined) eventPreviews.push(entry.name)
+    }
   }
   return {
     ...row,
