@@ -73,11 +73,11 @@ export function cursorActive(cursor: SnapRangeCursor): boolean {
   return compareBytes32(cursor.origin, cursor.limit) <= 0
 }
 
-/** True when a cursor still has uncommitted Merkle verify work (WP-06e). */
+/** True when a non-refresh cursor still has uncommitted Merkle verify work (WP-06e / WP-06f). */
 export function bucketCursorsPendingVerify(bucket: SnapBucket): boolean {
   const ranges = bucket.subRanges
   if (ranges === undefined) return false
-  return ranges.some((c) => (c.verifyingCount ?? 0) > 0)
+  return ranges.some((c) => c.refresh !== true && (c.verifyingCount ?? 0) > 0)
 }
 
 export function cursorBlockedForDispatch(cursor: SnapRangeCursor): boolean {
@@ -123,6 +123,12 @@ export function syncBucketCursorFields(bucket: SnapBucket): void {
     return
   }
   if (sweepActive.length === 0 && refreshActive.length > 0) {
+    if (!bucketCursorsPendingVerify(bucket)) {
+      bucket.currentLastHash = new Uint8Array(bucket.limitHash)
+      bucket.status = 'done'
+      bucket.assignedPeerId = undefined
+      bucket.lastStallReason = undefined
+    }
     return
   }
   let minOrigin = sweepActive[0]!.origin

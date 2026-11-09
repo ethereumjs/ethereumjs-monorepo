@@ -379,8 +379,10 @@ export class SnapAccountSynchronizer {
       stateRoot: new Uint8Array(this.spine.pivotStateRoot!),
       pivotBlockNumber: this.spine.pivotBlockNumber ?? 0n,
     })
-    bucket.status = 'syncing'
-    bucket.assignedPeerId = peer.id
+    if (cursor.refresh !== true) {
+      bucket.status = 'syncing'
+      bucket.assignedPeerId = peer.id
+    }
     const row = this.spine.peers.get(peer.id)
     if (row !== undefined) row.snapRequestsSent++
     const payload = encodeGetAccountRange(
@@ -695,7 +697,11 @@ export class SnapAccountSynchronizer {
       this.endCursorVerify(cursor)
       return
     }
-    if (cursor === undefined || !pipelined) {
+    if (
+      (cursor === undefined || !pipelined) &&
+      cursor?.refresh !== true &&
+      bucket.status !== 'done'
+    ) {
       bucket.status = 'verifying_proof'
     }
     this.schedule()
@@ -749,6 +755,15 @@ export class SnapAccountSynchronizer {
 
     if (!result.ok) {
       this.cancelSuccessorFlights(flight.cursorId, flight.bucket, flight.reqId)
+      if (cursor?.refresh === true) {
+        this.inFlightOrigins.delete(originDedupeKey(flight.bucket, cursor.origin))
+        this.inFlightOrigins.delete(originDedupeKey(flight.bucket, flight.origin))
+        this.endCursorVerify(cursor)
+        this.removeCursor(bucket, cursor.id)
+        this.refreshBucketSyncStatus(bucket)
+        this.schedule()
+        return
+      }
       if (cursor !== undefined && flight.priorOrigin !== undefined) {
         this.inFlightOrigins.delete(originDedupeKey(flight.bucket, cursor.origin))
         this.inFlightOrigins.delete(originDedupeKey(flight.bucket, flight.priorOrigin))
@@ -848,6 +863,7 @@ export class SnapAccountSynchronizer {
     syncBucketCursorFields(bucket)
     this.refreshBucketSyncStatus(bucket)
     if (bucket.status === 'done' && !wasDone) {
+      this.snapStore?.flushBuckets(this.spine.snapBuckets)
       this.onBucketDone?.(bucket.index)
     }
     this.schedule()

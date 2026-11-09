@@ -121,6 +121,7 @@ export class SnapCodeAndStorageSynchronizer {
   private readonly completedStorageAccounts = new Set<string>()
   private readonly countedCodeHashes = new Set<string>()
   private readonly countedStorageAccounts = new Set<string>()
+  private hasRestoredTotals = false
   private lastContractsDone = 0
   private lastContractRateAt = Date.now()
   private reqId = 1n
@@ -170,66 +171,85 @@ export class SnapCodeAndStorageSynchronizer {
 
   noteAccounts(entries: IngestedAccountMeta[], opts?: { fromDiskRefill?: boolean }): void {
     const fromDiskRefill = opts?.fromDiskRefill === true
+    let spilled = false
     for (const { accountHash, codeHash, storageRoot } of entries) {
       const ownedHash = new Uint8Array(accountHash)
+      let rowSpilled = false
       if (!equalsBytes(codeHash, KECCAK256_NULL)) {
         const key = codeHashKey(codeHash)
-        if (!fromDiskRefill && !this.countedCodeHashes.has(key)) {
+        const alreadyHaveCode =
+          this.stateManager.getCodeByHash(codeHash) !== undefined ||
+          this.snapStore?.hasPersistedCode(codeHash) === true
+        if ((!fromDiskRefill || !this.hasRestoredTotals) && !this.countedCodeHashes.has(key)) {
           this.countedCodeHashes.add(key)
-          if (this.stateManager.getCodeByHash(codeHash) === undefined) {
+          if (!alreadyHaveCode || fromDiskRefill) {
             this.spine.codesTotal = (this.spine.codesTotal ?? 0) + 1
           }
         }
-        if (this.stateManager.getCodeByHash(codeHash) !== undefined) {
-          continue
-        }
-        if (!this.codeQueue.has(key)) {
-          if (this.codeQueue.size >= this.maxInMemoryContractTasks) {
+        if (!alreadyHaveCode && !this.codeQueue.has(key)) {
+          if (!fromDiskRefill && this.codeQueue.size >= this.maxInMemoryContractTasks) {
             if (this.snapStore !== undefined) {
               this.snapStore.enableContractScan()
             } else {
               this.spillContractRow(ownedHash, codeHash, storageRoot)
+              rowSpilled = true
             }
-            continue
+            spilled = true
+          } else {
+            this.codeQueue.set(key, { codeHash: new Uint8Array(codeHash), missRetries: 0 })
           }
-          this.codeQueue.set(key, { codeHash: new Uint8Array(codeHash), missRetries: 0 })
         }
       }
       if (!equalsBytes(storageRoot, KECCAK256_RLP)) {
         const key = accountHashKey(ownedHash)
-        if (!fromDiskRefill && !this.countedStorageAccounts.has(key)) {
+        const alreadyHaveStorage =
+          this.completedStorageAccounts.has(key) ||
+          this.snapStore?.hasPersistedStorageAccount(ownedHash) === true
+        if (alreadyHaveStorage) {
+          this.completedStorageAccounts.add(key)
+        }
+        if ((!fromDiskRefill || !this.hasRestoredTotals) && !this.countedStorageAccounts.has(key)) {
           this.countedStorageAccounts.add(key)
-          this.spine.storageAccountsTotal = (this.spine.storageAccountsTotal ?? 0) + 1
-        }
-        if (this.completedStorageAccounts.has(key)) {
-          continue
-        }
-        const existing = this.pendingStorage.get(key)
-        if (existing !== undefined) {
-          if (!equalsBytes(existing.storageRoot, storageRoot)) {
-            existing.storageRoot = new Uint8Array(storageRoot)
-            existing.origin = new Uint8Array(32)
-            existing.verifying = false
-            existing.missRetries = 0
+          if (!alreadyHaveStorage || fromDiskRefill) {
+            this.spine.storageAccountsTotal = (this.spine.storageAccountsTotal ?? 0) + 1
           }
-        } else {
-          if (this.pendingStorage.size >= this.maxInMemoryContractTasks) {
+        }
+        if (!alreadyHaveStorage) {
+          const existing = this.pendingStorage.get(key)
+          if (existing !== undefined) {
+            if (!equalsBytes(existing.storageRoot, storageRoot)) {
+              existing.storageRoot = new Uint8Array(storageRoot)
+              existing.origin = new Uint8Array(32)
+              existing.verifying = false
+              existing.missRetries = 0
+            }
+          } else if (!fromDiskRefill && this.pendingStorage.size >= this.maxInMemoryContractTasks) {
             if (this.snapStore !== undefined) {
               this.snapStore.enableContractScan()
-            } else {
+            } else if (!rowSpilled) {
               this.spillContractRow(ownedHash, codeHash, storageRoot)
             }
-            continue
+            spilled = true
+          } else {
+            this.pendingStorage.set(key, {
+              accountHash: ownedHash,
+              storageRoot: new Uint8Array(storageRoot),
+              origin: new Uint8Array(32),
+              verifying: false,
+              missRetries: 0,
+            })
           }
-          this.pendingStorage.set(key, {
-            accountHash: ownedHash,
-            storageRoot: new Uint8Array(storageRoot),
-            origin: new Uint8Array(32),
-            verifying: false,
-            missRetries: 0,
-          })
         }
       }
+    }
+    if (spilled && this.snapStore !== undefined && !fromDiskRefill) {
+      this.snapStore.persistContractProgress(
+        this.spine.codesTotal ?? 0,
+        this.spine.codesSynced,
+        this.spine.storageAccountsTotal ?? 0,
+        this.spine.storageAccountsSynced ?? 0,
+        this.spine.storageSlotsSynced,
+      )
     }
     this.publishPending()
   }
@@ -477,7 +497,6 @@ export class SnapCodeAndStorageSynchronizer {
             STORAGE_RESPONSE_BYTES,
           ),
         )
-        break
       }
     }
   }
@@ -579,15 +598,9 @@ export class SnapCodeAndStorageSynchronizer {
       enqueueProtocol(() => {
         try {
           if (!result.ok) {
-            recordDiagnostic(this.spine, {
-              subsystem: 'snap',
-              severity: 'warn',
-              peerId,
-              message: result.reason ?? 'storage range decode failed',
-            })
             for (const t of tasks) {
               const key = accountHashKey(t.accountHash)
-              t.verifying = false
+              this.handleStorageProofFailure(t, key, peerId, result.reason)
             }
             this.publishPending()
             return
@@ -672,6 +685,7 @@ export class SnapCodeAndStorageSynchronizer {
         task.missRetries++
         if (task.missRetries > 1) {
           this.codeQueue.delete(key)
+          this.spine.codesSynced++
           recordDiagnostic(this.spine, {
             subsystem: 'snap',
             severity: 'warn',
@@ -681,6 +695,13 @@ export class SnapCodeAndStorageSynchronizer {
         }
       }
     }
+    this.snapStore?.persistContractProgress(
+      this.spine.codesTotal ?? 0,
+      this.spine.codesSynced,
+      this.spine.storageAccountsTotal ?? 0,
+      this.spine.storageAccountsSynced ?? 0,
+      this.spine.storageSlotsSynced,
+    )
     this.publishPending()
   }
 
@@ -723,13 +744,27 @@ export class SnapCodeAndStorageSynchronizer {
   private refillContractTasksFromDisk(): void {
     this.flushContractSpillBuffer()
     while (
-      this.codeQueue.size + this.pendingStorage.size < this.maxInMemoryContractTasks &&
+      this.codeQueue.size < this.maxInMemoryContractTasks &&
+      this.pendingStorage.size < this.maxInMemoryContractTasks &&
       (this.snapStore?.contractScanRemaining() === true || this.contractsSpilledOnDisk > 0)
     ) {
       if (this.snapStore !== undefined) {
         const batch = this.snapStore.nextContractScanBatch(512)
         if (batch.length === 0) break
         this.noteAccounts(batch, { fromDiskRefill: true })
+        if (!this.hasRestoredTotals) {
+          const frac = this.snapStore.contractScanFraction()
+          if (frac >= 0.005) {
+            this.spine.codesTotal = Math.max(
+              this.spine.codesSynced + this.codeQueue.size,
+              Math.round(this.countedCodeHashes.size / frac),
+            )
+            this.spine.storageAccountsTotal = Math.max(
+              (this.spine.storageAccountsSynced ?? 0) + this.pendingStorage.size,
+              Math.round(this.countedStorageAccounts.size / frac),
+            )
+          }
+        }
         continue
       }
       if (this.contractSpillPath === undefined || !fs.existsSync(this.contractSpillPath)) break
@@ -780,6 +815,10 @@ export class SnapCodeAndStorageSynchronizer {
     this.spine.storageAccountsSynced = totals.storageAccountsSynced
     this.spine.storageSlotsSynced = totals.storageSlotsSynced
     this.lastContractsDone = totals.codesSynced + totals.storageAccountsSynced
+    this.hasRestoredTotals =
+      totals.codesTotal > totals.codesSynced ||
+      totals.storageAccountsTotal > totals.storageAccountsSynced ||
+      this.snapStore?.contractScanRemaining() !== true
   }
 }
 

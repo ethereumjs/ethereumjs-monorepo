@@ -208,9 +208,7 @@ export async function verifyProvenAccountChunkJob(
   }
 }
 
-function decodeSlotList(
-  slotsNested: unknown,
-):
+function decodeSlotList(slotsNested: unknown):
   | {
       ok: true
       keys: Uint8Array[]
@@ -326,8 +324,8 @@ export async function verifyStorageRangeJob(
   }
   const ranges = decoded[1] as unknown
   const proofRaw = decoded[2]
-  if (!Array.isArray(ranges) || ranges.length === 0) {
-    return { ok: true, hasRight: false, perAccount: [] }
+  if (!Array.isArray(ranges)) {
+    return { ok: false, hasRight: false, reason: 'storage ranges not array' }
   }
   let proof: Uint8Array[] | null = null
   if (Array.isArray(proofRaw)) {
@@ -339,6 +337,33 @@ export async function verifyStorageRangeJob(
     } catch (err: unknown) {
       return { ok: false, hasRight: false, reason: errorText(err) }
     }
+  }
+  if (ranges.length === 0) {
+    if (proof !== null && proof.length > 0 && accounts.length > 0) {
+      try {
+        await verifyMerkleRangeProof(
+          accounts[0]!.storageRoot,
+          opts.origin,
+          null,
+          [],
+          [],
+          proof,
+          useKeyHashingFunction,
+        )
+        return {
+          ok: true,
+          hasRight: false,
+          perAccount: [{ accountIndex: 0, ok: true, hasRight: false, slots: [] }],
+        }
+      } catch (err: unknown) {
+        return {
+          ok: true,
+          hasRight: false,
+          perAccount: [{ accountIndex: 0, ok: false, hasRight: false, reason: errorText(err) }],
+        }
+      }
+    }
+    return { ok: false, hasRight: false, reason: 'empty storage range without proof' }
   }
   const perAccount: StorageAccountVerifyResult[] = []
   let flightHasRight = false

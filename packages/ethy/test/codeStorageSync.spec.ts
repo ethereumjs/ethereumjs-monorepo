@@ -1,7 +1,7 @@
 import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
 import { createFlatStateManager } from '@ethereumjs/statemanager'
-import { bigIntToUnpaddedBytes } from '@ethereumjs/util'
+import { KECCAK256_NULL, bigIntToUnpaddedBytes } from '@ethereumjs/util'
 import { keccak_256 } from '@noble/hashes/sha3'
 import { assert, describe, it } from 'vitest'
 
@@ -110,6 +110,86 @@ describe('[Ethy/Sync]: code and storage snap helpers', () => {
     ])
     assert.equal(spine.codesQueued, 0)
     assert.equal(spine.codesTotal, 0)
+    assert.equal(spine.storageQueued, 1)
+    assert.equal(spine.storageAccountsTotal, 1)
+  })
+
+  it('pipelines up to 4 storage range requests per fast peer and bounds empty-reply retries', async () => {
+    const spine = createSpine('sepolia', 11155111n)
+    spine.pivotStateRoot = new Uint8Array(32).fill(0xaa)
+    for (const b of spine.snapBuckets) {
+      b.status = 'done'
+      b.currentLastHash = new Uint8Array(b.limitHash)
+      b.subRanges = []
+    }
+    const sm = createFlatStateManager()
+    const sentPayloads: Uint8Array[] = []
+    let onStorage: (peerId: string, payload: Uint8Array) => void = () => {}
+    const peer = {
+      id: 'fast-peer',
+      caps: ['snap/1'],
+      snapResponsesOk: 10,
+      snapTimeouts: 0,
+      avgLatencyMs: 20,
+      clientFamily: 'Nethermind' as const,
+    }
+    const refreshed: Uint8Array[] = []
+    const transport: SnapTransport = {
+      snapPeers: () => [peer],
+      sendAccountRange: () => {},
+      onAccountRange: () => () => {},
+      sendStorageRanges: (_peerId, payload) => {
+        sentPayloads.push(payload)
+      },
+      onStorageRanges: (cb) => {
+        onStorage = cb
+        return () => {}
+      },
+      sendByteCodes: () => {},
+      onByteCodes: () => () => {},
+    }
+    const sync = new SnapCodeAndStorageSynchronizer({
+      spine,
+      stateManager: sm,
+      transport,
+      flightTracker: new SnapPeerFlightTracker(),
+      getSnapPeers: () => [peer],
+      peerBusy: () => false,
+      onBalRefreshAccount: (h) => refreshed.push(h),
+    })
+    // Add 40 storage accounts -> should pipeline 3 batches (16 + 16 + 8) in a single tick!
+    const entries = Array.from({ length: 40 }, (_, i) => {
+      const accountHash = new Uint8Array(32)
+      accountHash[0] = i + 1
+      return {
+        accountHash,
+        codeHash: new Uint8Array(KECCAK256_NULL),
+        storageRoot: new Uint8Array(32).fill(0x22),
+      }
+    })
+
+    sync.noteAccounts(entries)
+    sync.start()
+    assert.equal(sentPayloads.length, 3)
+
+    // Simulate 3 empty replies ([reqId, [], []]) for a single-task queue -> should bound retries and finish
+    sync.clearPending()
+    sentPayloads.length = 0
+    const single = [entries[0]!]
+    sync.noteAccounts(single)
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      // Trigger schedule via start/reply
+      ;(sync as unknown as { schedule: () => void }).schedule()
+      const lastReq = sentPayloads[sentPayloads.length - 1]!
+      const decoded = RLP.decode(lastReq) as Uint8Array[]
+      const reqIdBytes = decoded[0]!
+      onStorage('fast-peer', RLP.encode([reqIdBytes, [], []] as never))
+      await new Promise((r) => setTimeout(r, 20))
+    }
+    sync.stop()
+    assert.equal(refreshed.length, 1)
+    assert.equal(spine.storageQueued, 0)
+    assert.isTrue(sync.pendingDone())
   })
 
   it('Map-backed contract queues dedupe and clear in O(1)', () => {
