@@ -1,6 +1,6 @@
 # WP-07c: Local LLM Dual-Mode Engine — 30–60s Read-Only Situational Pulse, Interactive `IntentEngine`, Privacy-Scoped Prompt Memory & Dynamic UI Composition
 
-- **Status:** `BLOCKED_BY_WP-07b`
+- **Status:** `PLANNED`
 - **Dependencies:** `WP-07a`, `WP-07b`
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
@@ -84,7 +84,104 @@ In addition to calling pre-built slash tools (`/peers`, `/buckets`, `/economy`, 
 
 ## 4. Concrete Implementation Plan (Planner — Grok 4.7)
 
-*(To be filled by Grok 4.7 during planning)*
+**Zero new npm dependencies.** HTTP via `globalThis.fetch` (Node `>=22`). CI never dials a model server.
+
+### 4.1 Baseline (WP-07a / WP-07b shipped)
+
+| Area | Current code |
+| --- | --- |
+| Read-only snapshots | [`readDomainSnapshots`](../src/domains/domainManagers.ts) → `EthyDomainSnapshots` (no write handles) |
+| AI Overview | [`session.ts`](../src/tui/session.ts) → [`buildDeterministicOverview`](../src/ai/overviewNarrator.ts) (`MAX_AI_OVERVIEW_CHARS = 280`); refresh on welcome, phase change, **30s** timer — not inside `renderFrame` |
+| Intent routing | Synchronous [`IntentEngine.handle`](../src/ai/intentEngine.ts); [`DeterministicIntentEngine`](../src/ai/deterministicEngine.ts) slash + keywords |
+| Interaction title | [`interactionViewTitle`](../src/tui/interactionContent.ts): slash cmd or first five words of NL query — no LLM `viewTitle` yet |
+| AI pill | `partial` / `Slash/Rule Mode` in [`createSpine`](../src/spine/createSpine.ts) |
+| Logging | [`EthyFlightRecorder`](../src/persist/flightRecorder.ts): diagnostics only — prompts must not appear in `ethy.log` / `events.jsonl` |
+
+### 4.2 Design refinements (Decision **D-100**)
+
+1. **Two clocks:** Without `--llm-url`, keep the **30s** deterministic narrator (offline box never blank). With URL: first paint stays deterministic, then `AiPulseNarrator` updates on phase change and every `AI_PULSE_INTERVAL_MS = 45_000`. Failed/slow model → keep or restore deterministic prose.
+2. **Grounded compose (default grammar):** Per **D-004**, small models miscount columns. Intent JSON prefers `{ type: "tool", name: "peers" }` or `{ type: "compose", dataset: "peersByClient", … }`; TypeScript builds every cell from `EthySpine` / snapshots. **`literal`** table/KV is a clamped fallback only (≤8 cols, ≤16 rows, ≤48 chars/cell, strip control chars + ANSI). WP §2.4 “Nethermind vs Geth” → dataset `peersByClient`, not invented numbers.
+3. **Slash never hits the model:** `/…`, deep-view `Enter`, keyword fallback stay on `DeterministicIntentEngine`. Natural language uses HTTP only when the endpoint is healthy.
+4. **Async `handle`:** `IntentEngine.handle(): Promise<IntentResult>`. Deterministic path returns `Promise.resolve`. TUI uses a generation counter: fire promise, ignore stale replies; do not block the raw key loop on `await`.
+5. **Privacy:** Prompts RAM-only except developer `--record-fixture <path>`. Up-arrow `view.history` is local editor recall, not sent to the model. `/clear` clears the 3-turn AI ring only. Pulse never sees turn memory.
+
+### 4.3 CLI (`src/cli/args.ts`, `printEthyUsage`)
+
+| Flag | Behavior |
+| --- | --- |
+| `--llm-url <base>` | OpenAI-compatible base (e.g. `http://127.0.0.1:8080`). Absent → deterministic-only overview + NL keyword router. |
+| `--llm-allow-remote` | Required for non-loopback hosts; else only `127.0.0.1`, `localhost`, `::1`. |
+| `--ai-memory ephemeral\|off` | Default `ephemeral`. `--no-ai-history` aliases `off`. |
+| `--record-fixture <path>` | Append JSONL pulse/intent exchanges (opt-in; not flight recorder). |
+
+Wire through [`createEthyNode`](../src/core/createEthyNode.ts). **Do not** start pulse on `--headless` or `--demo`.
+
+### 4.4 New / changed modules (`src/ai/`)
+
+| File | Responsibility |
+| --- | --- |
+| `llmClient.ts` | `assertLoopbackUrl`; `POST {base}/v1/chat/completions` (`response_format: { type: "json_object" }`); timeouts pulse 8s / intent 12s; health `GET {base}/v1/models` 1.5s. |
+| `fixtureEngine.ts` | `LlmTransport.complete(kind, body) → string`. `FetchLlmTransport`, `RecordingTransport`, `FixtureReplayTransport` (CI, no `fetch`). |
+| `usagePlaybook.ts` | `ETHY_USAGE_PLAYBOOK`: slashes from [`SLASH_COMMANDS`](../src/ai/slashComplete.ts), Tab / Enter / Ctrl+D; stage priorities from WP §2.2. |
+| `compactContext.ts` | Compact JSON for prompts: cap peers 16, top contracts 5, recent blocks 4; no enodes / raw logs. |
+| `composeView.ts` | Datasets: `peers`, `peersByClient`, `buckets`, `economy`, `topContracts` (+ optional `minWrites`), `diag`, `literal` (clamped) → `WidgetSpec` + `viewTitle`. |
+| `toolCatalog.ts` | Gated tool names from [`SLASH_TOOL_REGISTRY`](../src/domains/toolRegistry.ts); locked `head` omits `bal` / `account` / `simulate`; write tools only on interactive prompt, never pulse. |
+| `turnMemory.ts` | Ring of 3 `{ userQuery, viewTitle, toolCalled }`; `clear()`, `snapshot()`. |
+| `pulseNarrator.ts` | `AiPulseNarrator`: read-only JSON `{ overviewText }`; no turn ring; abort in-flight on user submit; unhealthy → deterministic; AI pill `ready` / `Local LLM` when healthy. |
+| `localHttpEngine.ts` | `LocalHttpIntentEngine`: schema + catalog; user blob = `<ethy_state>` + snapshots + optional turns + query; dispatch via shared `dispatchSlash` + `composeView`; invalid → deterministic fallback. |
+| `hybridEngine.ts` | `HybridIntentEngine` on the node: `/` → deterministic; `/clear`, `/ai stateless\|ephemeral`; NL when healthy; `setDisconnectPeer` forwarded. |
+
+Refactor [`deterministicEngine.ts`](../src/ai/deterministicEngine.ts): export package-visible `dispatchSlash` (or `routeSlashWidget`) for tool dispatch without duplicating switches.
+
+Add `/clear`, `/ai ` to `SLASH_COMMANDS` + read-only registry entries (session controls, not write actions).
+
+### 4.5 Types & TUI wiring
+
+- [`intentEngine.ts`](../src/ai/intentEngine.ts): `IntentResult` adds optional `viewTitle`, `overviewNote` (clamp 280).
+- [`spine/types.ts`](../src/spine/types.ts): `TuiViewState.interactionTitle?: string`.
+- [`interactionContent.ts`](../src/tui/interactionContent.ts): prefer `interactionTitle` when set (NL); slash keeps `` `/cmd · title` `` (`interactionTitle` unset).
+- [`session.ts`](../src/tui/session.ts): start/stop `AiPulseNarrator` with session; `notePhase` schedules pulse without blocking `draw`; submit uses generation-guarded `void engine.handle(…).then(…)`; in-flight NL → overview `Asking the local model…`; cleanup aborts controllers + drops ring.
+- [`main.ts`](../src/cli/main.ts): stop casting to `DeterministicIntentEngine` — use `HybridIntentEngine.setDisconnectPeer` or small interface.
+
+### 4.6 Data flow
+
+```text
+draw() ──► buildDeterministicOverview (always when no LLM or unhealthy)
+         └► AiPulseNarrator ── readDomainSnapshots ── loopback HTTP ── view.aiOverview
+
+Enter ──► HybridIntentEngine ── slash ── DeterministicIntentEngine
+                              └─ NL ── LocalHttpIntentEngine ── tool | composeView ── WidgetSpec + interactionTitle
+```
+
+### 4.7 Tests
+
+| File | Coverage |
+| --- | --- |
+| **New** `test/aiEngine.spec.ts` | `FixtureReplayTransport` + stub `fetch` throw; loopback guard; pulse payload (no user history); clamp 280; intent `viewTitle` + grounded rows; `peersByClient`; literal clip/sanitize; capability gating; turn memory on/off; replay &lt;5ms; no prompts in flight-recorder diagnostics |
+| `test/intent.spec.ts`, `test/balSync.spec.ts` | `await engine.handle(…)` |
+| `test/args.spec.ts` | New CLI flags |
+
+### 4.8 Docs (implementer)
+
+- [`ARCHITECTURE.md`](../ARCHITECTURE.md) §4: `HybridIntentEngine`, `LocalHttpIntentEngine`, 45s pulse, loopback default.
+- [`.cursor/rules/ethy-architecture.mdc`](../../../.cursor/rules/ethy-architecture.mdc) §2: deterministic overview until `--llm-url` + healthy pulse.
+
+### 4.9 Out of scope
+
+WP-07d contract lens, new dependencies, embedded GGUF, real EVM `/simulate`, economy ingest changes, prompt text in `ethy.log` / `events.jsonl`.
+
+### 4.10 Gates
+
+`npm run tsc`, `npm test`, `npm run spellcheck` in `packages/ethy`. Prefer rewording over cspell dictionary adds for product names.
+
+### 4.11 Suggested implementation order
+
+1. `llmClient` + `fixtureEngine` + unit tests (offline).
+2. `IntentEngine` async + `dispatchSlash` refactor; update existing intent tests.
+3. `toolCatalog`, `compactContext`, `composeView`, `usagePlaybook`.
+4. `turnMemory`, `localHttpEngine`, `hybridEngine`; wire `createEthyNode` + CLI args.
+5. `pulseNarrator` + session/title types; AI pill transitions.
+6. `test/aiEngine.spec.ts`; ARCHITECTURE + ethy-architecture rule touch-up.
 
 ---
 
