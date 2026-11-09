@@ -1,6 +1,6 @@
 # WP-07b: Spatial Cockpit Redesign (Sketch Layout), `TableUIComponent`, `DebugPageUIComponent` (`Ctrl+D` Toggle) & Vertically-Centered `AI Prose Overview`
 
-- **Status:** `PLANNED`
+- **Status:** `DONE`
 - **Dependencies:** `WP-07a`
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
@@ -117,12 +117,12 @@ Even before the Local LLM is connected in `WP-07c` (or whenever the user runs Et
 
 ## 5. Acceptance Criteria (`WP-07b`)
 
-- [ ] Top row displays `Node Pulse` (left), `Economy` (middle), and `<Domain> Metrics` (right), each 8 lines high.
-- [ ] Lower area splits into the 2/3-width rounded **Interaction View** box (`╭─ <Title> ─╮`) on the left and the 1/3-width right stack: dynamic-height **`AI Overview`** box on top (with spacious padding, `<= 280` chars, vertically centered) and 8-line **`<Domain> Commands`** box anchored at the bottom above the prompt rule.
-- [ ] `TableUIComponent` renders clean typographic tables without inner borders inside the Interaction View box; all slash commands (`/peers`, `/buckets`, `/economy`, `/bal`, etc.) use it and synchronize the Interaction View box title (`"/peers"`, `"Most used peers"`, etc.).
-- [ ] `DebugPageUIComponent` and `Ctrl+D` (`toggleDebugPage`) switch the Interaction View between the clean Core Table and the structured Debug Page (removing the old inline `assistantComment` / `footer: 'discovery'` clutter from `/peers` and `/diag`).
-- [ ] Update `packages/ethy/.cursor/rules/ethy-tui.mdc` to codify the new spatial layout and `UIComponent` laws.
-- [ ] Virtual framebuffer tests (`test/tui.spec.ts`) lock down exact `(cols, rows)` geometry across resizes (`24..60` rows), vertical centering of `AI Overview`, and `Ctrl+D` page toggling.
+- [x] Top row displays `Node Pulse` (left), `Economy` (middle), and `<Domain> Metrics` (right), each 8 lines high.
+- [x] Lower area splits into the 2/3-width rounded **Interaction View** box (`╭─ <Title> ─╮`) on the left and the 1/3-width right stack: dynamic-height **`AI Overview`** box on top (with spacious padding, `<= 280` chars, vertically centered) and 8-line **`<Domain> Commands`** box anchored at the bottom above the prompt rule.
+- [x] `TableUIComponent` renders clean typographic tables without inner borders inside the Interaction View box; all slash commands (`/peers`, `/buckets`, `/economy`, `/bal`, etc.) use it and synchronize the Interaction View box title (`"/peers"`, `"Most used peers"`, etc.).
+- [x] `DebugPageUIComponent` and `Ctrl+D` (`toggleDebugPage`) switch the Interaction View between the clean Core Table and the structured Debug Page (removing the old inline `assistantComment` / `footer: 'discovery'` clutter from `/peers` and `/diag`).
+- [x] Update `packages/ethy/.cursor/rules/ethy-tui.mdc` to codify the new spatial layout and `UIComponent` laws.
+- [x] Virtual framebuffer tests (`test/tui.spec.ts`) lock down exact `(cols, rows)` geometry across resizes (`24..60` rows), vertical centering of `AI Overview`, and `Ctrl+D` page toggling.
 
 ---
 
@@ -216,4 +216,12 @@ leftW = w0 + COCKPIT_COLUMN_GAP + w1   rightW = w2
 
 ## 7. Implementation Notes & Deviations (Implementer — Composer 2.5)
 
-*(To be filled by Composer 2.5 during implementation)*
+**Status:** Shipped 2026-11-09. Gates: `npm run tsc`, `npm test` (227), `npm run spellcheck:ts`.
+
+**Delivered modules:** `roundedBox.ts`, `lowerArea.ts`, `interactionContent.ts`, `tui/components/{Table,KeyValue,DebugPage}UIComponent.ts`, `economy/cockpitPairs.ts`, `ai/overviewNarrator.ts`; `cockpit.ts` top row Economy; `prompt.ts` `toggleDebug` on `\u0004`; `session.ts` narrator refresh + debug toggle; tool `debugPage` on peers, diag, buckets, economy.
+
+**Deviations / notes:**
+
+- `layoutTableColumns` keeps optional `borderPadding` for legacy callers; typographic tables use `borderPadding: 0` via `TableUIComponent`.
+- Short-terminal degrade matches §6.1 (`fillRows < 13` shrinks AI box; `< 10` drops AI box).
+- `ARCHITECTURE.md` ASCII sketch updated to match **D-099**; no runtime behavior change from doc-only drift.

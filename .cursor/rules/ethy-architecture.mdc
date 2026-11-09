@@ -25,11 +25,11 @@ Ethy (`@ethereumjs/ethy`) is an **Execution-Free State & Intelligence Node** for
   - `renderFrame(spine, view, width, height): string[]` is a pure, synchronous function of state and terminal dimensions. Details: [`packages/ethy/.cursor/rules/ethy-tui.mdc`](../../packages/ethy/.cursor/rules/ethy-tui.mdc).
   - The screen is organized into 4 vertical bands:
     1. **Band 1 — Minimal Top Header:** `Ethy v… | NETWORK` on the left, `Slot N` just left of the right-packed capability marks (`● P2P  ◐ SNAP  ○ HEAD  ◐ AI`), followed by a full-bleed `─` rule. Never show bracketed sub-labels in the top bar.
-    2. **Band 2 — 3-Box Cockpit Row (~6–8 lines high, rounded `╭─╮` boxes):**
-       - **Left Box (`Node Pulse`):** Always-anchored overview (Phase, Pivot/Head block, 16-bucket mini bar, synced accounts).
-       - **Middle Box (`<Mark> <Domain> Commands`):** Slash commands / example prompts for the currently selected `activeDomain`.
-       - **Right Box (`<Mark> <Domain> Metrics [Enter]`):** Key stats for `activeDomain`.
-    3. **Band 3 — Broad Main Interaction Area (`fill` band):** Renders structured `WidgetSpec` payloads (`table`, `key_value`, `bar_chart`, `hex_inspector`) produced by tools or AI responses. Never flips unprompted on background ticks or `Tab` domain switches.
+    2. **Band 2 — 3-Box Cockpit Row (8 visible rows per box, rounded `╭─╮` boxes):**
+       - **Left Box (`Node Pulse`):** Always-anchored overview (Phase, Pivot/Head block, 16-bucket progress bar, throughput summary).
+       - **Middle Box (`Economy`):** Four-row live economic telemetry from `spine.economy` (`economyCockpitPairs`).
+       - **Right Box (`<Mark> <Domain> Metrics`):** Key stats for the selected `activeDomain`.
+    3. **Band 3 — Lower fill band (`renderLowerArea`):** Left **2/3** rounded **Interaction View** (`TableUIComponent`, `KeyValueUIComponent`, or `DebugPageUIComponent` when `interactionPage === 'debug'`); right **1/3** stack with vertically centered **`AI Overview`** (`view.aiOverview`, deterministic narrator until **WP-07c**) and fixed 8-line **`<Domain> Commands`** above the prompt rule. `Tab` must not clear `activeWidget`; only explicit commands / deep `Enter` change the interaction body. **`Ctrl+D`** toggles main ↔ debug when `debugPage` is present.
     4. **Band 4 — Domain-Lens Sticky Prompt:** `● ethy > ` where the leading `●` reflects `activeDomain`. Pressing `Tab` (on empty draft) cycles `activeDomain` (`p2p` → `snap` → `head` → `ai`); pressing `Enter` (on empty draft) opens that domain's deep view in Band 3; typing `/p` + `Enter` or a natural-language question runs via `IntentEngine`.
 - **LLMs never draw raw ASCII boxes:**
   - Tools return typed data + a `WidgetSpec`. The TypeScript TUI renderer computes column widths, truncation, and box borders deterministically.

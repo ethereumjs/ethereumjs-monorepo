@@ -1,14 +1,5 @@
 import type { CapabilityReadiness, WidgetSpec } from '../spine/types.ts'
-import type { CapabilityId } from '../spine/types.ts'
-import { BOLD, DIM, RESET, padVisible, truncateVisible } from './ansi.ts'
-import { capabilityMark } from './capabilityMark.ts'
-import {
-  type TwoColumnPair,
-  composeFixedRow,
-  fixedLine,
-  formatTwoColumnRows,
-  maxLabelWidth,
-} from './layout.ts'
+import { renderInteractionWidgetBody } from './interactionContent.ts'
 
 /** How often the suggestion carousel advances to the next set. */
 export const CAROUSEL_INTERVAL_MS = 12_000
@@ -19,85 +10,14 @@ export type SuggestionMarks = {
   head: CapabilityReadiness
 }
 
+/** Legacy helper for unit tests — unbounded height, main page only. */
 export function renderWidgetLines(
   widget: WidgetSpec,
   innerWidth: number,
   marks?: SuggestionMarks,
 ): string[] {
-  const lines: string[] = []
   const w = Math.max(20, innerWidth)
-
-  switch (widget.kind) {
-    case 'onboarding_carousel':
-      for (const line of widget.lines) {
-        const id: CapabilityId =
-          line.group === 'P2P' ? 'p2p' : line.group === 'SNAP' ? 'snap' : 'head'
-        const status =
-          id === 'p2p'
-            ? (marks?.p2p ?? 'locked')
-            : id === 'snap'
-              ? (marks?.snap ?? 'locked')
-              : (marks?.head ?? 'locked')
-        const prefix = capabilityMark(id, status)
-        const half = Math.floor(w / 2)
-        lines.push(
-          composeFixedRow(
-            w,
-            [
-              { text: `${prefix} ${line.command}`, width: half },
-              { text: `${prefix} ${line.prose}`, width: w - half },
-            ],
-            2,
-          ),
-        )
-      }
-      break
-    case 'table':
-      if (widget.preface !== undefined && widget.preface.length > 0) {
-        const pairs: TwoColumnPair[] = widget.preface.map((e) => ({
-          label: `${DIM}${e.key}${RESET}`,
-          value: e.value,
-        }))
-        const lw = maxLabelWidth(pairs)
-        for (const row of formatTwoColumnRows(pairs, lw, w)) {
-          lines.push(fixedLine(row, w))
-        }
-        lines.push('')
-      }
-      if (widget.title) {
-        lines.push(fixedLine(`${BOLD}${widget.title}${RESET}`, w))
-      }
-      lines.push(...renderTable(widget.headers, widget.rows, w))
-      if (widget.secondaryTable !== undefined) {
-        lines.push('')
-        if (widget.secondaryTable.title) {
-          lines.push(fixedLine(`${BOLD}${widget.secondaryTable.title}${RESET}`, w))
-        }
-        lines.push(...renderTable(widget.secondaryTable.headers, widget.secondaryTable.rows, w))
-      }
-      break
-    case 'key_value':
-      if (widget.title) {
-        lines.push(fixedLine(`${BOLD}${widget.title}${RESET}`, w))
-      }
-      {
-        const pairs: TwoColumnPair[] = widget.entries.map((e) => ({
-          label: `${DIM}${e.key}${RESET}`,
-          value: e.value,
-        }))
-        const lw = maxLabelWidth(pairs)
-        for (const row of formatTwoColumnRows(pairs, lw, w)) {
-          lines.push(fixedLine(row, w))
-        }
-      }
-      break
-  }
-
-  if (widget.assistantComment) {
-    lines.push(fixedLine(`${DIM}> ${widget.assistantComment}${RESET}`, w))
-  }
-
-  return lines
+  return renderInteractionWidgetBody(widget, w, 10_000, 'main', marks)
 }
 
 type ColPlan = { min: number; flex: number }
@@ -178,9 +98,13 @@ function shrinkColumns(
   return overflow
 }
 
-/** Column widths for a table of `maxWidth`, including the box border. */
-export function layoutTableColumns(headers: string[], maxWidth: number): number[] {
-  const inner = Math.max(headers.length, maxWidth - 4)
+/** Column widths for a table. Default `borderPadding = 4` matches legacy bordered tables. */
+export function layoutTableColumns(
+  headers: string[],
+  maxWidth: number,
+  borderPadding = 4,
+): number[] {
+  const inner = Math.max(headers.length, maxWidth - borderPadding)
   const gapTotal = Math.max(0, headers.length - 1) * 3
   const budget = Math.max(headers.length, inner - gapTotal)
   const plans = planFor(headers)
@@ -212,27 +136,6 @@ export function layoutTableColumns(headers: string[], maxWidth: number): number[
   }
   widths[best] += extra - given
   return widths
-}
-
-function renderTable(headers: string[], rows: string[][], maxWidth: number): string[] {
-  const colWidths = layoutTableColumns(headers, maxWidth)
-
-  const sep = colWidths.map((cw) => '─'.repeat(cw)).join('─┼─')
-  const fmtRow = (cells: string[]) =>
-    cells
-      .map((cell, i) => padVisible(truncateVisible(cell, colWidths[i] ?? 8), colWidths[i] ?? 8))
-      .join(' │ ')
-
-  const out: string[] = []
-  const top = fixedLine(`┌─${sep}─┐`, maxWidth)
-  out.push(top)
-  out.push(fixedLine(`│ ${fmtRow(headers)} │`, maxWidth))
-  out.push(fixedLine(`├─${sep}─┤`, maxWidth))
-  for (const row of rows) {
-    out.push(fixedLine(`│ ${fmtRow(row)} │`, maxWidth))
-  }
-  out.push(fixedLine(`└─${sep}─┘`, maxWidth))
-  return out
 }
 
 const COMMAND_SETS = [

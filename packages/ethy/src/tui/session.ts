@@ -1,8 +1,10 @@
 import { stdin as input, stdout as output } from 'node:process'
 import readline from 'node:readline'
 
+import { buildDeterministicOverview } from '../ai/overviewNarrator.ts'
 import type { EthyNode } from '../core/createEthyNode.ts'
 import { advanceDemo } from '../demo/advanceDemo.ts'
+import { readDomainSnapshots } from '../domains/domainManagers.ts'
 import { describeNotice } from '../notify/board.ts'
 import {
   ALT_SCREEN_OFF,
@@ -32,6 +34,18 @@ export async function runEthySession(node: EthyNode): Promise<void> {
   let view = createInitialViewState()
   let lastQuerySlot: number | undefined
   let escapeBuf = ''
+  let lastPhase = node.spine.phase
+  let lastOverviewMs = 0
+  const OVERVIEW_INTERVAL_MS = 30_000
+
+  const refreshOverview = (trigger: 'welcome' | 'pulse') => {
+    const snapshots = readDomainSnapshots(node.spine)
+    view = {
+      ...view,
+      aiOverview: buildDeterministicOverview(snapshots, trigger),
+    }
+  }
+  refreshOverview('welcome')
 
   if (input.isTTY) {
     readline.emitKeypressEvents(input)
@@ -43,6 +57,15 @@ export async function runEthySession(node: EthyNode): Promise<void> {
     if (node.demo) {
       advanceDemo(node.spine, Date.now() - demoStart)
     }
+    const now = Date.now()
+    if (node.spine.phase !== lastPhase) {
+      lastPhase = node.spine.phase
+      refreshOverview('pulse')
+      lastOverviewMs = now
+    } else if (now - lastOverviewMs >= OVERVIEW_INTERVAL_MS) {
+      refreshOverview('pulse')
+      lastOverviewMs = now
+    }
     const flip = node.spine.headFlipSummary
     if (view.activeWidget === null && flip !== undefined) {
       view = { ...view, activeWidget: flip }
@@ -50,7 +73,6 @@ export async function runEthySession(node: EthyNode): Promise<void> {
     }
     const cols = output.columns ?? 100
     const rows = output.rows ?? 30
-    const now = Date.now()
     const lines = renderFrame(node.spine, view, cols, rows, describeNotice(node.notices, now))
     const caret = promptCaretPosition(cols, rows, view.promptDraft)
     output.write(CURSOR_HIDE)
@@ -97,8 +119,18 @@ export async function runEthySession(node: EthyNode): Promise<void> {
           submittedLine,
           domainCycle,
           openDeepView,
+          toggleDebug,
         } = reducePromptKey(view, action)
         view = nextView
+        if (toggleDebug === true) {
+          const w = view.activeWidget
+          if (w?.debugPage !== undefined && w.debugPage.length > 0) {
+            view = {
+              ...view,
+              interactionPage: view.interactionPage === 'debug' ? 'main' : 'debug',
+            }
+          }
+        }
         if (domainCycle !== undefined) {
           view = {
             ...view,
@@ -106,13 +138,19 @@ export async function runEthySession(node: EthyNode): Promise<void> {
           }
         }
         if (openDeepView === true) {
+          const cmd = deepViewCommand(view.activeDomain)
           const result = node.intentEngine.handle({
-            text: deepViewCommand(view.activeDomain),
+            text: cmd,
             spine: node.spine,
             lastQuerySlot,
           })
           lastQuerySlot = result.querySlot
-          view.activeWidget = result.widget
+          view = {
+            ...view,
+            activeWidget: result.widget,
+            interactionPage: 'main',
+            interactionLabel: cmd,
+          }
         }
         if (submittedLine !== undefined) {
           const result = node.intentEngine.handle({
@@ -121,7 +159,12 @@ export async function runEthySession(node: EthyNode): Promise<void> {
             lastQuerySlot,
           })
           lastQuerySlot = result.querySlot
-          view.activeWidget = result.widget
+          view = {
+            ...view,
+            activeWidget: result.widget,
+            interactionPage: 'main',
+            interactionLabel: submittedLine,
+          }
         }
         if (view.shouldExit) {
           finish()

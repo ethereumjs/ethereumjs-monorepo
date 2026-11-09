@@ -11,6 +11,7 @@ export type KeyAction =
   | { type: 'up' }
   | { type: 'down' }
   | { type: 'exit' }
+  | { type: 'toggleDebug' }
   | { type: 'ignore' }
 
 const DOMAIN_ORDER: readonly CapabilityId[] = ['p2p', 'snap', 'head', 'ai']
@@ -43,8 +44,11 @@ export function pushKeyChar(
   ch: string,
 ): { buffer: string; action?: KeyAction } {
   if (escapeBuffer === '') {
-    if (ch === '\u0003' || ch === '\u0004') {
+    if (ch === '\u0003') {
       return { buffer: '', action: { type: 'exit' } }
+    }
+    if (ch === '\u0004') {
+      return { buffer: '', action: { type: 'toggleDebug' } }
     }
     if (ch === '\u007f' || ch === '\b') {
       return { buffer: '', action: { type: 'backspace' } }
@@ -111,6 +115,7 @@ export interface PromptReduceResult {
   submittedLine?: string
   domainCycle?: 1 | -1
   openDeepView?: true
+  toggleDebug?: true
 }
 
 export function reducePromptKey(view: TuiViewState, action: KeyAction): PromptReduceResult {
@@ -118,6 +123,7 @@ export function reducePromptKey(view: TuiViewState, action: KeyAction): PromptRe
   let submittedLine: string | undefined
   let domainCycle: 1 | -1 | undefined
   let openDeepView: true | undefined
+  let toggleDebug: true | undefined
   switch (action.type) {
     case 'char':
       next.promptDraft += action.ch
@@ -172,17 +178,21 @@ export function reducePromptKey(view: TuiViewState, action: KeyAction): PromptRe
     case 'exit':
       next.shouldExit = true
       break
+    case 'toggleDebug':
+      toggleDebug = true
+      break
     case 'ignore':
       break
   }
 
-  return { view: next, submittedLine, domainCycle, openDeepView }
+  return { view: next, submittedLine, domainCycle, openDeepView, toggleDebug }
 }
 
 export function createInitialViewState(): TuiViewState {
   return {
     activeDomain: 'p2p',
     activeWidget: null,
+    interactionPage: 'main',
     promptDraft: '',
     carouselTick: 0,
     history: [],

@@ -222,11 +222,19 @@ export interface EthySpine {
   logsDirPath?: string
 }
 
+export type DebugSectionSpec = {
+  title: string
+  entries: Array<{ key: string; value: string }>
+}
+
+export type InteractionPage = 'main' | 'debug'
+
 export type WidgetSpec =
   | {
       kind: 'onboarding_carousel'
       lines: Array<{ group: 'P2P' | 'SNAP' | 'HEAD'; command: string; prose: string }>
       assistantComment?: string
+      debugPage?: DebugSectionSpec[]
     }
   | {
       kind: 'table'
@@ -234,7 +242,7 @@ export type WidgetSpec =
       headers: string[]
       rows: string[][]
       assistantComment?: string
-      /** Live P2P counters, drawn in reserved rows under the table. */
+      /** @deprecated WP-07b: use `debugPage` instead of footer discovery rows. */
       footer?: 'discovery'
       preface?: Array<{ key: string; value: string }>
       secondaryTable?: {
@@ -242,20 +250,27 @@ export type WidgetSpec =
         headers: string[]
         rows: string[][]
       }
+      debugPage?: DebugSectionSpec[]
     }
   | {
       kind: 'key_value'
       title?: string
       entries: Array<{ key: string; value: string }>
       assistantComment?: string
+      debugPage?: DebugSectionSpec[]
     }
 
 export interface TuiViewState {
   activeDomain: CapabilityId
   activeWidget: WidgetSpec | null
+  interactionPage: InteractionPage
+  /** Deterministic situational prose for the AI Overview box (refreshed in session). */
+  aiOverview?: string
   promptDraft: string
   carouselTick: number
   history: string[]
   historyIndex: number
   shouldExit: boolean
+  /** Last command or prompt that opened the interaction view (title chrome). */
+  interactionLabel?: string
 }

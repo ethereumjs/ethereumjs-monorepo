@@ -3,6 +3,7 @@ import type { BALJSONBlockAccessList } from '@ethereumjs/util'
 
 import type { EthySpine } from '../spine/types.ts'
 import type { TwoColumnPair } from '../tui/layout.ts'
+import { economyCockpitPairs } from './cockpitPairs.ts'
 import { decodeBundle } from './decodeBundle.ts'
 import { formatEthFromWei, formatGwei, shortAddress, trendArrow } from './format.ts'
 import type { BlockEconomyRecord, EconomySnapshot, TopContractRow } from './types.ts'
@@ -87,40 +88,7 @@ export class ETHEconomyDataManager {
   }
 
   cockpitPairs(): TwoColumnPair[] {
-    const snap = this.spine.economy
-    if (snap === undefined || !snap.hasBlocks) {
-      return [
-        { label: 'Status', value: 'Awaiting first block…' },
-        { label: 'Gas / Base', value: '—' },
-        { label: 'Activity', value: '—' },
-        { label: 'Contracts', value: '—' },
-      ]
-    }
-    const gas =
-      snap.baseFeeGwei !== undefined
-        ? `${snap.baseFeeGwei}${trendArrow(snap.trend)} · ${snap.gasFullPct ?? 0}% full`
-        : `${snap.gasFullPct ?? 0}% full`
-    const activity =
-      snap.hasTxBody === true && snap.txCount !== undefined && snap.tps !== undefined
-        ? `${snap.txCount} txs (${snap.tps.toFixed(1)}/s) · ${snap.ethTransferredBlockEth ?? '0 ETH'}`
-        : '—'
-    const state =
-      snap.activeAccounts !== undefined
-        ? `${snap.activeAccounts} acc · ${snap.storageWrites ?? 0} writes · ${snap.newDeployments ?? 0} new`
-        : '—'
-    const hot = snap.topContracts[0]
-    const hotValue =
-      hot !== undefined
-        ? `${shortAddress(hot.address)} (${Math.round(
-            (hot.storageWrites + hot.storageReads) / Math.max(1, hot.blocksActive),
-          )} slots/blk)`
-        : '—'
-    return [
-      { label: 'Gas / Base', value: gas },
-      { label: 'Activity', value: activity },
-      { label: 'State / BAL', value: state },
-      { label: 'Hot Contract', value: hotValue },
-    ]
+    return economyCockpitPairs(this.spine.economy)
   }
 
   private applyBlock(record: BlockEconomyRecord): void {

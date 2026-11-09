@@ -4,6 +4,7 @@ import { getEthyClientVersion } from '../src/clientMeta.ts'
 import { P2P_REACHABILITY_HINT } from '../src/notify/p2pLink.ts'
 import { createSpine, deriveCapabilities, setPhase } from '../src/spine/createSpine.ts'
 import type { WidgetSpec } from '../src/spine/types.ts'
+import { diagnosticsTableWidget } from '../src/tools/diagnose.ts'
 import { stripAnsi, visibleWidth } from '../src/tui/ansi.ts'
 import { CAPABILITY_FG, capabilityMark } from '../src/tui/capabilityMark.ts'
 import { cockpitColumnWidths } from '../src/tui/cockpit.ts'
@@ -289,7 +290,7 @@ describe('[Ethy/TUI]: renderFrame', () => {
     assert.include(lines.join('\n'), 'Test')
   })
 
-  it('renderFrame() reserves labeled discovery rows under the diagnostic table', () => {
+  it('renderFrame() keeps discovery telemetry on debug page only for /diag', () => {
     const spine = createSpine('sepolia', 11155111n)
     spine.discovery = {
       boundAddress: '134.93.187.137',
@@ -309,28 +310,32 @@ describe('[Ethy/TUI]: renderFrame', () => {
       },
       dpt: { banSkips: 40, bansIssued: 3, lastRemote: '10.0.0.9:30303' },
     }
-    const widget: WidgetSpec = {
-      kind: 'table',
-      title: 'Diagnostic ring (latest)',
-      headers: ['Time', 'Subsystem', 'Sev', 'Peer', 'Message'],
-      rows: Array.from({ length: 20 }, (_, i) => [String(i), 'devp2p', 'warn', '—', 'reset']),
-      footer: 'discovery',
+    const widget = diagnosticsTableWidget(spine)
+    const mainView = {
+      ...createInitialViewState(),
+      activeWidget: widget,
+      interactionPage: 'main' as const,
+      interactionLabel: '/diag',
     }
-    const view = { ...createInitialViewState(), activeWidget: widget }
-    const raw = renderFrame(spine, view, 120, 36)
-    assertFrameFits(raw, 120, 36)
-    const lines = raw.map((line) => stripAnsi(line))
-    const bindAt = lines.findIndex((line) => line.includes('udp 134.93.187.137:52520'))
-    const promptAt = lines.findIndex((line) => line.includes('ethy >'))
-    assert.isAbove(bindAt, 0)
-    assert.isAbove(promptAt, bindAt)
-    const block = lines.slice(bindAt, promptAt).join('\n')
-    assert.include(block, 'dial 626')
-    assert.include(block, 'status 1')
-    assert.include(block, 'sent 88')
-    assert.include(block, 'amsterdam')
-    assert.include(block, 'network 6')
-    assert.include(block, 'SUBPROTOCOL_ERROR/remote 40')
+    const mainPlain = stripAnsi(renderFrame(spine, mainView, 120, 36).join('\n'))
+    assert.notInclude(mainPlain, 'Boot ok')
+    assert.notInclude(mainPlain, 'udp 134.93.187.137')
+    const debugView = { ...mainView, interactionPage: 'debug' as const }
+    const debugPlain = stripAnsi(renderFrame(spine, debugView, 120, 36).join('\n'))
+    assert.include(debugPlain, 'Boot ok')
+    assert.include(debugPlain, 'RLPx status')
+  })
+
+  it('renderFrame() shows Economy in top cockpit row', () => {
+    const spine = createSpine('sepolia', 11155111n)
+    const joined = stripAnsi(renderFrame(spine, createInitialViewState(), 100, 40).join('\n'))
+    assert.include(joined, 'Economy')
+    assert.include(joined, 'Gas / Base')
+  })
+
+  it('renderFrame() at 100x60 respects column width', () => {
+    const spine = createSpine('sepolia', 11155111n)
+    assertFrameFits(renderFrame(spine, createInitialViewState(), 100, 60), 100, 60)
   })
 })
 
@@ -383,6 +388,18 @@ describe('[Ethy/TUI]: prompt reducer', () => {
   it('decodeKey() maps Ctrl+C to exit', () => {
     const { actions } = decodeKey('', '\u0003')
     assert.deepEqual(actions, [{ type: 'exit' }])
+  })
+
+  it('decodeKey() maps Ctrl+D to toggleDebug', () => {
+    const { actions } = decodeKey('', '\u0004')
+    assert.deepEqual(actions, [{ type: 'toggleDebug' }])
+  })
+
+  it('Ctrl+D reducer does not mutate draft', () => {
+    const view = { ...createInitialViewState(), promptDraft: '/pe' }
+    const r = reducePromptKey(view, { type: 'toggleDebug' })
+    assert.equal(r.toggleDebug, true)
+    assert.equal(r.view.promptDraft, '/pe')
   })
 
   it('backspace removes last draft character', () => {

@@ -68,7 +68,20 @@ export function economyDeepViewWidget(spine: EthySpine): WidgetSpec {
       headers: ['Block', 'Base', 'Full', 'Txs', 'ETH'],
       rows: recent,
     },
-    assistantComment:
-      'Net ETH is the observed post-balance change across the window. Volume sums top-level tx.value.',
+    debugPage: [
+      {
+        title: 'Methodology',
+        entries: [
+          {
+            key: 'Net ETH',
+            value: 'Observed post-balance delta per contract across the 64-block window.',
+          },
+          {
+            key: 'Volume',
+            value: 'Sums top-level tx.value from decoded bodies (no internal calls).',
+          },
+        ],
+      },
+    ],
   }
 }

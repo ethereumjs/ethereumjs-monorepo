@@ -1,7 +1,5 @@
 import { completeSlashDraft } from '../ai/slashComplete.ts'
-import { formatDiscoveryLines } from '../net/discoverySummary.ts'
 import type { LiveNotice } from '../notify/board.ts'
-import { DIAGNOSTIC_RING_CAPACITY } from '../spine/diagnostics.ts'
 import type { CapabilityId, EthySpine, TuiViewState } from '../spine/types.ts'
 import { BOLD, DIM, RESET, visibleWidth } from './ansi.ts'
 import { capabilityMark } from './capabilityMark.ts'
@@ -14,10 +12,10 @@ import {
   fixedLine,
   fixedLineRight,
 } from './layout.ts'
+import { renderLowerArea } from './lowerArea.ts'
 import { renderNoticeLine } from './noticeLine.ts'
 import { layoutPage, measurePage } from './pageLayout.ts'
 import { deepViewCommand } from './prompt.ts'
-import { renderWidgetLines } from './widgets.ts'
 
 const DELIMITER_PAD_ROWS = 1
 
@@ -35,6 +33,7 @@ function renderFooterHint(domain: CapabilityId): string {
   return [
     hintSegment('Enter', `open ${domainHintLabel(domain)} view`),
     hintSegment('Tab', 'switch domain'),
+    hintSegment('Ctrl+D', 'debug page'),
     hintSegment('/', 'command'),
     hintSegment('Esc', 'exit'),
   ].join(`${DIM} · ${RESET}`)
@@ -171,26 +170,21 @@ export function renderFrame(
   const capBar = renderCapabilityBar(spine, page.contentWidth)
   const cockpit = renderCockpit(spine, view, page.contentWidth)
   const prompt = renderPrompt(spine, view, page.contentWidth, notice)
-  const widgetLines = view.activeWidget
-    ? renderWidgetLines(view.activeWidget, page.contentWidth)
-    : []
-  const discoveryFooter =
-    view.activeWidget?.kind === 'table' && view.activeWidget.footer === 'discovery'
-      ? formatDiscoveryLines(spine.discovery, page.contentWidth, {
-          size: spine.diagnosticRingBuffer.length,
-          capacity: DIAGNOSTIC_RING_CAPACITY,
-        }).map((line) => `${DIM}${line}${RESET}`)
-      : []
   const rule = { kind: 'delimiter' as const, open: DIM, close: RESET }
   const pad = { kind: 'spacer' as const, rows: DELIMITER_PAD_ROWS }
+
+  let reserved =
+    capBar.length + 1 + cockpit.length + DELIMITER_PAD_ROWS + 1 + DELIMITER_PAD_ROWS + prompt.length
+  const fillRows = Math.max(0, safeRows - reserved)
+
+  const lowerLines = renderLowerArea(spine, view, page.contentWidth, fillRows)
 
   return layoutPage(page, [
     { kind: 'content', lines: capBar },
     rule,
     { kind: 'content', lines: cockpit },
     pad,
-    { kind: 'fill', lines: widgetLines },
-    { kind: 'content', lines: discoveryFooter },
+    { kind: 'fill', lines: lowerLines },
     rule,
     pad,
     { kind: 'content', lines: prompt },

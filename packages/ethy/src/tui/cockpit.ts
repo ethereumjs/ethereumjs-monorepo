@@ -1,3 +1,4 @@
+import { economyCockpitPairs } from '../economy/cockpitPairs.ts'
 import {
   computeAccountRangeFraction,
   computeSnapProgressPct,
@@ -5,16 +6,15 @@ import {
   snapBucketsDoneCount,
 } from '../spine/buckets.ts'
 import type { CapabilityId, EthyPhase, EthySpine, TuiViewState } from '../spine/types.ts'
-import { BOLD, DIM, RESET, visibleWidth } from './ansi.ts'
+import { BOLD, RESET } from './ansi.ts'
 import { capabilityMark } from './capabilityMark.ts'
 import {
   type TwoColumnPair,
-  fixedField,
-  fixedLine,
   formatTwoColumnRows,
   maxLabelWidth,
   widthsFromWeights,
 } from './layout.ts'
+import { innerRowWidth, joinBoxColumns, renderBox } from './roundedBox.ts'
 
 const DOMAIN_LABEL: Record<CapabilityId, string> = {
   p2p: 'P2P',
@@ -279,47 +279,7 @@ function domainStatus(spine: EthySpine, id: CapabilityId) {
   return spine.capabilities[id].status
 }
 
-function boxTop(boxW: number, titlePlain: string): string {
-  const prefix = `${DIM}╭─ ${RESET}${titlePlain}${DIM} `
-  const prefixVis = visibleWidth(prefix)
-  const dashes = Math.max(1, boxW - prefixVis - 1)
-  return fixedLine(`${prefix}${'─'.repeat(dashes)}╮${RESET}`, boxW)
-}
-
-function boxRow(boxW: number, text: string): string {
-  const inner = Math.max(0, boxW - 4)
-  const body = fixedField(text, inner)
-  return fixedLine(`${DIM}│${RESET} ${body} ${DIM}│${RESET}`, boxW)
-}
-
-function boxBottom(boxW: number): string {
-  return fixedLine(`${DIM}╰${'─'.repeat(Math.max(0, boxW - 2))}╯${RESET}`, boxW)
-}
-
-function renderBox(boxW: number, titlePlain: string, contentLines: string[]): string[] {
-  const pad = boxRow(boxW, '')
-  return [
-    boxTop(boxW, titlePlain),
-    pad,
-    ...contentLines.map((r) => boxRow(boxW, r)),
-    pad,
-    boxBottom(boxW),
-  ]
-}
-
-function joinBoxLines(columns: string[][], contentWidth: number): string[] {
-  const lineCount = columns[0]?.length ?? 0
-  const out: string[] = []
-  for (let i = 0; i < lineCount; i++) {
-    const parts = columns.map((col) => col[i] ?? fixedLine('', contentWidth))
-    const gap = '  '
-    const joined = parts.join(gap)
-    out.push(fixedLine(joined, contentWidth))
-  }
-  return out
-}
-
-function commandPairs(domain: CapabilityId, phase: EthyPhase): TwoColumnPair[] {
+export function domainCommandPairs(domain: CapabilityId, phase: EthyPhase): TwoColumnPair[] {
   switch (domain) {
     case 'p2p':
       return [
@@ -327,7 +287,6 @@ function commandPairs(domain: CapabilityId, phase: EthyPhase): TwoColumnPair[] {
         { label: '/ethy', value: 'swarm status' },
         { label: '/diag', value: 'anomalies' },
         { label: '/drop', value: 'disconnect' },
-        { label: '/help', value: 'commands' },
       ]
     case 'snap':
       return [
@@ -479,16 +438,16 @@ function metricsPairs(spine: EthySpine, domain: CapabilityId): TwoColumnPair[] {
   }
 }
 
-function domainTitle(spine: EthySpine, view: TuiViewState, kind: 'Commands' | 'Metrics'): string {
+export function domainTitle(
+  spine: EthySpine,
+  view: TuiViewState,
+  kind: 'Commands' | 'Metrics',
+): string {
   const id = view.activeDomain
   const mark = capabilityMark(id, domainStatus(spine, id))
   const label = DOMAIN_LABEL[id]
   const suffix = kind === 'Metrics' ? 'Metrics' : 'Commands'
   return `${mark} ${BOLD}${label} ${suffix}${RESET}`
-}
-
-function innerRowWidth(boxW: number): number {
-  return Math.max(0, boxW - 4)
 }
 
 /** Gap between the three cockpit columns, also used under the metrics box. */
@@ -508,16 +467,16 @@ export function renderCockpit(
 ): string[] {
   const [w0, w1, w2] = cockpitColumnWidths(contentWidth)
   const pulseP = nodePulsePairs(spine)
-  const cmdP = commandPairs(view.activeDomain, spine.phase)
+  const econP = economyCockpitPairs(spine.economy)
   const metP = metricsPairs(spine, view.activeDomain)
-  const labelW = maxLabelWidth([...pulseP, ...cmdP, ...metP])
+  const labelW = maxLabelWidth([...pulseP, ...econP, ...metP])
 
   const pulseLines = formatTwoColumnRows(pulseP, labelW, innerRowWidth(w0))
-  const cmdLines = formatTwoColumnRows(cmdP, labelW, innerRowWidth(w1))
+  const econLines = formatTwoColumnRows(econP, labelW, innerRowWidth(w1))
   const metLines = formatTwoColumnRows(metP, labelW, innerRowWidth(w2))
 
   while (pulseLines.length < COCKPIT_CONTENT_ROWS) pulseLines.push('')
-  while (cmdLines.length < COCKPIT_CONTENT_ROWS) cmdLines.push('')
+  while (econLines.length < COCKPIT_CONTENT_ROWS) econLines.push('')
   while (metLines.length < COCKPIT_CONTENT_ROWS) metLines.push('')
 
   const pulse = renderBox(
@@ -525,15 +484,11 @@ export function renderCockpit(
     `${BOLD}Node Pulse${RESET}`,
     pulseLines.slice(0, COCKPIT_CONTENT_ROWS),
   )
-  const commands = renderBox(
-    w1,
-    domainTitle(spine, view, 'Commands'),
-    cmdLines.slice(0, COCKPIT_CONTENT_ROWS),
-  )
+  const economy = renderBox(w1, `${BOLD}Economy${RESET}`, econLines.slice(0, COCKPIT_CONTENT_ROWS))
   const metrics = renderBox(
     w2,
     domainTitle(spine, view, 'Metrics'),
     metLines.slice(0, COCKPIT_CONTENT_ROWS),
   )
-  return joinBoxLines([pulse, commands, metrics], contentWidth)
+  return joinBoxColumns([pulse, economy, metrics], contentWidth)
 }

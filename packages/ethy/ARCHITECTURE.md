@@ -137,24 +137,21 @@ renderFrame(spine: EthySpine, viewState: TuiViewState, cols: number, rows: numbe
 ```text
  Ethy v10.1.3 | SEPOLIA                        Slot 11,482,910        ● P2P  ◐ SNAP  ○ HEAD  ◐ AI
 ──────────────────────────────────────────────────────────────────────────────────────────────────
- ╭─ Node Pulse ───────────────╮  ╭─ ● P2P Commands ───────────╮  ╭─ ● P2P Metrics ─────── [Enter] ╮
- │ Phase     Snap Syncing     │  │ /peers    client & rtt tbl │  │ Peers      18 active           │
- │ Pivot     #7,812,400       │  │ /diag     recent anomalies │  │ Ready      14 snap · 18 eth/71 │
- │ Buckets   ████▓▓!░░░░░░░░░ │  │ /drop     disconnect peer  │  │ Latency    84 ms avg           │
- │ Accounts  84,200 (~4.2k/s) │  │                            │  │ Clients    9 Geth · 6 Reth     │
+ ╭─ Node Pulse ───────────────╮  ╭─ Economy ──────────────────╮  ╭─ ● P2P Metrics ──────────────╮
+ │ Phase     Snap Syncing     │  │ Gas       12 gwei · rising   │  │ Peers      18 active           │
+ │ …         …                  │  │ …         …                  │  │ …          …                   │
  ╰────────────────────────────╯  ╰────────────────────────────╯  ╰────────────────────────────────╯
 
-   ┌─ [P2P Detail View — press Enter on empty prompt or /peers] ──────────────────────────────┐
-   │ Peer     │ Client           │ Caps              │ Latency │ Snap Sent / Timeouts         │
-   │──────────┼──────────────────┼───────────────────┼─────────┼──────────────────────────────│
-   │ a8f1..   │ Reth/v1.2        │ eth/71, snap/1    │ 1420 ms │ 4 sent / 1 timeout           │
-   │ c31b..   │ Geth/v1.15       │ eth/71, snap/1    │   84 ms │ 18 sent / 0 timeouts         │
-   └──────────────────────────────────────────────────────────────────────────────────────────┘
-   > Bucket 0x3 stalled due to timeout on peer a8f1. Geth peers average 84ms.
+ ╭─ /peers · Peer health ─────╮     ╭─ AI Overview ─────────────╮
+ │ Peer       Client    RTT   │     │  (deterministic narrator)   │
+ ╰────────────────────────────╯     ╰─────────────────────────────╯
+                                    ╭─ ● P2P Commands ───────────╮
+                                    │ /peers  /diag  /drop …     │
+                                    ╰────────────────────────────╯
 
 ──────────────────────────────────────────────────────────────────────────────────────────────────
  ● ethy > █
- Enter open P2P view · Tab switch domain · / command · Esc exit
+ Enter open P2P view · Tab switch domain · / command · Ctrl+D debug · Esc exit
 ```
 
 ### Key UX & Keyboard Mechanics
