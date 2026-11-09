@@ -169,6 +169,13 @@ Every Work Package delivers a **runnable, observable, and live-testable incremen
                       │         Zero-Bubble Cursor Pipelining   │                 │
                       └───────────────────┬─────────────────────┘                 │
                                           │                                       │
+                                          ▼                                       │
+                      ┌─────────────────────────────────────────┐                 │
+                      │ WP-06f: Storage & Code Sync Engine —    │                 │
+                      │         Pre-Hashed Storage Trie Fix,    │                 │
+                      │         16-Acc Batching & Progress UI   │                 │
+                      └───────────────────┬─────────────────────┘                 │
+                                          │                                       │
                                           └───────────────────┬───────────────────┘
                                                               ▼
                                           ┌─────────────────────────────────────────┐
