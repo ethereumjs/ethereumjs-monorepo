@@ -15,6 +15,8 @@ import {
   MerkleStateManager,
   SimpleStateManager,
   consumeBAL,
+  consumeBALBatch,
+  mergeBALs,
 } from '../src/index.ts'
 
 describe('[StateManager/consumeBAL]: apply block access list', () => {
@@ -144,6 +146,115 @@ describe('[StateManager/consumeBAL]: apply block access list', () => {
 
     assert.strictEqual((await sm.getAccount(mutated))?.balance, 2n)
     assert.isDefined(await sm.getAccount(readOnly))
+  })
+
+  it('mergeBALs() keeps the latest post-value per field across two blocks', () => {
+    const addr = '0x00000000000000000000000000000000000000aa' as PrefixedHexString
+    const slot = '0x01' as PrefixedHexString
+    const merged = mergeBALs([
+      [
+        {
+          address: addr,
+          balanceChanges: [{ blockAccessIndex: '0x00', postBalance: '0x01' }],
+          nonceChanges: [],
+          codeChanges: [],
+          storageChanges: [
+            {
+              slot,
+              slotChanges: [{ blockAccessIndex: '0x00', postValue: '0x0a' }],
+            },
+          ],
+          storageReads: [],
+        },
+      ],
+      [
+        {
+          address: addr,
+          balanceChanges: [{ blockAccessIndex: '0x00', postBalance: '0x02' }],
+          nonceChanges: [],
+          codeChanges: [],
+          storageChanges: [
+            {
+              slot,
+              slotChanges: [{ blockAccessIndex: '0x00', postValue: '0x0b' }],
+            },
+          ],
+          storageReads: [],
+        },
+      ],
+    ])
+    assert.equal(merged.length, 1)
+    assert.equal(merged[0]!.balanceChanges[0]!.postBalance, '0x02')
+    assert.equal(merged[0]!.storageChanges[0]!.slotChanges[0]!.postValue, '0x0b')
+  })
+
+  it('mergeBALs() clears storage on mid-batch EIP-161 empty touch', () => {
+    const addr = '0x00000000000000000000000000000000000000bb' as PrefixedHexString
+    const slot = '0x02' as PrefixedHexString
+    const merged = mergeBALs([
+      [
+        {
+          address: addr,
+          balanceChanges: [{ blockAccessIndex: '0x00', postBalance: '0x01' }],
+          nonceChanges: [],
+          codeChanges: [],
+          storageChanges: [
+            {
+              slot,
+              slotChanges: [{ blockAccessIndex: '0x00', postValue: '0x0c' }],
+            },
+          ],
+          storageReads: [],
+        },
+      ],
+      [
+        {
+          address: addr,
+          balanceChanges: [{ blockAccessIndex: '0x00', postBalance: '0x00' }],
+          nonceChanges: [{ blockAccessIndex: '0x00', postNonce: '0x00' }],
+          codeChanges: [],
+          storageChanges: [],
+          storageReads: [],
+        },
+      ],
+    ])
+    assert.equal(merged.length, 1)
+    assert.equal(merged[0]!.balanceChanges[0]!.postBalance, '0x00')
+    assert.equal(merged[0]!.storageChanges.length, 0)
+  })
+
+  it('consumeBALBatch() matches sequential consumeBAL on MerkleStateManager', async () => {
+    const addr = '0x2adc25665018aa1fe0e6bc666dac8fc2697ff9ba' as PrefixedHexString
+    const balA: BALJSONBlockAccessList = [
+      {
+        address: addr,
+        balanceChanges: [{ blockAccessIndex: '0x00', postBalance: '0x01ec30' }],
+        nonceChanges: [],
+        codeChanges: [],
+        storageChanges: [],
+        storageReads: [],
+      },
+    ]
+    const balB: BALJSONBlockAccessList = balSimpleJSON.filter(
+      (entry) => entry.storageChanges.length > 0,
+    ) as BALJSONBlockAccessList
+
+    const seq = new MerkleStateManager()
+    await seq.consumeBAL(balA)
+    await seq.consumeBAL(balB)
+
+    const batch = new MerkleStateManager()
+    await consumeBALBatch(batch, [balA, balB])
+
+    const balanceAddr = createAddressFromString(addr)
+    assert.strictEqual(
+      (await seq.getAccount(balanceAddr))?.balance,
+      (await batch.getAccount(balanceAddr))?.balance,
+    )
+    const storageAddr = createAddressFromString('0x0000f90827f1c53a10cb7a02335b175320002935')
+    const seqStorage = await seq.getStorage(storageAddr, setLengthLeft(hexToBytes('0x00'), 32))
+    const batchStorage = await batch.getStorage(storageAddr, setLengthLeft(hexToBytes('0x00'), 32))
+    assert.isTrue(equalsBytes(seqStorage, batchStorage))
   })
 
   it('MerkleStateManager.consumeBAL() throws when expected state root does not match', async () => {
