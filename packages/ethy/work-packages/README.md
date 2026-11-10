@@ -216,6 +216,14 @@ Every Work Package delivers a **runnable, observable, and live-testable incremen
                                                               │
                                                               ▼
                                           ┌─────────────────────────────────────────┐
+                                          │ WP-07f: 3-Domain Cockpit Streamline     │
+                                          │         (State · Economy · P2P, Full-   │
+                                          │         Height 3-Part AI, Tab Help &    │
+                                          │         Left/Right View History)        │
+                                          └───────────────────┬─────────────────────┘
+                                                              │
+                                                              ▼
+                                          ┌─────────────────────────────────────────┐
                                           │ WP-08: On-Demand @ethereumjs/evm        │
                                           │        Sandbox, P2P Tx Broadcast &      │
                                           │        Headless SDK (FYP / MCP Ready)   │
