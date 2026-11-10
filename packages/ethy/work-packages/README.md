@@ -208,6 +208,14 @@ Every Work Package delivers a **runnable, observable, and live-testable incremen
                                                               │
                                                               ▼
                                           ┌─────────────────────────────────────────┐
+                                          │ WP-07e: 20x-50x BAL Catch-Up & Bridge   │
+                                          │         Engine (32-Block eth/71 Batches,│
+                                          │         Header+BAL Fast Path &          │
+                                          │         statemanager consumeBALBatch)   │
+                                          └───────────────────┬─────────────────────┘
+                                                              │
+                                                              ▼
+                                          ┌─────────────────────────────────────────┐
                                           │ WP-08: On-Demand @ethereumjs/evm        │
                                           │        Sandbox, P2P Tx Broadcast &      │
                                           │        Headless SDK (FYP / MCP Ready)   │
