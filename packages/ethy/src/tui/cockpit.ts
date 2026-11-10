@@ -8,6 +8,7 @@ import {
 import type { CapabilityId, EthyPhase, EthySpine, TuiViewState } from '../spine/types.ts'
 import { BOLD, RESET } from './ansi.ts'
 import { capabilityMark } from './capabilityMark.ts'
+import { economyForCockpitDisplay } from './economyCockpitBuffer.ts'
 import {
   type TwoColumnPair,
   formatTwoColumnRows,
@@ -467,7 +468,7 @@ export function renderCockpit(
 ): string[] {
   const [w0, w1, w2] = cockpitColumnWidths(contentWidth)
   const pulseP = nodePulsePairs(spine)
-  const econP = economyCockpitPairs(spine.economy)
+  const econP = economyCockpitPairs(economyForCockpitDisplay(spine.economy))
   const metP = metricsPairs(spine, view.activeDomain)
   const labelW = maxLabelWidth([...pulseP, ...econP, ...metP])
 
