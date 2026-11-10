@@ -930,12 +930,13 @@ export class Devp2pWorkerHost {
         ethySession: protocols.some((p) => p.constructor.name === 'ETHY'),
         ...(ethyStatus !== undefined ? { ethyStatus } : {}),
         caps:
-          hello?.capabilities.map((c) => `${c.name}/${c.version}`) ??
-          protocols.map((p) => {
-            if (p.constructor.name === 'ETH') return `eth/${(p as ETH).getVersion()}`
-            if (p.constructor.name === 'ETHY') return `ethy/${(p as ETHY).getVersion()}`
-            return `snap/${(p as SNAP).getVersion()}`
-          }),
+          protocols.length > 0
+            ? protocols.map((p) => {
+                if (p.constructor.name === 'ETH') return `eth/${(p as ETH).getVersion()}`
+                if (p.constructor.name === 'ETHY') return `ethy/${(p as ETHY).getVersion()}`
+                return `snap/${(p as SNAP).getVersion()}`
+              })
+            : (hello?.capabilities.map((c) => `${c.name}/${c.version}`) ?? []),
         rttMs: this._peerRtt.get(id),
         bestHash,
         latestBlock,

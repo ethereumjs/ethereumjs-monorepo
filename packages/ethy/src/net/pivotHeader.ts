@@ -17,6 +17,7 @@ export type ParsedPivotHeader = {
   number: bigint
   stateRoot: Uint8Array
   hash: Uint8Array
+  blockAccessListHash?: Uint8Array
 }
 
 function hx(s: string): PrefixedHexString {
@@ -134,6 +135,7 @@ export function parsePivotHeaderFromBlockHeadersPayload(
     number: header.number,
     stateRoot: header.stateRoot,
     hash,
+    blockAccessListHash: header.blockAccessListHash,
   }
 }
 
@@ -370,8 +372,13 @@ export function parseBlockAccessListsBatchPayload(payload: Uint8Array): Uint8Arr
   if (!Array.isArray(lists)) return null
   const out: Uint8Array[] = []
   for (const item of lists) {
-    if (!(item instanceof Uint8Array)) return null
-    out.push(item)
+    if (item instanceof Uint8Array) {
+      out.push(item)
+    } else if (Array.isArray(item)) {
+      out.push(item.length === 0 ? new Uint8Array([0xc0]) : RLP.encode(item as never))
+    } else {
+      return null
+    }
   }
   return out
 }

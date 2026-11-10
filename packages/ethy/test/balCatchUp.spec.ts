@@ -20,6 +20,7 @@ import { networkGenesisHash } from '../src/net/genesisStatus.ts'
 import { EthMessageCodes } from '../src/net/pivotHeader.ts'
 import {
   encodeGetBlockHeadersRangePayload,
+  parseBlockAccessListsBatchPayload,
   parseBlockHeadersBatchPayload,
 } from '../src/net/pivotHeader.ts'
 import { SnapPivotStore } from '../src/persist/snapStore.ts'
@@ -413,6 +414,23 @@ describe('[Ethy/Sync]: BAL catch-up oracle', () => {
     const picked = pickBalCatchUpPeer(spine, new Map(), 200n)
     assert.equal(picked?.id, 'ahead-normal')
 
+    // Fallback to eth/69-70 peer when no eth/71 peer is available
+    spine.peers.clear()
+    spine.peers.set('eth69-peer', {
+      id: 'eth69-peer',
+      clientName: 'Nethermind',
+      caps: ['eth/69'],
+      hasHead: true,
+      latestBlock: 500n,
+      snapRequestsSent: 0,
+      snapResponsesOk: 0,
+      snapTimeouts: 0,
+      avgLatencyMs: 50,
+    })
+    const fallbackPicked = pickBalCatchUpPeer(spine, new Map(), 200n)
+    assert.equal(fallbackPicked?.id, 'eth69-peer')
+    assert.equal(fallbackPicked?.ethVersion, 69)
+
     const mat = materializeBalBatch({
       peerId: 'ahead-normal',
       ethVersion: 71,
@@ -446,5 +464,15 @@ describe('[Ethy/Sync]: BAL catch-up oracle', () => {
     if (mat.ok) {
       assert.equal(mat.blocks.length, 1)
     }
+
+    // Also verify nested RLP list decoding in parseBlockAccessListsBatchPayload (EIP-8159 wire format)
+    const nestedBal = createBlockLevelAccessListFromJSON(balPayload)
+    const nestedDecoded = RLP.decode(nestedBal.serialize())
+    const wirePayload = RLP.encode([intToUnpaddedBytes(4), [nestedDecoded, []]] as never)
+    const parsedLists = parseBlockAccessListsBatchPayload(wirePayload)
+    assert.isNotNull(parsedLists)
+    assert.equal(parsedLists!.length, 2)
+    assert.deepEqual(parsedLists![0], nestedBal.serialize())
+    assert.deepEqual(parsedLists![1], new Uint8Array([0xc0]))
   })
 })

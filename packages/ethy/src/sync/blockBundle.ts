@@ -7,6 +7,7 @@ import type { Devp2pWorkerClient } from '@ethereumjs/devp2p'
 import { RLP } from '@ethereumjs/rlp'
 
 import type { BALJSONBlockAccessList } from '@ethereumjs/util'
+import { intToUnpaddedBytes } from '@ethereumjs/util'
 import {
   EthMessageCodes,
   type ParsedPivotHeader,
@@ -45,6 +46,7 @@ export type InFlightBlockBundle = {
   bodiesRequestId?: number
   receiptsRequestId?: number
   balRequestId?: number
+  hasBalHash?: boolean
 }
 
 export type PivotHealSequence = {
@@ -158,6 +160,20 @@ export function headFieldsFromHeaderRlp(
     })
     return { number: header.number, stateRoot: header.stateRoot, blockHash: header.hash() }
   } catch {
+    try {
+      const raw = RLP.decode(headerRlp)
+      const parsed = parsePivotHeaderFromBlockHeadersPayload(
+        69,
+        RLP.encode([intToUnpaddedBytes(1), [raw]] as never),
+        undefined,
+        chain,
+      )
+      if (parsed !== null) {
+        return { number: parsed.number, stateRoot: parsed.stateRoot, blockHash: parsed.hash }
+      }
+    } catch {
+      // ignore
+    }
     return null
   }
 }
@@ -214,6 +230,8 @@ export function advanceBlockBundleEthMessage(
     }
     bundle.headerRlp = headerRlp
     bundle.hash = parsed.hash
+    bundle.hasBalHash =
+      parsed.blockAccessListHash !== undefined && parsed.blockAccessListHash.length > 0
     bundle.stage = 'bodies'
     bundle.startedAt = Date.now()
     const bodiesRequestId = 2
@@ -250,7 +268,7 @@ export function advanceBlockBundleEthMessage(
     const parsed = parseReceiptsReplyPayload(bundle.ethVersion, msg.payload)
     if (parsed === null || parsed.lastBlockIncomplete) return 'failed'
     bundle.receiptsEth69Rlp = parsed.receiptsListRlp
-    if (bundle.ethVersion >= 71) {
+    if (bundle.ethVersion >= 71 && bundle.hasBalHash === true) {
       bundle.stage = 'bal'
       bundle.startedAt = Date.now()
       const balRequestId = 4

@@ -440,7 +440,7 @@ export class BalChainStreamer {
           economy: this.opts.economy,
           preDecodedBalJson: row.balJson,
         })
-      } else if (row.balJson !== undefined || row.balRlp !== undefined) {
+      } else {
         this.opts.economy?.noteBundle({
           blockNumber: row.header.number,
           headerRlp: row.header.headerRlp,

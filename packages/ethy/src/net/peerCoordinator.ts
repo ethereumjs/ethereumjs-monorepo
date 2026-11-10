@@ -127,6 +127,7 @@ type PivotBundleFetch = {
   number: bigint
   hash: Uint8Array
   headerRlp: Uint8Array
+  hasBalHash: boolean
   stage: 'bodies' | 'receipts' | 'bal'
   bodyRlp?: Uint8Array
   receiptsEth69Rlp?: Uint8Array
@@ -1007,7 +1008,12 @@ export async function startPeerCoordinator(
   }
 
   const commitPivotAnchor = (
-    parsed: { number: bigint; hash: Uint8Array; stateRoot: Uint8Array },
+    parsed: {
+      number: bigint
+      hash: Uint8Array
+      stateRoot: Uint8Array
+      blockAccessListHash?: Uint8Array
+    },
     headerRlp: Uint8Array | null,
     peerId: string | undefined,
     ethVersion: number,
@@ -1117,7 +1123,7 @@ export async function startPeerCoordinator(
   const startPivotBundleFetch = (
     peerId: string,
     ethVersion: number,
-    parsed: { number: bigint; hash: Uint8Array },
+    parsed: { number: bigint; hash: Uint8Array; blockAccessListHash?: Uint8Array },
     headerRlp: Uint8Array,
   ) => {
     if (bundleFetch !== undefined) return
@@ -1127,6 +1133,7 @@ export async function startPeerCoordinator(
       number: parsed.number,
       hash: parsed.hash,
       headerRlp,
+      hasBalHash: parsed.blockAccessListHash !== undefined && parsed.blockAccessListHash.length > 0,
       stage: 'bodies',
       startedAt: Date.now(),
     }
@@ -1219,7 +1226,7 @@ export async function startPeerCoordinator(
         return true
       }
       bundleFetch.receiptsEth69Rlp = parsed.receiptsListRlp
-      if (bundleFetch.ethVersion >= 71) {
+      if (bundleFetch.ethVersion >= 71 && bundleFetch.hasBalHash) {
         bundleFetch.stage = 'bal'
         bundleFetch.startedAt = Date.now()
         const payload = encodeGetBlockAccessListsPayload(bundleFetch.ethVersion, bundleFetch.hash)

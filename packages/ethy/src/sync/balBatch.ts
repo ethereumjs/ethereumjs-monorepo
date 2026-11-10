@@ -64,18 +64,26 @@ export function pickBalCatchUpPeer(
   minBlock?: bigint,
   now = Date.now(),
 ): { id: string; ethVersion: number; latestBlock: bigint } | undefined {
-  const candidates: PeerTelemetry[] = []
   let targetHead = 0n
   for (const p of spine.peers.values()) {
     if (p.hasHead !== true || p.latestBlock === undefined) continue
-    if (highestEthVersion(p.caps) < 71) continue
     if (p.latestBlock > targetHead) targetHead = p.latestBlock
-    if (minBlock !== undefined && p.latestBlock < minBlock) continue
-    const rest = peerRestUntil.get(p.id)
-    if (rest !== undefined && now < rest) continue
-    candidates.push(p)
   }
-  if (candidates.length === 0 || targetHead === 0n) return undefined
+  if (targetHead === 0n) return undefined
+  const filterCandidates = (minEthVersion: number): PeerTelemetry[] => {
+    const out: PeerTelemetry[] = []
+    for (const p of spine.peers.values()) {
+      if (p.hasHead !== true || p.latestBlock === undefined) continue
+      if (highestEthVersion(p.caps) < minEthVersion) continue
+      if (minBlock !== undefined && p.latestBlock < minBlock) continue
+      const rest = peerRestUntil.get(p.id)
+      if (rest !== undefined && now < rest) continue
+      out.push(p)
+    }
+    return out
+  }
+  const candidates = filterCandidates(71).length > 0 ? filterCandidates(71) : filterCandidates(69)
+  if (candidates.length === 0) return undefined
   let best = candidates[0]!
   for (const p of candidates) {
     if (p.avgLatencyMs < best.avgLatencyMs) best = p
@@ -179,6 +187,13 @@ export function advanceBalBatchEthMessage(
     batch.headers = headers
     batch.count = headers.length
     if (batch.mode === 'fast') {
+      const expectsBal = headers.some(
+        (h) => h.blockAccessListHash !== undefined && h.blockAccessListHash.length > 0,
+      )
+      if (!expectsBal || batch.ethVersion < 71) {
+        batch.balRlp = headers.map(() => new Uint8Array(0))
+        return 'complete'
+      }
       batch.stage = 'bal'
       batch.startedAt = Date.now()
       const balRequestId = 4
@@ -229,6 +244,13 @@ export function advanceBalBatchEthMessage(
     if (receipts === null || receipts.length === 0) return 'failed'
     if (receipts.some((r) => r.lastBlockIncomplete)) return 'failed'
     batch.receiptsEth69 = receipts.map((r) => r.receiptsListRlp)
+    const expectsBal = batch.headers!.some(
+      (h) => h.blockAccessListHash !== undefined && h.blockAccessListHash.length > 0,
+    )
+    if (!expectsBal || batch.ethVersion < 71) {
+      batch.balRlp = batch.headers!.map(() => new Uint8Array(0))
+      return 'complete'
+    }
     batch.stage = 'bal'
     batch.startedAt = Date.now()
     const balRequestId = 4

@@ -356,6 +356,41 @@ function resolveBalJson(
   }
 }
 
+function parseHeaderWithFallback(
+  headerRlp: Uint8Array,
+  chain: ChainConfig,
+  hardfork: string,
+  fallbackNumber: bigint,
+) {
+  const raw = RLP.decode(headerRlp)
+  const fields = Array.isArray(raw) ? raw : undefined
+  const timestamp =
+    fields !== undefined && fields.length >= 12 && fields[11] instanceof Uint8Array
+      ? bytesToBigInt(fields[11])
+      : 0n
+  if (timestamp > 0n) {
+    try {
+      const blockNumber =
+        fields !== undefined && fields.length >= 9 && fields[8] instanceof Uint8Array
+          ? bytesToBigInt(fields[8])
+          : fallbackNumber
+      const dynamicCommon = new Common({ chain, hardfork })
+      dynamicCommon.setHardforkBy({ blockNumber, timestamp })
+      return createBlockHeaderFromBytesArray(raw as never, {
+        common: dynamicCommon,
+        skipConsensusFormatValidation: true,
+      })
+    } catch {
+      // fall through to explicit hardfork
+    }
+  }
+  const common = new Common({ chain, hardfork })
+  return createBlockHeaderFromBytesArray(raw as never, {
+    common,
+    skipConsensusFormatValidation: true,
+  })
+}
+
 /** Pure decode of one bundle into a block economy record (never throws). */
 export function decodeBundle(input: DecodeBundleInput): BlockEconomyRecord {
   const base: BlockEconomyRecord = {
@@ -369,12 +404,12 @@ export function decodeBundle(input: DecodeBundleInput): BlockEconomyRecord {
     contractContributions: [],
   }
   try {
-    const common = new Common({ chain: input.chain, hardfork: input.hardfork })
-    const raw = RLP.decode(input.headerRlp) as never
-    const header = createBlockHeaderFromBytesArray(raw, {
-      common,
-      skipConsensusFormatValidation: true,
-    })
+    const header = parseHeaderWithFallback(
+      input.headerRlp,
+      input.chain,
+      input.hardfork,
+      input.blockNumber,
+    )
     if (header.number !== input.blockNumber) {
       // still use provided block number for ring ordering
     }
