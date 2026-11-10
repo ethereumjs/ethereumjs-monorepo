@@ -28,10 +28,11 @@ type MergeAcc = {
 }
 
 function mergeRowTriggersEip161Empty(acc: MergeAcc, row: BALJSONAccountChanges): boolean {
-  const bal = acc.balance !== undefined ? hexToBigInt(acc.balance) : 0n
-  const nonce = acc.nonce !== undefined ? hexToBigInt(acc.nonce) : 0n
+  if (row.balanceChanges.length === 0 && row.nonceChanges.length === 0) return false
+  if (acc.balance === undefined || hexToBigInt(acc.balance) !== 0n) return false
+  if (acc.nonce === undefined || hexToBigInt(acc.nonce) !== 0n) return false
   const hasCode = acc.code !== undefined && acc.code !== '0x' && acc.code.length > 2
-  return bal === 0n && nonce === 0n && !hasCode && row.storageChanges.length === 0
+  return !hasCode && row.storageChanges.length === 0
 }
 
 /**

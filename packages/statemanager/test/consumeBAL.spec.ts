@@ -223,6 +223,41 @@ describe('[StateManager/consumeBAL]: apply block access list', () => {
     assert.equal(merged[0]!.storageChanges.length, 0)
   })
 
+  it('mergeBALs() preserves storage writes when a subsequent block has a read-only touch or balance-only zero', () => {
+    const addr = '0x00000000000000000000000000000000000000cc' as PrefixedHexString
+    const slot = '0x05' as PrefixedHexString
+    const merged = mergeBALs([
+      [
+        {
+          address: addr,
+          balanceChanges: [],
+          nonceChanges: [],
+          codeChanges: [],
+          storageChanges: [
+            {
+              slot,
+              slotChanges: [{ blockAccessIndex: '0x00', postValue: '0x42' }],
+            },
+          ],
+          storageReads: [],
+        },
+      ],
+      [
+        {
+          address: addr,
+          balanceChanges: [],
+          nonceChanges: [],
+          codeChanges: [],
+          storageChanges: [],
+          storageReads: [slot],
+        },
+      ],
+    ])
+    assert.equal(merged.length, 1)
+    assert.equal(merged[0]!.storageChanges.length, 1)
+    assert.equal(merged[0]!.storageChanges[0]!.slotChanges[0]!.postValue, '0x42')
+  })
+
   it('consumeBALBatch() matches sequential consumeBAL on MerkleStateManager', async () => {
     const addr = '0x2adc25665018aa1fe0e6bc666dac8fc2697ff9ba' as PrefixedHexString
     const balA: BALJSONBlockAccessList = [
