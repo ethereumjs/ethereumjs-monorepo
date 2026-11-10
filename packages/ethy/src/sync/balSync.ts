@@ -2,7 +2,7 @@ import { createBlockHeaderFromBytesArray } from '@ethereumjs/block'
 import { type ChainConfig, Common } from '@ethereumjs/common'
 import type { Devp2pWorkerClient } from '@ethereumjs/devp2p'
 import { RLP } from '@ethereumjs/rlp'
-import type { FlatStateManager } from '@ethereumjs/statemanager'
+import { type FlatStateManager, consumeBALBatch } from '@ethereumjs/statemanager'
 import {
   type Address,
   type BALJSONBlockAccessList,
@@ -15,6 +15,17 @@ import { compareBytes32 } from '../spine/buckets.ts'
 import { setPhase } from '../spine/createSpine.ts'
 import type { EthySpine, SnapBucket } from '../spine/types.ts'
 import type { SnapAccountSynchronizer } from './accountSync.ts'
+import {
+  type InFlightBalBatch,
+  advanceBalBatchEthMessage,
+  balGapBlocks,
+  materializeBalBatch,
+  pickBalCatchUpPeer,
+  planBalBatch,
+  restBalCatchUpPeer,
+  shouldUseBalBatch,
+  startBalBatch,
+} from './balBatch.ts'
 import {
   type InFlightBlockBundle,
   advanceBlockBundleEthMessage,
@@ -32,6 +43,13 @@ export const HEAD_FOLLOW_POLL_MS = 5_000
 export const TIP_POLL_MS = 4_000
 export const BUNDLE_IN_FLIGHT_TIMEOUT_MS = 10_000
 export const LAPTOP_WAKE_BLOCK_GAP = 2n
+
+function balBatchEnabled(spine: EthySpine): boolean {
+  if (spine.phase === 'BAL_CATCHUP') return true
+  if (spine.pivotBridging !== undefined) return true
+  if (spine.phase === 'HEAD_FOLLOWING') return true
+  return false
+}
 
 export type VerifiedBalBlock = {
   blockNumber: bigint
@@ -233,6 +251,7 @@ type HeadCatchUp = {
   ethVersion: number
   targetHead: bigint
   inFlight?: InFlightBlockBundle
+  batchInFlight?: InFlightBalBatch
 }
 
 /** Streams and verifies `eth/71` blocks from pivot+1 through catch-up and live head (WP-04k). */
@@ -243,6 +262,9 @@ export class BalChainStreamer {
   private readonly buffered: VerifiedBalBlock[] = []
   private appliedBalLog: VerifiedBalBlock[] = []
   private lastTipProbeAt = 0
+  private readonly peerRestUntil = new Map<string, number>()
+  private verifiedTipHash?: Uint8Array
+  private lastBatchAppliedAt = 0
 
   constructor(opts: HeadFollowerOpts) {
     this.opts = opts
@@ -291,6 +313,27 @@ export class BalChainStreamer {
   }
 
   handleEthMessage(msg: { peerId: string; code: number; payload: Uint8Array }): boolean {
+    const batch = this.catchUp?.batchInFlight
+    if (batch !== undefined) {
+      const result = advanceBalBatchEthMessage(
+        this.opts.chain,
+        batch,
+        msg,
+        (peerId, code, payload) => {
+          this.opts.sendEthMessage(peerId, code, payload)
+        },
+        this.verifiedTipHash,
+      )
+      if (result === 'ignore') return false
+      if (result === 'failed') {
+        restBalCatchUpPeer(this.peerRestUntil, batch.peerId)
+        this.catchUp!.batchInFlight = undefined
+        return true
+      }
+      if (result === 'progress') return true
+      void this.finishBalBatch()
+      return true
+    }
     const inFlight = this.catchUp?.inFlight
     if (inFlight === undefined) return false
     const result = advanceBlockBundleEthMessage(
@@ -304,14 +347,162 @@ export class BalChainStreamer {
     if (result === 'ignore') return false
     if (result === 'failed') {
       if (this.catchUp !== undefined) {
+        restBalCatchUpPeer(this.peerRestUntil, this.catchUp.peerId)
         this.catchUp.inFlight = undefined
-        this.catchUp = undefined
       }
       return true
     }
     if (result === 'progress') return true
     void this.finishCatchUpBlock()
     return true
+  }
+
+  private recordBatchRate(blockCount: number): void {
+    const now = Date.now()
+    if (this.lastBatchAppliedAt > 0 && blockCount > 0) {
+      const dt = (now - this.lastBatchAppliedAt) / 1000
+      if (dt > 0) {
+        const rate = blockCount / dt
+        if (this.opts.spine.balCatchUp !== undefined) {
+          this.opts.spine.balCatchUp.blocksPerSec = rate
+        }
+        if (this.opts.spine.pivotBridging !== undefined) {
+          this.opts.spine.pivotBridging.blocksPerSec = rate
+        }
+      }
+    }
+    this.lastBatchAppliedAt = now
+  }
+
+  private async finishBalBatch(): Promise<void> {
+    const seq = this.catchUp
+    const batch = seq?.batchInFlight
+    if (seq === undefined || batch === undefined) return
+    const materialized = materializeBalBatch(batch)
+    if (!materialized.ok) {
+      restBalCatchUpPeer(this.peerRestUntil, batch.peerId)
+      seq.batchInFlight = undefined
+      return
+    }
+    const { spine } = this.opts
+    const snapStreaming = spine.phase === 'SNAP_SYNCING'
+    const persistHeal = snapStreaming
+    const blocks = materialized.blocks
+    const batchBalJson = blocks
+      .map((b) => b.balJson)
+      .filter((j): j is BALJSONBlockAccessList => j !== undefined)
+
+    if (!snapStreaming && batchBalJson.length > 0) {
+      await this.opts.stateManager.consumeBALBatch(batchBalJson)
+    }
+
+    for (let i = 0; i < blocks.length; i++) {
+      const row = blocks[i]!
+      const bundle: InFlightBlockBundle = {
+        peerId: batch.peerId,
+        ethVersion: batch.ethVersion,
+        blockNumber: row.header.number,
+        hash: row.header.hash,
+        headerRlp: row.header.headerRlp,
+        bodyRlp: row.bodyRlp,
+        receiptsEth69Rlp: row.receiptsEth69Rlp,
+        balRlp: row.balRlp,
+        stage: 'bal',
+        startedAt: batch.startedAt,
+      }
+      if (
+        batch.mode === 'full' &&
+        row.bodyRlp !== undefined &&
+        row.receiptsEth69Rlp !== undefined
+      ) {
+        await finalizeBlockBundle({
+          spine,
+          stateManager: this.opts.stateManager,
+          chain: this.opts.chain,
+          hardfork: this.opts.hardfork,
+          bundle,
+          putServableBlock: (b) => this.opts.putServableBlock(b),
+          onBalApplied: snapStreaming ? undefined : this.opts.onBalApplied,
+          appendHealBal: this.opts.appendHealBal,
+          appendHealBundle: this.opts.appendHealBundle,
+          syncBuckets: snapStreaming ? spine.snapBuckets : undefined,
+          deferStateApply: snapStreaming || batchBalJson.length > 0,
+          persistHeal,
+          economy: this.opts.economy,
+        })
+      } else if (row.balJson !== undefined || row.balRlp !== undefined) {
+        this.opts.economy?.noteBundle({
+          blockNumber: row.header.number,
+          headerRlp: row.header.headerRlp,
+          balJson: row.balJson,
+          balRlp: row.balRlp,
+        })
+      }
+      this.opts.onVerifiedExecutionHeader?.(row.header.number, row.header.hash)
+      if (snapStreaming) {
+        const entry: VerifiedBalBlock = {
+          blockNumber: row.header.number,
+          blockHash: row.header.hash,
+          stateRoot: row.header.stateRoot,
+          headerRlp: row.header.headerRlp,
+          balRlp: row.balRlp,
+          balJson: row.balJson,
+        }
+        this.buffered.push(entry)
+        spine.streamedBalCount = (spine.streamedBalCount ?? 0) + 1
+        spine.bufferedBalCount = this.buffered.length
+        this.opts.onBalBlockBuffered?.(entry)
+      } else {
+        pushBalWindow(spine, row.header.number, row.balJson)
+        spine.appliedBalCount = (spine.appliedBalCount ?? 0) + 1
+      }
+      if (spine.pivotBridging !== undefined) {
+        spine.pivotBridging = {
+          ...spine.pivotBridging,
+          currentBlock: row.header.number,
+        }
+      }
+      spine.headBlockNumber = row.header.number
+      spine.headStateRoot = row.header.stateRoot
+    }
+
+    const last = blocks[blocks.length - 1]!
+    this.verifiedTipHash = last.header.hash
+    if (!snapStreaming) {
+      spine.lastVerifiedBlockNumber = last.header.number
+      this.opts.noteVerifiedBlock?.(last.header.number)
+      if (spine.balCatchUp !== undefined) {
+        spine.balCatchUp.applied = Math.min(
+          spine.balCatchUp.total,
+          spine.balCatchUp.applied + blocks.length,
+        )
+      }
+    }
+    this.recordBatchRate(blocks.length)
+    seq.batchInFlight = undefined
+    if (snapStreaming) {
+      await this.maybePivotStep()
+      const tip = this.downloadTip(spine)
+      if (tip !== undefined && tip < seq.targetHead) {
+        void this.tick()
+      } else {
+        this.catchUp = undefined
+      }
+      return
+    }
+    const tip = this.verifiedTip(spine)
+    if (tip !== undefined && tip >= seq.targetHead) {
+      setPhase(spine, 'HEAD_FOLLOWING')
+      spine.balCatchUp = undefined
+      this.opts.onSyncedToHead?.(seq.targetHead)
+      this.catchUp = undefined
+      return
+    }
+    if (tip !== undefined && tip < seq.targetHead) {
+      void this.tick()
+    } else {
+      this.catchUp = undefined
+    }
   }
 
   private verifiedTip(spine: EthySpine): bigint | undefined {
@@ -345,6 +536,7 @@ export class BalChainStreamer {
       appendHealBundle: this.opts.appendHealBundle,
       syncBuckets: snapStreaming ? spine.snapBuckets : undefined,
       deferStateApply: snapStreaming,
+      persistHeal: snapStreaming,
       economy: this.opts.economy,
     })
     const fields =
@@ -412,23 +604,27 @@ export class BalChainStreamer {
   ): Promise<void> {
     const { spine } = this.opts
     if (window.length === 0) return
+    const balLists: BALJSONBlockAccessList[] = []
     for (const block of window) {
-      let balJson: BALJSONBlockAccessList | undefined
-      if (block.balRlp !== undefined && block.balRlp.length > 0) {
-        const applied = await applyBlockBal(
-          this.opts.stateManager,
-          block.headerRlp,
-          block.balRlp,
-          this.opts.chain,
-          this.opts.hardfork,
-          syncBuckets,
-        )
-        balJson = applied.balJson
-        if (balJson !== undefined) {
-          block.balJson = balJson
-          this.opts.onBalApplied?.(balJson)
-        }
+      const balJson = block.balJson ?? balJsonForBlock(block)
+      if (balJson !== undefined) {
+        block.balJson = balJson
+        balLists.push(balJson)
       }
+    }
+    if (balLists.length > 0) {
+      await this.opts.stateManager.consumeBALBatch(balLists, {
+        shouldApplyAccount:
+          syncBuckets !== undefined
+            ? (address) => shouldApplySyncedAccount(address, syncBuckets)
+            : undefined,
+      })
+      for (const balJson of balLists) {
+        this.opts.onBalApplied?.(balJson)
+      }
+    }
+    for (const block of window) {
+      const balJson = block.balJson
       pushBalWindow(spine, block.blockNumber, balJson ?? [])
       spine.appliedBalCount = (spine.appliedBalCount ?? 0) + 1
       this.appliedBalLog.push({ ...block })
@@ -496,14 +692,19 @@ export class BalChainStreamer {
       return
     }
     const now = Date.now()
+    const batch = this.catchUp?.batchInFlight
+    if (batch !== undefined && now - batch.startedAt >= BUNDLE_IN_FLIGHT_TIMEOUT_MS) {
+      restBalCatchUpPeer(this.peerRestUntil, batch.peerId)
+      this.catchUp!.batchInFlight = undefined
+    }
     if (
       this.catchUp?.inFlight !== undefined &&
       now - this.catchUp.inFlight.startedAt >= BUNDLE_IN_FLIGHT_TIMEOUT_MS
     ) {
+      restBalCatchUpPeer(this.peerRestUntil, this.catchUp.peerId)
       this.catchUp.inFlight = undefined
-      this.catchUp = undefined
     }
-    if (this.catchUp?.inFlight !== undefined) return
+    if (this.catchUp?.inFlight !== undefined || this.catchUp?.batchInFlight !== undefined) return
     const tip = this.downloadTip(spine)
     if (tip === undefined) return
     const peer = this.opts.pickEthPeer()
@@ -544,6 +745,31 @@ export class BalChainStreamer {
     const next = tip + 1n
     if (next > this.catchUp.targetHead) return
     this.lastTipProbeAt = now
+    const gap = balGapBlocks(tip, this.catchUp.targetHead)
+    const batchPlan =
+      balBatchEnabled(spine) && shouldUseBalBatch(gap)
+        ? planBalBatch(next, this.catchUp.targetHead, gap)
+        : undefined
+    if (batchPlan !== undefined) {
+      const batchPeer =
+        pickBalCatchUpPeer(spine, this.peerRestUntil) ??
+        ({
+          id: this.catchUp.peerId,
+          ethVersion: this.catchUp.ethVersion,
+          latestBlock: this.catchUp.targetHead,
+        } as const)
+      this.catchUp.peerId = batchPeer.id
+      this.catchUp.ethVersion = batchPeer.ethVersion
+      this.catchUp.batchInFlight = startBalBatch(
+        this.opts.sendEthMessage,
+        batchPeer.id,
+        batchPeer.ethVersion,
+        next,
+        batchPlan.count,
+        batchPlan.mode,
+      )
+      return
+    }
     this.catchUp.inFlight = startBlockBundleByNumber(
       this.opts.getClient(),
       this.catchUp.peerId,

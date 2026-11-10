@@ -2,7 +2,7 @@ import * as fs from 'node:fs'
 import * as os from 'node:os'
 import * as path from 'node:path'
 import { createBlockHeader } from '@ethereumjs/block'
-import { Common, Sepolia } from '@ethereumjs/common'
+import { Common, Mainnet, Sepolia } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { FlatStateManager, MerkleStateManager } from '@ethereumjs/statemanager'
 import { balSimpleJSON } from '@ethereumjs/testdata'
@@ -18,6 +18,10 @@ import { assert, describe, it } from 'vitest'
 import { activeHardfork, chainConfigForNetwork } from '../src/net/chainHardfork.ts'
 import { networkGenesisHash } from '../src/net/genesisStatus.ts'
 import { EthMessageCodes } from '../src/net/pivotHeader.ts'
+import {
+  encodeGetBlockHeadersRangePayload,
+  parseBlockHeadersBatchPayload,
+} from '../src/net/pivotHeader.ts'
 import { SnapPivotStore } from '../src/persist/snapStore.ts'
 import {
   bucketCursorFraction,
@@ -26,6 +30,12 @@ import {
   formatProgressBar,
 } from '../src/spine/buckets.ts'
 import { createSpine, setPhase } from '../src/spine/createSpine.ts'
+import {
+  BAL_BATCH_SIZE,
+  TAIL_BUNDLE_BATCH_SIZE,
+  planBalBatch,
+  shouldUseBalBatch,
+} from '../src/sync/balBatch.ts'
 import {
   BalChainStreamer,
   applyBlockBal,
@@ -305,5 +315,72 @@ describe('[Ethy/Sync]: BAL catch-up oracle', () => {
     const flipped = tryEnterBalCatchUp(spine, undefined, undefined, basePivot + 18n)
     assert.equal(flipped, true)
     assert.equal(spine.phase, 'HEAD_FOLLOWING')
+  })
+
+  it('planBalBatch() picks 32-block fast path before the 64-block serving tail', () => {
+    assert.equal(shouldUseBalBatch(3n), false)
+    assert.equal(shouldUseBalBatch(4n), true)
+    const head = 10_000n
+    const tip = head - 200n
+    const next = tip + 1n
+    const plan = planBalBatch(next, head, 200n)
+    assert.isDefined(plan)
+    assert.equal(plan!.mode, 'fast')
+    assert.equal(plan!.count, BAL_BATCH_SIZE)
+    const tailPlan = planBalBatch(head - 10n, head, 10n)
+    assert.equal(tailPlan?.mode, 'full')
+    assert.isAtMost(tailPlan!.count, TAIL_BUNDLE_BATCH_SIZE)
+  })
+
+  it('parseBlockHeadersBatchPayload() rejects a broken parentHash chain', () => {
+    const chain = chainConfigForNetwork('mainnet')
+    const common = new Common({ chain: Mainnet, hardfork: 'paris' })
+    const n1 = 17_000_100n
+    const n2 = 17_000_101n
+    const h1 = createBlockHeader(
+      {
+        number: n1,
+        parentHash: new Uint8Array(32).fill(0xaa),
+        stateRoot: new Uint8Array(32),
+        gasLimit: 30_000_000n,
+        timestamp: 1_650_000_000n,
+        difficulty: 0n,
+      },
+      { common, skipConsensusFormatValidation: true },
+    )
+    const h2broken = createBlockHeader(
+      {
+        number: n2,
+        parentHash: new Uint8Array(32).fill(0xbb),
+        stateRoot: new Uint8Array(32),
+        gasLimit: 30_000_000n,
+        timestamp: 1_650_000_001n,
+        difficulty: 0n,
+      },
+      { common, skipConsensusFormatValidation: true },
+    )
+    const payload = RLP.encode([
+      intToUnpaddedBytes(1),
+      [RLP.decode(h1.serialize()), RLP.decode(h2broken.serialize())],
+    ] as never)
+    const parsed = parseBlockHeadersBatchPayload(71, payload, n1, chain)
+    assert.equal(parsed, null)
+    const h2 = createBlockHeader(
+      {
+        number: n2,
+        parentHash: h1.hash(),
+        stateRoot: new Uint8Array(32),
+        gasLimit: 30_000_000n,
+        timestamp: 1_650_000_001n,
+        difficulty: 0n,
+      },
+      { common, skipConsensusFormatValidation: true },
+    )
+    const okPayload = RLP.encode([
+      intToUnpaddedBytes(1),
+      [RLP.decode(h1.serialize()), RLP.decode(h2.serialize())],
+    ] as never)
+    assert.isNotNull(parseBlockHeadersBatchPayload(71, okPayload, n1, chain))
+    assert.isAtLeast(encodeGetBlockHeadersRangePayload(71, n1, 32).length, 1)
   })
 })

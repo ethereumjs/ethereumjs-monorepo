@@ -72,6 +72,8 @@ export type FinalizeBlockBundleOpts = {
   syncBuckets?: SnapBucket[]
   /** When true, servable registration runs but state apply is deferred to pivot step. */
   deferStateApply?: boolean
+  /** When false, skip heal RLP / bundle journal writes (WP-07e catch-up). */
+  persistHeal?: boolean
   economy?: ETHEconomyDataManager
 }
 
@@ -94,10 +96,15 @@ export async function finalizeBlockBundle(opts: FinalizeBlockBundleOpts): Promis
     receiptsEth69Rlp: bundle.receiptsEth69Rlp,
     balRlp: bundle.balRlp,
   })
-  if (bundle.balRlp !== undefined && bundle.balRlp.length > 0) {
+  if (bundle.balRlp !== undefined && bundle.balRlp.length > 0 && opts.persistHeal !== false) {
     opts.appendHealBal?.(bundle.blockNumber, bundle.balRlp)
   }
-  if (opts.deferStateApply === true && bundle.balRlp !== undefined && bundle.balRlp.length > 0) {
+  if (
+    opts.deferStateApply === true &&
+    opts.persistHeal !== false &&
+    bundle.balRlp !== undefined &&
+    bundle.balRlp.length > 0
+  ) {
     const fields = headFieldsFromHeaderRlp(bundle.headerRlp, opts.chain, opts.hardfork)
     if (fields !== null && bundle.hash !== undefined) {
       opts.appendHealBundle?.({

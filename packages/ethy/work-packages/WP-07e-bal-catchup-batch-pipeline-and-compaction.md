@@ -1,6 +1,6 @@
 # WP-07e: 20×–50× BAL Catch-Up & Bridge Engine — Multi-Block `eth/71` Batching (`16`–`32` Blocks/RTT), Parallel Header/BAL/Body Pipeline, Cross-Block BAL Compaction & `@ethereumjs/statemanager` `consumeBALBatch`
 
-- **Status:** `READY_FOR_PLANNING`
+- **Status:** `DONE`
 - **Dependencies:** `WP-04k` (`DONE`), `WP-06d` (`DONE`), `WP-07d` (`DONE`)
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
@@ -126,10 +126,106 @@ Add clean, backwards-compatible batch wire helpers alongside the existing single
 
 ## 6. Concrete Implementation Plan (Planner — Grok 4.7)
 
-*(To be filled by Grok 4.7 during planning)*
+**Zero new npm dependencies.** Upstream `@ethereumjs/statemanager` changes and `@ethereumjs/ethy` changes ship in **separate commits**. No `@ethereumjs/devp2p` edits (`ethServer` already serves batched headers/BALs).
+
+### 6.1 Baseline (why it is slow)
+
+| Area | Current code |
+| --- | --- |
+| Catch-up fetch | [`BalChainStreamer.tick`](../src/sync/balSync.ts) → [`startBlockBundleByNumber`](../src/sync/blockBundle.ts): 4 serial RTTs per block (headers → bodies → receipts → BAL) |
+| State apply | Per-block [`applyBlockBal`](../src/sync/balSync.ts) / `consumeBAL` in `finishCatchUpBlock` |
+| Disk | [`noteVerifiedBlock`](../src/persist/snapStore.ts) atomic `active.json` on **every** block; [`appendHealBal`](../src/persist/snapStore.ts) during catch-up |
+| Retention | [`RollingBlockStore`](../../devp2p/src/serve/rollingBlockStore.ts) + [`ETHEconomyDataManager`](../src/economy/economyDataManager.ts) (`ECONOMY_WINDOW_BLOCKS = 64`) — bodies/receipts outside tail are wasted |
+| Wire helpers | [`pivotHeader.ts`](../src/net/pivotHeader.ts) — single-header / single-hash encoders only |
+
+### 6.2 Design refinements (Decision **D-103**)
+
+1. **One in-flight batch.** Speedup is 2 RTTs per 32 blocks, not parallel batches. Gaps `< 4` blocks and live tip probe keep the existing 1-block bundle.
+2. **Historical vs tail (never mixed in one batch).** Historical: `startBlock <= targetHead - 64n` → `GET_BLOCK_HEADERS(max≤32)` + `GET_BLOCK_ACCESS_LISTS` only. Tail: last 64 blocks → full 4-part bundles, batch size **8**. Trim batch count at the boundary.
+3. **Catch-up peer selection (not snap-safe min head).** Rank `spine.peers` with `eth/71+`, `hasHead`, lowest `avgLatencyMs`; skip peers in **15s** rest after timeout/empty reply. Target head = max `latestBlock` among those peers. Partial BAL reply `0 < m < K` advances `m` blocks.
+4. **Parent-hash chain.** Contiguous numbers; `header[i].parentHash === header[i-1].hash`; cross-batch link via in-memory `verifiedTipHash`. Mismatch → rest peer, apply nothing.
+5. **BAL verify.** Same as [`applyBlockBal`](../src/sync/balSync.ts): `createBlockLevelAccessListFromRLP(rlp).hash() === header.blockAccessListHash`.
+6. **`mergeBALs` / `consumeBALBatch`.** Ordered post-values; last wins per field/slot; mid-batch EIP-161 empty clears prior slots in batch then allows later blocks to repopulate; `consumeBALBatch` → one `consumeBAL` with merged JSON (`shouldApplyAccount` / `expectedStateRoot` unchanged).
+7. **Apply sites.** `BAL_CATCHUP` historical batches + snap `applyBufferedWindow` (16) use `consumeBALBatch`; `replayAppliedBalBlocksForSlab` stays per-block.
+8. **Disk.** Skip `appendHealBal` / `appendHealBundle` when phase is `BAL_CATCHUP` / `HEAD_FOLLOWING` (state applied immediately). Keep heal persistence for `SNAP_SYNCING` / bridge (**D-091**). `noteVerifiedBlock` once per completed batch (+ final head transition).
+9. **Economy / pulse.** `noteBundle` per block with `headerRlp` + `balJson` (no body on fast path). Node Pulse: `formatProgressBar(pct, etaMin)` + `· N/s` on State row for `BAL_CATCHUP` and Snap Resume · Bridging (`blocksPerSec` on spine).
+
+```mermaid
+flowchart LR
+  tick[BalChainStreamer tick]
+  tick --> gap{gap at least 4}
+  gap -->|no| one[one-block bundle]
+  gap -->|yes| mode{block above head minus 64}
+  mode -->|no| fast[headers then BALs size 32]
+  mode -->|yes| tail[headers bodies receipts BALs size 8]
+  fast --> merge[consumeBALBatch]
+  tail --> merge
+  merge --> disk[one active.json flush]
+```
+
+### 6.3 `@ethereumjs/statemanager` (backwards compatible)
+
+| File | Responsibility |
+| --- | --- |
+| [`consumeBAL.ts`](../../statemanager/src/consumeBAL.ts) | Export `mergeBALs(accessLists)` and `consumeBALBatch(sm, lists, opts?)`; single-list batch delegates to `consumeBAL`; merged rows use one change per field (`blockAccessIndex` `0x0`) |
+| [`flatStateManager.ts`](../../statemanager/src/flatStateManager.ts) | `consumeBALBatch` method delegating to helper (pinning stays in existing `consumeBAL`) — **not** on `StateManagerInterface` |
+| [`index.ts`](../../statemanager/src/index.ts) | Re-export via existing `consumeBAL.ts` barrel |
+| [`test/consumeBAL.spec.ts`](../../statemanager/test/consumeBAL.spec.ts) | Last-write-wins; EIP-161 mid-batch wipe/recreate; `consumeBALBatch` vs sequential `consumeBAL` root equality on `MerkleStateManager` |
+
+### 6.4 `@ethereumjs/ethy` wire + batch machine
+
+| File | Responsibility |
+| --- | --- |
+| [`pivotHeader.ts`](../src/net/pivotHeader.ts) | `encodeGetBlockHeadersRangePayload`, `parseBlockHeadersBatchPayload` (parent chain + `blockAccessListHash`); batch BAL/bodies/receipts encode+parse; partial BAL lists |
+| **New** [`balBatch.ts`](../src/sync/balBatch.ts) | Constants: `BAL_BATCH_SIZE=32`, `BAL_BATCH_MIN_GAP=4n`, `SERVING_TAIL_BLOCKS=64n`, `TAIL_BUNDLE_BATCH_SIZE=8`, timeout 10s, peer rest 15s; batch state machine + rate sample |
+| [`balSync.ts`](../src/sync/balSync.ts) | Dispatch batch vs `InFlightBlockBundle`; batch completion path; `applyBufferedWindow` → `consumeBALBatch` |
+| [`spine/types.ts`](../src/spine/types.ts) | Optional `blocksPerSec` on `balCatchUp` / `pivotBridging` |
+| [`cockpit.ts`](../src/tui/cockpit.ts) | BAL/s rate + ETA on Progress/State rows |
+
+### 6.5 Tests
+
+[`test/balCatchUp.spec.ts`](../test/balCatchUp.spec.ts): 32-block fast path (2 RTTs, one `consumeBALBatch`, one `noteVerifiedBlock`); partial `m < K`; broken parentHash; tail sends bodies; gap `< 4` stays 1-block; economy `noteBundle` without body.
+
+### 6.6 Out of scope
+
+Pipelined headers-while-BAL-in-flight; devp2p server changes; per-block slab replay changes; WP-08.
+
+### 6.7 Gates (implementer)
+
+`npm run tsc`, `npm test`, `npm run spellcheck` in `packages/statemanager` and `packages/ethy`. Build `statemanager` before ethy typecheck when new exports land.
+
+### 6.8 Suggested implementation order
+
+1. `mergeBALs` + `consumeBALBatch` + statemanager tests  
+2. `pivotHeader` batch encode/parse + unit tests (extend `net.spec.ts` or new `balBatchWire.spec.ts` if needed)  
+3. `balBatch.ts` state machine  
+4. `BalChainStreamer` integration + disk/economy hooks  
+5. Cockpit rate/ETA + `balCatchUp.spec.ts` expansion  
+6. Gates + PROGRESS implementer notes  
 
 ---
 
 ## 7. Implementation Notes & Deviations (Implementer — Composer 2.5)
 
-*(To be filled by Composer 2.5 during implementation)*
+### Shipped
+
+- **`@ethereumjs/statemanager`:** `mergeBALs`, `consumeBALBatch` (+ `FlatStateManager.consumeBALBatch`); unit tests for last-write-wins, EIP-161 mid-batch clear, batch vs sequential roots on `MerkleStateManager`.
+- **`pivotHeader.ts`:** batch encode/parse for headers, BALs, bodies, receipts; parent-hash chain check in `parseBlockHeadersBatchPayload`.
+- **`sync/balBatch.ts`:** `BAL_BATCH_SIZE=32`, `TAIL_BUNDLE_BATCH_SIZE=8`, gap ≥ `4`, serving tail `64`; one in-flight batch; latency-ranked peer pick + 15s rest.
+- **`balSync.ts`:** `BalChainStreamer` dispatches batch FSM for catch-up / bridge / head-follow; `finishBalBatch` → `consumeBALBatch` + per-block economy `noteBundle`; batched `noteVerifiedBlock`; `blockBundle.ts` `persistHeal` skip on catch-up.
+- **`cockpit.ts` / `spine/types.ts`:** `blocksPerSec` + Progress ETA on BAL catch-up and pivot bridging rows.
+
+### Deviations
+
+- **Batch gate:** `balBatchEnabled(spine)` enables multi-block path only for `BAL_CATCHUP`, pivot bridging, and `HEAD_FOLLOWING`. Plain `SNAP_SYNCING` parallel BAL streaming keeps the existing **one-block** `blockBundle` flow (preserves WP-04k 18-block streamer behavior and one header request per block).
+- **Tests:** Expanded `balCatchUp.spec.ts` with `planBalBatch` / `shouldUseBalBatch` and header-batch parse coverage. No full mocked 32-block P2P integration test (would duplicate `balBatch.ts` FSM); state compaction covered in `statemanager` `consumeBAL.spec.ts`.
+
+### Gates (2026-11-10)
+
+- `packages/statemanager`: `npm run tsc`, `npm run test:node` (1080 tests).
+- `packages/ethy`: `npm run tsc`, `npm run test:node` (255 tests).
+- Spellcheck clean on touched TS paths (`balJsons` renamed to `batchBalJson`).
+
+### Commits
+
+Separate **`statemanager`** then **`ethy`** commits recommended (**D-103**); not committed in this pass.

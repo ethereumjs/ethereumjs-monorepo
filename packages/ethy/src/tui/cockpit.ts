@@ -101,13 +101,24 @@ function nodePulsePairs(spine: EthySpine): TwoColumnPair[] {
       const done =
         bridge.currentBlock > bridge.fromBlock ? bridge.currentBlock - bridge.fromBlock : 0n
       const pct = span > 0n ? Number((done * 100n) / span) : 0
+      const remainingBridge =
+        bridge.targetBlock > bridge.currentBlock
+          ? Number(bridge.targetBlock - bridge.currentBlock)
+          : 0
+      const bridgeRate = bridge.blocksPerSec
+      const bridgeEta =
+        bridgeRate !== undefined && bridgeRate > 0 && remainingBridge > 0
+          ? remainingBridge / bridgeRate / 60
+          : undefined
+      const bridgeRateText =
+        bridgeRate !== undefined && bridgeRate > 0 ? ` · ${Math.round(bridgeRate)}/s` : ''
       return [
         { label: 'Stage', value: 'Snap Resume · Bridging' },
         { label: 'Target', value: snapTargetRow(spine) },
-        { label: 'Progress', value: formatProgressBar(pct) },
+        { label: 'Progress', value: formatProgressBar(pct, bridgeEta) },
         {
           label: 'State',
-          value: `${formatCompactCount(spine.totalAccountsSynced)} acc kept · applying BALs`,
+          value: `${formatCompactCount(spine.totalAccountsSynced)} acc kept · applying BALs${bridgeRateText}`,
         },
       ]
     }
@@ -158,16 +169,20 @@ function nodePulsePairs(spine: EthySpine): TwoColumnPair[] {
     const applied = catchUp?.applied ?? 0
     const remaining = Math.max(0, total - applied)
     const pct = total > 0 ? (applied / total) * 100 : 0
+    const rate = catchUp?.blocksPerSec
+    const etaMin =
+      rate !== undefined && rate > 0 && remaining > 0 ? remaining / rate / 60 : undefined
+    const rateText = rate !== undefined && rate > 0 ? ` · ${Math.round(rate)}/s` : ''
     return [
       { label: 'Stage', value: 'BAL Catch-Up' },
       {
         label: 'Target',
         value: `${formatBlockNum(from)} → +${remaining.toLocaleString('en-US')} blk`,
       },
-      { label: 'Progress', value: formatProgressBar(pct) },
+      { label: 'Progress', value: formatProgressBar(pct, etaMin) },
       {
         label: 'State',
-        value: `${applied.toLocaleString('en-US')} / ${total.toLocaleString('en-US')} BALs applied`,
+        value: `${applied.toLocaleString('en-US')} / ${total.toLocaleString('en-US')} BALs applied${rateText}`,
       },
     ]
   }

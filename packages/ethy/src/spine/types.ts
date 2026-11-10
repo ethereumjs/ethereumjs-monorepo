@@ -109,6 +109,7 @@ export type PivotBridgingProgress = {
   fromBlock: bigint
   currentBlock: bigint
   targetBlock: bigint
+  blocksPerSec?: number
 }
 
 /**
@@ -154,6 +155,8 @@ export interface EthySpine {
     fromBlock: bigint
     applied: number
     total: number
+    /** Live catch-up throughput for Node Pulse (WP-07e). */
+    blocksPerSec?: number
   }
   /** Rolling pivot steps completed during snap (WP-04k). */
   pivotStepsCompleted?: number
