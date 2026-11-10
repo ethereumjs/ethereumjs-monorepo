@@ -23,14 +23,14 @@ Ethy’s terminal UI is a **pure function** of `EthySpine`, `TuiViewState`, and 
    - **Vertical breathing room:** Every cockpit box includes **1 blank padded inner row** (`│ ... │`) below the top border and **1 blank padded inner row** above the bottom border (8 visible rows total for 4 content rows). Similarly, keep a **1-row blank spacer** between the prompt input line and the footer hint line.
    - **Shared cross-box two-column rhythm:** Use `formatTwoColumnRows` with a shared `maxLabelWidth` and `TWO_COLUMN_MIN_GAP = 2` so label/value columns align consistently across all three cockpit boxes.
 4. **Typography Hierarchy (Bold Anchors vs. Dim Chrome/Prose):**
-   - **Bold (`BOLD`)** is reserved strictly for structural anchors and actionable keys: `Ethy v<ver>`, top-bar capability names (`P2P`, `SNAP`, `HEAD`, `AI`), box titles (`Node Pulse`, `<DOMAIN> Commands`, `<DOMAIN> Metrics`), the prompt `ethy >`, and key chord names in the footer (`Enter`, `Tab`, `/`, `Esc`).
+   - **Bold (`BOLD`)** is reserved strictly for structural anchors and actionable keys: `Ethy v<ver>`, top-bar capability names (`STATE`, `ECONOMY`, `P2P`), box titles (`State`, `Economy`, `P2P`, `AI`, `/help · <Domain>`), the prompt `ethy >`, and key chord names in the footer (`Tab`, `←/→`, `/`, `Esc`).
    - **Dim (`DIM`)** is used for box borders, horizontal rules (`─`), and explanatory prose next to key chords (`open P2P view`, `switch domain`, `command`, `exit`) so key chords and prose never visually run together as a single sentence.
    - Never put hotkey hints like `[Enter]` inside box header titles; keep key hints in the footer line.
 5. **Canonical Capability Colors (`CAPABILITY_FG`):**
-   - Color belongs to the **domain identity** (`p2p` = green, `snap` = yellow, `head` = cyan, `ai` = magenta in `capabilityMark.ts`), never to readiness.
-   - Readiness changes only the glyph (`●` ready, `◐` partial, `○` locked).
+   - Color belongs to the **domain identity** (`state` = yellow, `economy` = magenta, `p2p` = green in `capabilityMark.ts`), never to readiness.
+   - Readiness changes only the glyph (`●` ready, `◐` partial, `○` locked). `llmPulseReady` stays on the spine only; there is no `ai` capability pill.
 6. **Column-Aligned Footer Grid & Anti-Flicker `NoticeBoard`:**
-   - The bottom Band 4 reuses the exact horizontal column geometry of the 3-box cockpit (`cockpitColumnWidths`): the left two columns (`w0 + gap + w1`) host the `● ethy >` prompt, footer key hints, and inline slash autocomplete (`/p → /peers`), while the right column (`w2`, directly beneath the Metrics box) hosts the right-aligned single-line `NoticeBoard` output.
+   - The bottom Band 4 reuses the exact horizontal column geometry of the 3-box cockpit (`cockpitColumnWidths`): the left two columns (`w0 + gap + w1`) host the `● ethy >` prompt, footer key hints, and inline slash autocomplete (`/p → /peers`), while the right column (`w2`, directly beneath the `P2P` box) hosts the right-aligned single-line `NoticeBoard` output.
    - All ambient/transient status notices must go through `NoticeBoard` (`NOTICE_MIN_DWELL_MS = 4_000`, deduplicated by `key`) so rapid network events never cause sub-second visual flicker.
 
 ---
@@ -40,35 +40,30 @@ Ethy’s terminal UI is a **pure function** of `EthySpine`, `TuiViewState`, and 
 `pageLayout.ts` stacks the screen with a 1-column horizontal inset (`PAGE_PADDING = { left: 1, right: 1 }`) for content bands, while horizontal rules (`─`) stay full-bleed across `cols`:
 
 ```text
- Ethy v10.1.3 | SEPOLIA                        Slot 11,482,910        ● P2P  ◐ SNAP  ○ HEAD  ◐ AI
+ Ethy v10.1.3 | SEPOLIA                        Slot 11,482,910        ● STATE  ◐ ECONOMY  ● P2P
 ──────────────────────────────────────────────────────────────────────────────────────────────────
- ╭─ Node Pulse ───────────────╮  ╭─ Economy ──────────────────╮  ╭─ ● P2P Metrics ──────────────╮
- │ Phase     Snap Syncing     │  │ Gas       12 gwei · rising   │  │ Peers      18 active           │
- │ Pivot     #7,812,400       │  │ Activity  142 TPS · 1.2 ETH  │  │ Ready      14 snap · 18 eth/71 │
- │ Buckets   ████████░░░░░░░░ │  │ State     46 BALs · 3.4M acc │  │ Latency    84 ms avg           │
- │ Throughput 5,950 acc/s     │  │ Hot       0xabc1.. · 42k gas │  │ Clients    9 Geth · 6 Reth     │
+ ╭─ ● State • ────────────────╮  ╭─ ● Economy ────────────────╮  ╭─ ● P2P ──────────────────────╮
+ │ Stage / Target / Progress  │  │ Gas / Activity / State / Hot │  │ Peers / Served / Latency / …   │
  ╰────────────────────────────╯  ╰────────────────────────────╯  ╰────────────────────────────────╯
 
- ╭─ /peers · Peer health ─────╮     ╭─ AI Overview ─────────────╮
- │ Peer       Client    RTT   │     │  Snap is syncing buckets…   │
- │ a8f1..c2   Reth      84 ms │     ╰─────────────────────────────╯
- │ …          …          …    │     ╭─ ● P2P Commands ───────────╮
- ╰────────────────────────────╯     │ /peers    client & rtt tbl │
-                                    │ /diag     recent anomalies   │
+ ╭─ ● /help · State ──────────╮     ╭─ AI ─────────────────────────╮
+ │  State & Sync Inspection   │     │  ● State prose block         │
+ │  /buckets /range …         │     │  ● Economy prose block       │
+ ╰────────────────────────────╯     │  ● P2P prose block           │
                                     ╰──────────────────────────────╯
 
 ──────────────────────────────────────────────────────────────────────────────────────────────────
  ● ethy > █
- Enter open P2P view · Tab switch domain · / command · Ctrl+D debug · Esc exit
+ Tab show domain help · ←/→ view history · Ctrl+D debug page · / command · Esc exit
 ```
 
 ### Band 1 — Minimal Top Header Bar (1 row + full-bleed `─` rule)
 - Left: **bold** `Ethy v<version>`, then plain ` | <NETWORK>`.
-- Right cluster: plain `Slot <n>`, then an 8-column gap (`SLOT_GAP = 8`) and the 4 right-packed pills — colored mark + **bold** name (`● P2P  ◐ SNAP  …`; `CAPABILITY_PILL_GAP = 2`).
+- Right cluster: plain `Slot <n>` or `Block #N`, then an 8-column gap (`SLOT_GAP = 8`) and the 3 right-packed pills — colored mark + **bold** name (`● STATE  ◐ ECONOMY  ● P2P`; `CAPABILITY_PILL_GAP = 2`).
 
 ### Band 2 — The 3-Box Cockpit Row (fixed **8** visible rows per box, 3 equal/weighted rounded boxes)
 Sits below the top header rule and displays three side-by-side rounded boxes (`╭─ ... ─╮`): top border, **one padding row**, **strictly four** two-column data rows (`COCKPIT_CONTENT_ROWS = 4`, `formatTwoColumnRows` with shared label width + `TWO_COLUMN_MIN_GAP = 2`), **one padding row**, bottom border. Never add a 5th content row to any cockpit box!
-1. **Left Box (`Node Pulse` — 4-Row Phase-Adaptive Overview):**
+1. **Left Box (`State` — 4-Row Phase-Adaptive Overview):**
    - Stays anchored regardless of which domain is selected, using **4 consistent rows** that adapt cleanly to the node's lifecycle stage:
      - **Row 1 (`Stage`):** `Connecting P2P` | `Snap Sync · Accounts` | `Snap Sync · Storage` | `BAL Catch-Up` | `Head Following`.
      - **Row 2 (`Target` / `Pivot` / `Head`):** During `Snap Sync`: `#<pivot> (+<drift> blk)`; during `BAL Catch-Up`: `#<from> → +<remaining> blk`; during `Head Following`: `#<head> (live)`.
@@ -76,20 +71,20 @@ Sits below the top header rule and displays three side-by-side rounded boxes (`�
      - **Row 4 (`State`):** Concise stage throughput/summary (`3.48M acc · 5,950/s`, `4.1k code · 82k slots`, `46 / 62 BALs applied`, or `34.2M acc · 64 BALs`). Never display cryptic internal persistence flags like `kept` or `previous`.
 2. **Middle Box (`Economy` — live EL telemetry):**
    - Four two-column rows from `economyCockpitPairs(spine.economy)` (Gas/Base, Activity, State/BAL, Hot Contract). Independent of `activeDomain`.
-3. **Right Box (`<Mark> <Domain> Metrics` — Deeper Domain Stats):**
-   - Dynamically reflects `activeDomain`, showing the 4 key metrics for that domain (e.g. `p2p`: active peers, protocol caps, avg RTT, client split; `snap`: completed/syncing/stalled buckets, throughput, pivot root; `head`: head block, state root status, BAL count; `ai`: engine mode, unlocked tool count, slot delta).
-   - Box titles use **bold** for `Node Pulse` / `Economy` / `<DOMAIN> Metrics`. Empty-prompt **Enter** is documented on the footer hint only, not in the box header.
+3. **Right Box (`P2P` — swarm telemetry):**
+   - Permanently shows peers, ETHY served chunks, latency, and client mix (`p2pCockpitPairs`). Never rotates with `Tab`.
+   - Box titles use **bold** `State` / `Economy` / `P2P` plus the domain mark. Active domain appends a colored ` •` on the title border without changing box width.
 
 ### Band 3 — Lower fill band (`renderLowerArea`)
-- Occupies remaining rows between the cockpit row and the prompt rule (`fillRows = rows - 16` overhead). Short terminals degrade per **D-099** (commands 8 lines only when `fillRows >= 13`; AI box shrinks or omits below that).
-- **Left (2/3 width):** Rounded **Interaction View** titled from `interactionLabel` or slash/widget title; body from `TableUIComponent`, `KeyValueUIComponent`, or `DebugPageUIComponent` when `view.interactionPage === 'debug'` and `WidgetSpec.debugPage` is set. Typographic tables — no inner `┌┐` borders; optional page hint `[1/2 Table · Ctrl+D Debug]`.
-- **Right (1/3 width):** Upper **AI Overview** (`view.aiOverview`, `<= 280` chars, vertically centered prose); lower fixed **8-line** `<Mark> <Domain> Commands` anchored above the prompt rule (`domainCommandPairs`).
-- **No Unsolicited Flipping:** `Tab` cycles domain for metrics/commands pills only — it must **not** clear `activeWidget`. Interaction content changes on explicit `Enter` (empty draft deep view), command submit, or AI response mount.
+- Occupies remaining rows between the cockpit row and the prompt rule (`fillRows = rows - 16` overhead). Short terminals clip the full-height **AI** box; do not bring back a Commands column.
+- **Left (2/3 width):** Rounded **Interaction View** — domain help (`DomainHelpUIComponent`), slash tables, NL `WidgetSpec`, optional `DebugPageUIComponent` when `interactionPage === 'debug'`. Title may show `· [n/m ← →]` history badge or `· [← back to …]` when on help.
+- **Right (1/3 width):** Single full-height **AI** box (`view.aiOverviewSections`, `<= 600` chars total, three optional domain-marked blocks via `renderAiOverviewSections`).
+- **`Tab` on empty draft:** cycles `activeDomain` (`DOMAIN_ORDER`) and opens structured domain help (`showingHelp`); help never pushes `viewHistory`. **`←`/`→`** on empty draft walk `viewHistory` (max 12); slash entries refresh live on each draw, AI entries keep snapshots.
 - **Progressive disclosure:** Dense telemetry (discovery funnel, enode, flight-recorder paths) lives on `debugPage`, toggled with **`Ctrl+D`** (`\u0004`), not inline `assistantComment` or `footer: 'discovery'`.
 
 ### Band 4 — Domain-Lens Prompt & Hint (full-bleed `─` rule + **3** content rows)
 - **Prompt Line:** Starts with the **active domain circle** (`capabilityMark(view.activeDomain, status)`) directly to the left of `ethy > `:
-  - Example: `● ethy > ` where `●` stays in column 0 of the content inset and changes color (`green` → `yellow` → `cyan` → `magenta`) as the user presses `Tab`.
+  - Example: `● ethy > ` where the leading mark tracks `activeDomain` (`state` yellow → `economy` magenta → `p2p` green) as the user presses `Tab`.
   - Terminal cursor is placed on the prompt line (`promptCaretPosition`, one row above the blank spacer).
 - **Blank spacer row** between prompt and footer (breathing room).
 - **Footer Hint Line:** Key hints on the left; slash-prefix autocomplete (`/p → /peers`) on that same left side while typing a command.
@@ -103,10 +98,10 @@ The keyboard interface is optimized so common actions take **1 or 2 keys**:
 
 | User Intent | Keystroke | Behavior |
 | --- | --- | --- |
-| **Switch Domain Lens** (`P2P` → `SNAP` → `HEAD` → `AI`) | **`Tab`** (when draft is empty, or `Shift+Tab` / `Tab` cycle) | Cycles `view.activeDomain`. Updates the prompt dot color (`● ethy >`), **Right Box** (Metrics), and lower-right **Commands** box. Does *not* wipe `view.activeWidget` or `interactionPage`. |
+| **Domain help** (`state` → `economy` → `p2p`) | **`Tab`** / **`Shift+Tab`** (empty draft) | Cycles `activeDomain`, updates cockpit `•` focus and opens `domain_help` for that domain. Does not push `viewHistory`. Empty **`Enter`** is a no-op. |
+| **Interaction history** | **`←`** / **`→`** (empty draft) | Navigates `viewHistory` (max 12). From help, **`←`** restores the current history entry without decrementing index. Slash entries re-run on draw; AI entries are frozen snapshots. |
 | **Toggle debug page** | **`Ctrl+D`** | Flips `interactionPage` `main` ↔ `debug` when the active widget has `debugPage`. Does not insert a character into the draft. Exit remains **`Esc`** / **`Ctrl+C`** only. |
 | **Autocomplete Slash Command** | **`Tab`** or **`Right Arrow`** (when draft starts with `/`) | If the user typed a prefix like `/p` or `/b`, completes it to the matching command (`/peers`, `/buckets`). Even better: submitting an unambiguous prefix like `/p` + `Enter` resolves directly! |
-| **Open Deep Domain View in Main Area** | **`Enter`** (when `promptDraft` is empty) | Executes the default deep-inspection tool for `view.activeDomain` (e.g. `p2p` → peer table; `snap` → 16-bucket table; `head` → head/BAL summary; `ai` → capability & prompt guide) and mounts it in the Main Interaction Area. (**2 keys total**: `Tab` → `Enter`!) |
 | **Run Command or AI Query** | Type text + **`Enter`** | Routes `promptDraft` through `IntentEngine` and mounts the resulting `WidgetSpec` in the Main Interaction Area. |
 | **History Navigation** | **`Up` / `Down`** | Cycles through submitted prompt history. |
 | **Exit Cleanly** | **`Esc`** or **`Ctrl+C`** | Restores terminal screen and exits. |

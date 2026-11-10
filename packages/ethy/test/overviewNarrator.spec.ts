@@ -1,16 +1,26 @@
 import { assert, describe, it } from 'vitest'
 
-import { MAX_AI_OVERVIEW_CHARS, buildDeterministicOverview } from '../src/ai/overviewNarrator.ts'
+import {
+  MAX_AI_TOTAL_CHARS,
+  buildDeterministicOverviewSections,
+} from '../src/ai/overviewNarrator.ts'
 import { readDomainSnapshots } from '../src/domains/domainManagers.ts'
 import { createSpine, setPhase } from '../src/spine/createSpine.ts'
+
+function sectionCharTotal(sections: ReturnType<typeof buildDeterministicOverviewSections>): number {
+  return (
+    (sections.state?.length ?? 0) + (sections.economy?.length ?? 0) + (sections.p2p?.length ?? 0)
+  )
+}
 
 describe('[Ethy/AI]: overviewNarrator', () => {
   it('welcome overview mentions peers and stays within cap', () => {
     const spine = createSpine('sepolia', 11155111n)
     setPhase(spine, 'P2P_WARMUP')
-    const text = buildDeterministicOverview(readDomainSnapshots(spine), 'welcome')
-    assert.isAtMost(text.length, MAX_AI_OVERVIEW_CHARS)
-    assert.match(text, /peer/i)
+    const sections = buildDeterministicOverviewSections(readDomainSnapshots(spine), 'welcome')
+    assert.isAtMost(sectionCharTotal(sections), MAX_AI_TOTAL_CHARS)
+    assert.match(sections.p2p ?? sections.state ?? '', /peer/i)
+    assert.isUndefined(sections.economy)
   })
 
   it('head-following overview mentions base fee when economy has blocks', () => {
@@ -34,12 +44,14 @@ describe('[Ethy/AI]: overviewNarrator', () => {
           netEthDeltaWei: 0n,
         },
       ],
-      recentBlocks: [],
+      recentBlocks: [
+        { blockNumber: '1', baseFeeGwei: '1', gasFullPct: 1, txCount: 1, ethTransferredEth: '0' },
+      ],
     }
-    const text = buildDeterministicOverview(readDomainSnapshots(spine), 'pulse')
-    assert.isAtMost(text.length, MAX_AI_OVERVIEW_CHARS)
-    assert.match(text, /base fee|Gwei/i)
-    assert.notInclude(text, 'ETH ETH')
+    const sections = buildDeterministicOverviewSections(readDomainSnapshots(spine), 'pulse')
+    assert.isAtMost(sectionCharTotal(sections), MAX_AI_TOTAL_CHARS)
+    assert.match(sections.economy ?? '', /base fee|Gwei/i)
+    assert.notInclude(sections.economy ?? '', 'ETH ETH')
   })
 
   it('snap-syncing overview narrates bytecode and storage when 16/16 buckets are done', () => {
@@ -51,10 +63,10 @@ describe('[Ethy/AI]: overviewNarrator', () => {
     spine.storageAccountsSynced = 36_300
     spine.storageAccountsTotal = 57_700
     spine.storageEtaMinutes = 7
-    const text = buildDeterministicOverview(readDomainSnapshots(spine), 'pulse')
-    assert.isAtMost(text.length, MAX_AI_OVERVIEW_CHARS)
-    assert.include(text, 'Accounts 16/16 complete!')
-    assert.include(text, '713,700/751,500')
-    assert.include(text, 'ETA ~7m')
+    const sections = buildDeterministicOverviewSections(readDomainSnapshots(spine), 'pulse')
+    assert.isAtMost(sectionCharTotal(sections), MAX_AI_TOTAL_CHARS)
+    assert.include(sections.state ?? '', 'Accounts 16/16 complete')
+    assert.include(sections.state ?? '', '713,700/751,500')
+    assert.include(sections.state ?? '', 'ETA ~7m')
   })
 })

@@ -1,3 +1,4 @@
+import { headInspectUnlocked } from '../spine/headInspect.ts'
 import type { EthySpine } from '../spine/types.ts'
 
 export type ToolCatalogEntry = {
@@ -37,7 +38,7 @@ export function buildToolCatalog(
   spine: EthySpine,
   mode: 'pulse' | 'interactive',
 ): ToolCatalogEntry[] {
-  const headLocked = spine.capabilities.head.status === 'locked'
+  const headLocked = !headInspectUnlocked(spine)
   const out: ToolCatalogEntry[] = []
 
   for (const t of READ_TOOLS) {

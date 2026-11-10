@@ -1,36 +1,42 @@
 import { readDomainSnapshots } from '../domains/domainManagers.ts'
 import { deriveCapabilities } from '../spine/createSpine.ts'
-import type { EthySpine } from '../spine/types.ts'
+import type { AiOverviewSections, EthySpine } from '../spine/types.ts'
 import { buildCompactDomainContext } from './compactContext.ts'
 import type { LlmTransport } from './fixtureEngine.ts'
 import { parseLlmJSONObject } from './llmClient.ts'
-import { MAX_AI_OVERVIEW_CHARS, buildDeterministicOverview } from './overviewNarrator.ts'
+import {
+  MAX_AI_TOTAL_CHARS,
+  buildDeterministicOverviewSections,
+  clampOverviewSections,
+} from './overviewNarrator.ts'
 import { ETHY_USAGE_PLAYBOOK } from './usagePlaybook.ts'
 
 export const AI_PULSE_INTERVAL_MS = 45_000
 
-function clampOverview(text: string): string {
-  const t = text.replace(/\s+/g, ' ').trim()
-  if (t.length <= MAX_AI_OVERVIEW_CHARS) return t
-  return `${t.slice(0, MAX_AI_OVERVIEW_CHARS - 1)}…`
-}
-
-const PULSE_SCHEMA =
-  'Respond with JSON only: { "overviewText": "<=280 char situational briefing, do not repeat previousOverview verbatim>" }'
+const PULSE_SCHEMA = `Respond with JSON only: { "state"?: "<=200 char>", "economy"?: "<=200 char>", "p2p"?: "<=200 char>" } — total <= ${MAX_AI_TOTAL_CHARS} chars across non-empty fields.`
 
 export type AiPulseNarratorOpts = {
   transport: LlmTransport
-  onOverview: (text: string) => void
+  onOverview: (sections: AiOverviewSections) => void
   onUnhealthy?: () => void
+}
+
+function parsePulseSections(obj: Record<string, unknown>): AiOverviewSections {
+  const out: AiOverviewSections = {}
+  for (const k of ['state', 'economy', 'p2p'] as const) {
+    const v = obj[k]
+    if (typeof v === 'string' && v.trim().length > 0) out[k] = v.trim()
+  }
+  return clampOverviewSections(out)
 }
 
 export class AiPulseNarrator {
   private readonly transport: LlmTransport
-  private readonly onOverview: (text: string) => void
+  private readonly onOverview: (sections: AiOverviewSections) => void
   private readonly onUnhealthy?: () => void
   private timer?: ReturnType<typeof setInterval>
   private abort?: AbortController
-  private previousOverview = ''
+  private previousSectionsJSON = ''
   private lastPhase?: string
   private inFlight = false
   private consecutiveFailures = 0
@@ -75,7 +81,7 @@ export class AiPulseNarrator {
     this.abort?.abort()
   }
 
-  private setAiCapability(spine: EthySpine, ready: boolean): void {
+  private setLlmPulseReady(spine: EthySpine, ready: boolean): void {
     spine.llmPulseReady = ready
     deriveCapabilities(spine)
   }
@@ -88,7 +94,7 @@ export class AiPulseNarrator {
     this.abort = new AbortController()
     const signal = this.abort.signal
     const snapshots = readDomainSnapshots(spine)
-    const fallback = buildDeterministicOverview(snapshots, trigger)
+    const fallback = buildDeterministicOverviewSections(snapshots, trigger)
 
     try {
       const context = buildCompactDomainContext(spine)
@@ -104,7 +110,7 @@ export class AiPulseNarrator {
               role: 'user',
               content: JSON.stringify({
                 snapshots: context,
-                previousOverview: this.previousOverview,
+                previousOverview: this.previousSectionsJSON,
                 trigger,
               }),
             },
@@ -113,18 +119,18 @@ export class AiPulseNarrator {
         signal,
       )
       const obj = parseLlmJSONObject(raw)
-      const text =
-        typeof obj.overviewText === 'string' && obj.overviewText.length > 0
-          ? clampOverview(obj.overviewText)
-          : fallback
-      this.previousOverview = text
-      this.onOverview(text)
+      const sections = parsePulseSections(obj)
+      const hasAny =
+        sections.state !== undefined || sections.economy !== undefined || sections.p2p !== undefined
+      const next = hasAny ? sections : fallback
+      this.previousSectionsJSON = JSON.stringify(next)
+      this.onOverview(next)
       this.consecutiveFailures = 0
-      this.setAiCapability(spine, true)
+      this.setLlmPulseReady(spine, true)
     } catch {
       this.consecutiveFailures += 1
       if (this.consecutiveFailures >= 2) {
-        this.setAiCapability(spine, false)
+        this.setLlmPulseReady(spine, false)
         this.onUnhealthy?.()
         this.onOverview(fallback)
       }

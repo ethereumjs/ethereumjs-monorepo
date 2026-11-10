@@ -1,10 +1,10 @@
 import type { EthySpine } from '../spine/types.ts'
 
 function capSummary(spine: EthySpine): string {
-  const { p2p, snap, head } = spine.capabilities
+  const { state, economy, p2p } = spine.capabilities
   const fmt = (name: string, c: { status: string; label: string }) =>
     `${name}=${c.status.toUpperCase()}(${c.label})`
-  return [fmt('p2p', p2p), fmt('snap', snap), fmt('head', head)].join(', ')
+  return [fmt('state', state), fmt('economy', economy), fmt('p2p', p2p)].join(', ')
 }
 
 export function formatEthyStateHeader(spine: EthySpine, lastQuerySlot?: number): string {

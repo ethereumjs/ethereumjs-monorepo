@@ -1,6 +1,11 @@
 import { completeSlashDraft } from '../ai/slashComplete.ts'
 import type { LiveNotice } from '../notify/board.ts'
-import type { CapabilityId, EthySpine, TuiViewState } from '../spine/types.ts'
+import {
+  type CapabilityId,
+  DOMAIN_ORDER,
+  type EthySpine,
+  type TuiViewState,
+} from '../spine/types.ts'
 import { BOLD, DIM, RESET, visibleWidth } from './ansi.ts'
 import { capabilityMark } from './capabilityMark.ts'
 import { COCKPIT_COLUMN_GAP, cockpitColumnWidths, renderCockpit } from './cockpit.ts'
@@ -15,7 +20,6 @@ import {
 import { renderLowerArea } from './lowerArea.ts'
 import { renderNoticeLine } from './noticeLine.ts'
 import { layoutPage, measurePage } from './pageLayout.ts'
-import { deepViewCommand } from './prompt.ts'
 
 const DELIMITER_PAD_ROWS = 1
 
@@ -29,10 +33,10 @@ function hintSegment(key: string, prose: string): string {
   return `${BOLD}${key}${RESET}${DIM} ${prose}`
 }
 
-function renderFooterHint(domain: CapabilityId): string {
+function renderFooterHint(): string {
   return [
-    hintSegment('Enter', `open ${domainHintLabel(domain)} view`),
-    hintSegment('Tab', 'switch domain'),
+    hintSegment('Tab', 'show domain help'),
+    hintSegment('←/→', 'view history'),
     hintSegment('Ctrl+D', 'debug page'),
     hintSegment('/', 'command'),
     hintSegment('Esc', 'exit'),
@@ -42,8 +46,8 @@ function renderFooterHint(domain: CapabilityId): string {
 /** Rhythm inside the pill cluster; spacer before cluster stays flexible. */
 const CAPABILITY_PILL_GAP = 2
 
-const CAPABILITY_IDS: readonly CapabilityId[] = ['p2p', 'snap', 'head', 'ai']
-const CAPABILITY_NAMES = ['P2P', 'SNAP', 'HEAD', 'AI'] as const
+const CAPABILITY_IDS = DOMAIN_ORDER
+const CAPABILITY_NAMES = ['STATE', 'ECONOMY', 'P2P'] as const
 
 function capabilityPillWidth(name: string): number {
   return visibleWidth(formatCapabilityPill('●', name))
@@ -59,8 +63,8 @@ function formatCapabilityPill(dot: string, name: string): string {
 function renderCapabilityBar(spine: EthySpine, cols: number): string[] {
   const network = spine.network.toUpperCase()
   const brand = `${BOLD}${spine.clientName} v${spine.clientVersion}${RESET} | ${network}`
-  const { p2p, snap, head, ai } = spine.capabilities
-  const statuses = [p2p.status, snap.status, head.status, ai.status]
+  const { state, economy, p2p } = spine.capabilities
+  const statuses = [state.status, economy.status, p2p.status]
   const pillTexts = CAPABILITY_IDS.map((id, i) =>
     formatCapabilityPill(capabilityMark(id, statuses[i] ?? 'locked'), CAPABILITY_NAMES[i] ?? id),
   )
@@ -76,27 +80,14 @@ function renderCapabilityBar(spine: EthySpine, cols: number): string[] {
   return [line]
 }
 
-function domainHintLabel(domain: CapabilityId): string {
-  switch (domain) {
-    case 'p2p':
-      return 'P2P'
-    case 'snap':
-      return 'SNAP'
-    case 'head':
-      return 'HEAD'
-    case 'ai':
-      return 'AI'
-  }
-}
-
 function promptColumnWidths(contentWidth: number): { left: number; right: number } {
   const right = cockpitColumnWidths(contentWidth)[2]
   const left = Math.max(0, contentWidth - COCKPIT_COLUMN_GAP - right)
   return { left, right }
 }
 
-function renderLeftHint(domain: CapabilityId, draft: string, leftW: number): string {
-  const leftHint = `${renderFooterHint(domain)}${RESET}`
+function renderLeftHint(draft: string, leftW: number): string {
+  const leftHint = `${renderFooterHint()}${RESET}`
   const slash =
     draft.startsWith('/') && completeSlashDraft(draft) !== null
       ? `${draft} → ${completeSlashDraft(draft)}`
@@ -126,7 +117,7 @@ function renderPrompt(
   const prefix = `${mark} ${BOLD}ethy > ${RESET}`
   const draftWidth = Math.max(0, left - PROMPT_PREFIX_WIDTH)
   const prompt = `${prefix}${fixedField(view.promptDraft, draftWidth)}`
-  const hint = renderLeftHint(view.activeDomain, view.promptDraft, left)
+  const hint = renderLeftHint(view.promptDraft, left)
   const noticeCell = renderNoticeLine(notice, right)
   return [
     fixedLine(`${fixedField(prompt, left)}${gap}${fixedField('', right)}`, cols),
@@ -190,5 +181,3 @@ export function renderFrame(
     { kind: 'content', lines: prompt },
   ])
 }
-
-export { deepViewCommand }

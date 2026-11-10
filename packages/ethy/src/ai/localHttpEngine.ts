@@ -125,7 +125,11 @@ export class LocalHttpIntentEngine implements IntentEngine {
             stateHeader,
             querySlot,
             viewTitle,
-            overviewNote: overviewNote ?? widget.assistantComment,
+            overviewNote:
+              overviewNote ??
+              (widget.kind !== 'domain_help' && 'assistantComment' in widget
+                ? widget.assistantComment
+                : undefined),
           }
         }
         const compose = parseComposeAction(act, viewTitle)
@@ -136,7 +140,11 @@ export class LocalHttpIntentEngine implements IntentEngine {
             stateHeader,
             querySlot,
             viewTitle,
-            overviewNote: overviewNote ?? widget.assistantComment,
+            overviewNote:
+              overviewNote ??
+              (widget.kind !== 'domain_help' && 'assistantComment' in widget
+                ? widget.assistantComment
+                : undefined),
           }
         }
       }

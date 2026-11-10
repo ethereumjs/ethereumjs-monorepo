@@ -1,12 +1,21 @@
-import type { CapabilityReadiness, WidgetSpec } from '../spine/types.ts'
+import type {
+  AiOverviewSections,
+  CapabilityReadiness,
+  EthySpine,
+  WidgetSpec,
+} from '../spine/types.ts'
 import type { InteractionPage } from '../spine/types.ts'
-import type { CapabilityId } from '../spine/types.ts'
+import type { CapabilityId, TuiViewState } from '../spine/types.ts'
+import { DOMAIN_ORDER } from '../spine/types.ts'
+import { helpDomainLabel } from '../tools/help.ts'
 import { BOLD, DIM, RESET, visibleWidth } from './ansi.ts'
 import { capabilityMark } from './capabilityMark.ts'
 import { renderDebugPageUIComponent } from './components/DebugPageUIComponent.ts'
+import { renderDomainHelpUIComponent } from './components/DomainHelpUIComponent.ts'
 import { renderKeyValueUIComponent } from './components/KeyValueUIComponent.ts'
 import { renderTableUIComponent } from './components/TableUIComponent.ts'
 import { composeFixedRow, fixedLine } from './layout.ts'
+import { historyEntryTitle } from './viewHistory.ts'
 import type { SuggestionMarks } from './widgets.ts'
 
 export function renderInteractionWidgetBody(
@@ -37,13 +46,13 @@ export function renderInteractionWidgetBody(
       for (const line of widget.lines) {
         if (budget <= 0) break
         const id: CapabilityId =
-          line.group === 'P2P' ? 'p2p' : line.group === 'SNAP' ? 'snap' : 'head'
+          line.group === 'P2P' ? 'p2p' : line.group === 'SNAP' ? 'state' : 'economy'
         const status =
           id === 'p2p'
             ? (marks?.p2p ?? 'locked')
-            : id === 'snap'
-              ? (marks?.snap ?? 'locked')
-              : (marks?.head ?? 'locked')
+            : id === 'state'
+              ? (marks?.state ?? 'locked')
+              : (marks?.economy ?? 'locked')
         const prefix = capabilityMark(id, status)
         const half = Math.floor(w / 2)
         lines.push(
@@ -107,6 +116,9 @@ export function renderInteractionWidgetBody(
     case 'key_value':
       pushLines(renderKeyValueUIComponent(widget.entries, w))
       break
+    case 'domain_help':
+      pushLines(renderDomainHelpUIComponent(widget, w, budget))
+      break
   }
 
   return lines
@@ -118,6 +130,8 @@ export function interactionViewTitle(
   page: InteractionPage,
   lastSubmitted?: string,
   nlTitle?: string,
+  view?: TuiViewState,
+  spine?: EthySpine,
 ): string {
   if (widget === null) return `${BOLD}Welcome${RESET}`
   const hasDebug = (widget.debugPage?.length ?? 0) > 0
@@ -149,7 +163,90 @@ export function interactionViewTitle(
   } else {
     base = `${BOLD}Interaction${RESET}`
   }
-  return `${base}${pageHint}`
+  if (widget?.kind === 'domain_help' && spine !== undefined) {
+    const mark = capabilityMark(widget.domain, spine.capabilities[widget.domain].status)
+    base = `${mark} ${BOLD}/help · ${helpDomainLabel(widget.domain)}${RESET}`
+  }
+  let historyHint = ''
+  if (view !== undefined) {
+    if (view.showingHelp && view.viewHistory.length > 0) {
+      const last = view.viewHistory[view.viewHistoryIndex]
+      if (last !== undefined) {
+        historyHint = `${DIM} · [← back to ${historyEntryTitle(last)}]${RESET}`
+      }
+    } else if (!view.showingHelp && view.viewHistory.length > 1) {
+      const idx = view.viewHistoryIndex + 1
+      historyHint = `${DIM} · [${idx}/${view.viewHistory.length} ← →]${RESET}`
+    }
+  }
+  return `${base}${pageHint}${historyHint}`
+}
+
+function wrapSectionText(text: string, wrapW: number): string[] {
+  const words = text.split(/\s+/).filter((w) => w.length > 0)
+  const wrapped: string[] = []
+  let line = ''
+  for (const word of words) {
+    const next = line.length === 0 ? word : `${line} ${word}`
+    if (visibleWidth(next) > wrapW && line.length > 0) {
+      wrapped.push(line)
+      line = word
+    } else {
+      line = next
+    }
+  }
+  if (line.length > 0) wrapped.push(line)
+  return wrapped
+}
+
+export function renderAiOverviewSections(
+  spine: EthySpine,
+  sections: AiOverviewSections | undefined,
+  innerWidth: number,
+  innerLines: number,
+): string[] {
+  const wrapW = Math.max(8, innerWidth - 7)
+  const blocks: string[] = []
+  const renderOne = (domain: CapabilityId, text: string) => {
+    const lines = wrapSectionText(text, wrapW)
+    const mark = capabilityMark(domain, spine.capabilities[domain].status)
+    lines.forEach((ln, i) => {
+      if (i === 0) {
+        blocks.push(`${'  '}${mark}  ${ln}`)
+      } else {
+        blocks.push(`${'     '}${ln}`)
+      }
+    })
+  }
+  if (sections?.focusNote !== undefined) {
+    renderOne(sections.focusNote.domain, sections.focusNote.text)
+  } else {
+    for (const id of DOMAIN_ORDER) {
+      const text = sections?.[id]
+      if (text !== undefined && text.length > 0) {
+        if (blocks.length > 0) blocks.push('')
+        renderOne(id, text)
+      }
+    }
+  }
+  const gap = innerLines >= 18 && blocks.length < innerLines - 2 ? 2 : 1
+  const body: string[] = []
+  for (let i = 0; i < blocks.length; i++) {
+    body.push(blocks[i] ?? '')
+    if (blocks[i] === '' && i < blocks.length - 1) {
+      for (let g = 1; g < gap; g++) body.push('')
+    }
+  }
+  const topPad = Math.max(0, Math.floor((innerLines - body.length) / 2))
+  const rows: string[] = []
+  for (let i = 0; i < innerLines; i++) {
+    if (i < topPad || i >= topPad + body.length) {
+      rows.push('')
+    } else {
+      rows.push(body[i - topPad] ?? '')
+    }
+  }
+  return rows
 }
 
 export function wrapProseCentered(prose: string, innerWidth: number, innerLines: number): string[] {

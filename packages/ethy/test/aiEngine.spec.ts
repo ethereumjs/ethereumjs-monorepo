@@ -8,12 +8,17 @@ import { FixtureReplayTransport } from '../src/ai/fixtureEngine.ts'
 import { HybridIntentEngine } from '../src/ai/hybridEngine.ts'
 import { assertLlmBaseUrl, normalizeLlmBase, parseLlmJSONObject } from '../src/ai/llmClient.ts'
 import { LocalHttpIntentEngine } from '../src/ai/localHttpEngine.ts'
-import { MAX_AI_OVERVIEW_CHARS } from '../src/ai/overviewNarrator.ts'
+import {
+  MAX_AI_TOTAL_CHARS,
+  buildDeterministicOverviewSections,
+} from '../src/ai/overviewNarrator.ts'
 import { AiPulseNarrator } from '../src/ai/pulseNarrator.ts'
 import { buildToolCatalog } from '../src/ai/toolCatalog.ts'
 import { TurnMemoryRing } from '../src/ai/turnMemory.ts'
 import { advanceDemo } from '../src/demo/advanceDemo.ts'
+import { readDomainSnapshots } from '../src/domains/domainManagers.ts'
 import { createSpine } from '../src/spine/createSpine.ts'
+import type { AiOverviewSections } from '../src/spine/types.ts'
 
 describe('[Ethy/AI]: llm client', () => {
   it('rejects remote llm url without allow flag', () => {
@@ -40,22 +45,41 @@ describe('[Ethy/AI]: llm client', () => {
 })
 
 describe('[Ethy/AI]: pulse narrator', () => {
-  it('clamps overview longer than max chars', async () => {
-    const long = 'x'.repeat(MAX_AI_OVERVIEW_CHARS + 40)
-    const transport = new FixtureReplayTransport([JSON.stringify({ overviewText: long })])
-    let out = ''
+  it('clamps pulse sections to max total chars', async () => {
+    const long = 'x'.repeat(MAX_AI_TOTAL_CHARS + 40)
+    const transport = new FixtureReplayTransport([JSON.stringify({ state: long })])
+    let out: AiOverviewSections = {}
     const spine = createSpine('sepolia', 11155111n)
     advanceDemo(spine, 5000)
     const narrator = new AiPulseNarrator({
       transport,
-      onOverview: (t) => {
-        out = t
+      onOverview: (sections) => {
+        out = sections
       },
     })
     narrator.start(spine)
     await new Promise((r) => setTimeout(r, 50))
     narrator.stop()
-    assert.isAtMost(out.length, MAX_AI_OVERVIEW_CHARS)
+    const total = (out.state?.length ?? 0) + (out.economy?.length ?? 0) + (out.p2p?.length ?? 0)
+    assert.isAtMost(total, MAX_AI_TOTAL_CHARS)
+  })
+
+  it('falls back to deterministic sections when pulse JSON is empty', async () => {
+    const transport = new FixtureReplayTransport([JSON.stringify({})])
+    let out: AiOverviewSections = {}
+    const spine = createSpine('sepolia', 11155111n)
+    advanceDemo(spine, 5000)
+    const narrator = new AiPulseNarrator({
+      transport,
+      onOverview: (sections) => {
+        out = sections
+      },
+    })
+    narrator.start(spine)
+    await new Promise((r) => setTimeout(r, 50))
+    narrator.stop()
+    const fallback = buildDeterministicOverviewSections(readDomainSnapshots(spine), 'welcome')
+    assert.equal(out.state, fallback.state)
   })
 })
 

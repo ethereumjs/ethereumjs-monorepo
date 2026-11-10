@@ -6,10 +6,9 @@ import { FG, RESET } from './ansi.ts'
  * Ready, partial, and locked states keep this color; only the glyph changes.
  */
 export const CAPABILITY_FG: Record<CapabilityId, string> = {
+  state: FG.yellow,
+  economy: FG.magenta,
   p2p: FG.green,
-  snap: FG.yellow,
-  head: FG.cyan,
-  ai: FG.magenta,
 }
 
 function capabilityGlyph(status: CapabilityReadiness): string {

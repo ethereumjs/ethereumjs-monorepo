@@ -2,6 +2,7 @@ import type { ChainConfig } from '@ethereumjs/common'
 import type { FlatStateManager } from '@ethereumjs/statemanager'
 
 import type { ETHEconomyDataManager } from '../economy/economyDataManager.ts'
+import { headInspectUnlocked } from '../spine/headInspect.ts'
 import type { WidgetSpec } from '../spine/types.ts'
 import type { EthySpine } from '../spine/types.ts'
 import { clMicroscopeWidget } from '../tools/clTools.ts'
@@ -16,7 +17,7 @@ import {
 import { economyDeepViewWidget } from '../tools/economyTools.ts'
 import { headLockedWidget, inspectLatestBALStub, simulateTxOnHeadStub } from '../tools/gated.ts'
 import { inspectAccount, inspectLatestBAL } from '../tools/headTools.ts'
-import { buildHelpWidget } from '../tools/help.ts'
+import { buildDomainHelpWidget, buildHelpWidget, parseHelpDomainArg } from '../tools/help.ts'
 import { inspectRawAccountRange, sampleSyncedAccounts } from '../tools/range.ts'
 import type { IntentEngine, IntentRequest, IntentResult } from './intentEngine.ts'
 import { expandSlashCommand } from './slashComplete.ts'
@@ -63,7 +64,10 @@ export function dispatchSlashWidget(line: string, ctx: SlashDispatchCtx): Widget
     case '/diag':
       return diagnosticsTableWidget(spine)
     case '/help':
-      return buildHelpWidget(spine)
+    case '/h': {
+      const domain = parseHelpDomainArg(parts) ?? 'state'
+      return buildDomainHelpWidget(spine, domain)
+    }
     case '/drop':
       return dropPeer(spine, parts[1] ?? '', disconnectPeer)
     case '/reassign':
@@ -78,13 +82,13 @@ export function dispatchSlashWidget(line: string, ctx: SlashDispatchCtx): Widget
       return resumeSnapSync(spine)
     case '/account': {
       const addr = parts.slice(1).join(' ')
-      if (spine.capabilities.head.status === 'locked') {
+      if (!headInspectUnlocked(spine)) {
         return headLockedWidget('inspectAccount', spine)
       }
       return inspectAccount(spine, stateManager, addr)
     }
     case '/bal':
-      if (spine.capabilities.head.status === 'locked') {
+      if (!headInspectUnlocked(spine)) {
         return inspectLatestBALStub(spine)
       }
       return inspectLatestBAL(spine)
@@ -101,7 +105,7 @@ export function dispatchSlashWidget(line: string, ctx: SlashDispatchCtx): Widget
       return contractMicroscopeWidget(spine, stateManager, chain, economy, arg)
     }
     case '/simulate':
-      if (spine.capabilities.head.status === 'locked') {
+      if (!headInspectUnlocked(spine)) {
         return simulateTxOnHeadStub(spine)
       }
       return {
@@ -192,11 +196,15 @@ export class DeterministicIntentEngine implements IntentEngine {
       widget = buildHelpWidget(spine)
     }
 
+    const overviewNote =
+      widget.kind !== 'domain_help' && 'assistantComment' in widget
+        ? widget.assistantComment
+        : undefined
     return Promise.resolve({
       widget,
       stateHeader,
       querySlot,
-      overviewNote: widget.assistantComment,
+      overviewNote,
     })
   }
 }

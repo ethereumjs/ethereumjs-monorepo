@@ -85,14 +85,17 @@ describe('[Ethy/Intent]: gating', () => {
     assert.include(r.widget.kind === 'key_value' ? (r.widget.title ?? '') : '', 'locked')
   })
 
-  it('/help omits head commands while head locked', async () => {
+  it('/help opens domain help while state locked', async () => {
     const spine = createSpine('sepolia', 11155111n)
     setPhase(spine, 'P2P_WARMUP')
     const r = await engine.handle({ text: '/help', spine })
-    assert.equal(r.widget.kind, 'table')
-    if (r.widget.kind === 'table') {
-      const flat = r.widget.rows.flat().join(' ')
-      assert.notInclude(flat, '/account')
+    assert.equal(r.widget.kind, 'domain_help')
+    assert.equal(r.widget.kind === 'domain_help' ? r.widget.domain : '', 'state')
+    if (r.widget.kind === 'domain_help') {
+      const flat = r.widget.sections
+        .flatMap((s) => s.rows?.map((row) => row.command) ?? [])
+        .join(' ')
+      assert.include(flat, '/account')
     }
   })
 })

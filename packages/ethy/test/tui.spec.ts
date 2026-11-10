@@ -39,8 +39,8 @@ describe('[Ethy/TUI]: renderFrame', () => {
     const topA = stripAnsi(renderFrame(spineA, view, 100, 30)[0] ?? '')
     const topB = stripAnsi(renderFrame(spineB, view, 100, 30)[0] ?? '')
     assert.equal(topA.indexOf('P2P'), topB.indexOf('P2P'))
-    assert.match(topA, /Slot 1 {8}\S P2P/)
-    assert.match(topB, /Slot 123,456 {8}\S P2P/)
+    assert.match(topA, /Slot 1 {8}\S STATE/)
+    assert.match(topB, /Slot 123,456 {8}\S STATE/)
     assert.isAbove(topA.indexOf('Slot'), topA.indexOf('SEPOLIA'))
   })
 
@@ -129,10 +129,9 @@ describe('[Ethy/TUI]: renderFrame', () => {
     const rule = stripAnsi(lines[1] ?? '')
     assert.equal(rule[0], '─')
     assert.equal(rule[rule.length - 1], '─')
-    assert.match(top, /● P2P/)
-    assert.match(top, /● SNAP/)
-    assert.match(top, /● HEAD/)
-    assert.match(top, /◐ AI/)
+    assert.match(top, /● STATE/)
+    assert.match(top, /○ ECONOMY/)
+    assert.match(top, /○ P2P/)
     assert.notInclude(top, 'Synced')
     assert.notInclude(top, 'Slash/Rule')
     assert.notInclude(top, '[')
@@ -179,9 +178,9 @@ describe('[Ethy/TUI]: renderFrame', () => {
     spineB.capabilities.p2p.label = '3 Peers'
     const topA = stripAnsi(renderFrame(spineA, view, 100, 30)[0] ?? '')
     const topB = stripAnsi(renderFrame(spineB, view, 100, 30)[0] ?? '')
-    assert.equal(topA.indexOf('SNAP'), topB.indexOf('SNAP'))
-    assert.equal(topA.indexOf('HEAD'), topB.indexOf('HEAD'))
-    assert.equal(topA.indexOf('AI'), topB.indexOf('AI'))
+    assert.equal(topA.indexOf('STATE'), topB.indexOf('STATE'))
+    assert.equal(topA.indexOf('ECONOMY'), topB.indexOf('ECONOMY'))
+    assert.equal(topA.indexOf('P2P'), topB.indexOf('P2P'))
   })
 
   it('renderFrame() shows 3-box cockpit and domain-lens hint row', () => {
@@ -189,11 +188,15 @@ describe('[Ethy/TUI]: renderFrame', () => {
     const view = createInitialViewState()
     const plain = renderFrame(spine, view, 100, 30).map((line) => stripAnsi(line))
     const joined = plain.join('\n')
-    assert.include(joined, 'Node Pulse')
+    assert.include(joined, 'Stage')
+    assert.notInclude(joined, 'Node Pulse')
+    assert.notInclude(joined, 'Commands')
+    assert.notInclude(joined, 'Metrics')
     assert.include(joined, '╭')
     assert.notInclude(joined, 'Which peers are connected')
     const hint = plain[plain.length - 1] ?? ''
-    assert.match(hint, /Tab switch domain/)
+    assert.match(hint, /Tab show domain help/)
+    assert.match(hint, /view history/)
     assert.notInclude(hint, 'Why is bucket')
     assert.match(plain[plain.length - 3] ?? '', /ethy >/)
     assert.notInclude(joined, 'All quiet')
@@ -241,15 +244,14 @@ describe('[Ethy/TUI]: renderFrame', () => {
     }
   })
 
-  it('renderFrame() cockpit command box follows activeDomain', () => {
+  it('renderFrame() Tab help shows state commands and p2p box stays fixed', () => {
     const spine = createSpine('sepolia', 11155111n)
-    const p2p = stripAnsi(renderFrame(spine, createInitialViewState(), 100, 30).join('\n'))
-    const snapView = { ...createInitialViewState(), activeDomain: 'snap' as const }
-    const snap = stripAnsi(renderFrame(spine, snapView, 100, 30).join('\n'))
-    assert.include(p2p, '/peers')
-    assert.include(snap, '/buckets')
-    assert.include(snap, '/range')
-    assert.include(snap, '/sample')
+    const view = createInitialViewState(spine)
+    const frame = stripAnsi(renderFrame(spine, view, 100, 30).join('\n'))
+    assert.include(frame, '/buckets')
+    assert.include(frame, '/range')
+    assert.include(frame, '/help · State')
+    assert.include(frame, 'Peers')
     assert.equal(capabilityMark('p2p', 'locked').startsWith(CAPABILITY_FG.p2p), true)
   })
 
@@ -352,15 +354,21 @@ describe('[Ethy/TUI]: prompt reducer', () => {
     assert.equal(r.view.promptDraft, '/peers')
   })
 
-  it('Enter on empty draft opens deep view', () => {
+  it('Enter on empty draft is a no-op', () => {
     const r = reducePromptKey(createInitialViewState(), { type: 'enter' })
-    assert.isTrue(r.openDeepView)
+    assert.isUndefined(r.submittedLine)
+    assert.isUndefined(r.domainCycle)
   })
 
-  it('cycleDomain() walks p2p → snap → head → ai', () => {
-    assert.equal(cycleDomain('p2p', 1), 'snap')
-    assert.equal(cycleDomain('ai', 1), 'p2p')
-    assert.equal(cycleDomain('p2p', -1), 'ai')
+  it('cycleDomain() walks state → economy → p2p', () => {
+    assert.equal(cycleDomain('state', 1), 'economy')
+    assert.equal(cycleDomain('p2p', 1), 'state')
+    assert.equal(cycleDomain('state', -1), 'p2p')
+  })
+
+  it('decodeKey() maps left arrow on empty draft', () => {
+    const { actions } = decodeKey('', '\u001b[D')
+    assert.deepEqual(actions, [{ type: 'left' }])
   })
 
   it('Up/Down walks command history', () => {

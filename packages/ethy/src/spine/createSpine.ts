@@ -2,54 +2,67 @@ import { ETHY_CLIENT_NAME, getEthyClientVersion } from '../clientMeta.ts'
 import { createSnapBuckets, formatSnapCapabilityLabel } from './buckets.ts'
 import type { EthyPhase, EthySpine } from './types.ts'
 
-export function deriveCapabilities(spine: EthySpine): void {
-  const peerCount = spine.peers.size
-
-  switch (spine.phase) {
-    case 'BOOTING':
-      spine.capabilities.p2p = { status: 'locked', label: 'Starting' }
-      spine.capabilities.snap = { status: 'locked', label: 'Waiting' }
-      spine.capabilities.head = { status: 'locked', label: 'Locked' }
-      break
-    case 'P2P_WARMUP':
-      spine.capabilities.p2p =
-        peerCount >= 1
-          ? { status: 'ready', label: `${peerCount} Peers` }
-          : { status: 'partial', label: 'Connecting' }
-      spine.capabilities.snap = { status: 'locked', label: 'Waiting' }
-      spine.capabilities.head = { status: 'locked', label: 'Locked' }
-      break
-    case 'SNAP_SYNCING': {
-      spine.capabilities.p2p = { status: 'ready', label: `${peerCount} Peers` }
-      const snapLabel = formatSnapCapabilityLabel(spine.snapBuckets, {
-        peerCount,
-        phase: spine.phase,
-      })
-      spine.capabilities.snap = { status: 'partial', label: snapLabel }
-      const streamed = spine.streamedBalCount ?? 0
-      spine.capabilities.head =
-        streamed > 0
-          ? { status: 'partial', label: 'Streaming' }
-          : { status: 'locked', label: 'Locked' }
-      break
+function deriveStateCapability(spine: EthySpine): void {
+  const { phase, totalAccountsSynced, pivotBlockNumber } = spine
+  if (phase === 'BOOTING') {
+    spine.capabilities.state = { status: 'locked', label: 'Starting' }
+    return
+  }
+  if (phase === 'P2P_WARMUP') {
+    if (totalAccountsSynced > 0 || pivotBlockNumber !== undefined) {
+      spine.capabilities.state = { status: 'partial', label: 'Warming' }
+    } else {
+      spine.capabilities.state = { status: 'locked', label: 'Waiting' }
     }
-    case 'BAL_CATCHUP':
-      spine.capabilities.p2p = { status: 'ready', label: `${peerCount} Peers` }
-      spine.capabilities.snap = { status: 'ready', label: 'Synced' }
-      spine.capabilities.head = { status: 'partial', label: 'Catch-up' }
-      break
-    case 'HEAD_FOLLOWING':
-      spine.capabilities.p2p = { status: 'ready', label: `${peerCount} Peers` }
-      spine.capabilities.snap = { status: 'ready', label: 'Synced' }
-      spine.capabilities.head = { status: 'ready', label: 'Following' }
-      break
+    return
   }
+  if (phase === 'SNAP_SYNCING' || phase === 'BAL_CATCHUP') {
+    const label =
+      phase === 'BAL_CATCHUP'
+        ? 'BAL Catch-Up'
+        : formatSnapCapabilityLabel(spine.snapBuckets, {
+            peerCount: spine.peers.size,
+            phase,
+          })
+    spine.capabilities.state = { status: 'partial', label }
+    return
+  }
+  if (phase === 'HEAD_FOLLOWING') {
+    spine.capabilities.state = { status: 'ready', label: 'Following' }
+    return
+  }
+  spine.capabilities.state = { status: 'locked', label: 'Starting' }
+}
 
-  if (spine.llmPulseReady === true) {
-    spine.capabilities.ai = { status: 'ready', label: 'Local LLM' }
-  } else {
-    spine.capabilities.ai = { status: 'partial', label: 'Slash/Rule Mode' }
+function deriveEconomyCapability(spine: EthySpine): void {
+  const econ = spine.economy
+  if (econ?.hasBlocks !== true) {
+    spine.capabilities.economy = { status: 'locked', label: 'No blocks' }
+    return
   }
+  const recent = econ.recentBlocks.length
+  if (econ.hasTxBody === true && recent >= 4) {
+    spine.capabilities.economy = { status: 'ready', label: 'Live' }
+    return
+  }
+  spine.capabilities.economy = { status: 'partial', label: 'Warming' }
+}
+
+function deriveP2pCapability(spine: EthySpine): void {
+  const n = spine.peers.size
+  if (n === 0) {
+    spine.capabilities.p2p = { status: 'locked', label: 'None' }
+  } else if (n === 1) {
+    spine.capabilities.p2p = { status: 'partial', label: '1 Peer' }
+  } else {
+    spine.capabilities.p2p = { status: 'ready', label: `${n} Peers` }
+  }
+}
+
+export function deriveCapabilities(spine: EthySpine): void {
+  deriveStateCapability(spine)
+  deriveEconomyCapability(spine)
+  deriveP2pCapability(spine)
 }
 
 export function createSpine(network: string, chainId: bigint): EthySpine {
@@ -63,10 +76,9 @@ export function createSpine(network: string, chainId: bigint): EthySpine {
     ethyBucketsBitmask: 0,
     currentSlot: 0,
     capabilities: {
-      p2p: { status: 'locked', label: 'Starting' },
-      snap: { status: 'locked', label: 'Waiting' },
-      head: { status: 'locked', label: 'Locked' },
-      ai: { status: 'partial', label: 'Slash/Rule Mode' },
+      state: { status: 'locked', label: 'Starting' },
+      economy: { status: 'locked', label: 'No blocks' },
+      p2p: { status: 'locked', label: 'None' },
     },
     peers: new Map(),
     snapBuckets: createSnapBuckets(),

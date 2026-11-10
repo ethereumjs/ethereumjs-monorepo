@@ -1,11 +1,14 @@
 import { completeSlashDraft } from '../ai/slashComplete.ts'
-import type { CapabilityId, TuiViewState } from '../spine/types.ts'
+import type { CapabilityId, EthySpine, TuiViewState } from '../spine/types.ts'
+import { DOMAIN_ORDER } from '../spine/types.ts'
+import { buildDomainHelpWidget } from '../tools/help.ts'
 
 export type KeyAction =
   | { type: 'char'; ch: string }
   | { type: 'backspace' }
   | { type: 'tab' }
   | { type: 'shiftTab' }
+  | { type: 'left' }
   | { type: 'right' }
   | { type: 'enter' }
   | { type: 'up' }
@@ -14,25 +17,10 @@ export type KeyAction =
   | { type: 'toggleDebug' }
   | { type: 'ignore' }
 
-const DOMAIN_ORDER: readonly CapabilityId[] = ['p2p', 'snap', 'head', 'ai']
-
 export function cycleDomain(id: CapabilityId, direction: 1 | -1): CapabilityId {
   const idx = DOMAIN_ORDER.indexOf(id)
   const next = (idx + direction + DOMAIN_ORDER.length) % DOMAIN_ORDER.length
-  return DOMAIN_ORDER[next] ?? 'p2p'
-}
-
-export function deepViewCommand(domain: CapabilityId): string {
-  switch (domain) {
-    case 'p2p':
-      return '/peers'
-    case 'snap':
-      return '/buckets'
-    case 'head':
-      return '/bal'
-    case 'ai':
-      return '/help'
-  }
+  return DOMAIN_ORDER[next] ?? 'state'
 }
 
 /**
@@ -84,6 +72,9 @@ export function pushKeyChar(
   if (next === '\u001b[C' || next === '\u001bOC') {
     return { buffer: '', action: { type: 'right' } }
   }
+  if (next === '\u001b[D' || next === '\u001bOD') {
+    return { buffer: '', action: { type: 'left' } }
+  }
   if (next === '\u001b[3~') {
     return { buffer: '', action: { type: 'backspace' } }
   }
@@ -114,7 +105,7 @@ export interface PromptReduceResult {
   view: TuiViewState
   submittedLine?: string
   domainCycle?: 1 | -1
-  openDeepView?: true
+  viewHistoryNav?: 'left' | 'right'
   toggleDebug?: true
 }
 
@@ -122,7 +113,7 @@ export function reducePromptKey(view: TuiViewState, action: KeyAction): PromptRe
   const next: TuiViewState = { ...view, history: [...view.history] }
   let submittedLine: string | undefined
   let domainCycle: 1 | -1 | undefined
-  let openDeepView: true | undefined
+  let viewHistoryNav: 'left' | 'right' | undefined
   let toggleDebug: true | undefined
   switch (action.type) {
     case 'char':
@@ -144,15 +135,21 @@ export function reducePromptKey(view: TuiViewState, action: KeyAction): PromptRe
         domainCycle = -1
       }
       break
+    case 'left':
+      if (next.promptDraft.length === 0) {
+        viewHistoryNav = 'left'
+      }
+      break
     case 'right':
       if (next.promptDraft.startsWith('/')) {
         const completed = completeSlashDraft(next.promptDraft)
         if (completed !== null) next.promptDraft = completed
+      } else if (next.promptDraft.length === 0) {
+        viewHistoryNav = 'right'
       }
       break
     case 'enter': {
       if (next.promptDraft.trim().length === 0) {
-        openDeepView = true
         break
       }
       const line = next.promptDraft.trim()
@@ -185,14 +182,18 @@ export function reducePromptKey(view: TuiViewState, action: KeyAction): PromptRe
       break
   }
 
-  return { view: next, submittedLine, domainCycle, openDeepView, toggleDebug }
+  return { view: next, submittedLine, domainCycle, viewHistoryNav, toggleDebug }
 }
 
-export function createInitialViewState(): TuiViewState {
+export function createInitialViewState(spine?: EthySpine): TuiViewState {
+  const withHelp = spine !== undefined
   return {
-    activeDomain: 'p2p',
-    activeWidget: null,
+    activeDomain: 'state',
+    activeWidget: withHelp ? buildDomainHelpWidget(spine, 'state') : null,
     interactionPage: 'main',
+    showingHelp: withHelp,
+    viewHistory: [],
+    viewHistoryIndex: -1,
     promptDraft: '',
     carouselTick: 0,
     history: [],

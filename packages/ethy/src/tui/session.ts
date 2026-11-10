@@ -1,12 +1,19 @@
 import { stdin as input, stdout as output } from 'node:process'
 import readline from 'node:readline'
 
-import { MAX_AI_OVERVIEW_CHARS, buildDeterministicOverview } from '../ai/overviewNarrator.ts'
+import type { SlashDispatchCtx } from '../ai/deterministicEngine.ts'
+import {
+  buildDeterministicOverviewSections,
+  clampOverviewSections,
+} from '../ai/overviewNarrator.ts'
 import { AiPulseNarrator } from '../ai/pulseNarrator.ts'
 import type { EthyNode } from '../core/createEthyNode.ts'
 import { advanceDemo } from '../demo/advanceDemo.ts'
 import { readDomainSnapshots } from '../domains/domainManagers.ts'
+import { chainConfigForNetwork } from '../net/chainHardfork.ts'
 import { describeNotice } from '../notify/board.ts'
+import type { AiOverviewSections, InteractionHistoryEntry, TuiViewState } from '../spine/types.ts'
+import { parseHelpDomainArg } from '../tools/help.ts'
 import {
   ALT_SCREEN_OFF,
   ALT_SCREEN_ON,
@@ -16,31 +23,27 @@ import {
   syncOutputBegin,
   syncOutputEnd,
 } from './ansi.ts'
-import {
-  createInitialViewState,
-  cycleDomain,
-  deepViewCommand,
-  pushKeyChar,
-  reducePromptKey,
-} from './prompt.ts'
+import { createInitialViewState, cycleDomain, pushKeyChar, reducePromptKey } from './prompt.ts'
 import { promptCaretPosition, renderFrame } from './renderFrame.ts'
+import {
+  activateHistoryEntry,
+  applyLiveSlashRefresh,
+  mergeOverviewFocus,
+  openDomainHelp,
+  pushViewHistory,
+  snapshotFlipWidget,
+} from './viewHistory.ts'
 
 const ASKING_LLM_NOTE = 'Asking the local model…'
 
-function clampOverviewNote(text: string): string {
-  const t = text.replace(/\s+/g, ' ').trim()
-  if (t.length <= MAX_AI_OVERVIEW_CHARS) return t
-  return `${t.slice(0, MAX_AI_OVERVIEW_CHARS - 1)}…`
+function isHelpCommand(line: string): boolean {
+  const cmd = line.trim().split(/\s+/)[0]?.toLowerCase()
+  return cmd === '/help' || cmd === '/h'
 }
 
-/**
- * Presentation clock. This function only reads spine state, paints, and
- * handles keys. Sync and discovery must not run synchronous disk or ingest
- * work on this turn — see `runtime/lanes.ts`.
- */
 export async function runEthySession(node: EthyNode): Promise<void> {
   const demoStart = Date.now()
-  let view = createInitialViewState()
+  let view = createInitialViewState(node.spine)
   let lastQuerySlot: number | undefined
   let escapeBuf = ''
   let lastPhase = node.spine.phase
@@ -50,17 +53,63 @@ export async function runEthySession(node: EthyNode): Promise<void> {
   const OVERVIEW_INTERVAL_MS = 30_000
   const llmConfigured = node.llm !== undefined
   let intentGeneration = 0
-  let savedOverviewForIntent = ''
+  let savedOverviewSections: AiOverviewSections | undefined
   let pulseNarrator: AiPulseNarrator | undefined
+
+  const slashCtx = (): SlashDispatchCtx => ({
+    spine: node.spine,
+    stateManager: node.stateManager,
+    disconnectPeer: node.disconnectPeer,
+    economy: node.economy,
+    chain: chainConfigForNetwork(node.spine.network),
+  })
 
   const refreshOverview = (trigger: 'welcome' | 'pulse') => {
     const snapshots = readDomainSnapshots(node.spine)
     view = {
       ...view,
-      aiOverview: buildDeterministicOverview(snapshots, trigger),
+      aiOverviewSections: clampOverviewSections(
+        buildDeterministicOverviewSections(snapshots, trigger),
+      ),
     }
   }
   refreshOverview('welcome')
+
+  const navigateHistory = (direction: 'left' | 'right'): void => {
+    if (direction === 'left') {
+      if (view.showingHelp && view.viewHistory.length > 0) {
+        const entry = view.viewHistory[view.viewHistoryIndex]
+        if (entry !== undefined) {
+          view = { ...view, ...activateHistoryEntry(entry, node.spine, slashCtx()) }
+        }
+        return
+      }
+      if (view.viewHistoryIndex > 0) {
+        const index = view.viewHistoryIndex - 1
+        const entry = view.viewHistory[index]
+        if (entry !== undefined) {
+          view = {
+            ...view,
+            viewHistoryIndex: index,
+            ...activateHistoryEntry(entry, node.spine, slashCtx()),
+          }
+        }
+      }
+      return
+    }
+    if (view.showingHelp) return
+    if (view.viewHistoryIndex < view.viewHistory.length - 1) {
+      const index = view.viewHistoryIndex + 1
+      const entry = view.viewHistory[index]
+      if (entry !== undefined) {
+        view = {
+          ...view,
+          viewHistoryIndex: index,
+          ...activateHistoryEntry(entry, node.spine, slashCtx()),
+        }
+      }
+    }
+  }
 
   if (input.isTTY) {
     readline.emitKeypressEvents(input)
@@ -102,9 +151,14 @@ export async function runEthySession(node: EthyNode): Promise<void> {
         pulseNarrator?.notePhase(node.spine)
       }
     }
+    view = applyLiveSlashRefresh(view, node.spine, slashCtx())
     const flip = node.spine.headFlipSummary
-    if (view.activeWidget === null && flip !== undefined) {
-      view = { ...view, activeWidget: flip }
+    if (flip !== undefined) {
+      const title =
+        flip.kind === 'key_value' || flip.kind === 'table'
+          ? (flip.title ?? 'Head flip')
+          : 'Head flip'
+      view = snapshotFlipWidget(view, flip, title)
       node.spine.headFlipSummary = undefined
     }
     const cols = output.columns ?? 100
@@ -128,33 +182,69 @@ export async function runEthySession(node: EthyNode): Promise<void> {
   ) => {
     if (gen !== intentGeneration) return
     lastQuerySlot = result.querySlot
-    const nextOverview =
-      result.overviewNote !== undefined
-        ? clampOverviewNote(result.overviewNote)
-        : isNl && view.aiOverview === ASKING_LLM_NOTE
-          ? savedOverviewForIntent || view.aiOverview
-          : view.aiOverview
+    let nextSections = view.aiOverviewSections
+    if (result.overviewNote !== undefined) {
+      nextSections = mergeOverviewFocus(
+        view.aiOverviewSections,
+        result.overviewNote,
+        view.activeDomain,
+      )
+    } else if (isNl && view.aiOverviewSections?.focusNote?.text === ASKING_LLM_NOTE) {
+      nextSections = savedOverviewSections ?? view.aiOverviewSections
+    }
     view = {
       ...view,
       activeWidget: result.widget,
       interactionPage: 'main',
       interactionLabel: label,
       interactionTitle: isNl ? result.viewTitle : undefined,
-      aiOverview: nextOverview,
+      aiOverviewSections: nextSections,
+      showingHelp: false,
     }
     if (isNl) {
+      const entry: InteractionHistoryEntry = {
+        kind: 'ai',
+        prompt: label,
+        viewTitle: result.viewTitle ?? label.slice(0, 48),
+        widget: result.widget,
+        overviewNote: result.overviewNote,
+        page: 'main',
+      }
+      view = pushViewHistory(view, entry)
       node.hybridEngine?.noteIntentInflight(-1)
+    } else if (!isHelpCommand(label)) {
+      const entry: InteractionHistoryEntry = {
+        kind: 'slash',
+        command: label,
+        label,
+        page: 'main',
+      }
+      view = pushViewHistory(view, entry)
     }
     draw()
   }
 
   const runIntent = (text: string, gen: number, isNl: boolean) => {
+    if (isHelpCommand(text)) {
+      const parts = text.split(/\s+/)
+      const domain = parseHelpDomainArg(parts) ?? view.activeDomain
+      view = openDomainHelp(view, node.spine, domain)
+      draw()
+      return
+    }
     if (isNl) {
       pulseNarrator?.abortInFlight()
-      if (view.aiOverview !== ASKING_LLM_NOTE && view.aiOverview !== undefined) {
-        savedOverviewForIntent = view.aiOverview
+      if (view.aiOverviewSections?.focusNote === undefined) {
+        savedOverviewSections = view.aiOverviewSections
       }
-      view = { ...view, aiOverview: clampOverviewNote(ASKING_LLM_NOTE) }
+      view = {
+        ...view,
+        aiOverviewSections: mergeOverviewFocus(
+          view.aiOverviewSections,
+          ASKING_LLM_NOTE,
+          view.activeDomain,
+        ),
+      }
       node.hybridEngine?.noteIntentInflight(1)
       draw()
     }
@@ -170,7 +260,10 @@ export async function runEthySession(node: EthyNode): Promise<void> {
       .catch(() => {
         if (gen !== intentGeneration) return
         node.hybridEngine?.noteIntentInflight(-1)
-        view = { ...view, aiOverview: savedOverviewForIntent || view.aiOverview }
+        view = {
+          ...view,
+          aiOverviewSections: savedOverviewSections ?? view.aiOverviewSections,
+        }
         draw()
       })
   }
@@ -178,8 +271,8 @@ export async function runEthySession(node: EthyNode): Promise<void> {
   if (llmConfigured && node.llm !== undefined && !node.demo && !node.headless) {
     pulseNarrator = new AiPulseNarrator({
       transport: node.llm.transport,
-      onOverview: (text) => {
-        view = { ...view, aiOverview: text }
+      onOverview: (sections) => {
+        view = { ...view, aiOverviewSections: sections }
         draw()
       },
       onUnhealthy: () => {
@@ -223,30 +316,39 @@ export async function runEthySession(node: EthyNode): Promise<void> {
           view: nextView,
           submittedLine,
           domainCycle,
-          openDeepView,
+          viewHistoryNav,
           toggleDebug,
         } = reducePromptKey(view, action)
         view = nextView
         if (toggleDebug === true) {
           const w = view.activeWidget
           if (w?.debugPage !== undefined && w.debugPage.length > 0) {
+            const nextPage = view.interactionPage === 'debug' ? 'main' : 'debug'
             view = {
               ...view,
-              interactionPage: view.interactionPage === 'debug' ? 'main' : 'debug',
+              interactionPage: nextPage,
+            }
+            if (!view.showingHelp && view.viewHistory.length > 0) {
+              const idx = view.viewHistoryIndex
+              const entry = view.viewHistory[idx]
+              if (entry !== undefined) {
+                const updated: InteractionHistoryEntry =
+                  entry.kind === 'slash'
+                    ? { ...entry, page: nextPage }
+                    : { ...entry, page: nextPage }
+                const hist = [...view.viewHistory]
+                hist[idx] = updated
+                view = { ...view, viewHistory: hist }
+              }
             }
           }
         }
         if (domainCycle !== undefined) {
-          view = {
-            ...view,
-            activeDomain: cycleDomain(view.activeDomain, domainCycle),
-          }
+          const domain = cycleDomain(view.activeDomain, domainCycle)
+          view = openDomainHelp(view, node.spine, domain)
         }
-        if (openDeepView === true) {
-          const cmd = deepViewCommand(view.activeDomain)
-          const gen = ++intentGeneration
-          runIntent(cmd, gen, false)
-          dirty = false
+        if (viewHistoryNav !== undefined) {
+          navigateHistory(viewHistoryNav)
         }
         if (submittedLine !== undefined) {
           const gen = ++intentGeneration

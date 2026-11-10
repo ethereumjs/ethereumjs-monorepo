@@ -3,7 +3,11 @@ import type { BALJSONBlockAccessList } from '@ethereumjs/util'
 
 import type { EconomySnapshot } from '../economy/types.ts'
 
-export type CapabilityId = 'p2p' | 'snap' | 'head' | 'ai'
+export type CapabilityId = 'state' | 'economy' | 'p2p'
+
+export const DOMAIN_ORDER: readonly CapabilityId[] = ['state', 'economy', 'p2p']
+
+export const MAX_VIEW_HISTORY = 12
 
 export type EthyPhase = 'BOOTING' | 'P2P_WARMUP' | 'SNAP_SYNCING' | 'BAL_CATCHUP' | 'HEAD_FOLLOWING'
 
@@ -166,10 +170,9 @@ export interface EthySpine {
   /** One-shot celebration payload for Zone 2 after snap completes (WP-04k). */
   headFlipSummary?: WidgetSpec
   capabilities: {
+    state: CapabilityState
+    economy: CapabilityState
     p2p: CapabilityState
-    snap: CapabilityState
-    head: CapabilityState
-    ai: CapabilityState
   }
   peers: Map<string, PeerTelemetry>
   /** Latest worker discovery counters (live P2P only). */
@@ -234,6 +237,35 @@ export type DebugSectionSpec = {
 
 export type InteractionPage = 'main' | 'debug'
 
+export type DomainHelpSection = {
+  title: string
+  rows?: Array<{ command: string; detail: string }>
+  prompts?: string[]
+}
+
+export type InteractionHistoryEntry =
+  | {
+      kind: 'slash'
+      command: string
+      label: string
+      page: InteractionPage
+    }
+  | {
+      kind: 'ai'
+      prompt: string
+      viewTitle: string
+      widget: WidgetSpec
+      overviewNote?: string
+      page: InteractionPage
+    }
+
+export interface AiOverviewSections {
+  state?: string
+  economy?: string
+  p2p?: string
+  focusNote?: { domain: CapabilityId; text: string }
+}
+
 export type WidgetSpec =
   | {
       kind: 'onboarding_carousel'
@@ -264,13 +296,22 @@ export type WidgetSpec =
       assistantComment?: string
       debugPage?: DebugSectionSpec[]
     }
+  | {
+      kind: 'domain_help'
+      domain: CapabilityId
+      sections: DomainHelpSection[]
+      debugPage?: DebugSectionSpec[]
+    }
 
 export interface TuiViewState {
   activeDomain: CapabilityId
   activeWidget: WidgetSpec | null
   interactionPage: InteractionPage
-  /** Deterministic situational prose for the AI Overview box (refreshed in session). */
-  aiOverview?: string
+  /** Three-domain situational prose for the full-height AI box (refreshed in session). */
+  aiOverviewSections?: AiOverviewSections
+  showingHelp: boolean
+  viewHistory: InteractionHistoryEntry[]
+  viewHistoryIndex: number
   promptDraft: string
   carouselTick: number
   history: string[]

@@ -31,7 +31,7 @@ describe('[Ethy/Sync]: BAL window and head phase', () => {
     } as never)
     assert.equal(entered, true)
     assert.equal(spine.phase, 'HEAD_FOLLOWING')
-    assert.equal(spine.capabilities.head.status, 'ready')
+    assert.equal(spine.capabilities.state.status, 'ready')
 
     spine.pivotBlockNumber = 100n
     setPhase(spine, 'SNAP_SYNCING')
@@ -40,7 +40,7 @@ describe('[Ethy/Sync]: BAL window and head phase', () => {
     assert.equal(catchUp, true)
     assert.equal(spine.phase, 'BAL_CATCHUP')
     assert.equal(spine.balCatchUp?.total, 25)
-    assert.equal(spine.capabilities.head.status, 'partial')
+    assert.equal(spine.capabilities.state.status, 'partial')
   })
 
   it('flat and merkle stay aligned after shared consumeBAL oracle', async () => {

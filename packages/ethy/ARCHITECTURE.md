@@ -135,33 +135,29 @@ renderFrame(spine: EthySpine, viewState: TuiViewState, cols: number, rows: numbe
 ```
 
 ```text
- Ethy v10.1.3 | SEPOLIA                        Slot 11,482,910        ● P2P  ◐ SNAP  ○ HEAD  ◐ AI
+ Ethy v10.1.3 | SEPOLIA                        Slot 11,482,910        ● STATE  ◐ ECONOMY  ● P2P
 ──────────────────────────────────────────────────────────────────────────────────────────────────
- ╭─ Node Pulse ───────────────╮  ╭─ Economy ──────────────────╮  ╭─ ● P2P Metrics ──────────────╮
- │ Phase     Snap Syncing     │  │ Gas       12 gwei · rising   │  │ Peers      18 active           │
- │ …         …                  │  │ …         …                  │  │ …          …                   │
+ ╭─ ● State • ────────────────╮  ╭─ ● Economy ────────────────╮  ╭─ ● P2P ──────────────────────╮
+ │ 4-row node pulse           │  │ economy cockpit pairs      │  │ peers / served / latency     │
  ╰────────────────────────────╯  ╰────────────────────────────╯  ╰────────────────────────────────╯
 
- ╭─ /peers · Peer health ─────╮     ╭─ AI Overview ─────────────╮
- │ Peer       Client    RTT   │     │  (deterministic narrator)   │
- ╰────────────────────────────╯     ╰─────────────────────────────╯
-                                    ╭─ ● P2P Commands ───────────╮
-                                    │ /peers  /diag  /drop …     │
-                                    ╰────────────────────────────╯
+ ╭─ ● /help · State ──────────╮     ╭─ AI ─────────────────────────╮
+ │  domain command sections   │     │  ≤600 chars, 3 domain blocks │
+ ╰────────────────────────────╯     ╰──────────────────────────────╯
 
 ──────────────────────────────────────────────────────────────────────────────────────────────────
  ● ethy > █
- Enter open P2P view · Tab switch domain · / command · Ctrl+D debug · Esc exit
+ Tab show domain help · ←/→ view history · Ctrl+D debug page · / command · Esc exit
 ```
 
 ### Key UX & Keyboard Mechanics
 
-1. **Ultra-Minimal Top Bar (`● P2P  ◐ SNAP  ○ HEAD  ◐ AI`):**
-   - Capabilities have fixed identity colors (`p2p` green, `snap` yellow, `head` cyan, `ai` magenta); readiness changes only the glyph (`●` / `◐` / `○`). No bracketed sub-labels in the top bar.
-2. **1-Key Domain Lens Cycling (`Tab` at `● ethy >`):**
-   - The capability circle `●` sits directly to the left of `ethy >`. Pressing `Tab` when the input is empty cycles `activeDomain` (`p2p` → `snap` → `head` → `ai`), changing the prompt dot color and immediately updating the **Middle Box** (domain commands) and **Right Box** (domain metrics) while the **Left Box** (`Node Pulse`) stays anchored.
-3. **2-Key Deep Domain View (`Tab` → `Enter`):**
-   - Pressing `Enter` when the prompt draft is empty opens the full detail widget for `activeDomain` in the Broad Main Interaction Area below. Pressing `Tab` alone never wipes an existing widget in the Main Area.
+1. **Ultra-Minimal Top Bar (`● STATE  ◐ ECONOMY  ● P2P`):**
+   - Domains are `state` (yellow), `economy` (magenta), and `p2p` (green); readiness changes only the glyph (`●` / `◐` / `○`). `llmPulseReady` is spine-only; no `AI` pill.
+2. **Domain help (`Tab` / `Shift+Tab` on empty draft):**
+   - Cycles `activeDomain`, moves the cockpit title `•`, and mounts `domain_help` (boot starts on State help). Help does not append to `viewHistory`; empty `Enter` does nothing.
+3. **Interaction view history (`←` / `→` on empty draft):**
+   - Up to 12 entries: slash commands refresh live on each frame; natural-language results keep widget snapshots. From help, `←` jumps back to the current history entry.
 4. **Prefix Slash Completion (`/p` + `Tab` or `Enter`):**
    - Unambiguous slash prefixes (`/p` → `/peers`, `/b` → `/buckets`, `/d` → `/diag`) autocomplete on `Tab` and execute directly on `Enter`.
 5. **Declarative Micro-Widgets (No LLM ASCII Art):**

@@ -1,6 +1,6 @@
 # WP-07f: 3-Domain Cockpit Streamline (`State · Economy · P2P`), Full-Height 3-Part `AI` Overview, `Tab` Domain Help & `←`/`→` Interaction View History
 
-- **Status:** `READY_FOR_PLANNING`
+- **Status:** `DONE`
 - **Dependencies:** `WP-07a`–`WP-07e` (`DONE`)
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
@@ -216,22 +216,24 @@ Streamline Ethy's TUI and domain model into a **100% unified 3-Domain Architectu
 
 ## 4. Acceptance Criteria (`WP-07f`)
 
-- [ ] `CapabilityId` is streamlined to `'state' | 'economy' | 'p2p'` in reading order (`STATE`, `ECONOMY`, `P2P`) with Option B colors (`state` = yellow, `economy` = magenta/violet, `p2p` = green); `AI` is removed from the top-right capability bar.
-- [ ] Top cockpit row permanently displays `╭─ ● State ─╮`, `╭─ ● Economy ─╮`, and `╭─ ● P2P ─╮` (no `"Metrics"` suffix, no `Tab` rotation of the right box), with a zero-jitter active domain indicator (`•`) that replaces 2 border dashes without shifting box widths.
-- [ ] Lower-right `<Domain> Commands` box is removed; `╭─ AI ─╮` (neutral title, no purple dot) expands to full `fillRows` height and renders up to 3 domain-marked prose sections (`● State`, `● Economy`, `● P2P`) with hanging indents, `<= 600` total chars, and vertical centering.
-- [ ] Empty-draft `Enter` deep-view shortcut is removed; `Tab` / `Shift+Tab` cycles `activeDomain` (`state` → `economy` → `p2p`) and displays the structured multi-section `DomainHelpUIComponent` (`╭─ ● /help · <Domain> ─╮`), starting on `State` help at boot.
-- [ ] `Left` (`←`) and `Right` (`→`) arrow keys (on empty draft) navigate a 12-entry `viewHistory` (excluding `/help` pages), refreshing `kind: 'slash'` views live while preserving `kind: 'ai'` views as historic snapshots, and allowing `←` from any `/help` page to return to the last active view.
-- [ ] Update `packages/ethy/.cursor/rules/ethy-tui.mdc` and `packages/ethy/ARCHITECTURE.md` to reflect the 3-domain model, full-height `AI` box, `Tab` domain help, and `←`/`→` view history.
-- [ ] `npm run tsc`, `npm test`, and `npm run spellcheck` pass in `@ethereumjs/ethy`.
+- [x] `CapabilityId` is streamlined to `'state' | 'economy' | 'p2p'` in reading order (`STATE`, `ECONOMY`, `P2P`) with Option B colors (`state` = yellow, `economy` = magenta/violet, `p2p` = green); `AI` is removed from the top-right capability bar.
+- [x] Top cockpit row permanently displays `╭─ ● State ─╮`, `╭─ ● Economy ─╮`, and `╭─ ● P2P ─╮` (no `"Metrics"` suffix, no `Tab` rotation of the right box), with a zero-jitter active domain indicator (`•`) that replaces 2 border dashes without shifting box widths.
+- [x] Lower-right `<Domain> Commands` box is removed; `╭─ AI ─╮` (neutral title, no purple dot) expands to full `fillRows` height and renders up to 3 domain-marked prose sections (`● State`, `● Economy`, `● P2P`) with hanging indents, `<= 600` total chars, and vertical centering.
+- [x] Empty-draft `Enter` deep-view shortcut is removed; `Tab` / `Shift+Tab` cycles `activeDomain` (`state` → `economy` → `p2p`) and displays the structured multi-section `DomainHelpUIComponent` (`╭─ ● /help · <Domain> ─╮`), starting on `State` help at boot.
+- [x] `Left` (`←`) and `Right` (`→`) arrow keys (on empty draft) navigate a 12-entry `viewHistory` (excluding `/help` pages), refreshing `kind: 'slash'` views live while preserving `kind: 'ai'` views as historic snapshots, and allowing `←` from any `/help` page to return to the last active view.
+- [x] Update `packages/ethy/.cursor/rules/ethy-tui.mdc` and `packages/ethy/ARCHITECTURE.md` to reflect the 3-domain model, full-height `AI` box, `Tab` domain help, and `←`/`→` view history.
+- [x] `npm run tsc`, `npm test`, and `npm run spellcheck` pass in `@ethereumjs/ethy`.
 
 ---
 
 ## 5. Concrete Implementation Plan (Planner — Grok 4.7)
 
-*(To be filled by Grok 4.7 during planning)*
+Shipped per **D-104** / **D-105** blueprint: `CapabilityId` + `DOMAIN_ORDER` in `src/spine/types.ts`; `deriveCapabilities` + `headInspectUnlocked` in `src/spine/`; static three-box `src/tui/cockpit.ts`; full-height AI in `src/tui/lowerArea.ts` + `renderAiOverviewSections`; `DomainHelpUIComponent` + `buildDomainHelpWidget`; `viewHistory.ts` + session navigation; pulse/overview JSON sections (`≤600` chars). Tests: `tui.spec.ts`, `overviewNarrator.spec.ts`, `balSync.spec.ts`, `aiEngine.spec.ts`, `intent.spec.ts`.
 
 ---
 
 ## 6. Implementation Notes & Deviations (Implementer — Composer 2.5)
 
-*(To be filled by Composer 2.5 during implementation)*
+- Boot mounts State domain help via `createInitialViewState(spine)`; head-flip summary still pushes an `ai` history snapshot when `headFlipSummary` is set (no `activeWidget === null` boot).
+- `/bal`, `/account`, `/simulate` gating uses `headInspectUnlocked(spine)`, not `capabilities.state === 'ready'`. Domain help always lists those slash commands.
+- `p2p` readiness: exactly one peer is `partial`; two or more is `ready`.

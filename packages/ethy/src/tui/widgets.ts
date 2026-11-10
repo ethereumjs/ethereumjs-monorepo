@@ -5,9 +5,9 @@ import { renderInteractionWidgetBody } from './interactionContent.ts'
 export const CAROUSEL_INTERVAL_MS = 12_000
 
 export type SuggestionMarks = {
+  state: CapabilityReadiness
+  economy: CapabilityReadiness
   p2p: CapabilityReadiness
-  snap: CapabilityReadiness
-  head: CapabilityReadiness
 }
 
 /** Legacy helper for unit tests — unbounded height, main page only. */

@@ -5,9 +5,9 @@ import {
   formatProgressBar,
   snapBucketsDoneCount,
 } from '../spine/buckets.ts'
-import type { CapabilityId, EthyPhase, EthySpine, TuiViewState } from '../spine/types.ts'
+import type { CapabilityId, EthySpine, TuiViewState } from '../spine/types.ts'
 import { BOLD, RESET } from './ansi.ts'
-import { capabilityMark } from './capabilityMark.ts'
+import { CAPABILITY_FG, capabilityMark } from './capabilityMark.ts'
 import { economyForCockpitDisplay } from './economyCockpitBuffer.ts'
 import {
   type TwoColumnPair,
@@ -17,11 +17,10 @@ import {
 } from './layout.ts'
 import { innerRowWidth, joinBoxColumns, renderBox } from './roundedBox.ts'
 
-const DOMAIN_LABEL: Record<CapabilityId, string> = {
+const BOX_LABEL: Record<CapabilityId, string> = {
+  state: 'State',
+  economy: 'Economy',
   p2p: 'P2P',
-  snap: 'SNAP',
-  head: 'HEAD',
-  ai: 'AI',
 }
 
 /** Inner content rows per box (excluding top/bottom border and vertical padding). */
@@ -211,17 +210,6 @@ function nodePulsePairs(spine: EthySpine): TwoColumnPair[] {
   ]
 }
 
-function shortHash(root: Uint8Array | undefined): string {
-  if (root === undefined || root.length === 0) return '—'
-  const hex = Array.from(root.slice(0, 4))
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('')
-  const tail = Array.from(root.slice(-4))
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('')
-  return `0x${hex}…${tail}`
-}
-
 function clientFamilies(spine: EthySpine): string {
   const counts = new Map<string, number>()
   for (const p of spine.peers.values()) {
@@ -259,15 +247,6 @@ function ethySessionCount(spine: EthySpine): number {
   return n
 }
 
-function localEthySeedBits(spine: EthySpine): number {
-  const mask = spine.ethyBucketsBitmask ?? 0
-  let n = 0
-  for (let b = 0; b < 16; b++) {
-    if ((mask & (1 << b)) !== 0) n++
-  }
-  return n
-}
-
 function formatServeBytes(bytes: number): string {
   if (bytes >= 1_048_576) return `${(bytes / 1_048_576).toFixed(1)} MB`
   if (bytes >= 1024) return `${(bytes / 1024).toFixed(1)} KB`
@@ -291,179 +270,23 @@ function servedMetric(spine: EthySpine): string {
   return '0 replies'
 }
 
-function domainStatus(spine: EthySpine, id: CapabilityId) {
-  return spine.capabilities[id].status
+function p2pMetricsPairs(spine: EthySpine): TwoColumnPair[] {
+  return [
+    {
+      label: 'Peers',
+      value: `${spine.peers.size} connected (${ethySessionCount(spine)} ethy · ${snapSessionCount(spine)} snap)`,
+    },
+    { label: 'Served', value: servedMetric(spine) },
+    { label: 'Latency', value: avgLatency(spine) },
+    { label: 'Clients', value: clientFamilies(spine) },
+  ]
 }
 
-export function domainCommandPairs(domain: CapabilityId, phase: EthyPhase): TwoColumnPair[] {
-  switch (domain) {
-    case 'p2p':
-      return [
-        { label: '/peers', value: 'client table' },
-        { label: '/ethy', value: 'swarm status' },
-        { label: '/diag', value: 'anomalies' },
-        { label: '/drop', value: 'disconnect' },
-      ]
-    case 'snap':
-      return [
-        { label: '/buckets', value: '16-bucket view' },
-        { label: '/range', value: 'account table' },
-        { label: '/sample', value: 'top balances' },
-        { label: '/reassign', value: 'bucket' },
-      ]
-    case 'head':
-      return [
-        { label: '/economy', value: 'chain activity' },
-        { label: '/contract', value: 'hot microscope' },
-        { label: '/bal', value: 'head summary' },
-        { label: '/account', value: 'inspect' },
-      ]
-    case 'ai':
-      return phase === 'P2P_WARMUP'
-        ? [
-            { label: '', value: 'Which peers are connected?' },
-            { label: '', value: 'Show client latency' },
-            { label: '', value: 'Any handshake errors?' },
-            { label: '/help', value: 'slash mode' },
-          ]
-        : phase === 'SNAP_SYNCING'
-          ? [
-              { label: '', value: 'Why is a bucket stalled?' },
-              { label: '', value: 'Show snap throughput' },
-              { label: '', value: 'Which peer serves 0x3?' },
-              { label: '/help', value: 'slash mode' },
-            ]
-          : [
-              { label: '', value: 'Summarize latest BAL' },
-              { label: '', value: 'What changed at head?' },
-              { label: '', value: 'Explain pivot vs head' },
-              { label: '/help', value: 'slash mode' },
-            ]
-  }
-}
-
-function metricsPairs(spine: EthySpine, domain: CapabilityId): TwoColumnPair[] {
-  switch (domain) {
-    case 'p2p':
-      return [
-        {
-          label: 'Peers',
-          value: `${spine.peers.size} connected (${ethySessionCount(spine)} ethy · ${snapSessionCount(spine)} snap)`,
-        },
-        { label: 'Served', value: servedMetric(spine) },
-        { label: 'Latency', value: avgLatency(spine) },
-        { label: 'Clients', value: clientFamilies(spine) },
-      ]
-    case 'snap': {
-      const done = snapBucketsDoneCount(spine.snapBuckets)
-      const syncing = spine.snapBuckets.filter((b) => b.status === 'syncing').length
-      const stalled = spine.snapBuckets.filter((b) => b.status === 'stalled').length
-      const seedBits = localEthySeedBits(spine)
-      const protocolRow =
-        spine.syncTransport === 'ethy'
-          ? {
-              label: 'Protocol',
-              value: `ETHY/0 Swarm (${ethySessionCount(spine)} peers)`,
-            }
-          : seedBits > 0
-            ? {
-                label: 'Protocol',
-                value: `SNAP/1 + ETHY/0 Seed (${seedBits}/16 ready)`,
-              }
-            : {
-                label: 'Speed',
-                value: `${Math.round(spine.accountsPerSec)} acc/s`,
-              }
-      return [
-        { label: 'Progress', value: `${Math.round((done / 16) * 100)}% (${done}/16 complete)` },
-        { label: 'Active', value: `${syncing} syncing · ${stalled} stalled` },
-        { label: 'Pivot Root', value: shortHash(spine.pivotStateRoot) },
-        protocolRow,
-      ]
-    }
-    case 'head': {
-      if (spine.phase === 'SNAP_SYNCING' && (spine.streamedBalCount ?? 0) > 0) {
-        const pivot = spine.pivotBlockNumber
-        const tip = spine.headBlockNumber ?? pivot
-        const streamed = spine.streamedBalCount ?? 0
-        const applied = spine.appliedBalCount ?? 0
-        const steps = spine.pivotStepsCompleted ?? 0
-        return [
-          { label: 'Status', value: `Streaming BALs (pivot #${steps})` },
-          {
-            label: 'Pivot → Tip',
-            value:
-              pivot !== undefined && tip !== undefined
-                ? `${formatBlockNum(pivot)} → ${formatBlockNum(tip)}`
-                : '—',
-          },
-          { label: 'BALs Ready', value: `${streamed} streamed · ${applied} applied` },
-          {
-            label: 'BAL Window',
-            value:
-              spine.balWindow.length > 0
-                ? `${spine.balWindow.length} blocks · ${spine.balWindow[0]?.accountCount ?? 0} accounts`
-                : '—',
-          },
-        ]
-      }
-      const finAnchor =
-        spine.clFinalizedBlockNumber !== undefined && spine.clFinalizedBlockNumber > 0n
-          ? `#${spine.clFinalizedBlockNumber.toLocaleString('en-US')}`
-          : spine.clFinalizedSlot !== undefined
-            ? `slot ${spine.clFinalizedSlot.toLocaleString('en-US')}`
-            : '?'
-      const clLine =
-        spine.clStatus === 'verified'
-          ? `Finalized ${finAnchor} · ${spine.clParticipationPct ?? '?'}% BLS`
-          : spine.clStatus === 'mismatch'
-            ? 'CL mismatch'
-            : spine.clStatus === 'syncing'
-              ? 'CL syncing…'
-              : 'CL: P2P-only'
-      return [
-        {
-          label: 'Status',
-          value:
-            spine.capabilities.head.status === 'locked'
-              ? 'Locked'
-              : spine.capabilities.head.status === 'partial'
-                ? 'Catch-up'
-                : 'Following',
-        },
-        {
-          label: 'Head Block',
-          value: spine.headBlockNumber !== undefined ? `#${spine.headBlockNumber}` : '—',
-        },
-        { label: 'Consensus', value: clLine },
-        { label: 'State Root', value: shortHash(spine.headStateRoot) },
-      ]
-    }
-    case 'ai': {
-      const unlocked = (['p2p', 'snap', 'head', 'ai'] as const)
-        .filter((id) => spine.capabilities[id].status !== 'locked')
-        .map((id) => DOMAIN_LABEL[id])
-        .join(', ')
-      return [
-        { label: 'Engine', value: 'Slash / Rule Mode' },
-        { label: 'Unlocked', value: unlocked || '—' },
-        { label: 'Slot', value: String(spine.currentSlot) },
-        { label: 'Anomalies', value: String(spine.diagnosticRingBuffer.length) },
-      ]
-    }
-  }
-}
-
-export function domainTitle(
-  spine: EthySpine,
-  view: TuiViewState,
-  kind: 'Commands' | 'Metrics',
-): string {
-  const id = view.activeDomain
-  const mark = capabilityMark(id, domainStatus(spine, id))
-  const label = DOMAIN_LABEL[id]
-  const suffix = kind === 'Metrics' ? 'Metrics' : 'Commands'
-  return `${mark} ${BOLD}${label} ${suffix}${RESET}`
+export function cockpitBoxTitle(spine: EthySpine, view: TuiViewState, id: CapabilityId): string {
+  const mark = capabilityMark(id, spine.capabilities[id].status)
+  const label = BOX_LABEL[id]
+  const focus = view.activeDomain === id ? `${CAPABILITY_FG[id]} •${RESET}` : ''
+  return `${mark} ${BOLD}${label}${RESET}${focus}`
 }
 
 /** Gap between the three cockpit columns, also used under the metrics box. */
@@ -484,7 +307,7 @@ export function renderCockpit(
   const [w0, w1, w2] = cockpitColumnWidths(contentWidth)
   const pulseP = nodePulsePairs(spine)
   const econP = economyCockpitPairs(economyForCockpitDisplay(spine.economy))
-  const metP = metricsPairs(spine, view.activeDomain)
+  const metP = p2pMetricsPairs(spine)
   const labelW = maxLabelWidth([...pulseP, ...econP, ...metP])
 
   const pulseLines = formatTwoColumnRows(pulseP, labelW, innerRowWidth(w0))
@@ -495,16 +318,20 @@ export function renderCockpit(
   while (econLines.length < COCKPIT_CONTENT_ROWS) econLines.push('')
   while (metLines.length < COCKPIT_CONTENT_ROWS) metLines.push('')
 
-  const pulse = renderBox(
+  const state = renderBox(
     w0,
-    `${BOLD}Node Pulse${RESET}`,
+    cockpitBoxTitle(spine, view, 'state'),
     pulseLines.slice(0, COCKPIT_CONTENT_ROWS),
   )
-  const economy = renderBox(w1, `${BOLD}Economy${RESET}`, econLines.slice(0, COCKPIT_CONTENT_ROWS))
-  const metrics = renderBox(
+  const economy = renderBox(
+    w1,
+    cockpitBoxTitle(spine, view, 'economy'),
+    econLines.slice(0, COCKPIT_CONTENT_ROWS),
+  )
+  const p2p = renderBox(
     w2,
-    domainTitle(spine, view, 'Metrics'),
+    cockpitBoxTitle(spine, view, 'p2p'),
     metLines.slice(0, COCKPIT_CONTENT_ROWS),
   )
-  return joinBoxColumns([pulse, economy, metrics], contentWidth)
+  return joinBoxColumns([state, economy, p2p], contentWidth)
 }

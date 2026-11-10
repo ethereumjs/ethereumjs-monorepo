@@ -1,64 +1,104 @@
 import type { EthyDomainSnapshots } from '../domains/types.ts'
+import type { AiOverviewSections } from '../spine/types.ts'
 
+export const MAX_AI_TOTAL_CHARS = 600
+/** @deprecated Use `MAX_AI_TOTAL_CHARS` for the three-domain AI box. */
 export const MAX_AI_OVERVIEW_CHARS = 280
 
 export type OverviewTrigger = 'welcome' | 'pulse'
 
-function clampProse(text: string): string {
+function clampLine(text: string, max: number): string {
   const t = text.replace(/\s+/g, ' ').trim()
-  if (t.length <= MAX_AI_OVERVIEW_CHARS) return t
-  return `${t.slice(0, MAX_AI_OVERVIEW_CHARS - 1)}…`
+  if (t.length <= max) return t
+  return `${t.slice(0, max - 1)}…`
 }
 
-export function buildDeterministicOverview(
+export function clampOverviewSections(sections: AiOverviewSections): AiOverviewSections {
+  const keys = (['state', 'economy', 'p2p'] as const).filter((k) => sections[k] !== undefined)
+  if (sections.focusNote !== undefined) {
+    return {
+      focusNote: {
+        domain: sections.focusNote.domain,
+        text: clampLine(sections.focusNote.text, MAX_AI_TOTAL_CHARS),
+      },
+    }
+  }
+  if (keys.length === 0) return {}
+  let budget = MAX_AI_TOTAL_CHARS
+  const out: AiOverviewSections = {}
+  const lengths = keys.map((k) => (sections[k] ?? '').length)
+  const total = lengths.reduce((a, b) => a + b, 0)
+  for (let i = 0; i < keys.length; i++) {
+    const k = keys[i]!
+    const raw = sections[k] ?? ''
+    let share =
+      total <= budget
+        ? raw.length
+        : Math.max(40, Math.floor((budget * raw.length) / Math.max(1, total)))
+    share = Math.min(share, budget)
+    out[k] = clampLine(raw, share)
+    budget -= out[k]!.length
+  }
+  return out
+}
+
+export function buildDeterministicOverviewSections(
   snapshots: EthyDomainSnapshots,
   trigger: OverviewTrigger,
-): string {
+): AiOverviewSections {
   const phase = snapshots.pulse.phase
   const peers = snapshots.p2p.connected
+  const sections: AiOverviewSections = {}
+
+  const pivot = snapshots.pulse.pivotBlockNumber
+  const pct = Math.round(snapshots.pulse.progressPct)
+  const acc = snapshots.snap.totalAccountsSynced
 
   if (trigger === 'welcome' || phase === 'BOOTING' || phase === 'P2P_WARMUP') {
-    const pivot = snapshots.pulse.pivotBlockNumber
-    const pct = Math.round(snapshots.pulse.progressPct)
-    const acc = snapshots.snap.totalAccountsSynced
-    const accNote = acc > 0 ? `, ${(acc / 1_000_000).toFixed(1)}M acc` : ''
-    const resume =
-      pivot !== undefined
-        ? `Resuming near #${pivot} (${pct}% progress${accNote}).`
-        : 'Starting fresh sync.'
-    const peerLine = peers === 0 ? 'No peers yet — warming discovery.' : `${peers} peers connected.`
-    return clampProse(
-      `${resume} ${peerLine} Tip: Tab cycles domains; Enter opens the deep view for the active lens.`,
-    )
+    if (acc > 0 || pivot !== undefined) {
+      const accNote = acc > 0 ? `, ${(acc / 1_000_000).toFixed(1)}M accounts` : ''
+      sections.state = `Resuming near #${pivot ?? '?'} (${pct}% progress${accNote}).`
+    } else if (phase !== 'BOOTING') {
+      sections.state = 'Starting sync — waiting for pivot header from peers.'
+    }
+    if (peers === 0) {
+      sections.p2p = 'No peers yet — warming discovery.'
+    } else {
+      sections.p2p = `${peers} peer${peers === 1 ? '' : 's'} connected.`
+    }
+    sections.state = `${sections.state ?? 'Booting.'} Tab shows domain help.`
+    return clampOverviewSections(sections)
   }
 
   if (phase === 'SNAP_SYNCING') {
-    const pct = Math.round(snapshots.pulse.progressPct)
     const eta =
       snapshots.pulse.snapEtaMinutes !== undefined && snapshots.pulse.snapEtaMinutes > 0
         ? ` ETA ~${Math.round(snapshots.pulse.snapEtaMinutes)}m.`
         : ''
-    const bal =
-      snapshots.economy.hasBlocks && snapshots.economy.tps !== undefined
-        ? ` Live BALs show ~${snapshots.economy.tps.toFixed(1)} TPS on recent blocks.`
-        : ''
-    const stall = peers <= 1 ? ' Only one peer — try /peers or Ctrl+D for discovery stats.' : ''
     if (snapshots.snap.bucketsDone === 16) {
       const codeDone = snapshots.snap.codesSynced
       const codeTot = snapshots.snap.codesTotal ?? codeDone
       const storDone = snapshots.snap.storageAccountsSynced ?? 0
       const storTot = snapshots.snap.storageAccountsTotal ?? storDone
-      return clampProse(
-        `Accounts 16/16 complete! Syncing bytecode (${codeDone.toLocaleString('en-US')}/${codeTot.toLocaleString('en-US')}) and storage (${storDone.toLocaleString('en-US')}/${storTot.toLocaleString('en-US')}) — ${pct}% overall.${eta}${bal}${stall}`,
-      )
+      sections.state = `Accounts 16/16 complete; bytecode ${codeDone.toLocaleString('en-US')}/${codeTot.toLocaleString('en-US')}, storage ${storDone.toLocaleString('en-US')}/${storTot.toLocaleString('en-US')} — ${pct}% overall.${eta}`
+    } else {
+      sections.state = `Snap sync ${pct}% complete.${eta}`
     }
-    return clampProse(`Snap sync ${pct}% complete.${eta}${bal}${stall}`)
+    if (snapshots.economy.hasBlocks && snapshots.economy.tps !== undefined) {
+      sections.economy = `Live blocks ~${snapshots.economy.tps.toFixed(1)} TPS on recent traffic.`
+    }
+    if (peers <= 1) {
+      sections.p2p = `Only ${peers} peer — try /peers or Ctrl+D for discovery.`
+    } else {
+      sections.p2p = `${peers} peers active for snap ranges.`
+    }
+    return clampOverviewSections(sections)
   }
 
   if (phase === 'BAL_CATCHUP') {
-    return clampProse(
-      `BAL catch-up in progress toward head. ${peers} peers active. Enter opens /bal; Tab switches domain lens.`,
-    )
+    sections.state = 'BAL catch-up in progress toward head.'
+    sections.p2p = `${peers} peers active.`
+    return clampOverviewSections(sections)
   }
 
   const econ = snapshots.economy
@@ -66,22 +106,30 @@ export function buildDeterministicOverview(
     const trend = econ.trend === 'up' ? 'rising' : econ.trend === 'down' ? 'falling' : 'flat'
     const tps = econ.tps !== undefined ? `${econ.tps.toFixed(1)} TPS` : 'activity on chain'
     const vol = econ.ethTransferredWindowEth ?? '0 ETH'
+    sections.economy = `Base fee ${econ.baseFeeGwei} Gwei (${trend}), ${tps}, ${vol} (64 blk).`
     const hotRow = econ.topContracts[0]
-    const hotArch =
-      hotRow?.knownName ??
-      (hotRow?.archetype !== undefined && hotRow.archetype !== 'Contract'
-        ? hotRow.archetype
-        : 'contract')
-    const hotBit =
-      hotRow !== undefined
-        ? ` Hottest: ${hotArch} ${hotRow.address.slice(0, 6)}…${hotRow.address.slice(-4)} — /contract.`
-        : ''
-    return clampProse(
-      `Head following — base fee ${econ.baseFeeGwei} Gwei (${trend}), ${tps}, ${vol} (64 blk).${hotBit}`,
-    )
+    if (hotRow !== undefined) {
+      const hotArch =
+        hotRow.knownName ??
+        (hotRow.archetype !== undefined && hotRow.archetype !== 'Contract'
+          ? hotRow.archetype
+          : 'contract')
+      sections.economy += ` Hottest: ${hotArch} ${hotRow.address.slice(0, 6)}…${hotRow.address.slice(-4)}.`
+    }
   }
+  sections.state = `Head following live — ${pct}% sync complete.`
+  sections.p2p = `${peers} peers connected.`
+  return clampOverviewSections(sections)
+}
 
-  return clampProse(
-    `Head following live. ${peers} peers. Press Enter for domain view or /economy for activity.`,
-  )
+/** Single-string overview for legacy clamps (contract microscope note). */
+export function buildDeterministicOverview(
+  snapshots: EthyDomainSnapshots,
+  trigger: OverviewTrigger,
+): string {
+  const sec = buildDeterministicOverviewSections(snapshots, trigger)
+  const parts = [sec.state, sec.economy, sec.p2p].filter((p) => p !== undefined && p.length > 0)
+  const joined = parts.join(' ')
+  if (joined.length <= MAX_AI_OVERVIEW_CHARS) return joined
+  return `${joined.slice(0, MAX_AI_OVERVIEW_CHARS - 1)}…`
 }
