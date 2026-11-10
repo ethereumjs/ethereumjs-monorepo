@@ -1,5 +1,6 @@
 import type { EthySpine, TuiViewState } from '../spine/types.ts'
 import { BOLD, RESET } from './ansi.ts'
+import { capabilityMark } from './capabilityMark.ts'
 import { COCKPIT_COLUMN_GAP, cockpitColumnWidths } from './cockpit.ts'
 import { interactionBoxRightChrome } from './components/interactionChrome.ts'
 import {
@@ -52,6 +53,7 @@ export function renderLowerArea(
     marks,
     spine,
     view.carouselTick,
+    { leftBoxOuterW: w0, middleBoxOuterW: w1 },
   )
   const title = interactionViewTitle(
     widget,
@@ -65,7 +67,8 @@ export function renderLowerArea(
   const titleRight = interactionBoxRightChrome(view, view.interactionPage, hasDebugPage)
   const leftBox = buildVariableBox(leftW, fillRows, title, titleRight, bodyLines)
 
-  const aiTitle = `${BOLD}AI${RESET}`
+  const aiMark = capabilityMark('ai', spine.capabilities.ai.status)
+  const aiTitle = `${aiMark} ${BOLD}AI${RESET}`
   const aiBody = renderAiOverviewSections(
     spine,
     view.aiOverviewSections,

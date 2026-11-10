@@ -12,80 +12,82 @@ const DOMAIN_LABEL: Record<CapabilityId, string> = {
   p2p: 'P2P',
 }
 
-function stateSections(): DomainHelpSection[] {
-  return [
-    {
-      title: 'State & Sync Inspection',
-      rows: [
-        { command: '/buckets', detail: '16-bucket progress, cursors & speeds' },
-        { command: '/range [hex]', detail: 'Browse synced accounts by hash prefix' },
-        { command: '/sample', detail: 'Top synced accounts ranked by ETH balance' },
-        { command: '/account <0x>', detail: 'Inspect account balance, nonce, code & BAL hits' },
-        { command: '/bal', detail: 'Latest block access list diff table' },
-        { command: '/cl', detail: 'Beacon light client finality & BLS %' },
-      ],
-    },
-    {
-      title: 'State Control',
-      rows: [
-        { command: '/pause · /resume', detail: 'Pause or resume range synchronization' },
-        { command: '/reassign <0x>', detail: 'Reassign a stalled bucket' },
-      ],
-    },
-    {
-      title: 'Ask in Plain English',
-      prompts: [
-        'Why is bucket 0x3 slower?',
-        'What changed in the latest BAL?',
-        'Show top ETH holders',
-      ],
-    },
-  ]
+function economySections(): { sections: DomainHelpSection[]; aiExamples: string[] } {
+  return {
+    sections: [
+      {
+        title: 'Economy Commands',
+        rows: [
+          { command: '/economy', detail: '64-block gas, TPS & volume' },
+          { command: '/contract', detail: 'Hot contract #1 microscope' },
+          { command: '/contract <N>', detail: 'Inspect leaderboard #1..10' },
+          { command: '/contract <0x>', detail: 'Bytecode, proxy & ABI lens' },
+        ],
+      },
+    ],
+    aiExamples: [
+      'How is base fee trending?',
+      'Which contracts write most?',
+      'Explain the hottest contract',
+      'Show contracts with >10 writes',
+      'What is current TPS & volume?',
+    ],
+  }
 }
 
-function economySections(): DomainHelpSection[] {
-  return [
-    {
-      title: 'Chain & Contract Intelligence',
-      rows: [
-        { command: '/economy', detail: '64-block fee market, TPS, ETH volume & top contracts' },
-        {
-          command: '/contract [addr|1..10]',
-          detail: 'Bytecode, proxy, ABI calls & events microscope',
-        },
-      ],
-    },
-    {
-      title: 'Ask in Plain English',
-      prompts: [
-        'Which contracts write the most storage?',
-        'Explain the hottest contract',
-        'How is base fee trending?',
-      ],
-    },
-  ]
+function stateSections(): { sections: DomainHelpSection[]; aiExamples: string[] } {
+  return {
+    sections: [
+      {
+        title: 'State Commands',
+        rows: [
+          { command: '/buckets', detail: '16-bucket sync & cursors' },
+          { command: '/range [hex]', detail: 'Browse accounts by prefix' },
+          { command: '/sample', detail: 'Top accounts by balance' },
+          { command: '/account <0x>', detail: 'Balance, nonce & code' },
+          { command: '/bal', detail: 'Latest BAL state diffs' },
+          { command: '/cl', detail: 'Beacon finality & BLS %' },
+        ],
+      },
+      {
+        title: 'State Control',
+        rows: [
+          { command: '/pause · /resume', detail: 'Pause or resume range sync' },
+          { command: '/reassign <0x>', detail: 'Reassign stalled bucket' },
+        ],
+      },
+    ],
+    aiExamples: [
+      'Why is bucket 0x3 slower?',
+      'What changed in the latest BAL?',
+      'Show top ETH holders',
+      'How far is sync from head?',
+      'Is head verified by CL?',
+    ],
+  }
 }
 
-function p2pSections(): DomainHelpSection[] {
-  return [
-    {
-      title: 'Swarm & Diagnostics',
-      rows: [
-        { command: '/peers', detail: 'Connected client table, caps, ETHY seed & latency' },
-        { command: '/ethy', detail: 'ETHY/0 swarm status & served chunks' },
-        { command: '/diag', detail: 'Flight-recorder diagnostic ring buffer' },
-        { command: '/drop <peerId>', detail: 'Disconnect a peer session' },
-      ],
-    },
-    {
-      title: 'Ask in Plain English',
-      prompts: [
-        'Compare Nethermind vs Geth peers',
-        'Who is the fastest peer?',
-        'Any handshake anomalies?',
-      ],
-    },
-  ]
+function p2pSections(): { sections: DomainHelpSection[]; aiExamples: string[] } {
+  return {
+    sections: [
+      {
+        title: 'P2P Commands',
+        rows: [
+          { command: '/peers', detail: 'Client table, caps & RTT' },
+          { command: '/ethy', detail: 'ETHY/0 swarm & serve stats' },
+          { command: '/diag', detail: 'Diagnostic ring buffer' },
+          { command: '/drop <peerId>', detail: 'Disconnect peer session' },
+        ],
+      },
+    ],
+    aiExamples: [
+      'Compare Nethermind vs Geth peers',
+      'Who is the fastest peer?',
+      'Any handshake anomalies?',
+      'How many peers serve snap?',
+      'Show peers by snap replies',
+    ],
+  }
 }
 
 export function parseHelpDomainArg(parts: string[]): CapabilityId | undefined {
@@ -94,35 +96,95 @@ export function parseHelpDomainArg(parts: string[]): CapabilityId | undefined {
   return undefined
 }
 
-function domainHelpDebugPage(spine: EthySpine): DebugSectionSpec[] {
-  const { economy, state, p2p } = spine.capabilities
+function domainHelpDebugPage(spine: EthySpine, domain: CapabilityId): DebugSectionSpec[] {
+  const { economy, state, p2p, ai } = spine.capabilities
+  if (domain === 'p2p') {
+    const d = spine.discovery
+    const s = spine.serving
+    return [
+      {
+        title: 'Discovery funnel',
+        entries:
+          d === undefined
+            ? [{ key: 'Status', value: 'Metrics unavailable' }]
+            : [
+                { key: 'DPT table', value: String(d.tablePeers) },
+                { key: 'RLPx dials', value: String(d.rlpx.dials) },
+                { key: 'Connected', value: String(d.rlpx.connected) },
+                { key: 'STATUS ok', value: String(d.rlpx.statusOk) },
+              ],
+      },
+      {
+        title: 'Serving & identity',
+        entries: [
+          { key: 'Peers', value: String(spine.peers.size) },
+          {
+            key: 'Served',
+            value: s !== undefined ? `${s.totalRequestsServed} replies` : '0 replies',
+          },
+          { key: 'Enode', value: d?.localEnode ?? '—' },
+        ],
+      },
+    ]
+  }
+  if (domain === 'economy') {
+    const econ = spine.economy
+    return [
+      {
+        title: 'Economy window',
+        entries: [
+          { key: 'Latest block', value: econ?.latestBlockNumber ?? '—' },
+          { key: 'Base fee', value: econ?.baseFeeGwei ? `${econ.baseFeeGwei} Gwei` : '—' },
+          { key: 'Tracked contracts', value: String(econ?.topContracts.length ?? 0) },
+          { key: 'Recent blocks', value: String(econ?.recentBlocks.length ?? 0) },
+        ],
+      },
+      {
+        title: 'Capabilities',
+        entries: [
+          { key: 'Economy', value: `${economy.status} (${economy.label})` },
+          { key: 'AI', value: `${ai.status} (${ai.label})` },
+        ],
+      },
+    ]
+  }
   return [
     {
-      title: 'Node',
+      title: 'State sync',
       entries: [
         { key: 'Phase', value: spine.phase },
-        { key: 'Network', value: spine.network },
+        { key: 'Accounts', value: spine.totalAccountsSynced.toLocaleString('en-US') },
+        {
+          key: 'Bytecode',
+          value: `${spine.codesSynced}/${spine.codesTotal ?? spine.codesSynced + spine.codesQueued}`,
+        },
+        {
+          key: 'Storage acc',
+          value: `${spine.storageAccountsSynced ?? 0}/${spine.storageAccountsTotal ?? 0}`,
+        },
       ],
     },
     {
       title: 'Capabilities',
       entries: [
-        { key: 'Economy', value: `${economy.status} (${economy.label})` },
         { key: 'State', value: `${state.status} (${state.label})` },
         { key: 'P2P', value: `${p2p.status} (${p2p.label})` },
+        { key: 'AI', value: `${ai.status} (${ai.label})` },
       ],
-    },
-    {
-      title: 'Peers',
-      entries: [{ key: 'Connected', value: String(spine.peers.size) }],
     },
   ]
 }
 
 export function buildDomainHelpWidget(spine: EthySpine, domain: CapabilityId): WidgetSpec {
-  const sections =
+  const spec =
     domain === 'state' ? stateSections() : domain === 'economy' ? economySections() : p2pSections()
-  return { kind: 'domain_help', domain, sections, debugPage: domainHelpDebugPage(spine) }
+  return {
+    kind: 'domain_help',
+    domain,
+    sections: spec.sections,
+    aiExamples: spec.aiExamples,
+    debugPage: domainHelpDebugPage(spine, domain),
+  }
 }
 
 /** Legacy flat command table (tests / carousel). */

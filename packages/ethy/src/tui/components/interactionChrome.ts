@@ -2,10 +2,8 @@ import type { InteractionPage, TuiViewState } from '../../spine/types.ts'
 import { BOLD, DIM, RESET, visibleWidth } from '../ansi.ts'
 import { fixedField } from '../layout.ts'
 
-/** Fixed visible width of the right interaction title cluster (no border jump). */
-export const INTERACTION_RIGHT_CHROME_WIDTH = visibleWidth(
-  `${BOLD}Commands${RESET}${DIM} | ${RESET}${BOLD}Debug${RESET}${DIM} (Ctrl+D)${RESET}  ← →`,
-)
+/** Fixed visible width of the right history arrow cluster. */
+export const INTERACTION_RIGHT_CHROME_WIDTH = visibleWidth('← →')
 
 function historyCanGoLeft(view: TuiViewState): boolean {
   if (view.showingHelp && view.viewHistory.length > 0) return true
@@ -19,14 +17,13 @@ function historyCanGoRight(view: TuiViewState): boolean {
 
 export function interactionBoxRightChrome(
   view: TuiViewState,
-  page: InteractionPage,
-  hasDebugPage: boolean,
+  _page: InteractionPage,
+  _hasDebugPage: boolean,
 ): string {
-  const commands = page === 'main' ? `${BOLD}Commands${RESET}` : `${DIM}Commands${RESET}`
-  const debugActive = hasDebugPage && page === 'debug'
-  const debug = debugActive ? `${BOLD}Debug${RESET}` : `${DIM}Debug${RESET}`
-  const left = historyCanGoLeft(view) ? '←' : `${DIM}←${RESET}`
-  const right = historyCanGoRight(view) ? '→' : `${DIM}→${RESET}`
-  const raw = `${commands}${DIM} | ${RESET}${debug}${DIM} (Ctrl+D)${RESET}  ${left} ${right}`
-  return fixedField(raw, INTERACTION_RIGHT_CHROME_WIDTH)
+  if (view.activeWidget === null || view.activeWidget.kind === 'start_page') {
+    return ''
+  }
+  const left = historyCanGoLeft(view) ? `${RESET}${BOLD}←${RESET}` : `${RESET}${DIM}←${RESET}`
+  const right = historyCanGoRight(view) ? `${RESET}${BOLD}→${RESET}` : `${RESET}${DIM}→${RESET}`
+  return fixedField(`${left} ${right}`, INTERACTION_RIGHT_CHROME_WIDTH)
 }

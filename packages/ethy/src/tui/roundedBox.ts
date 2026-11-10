@@ -4,11 +4,10 @@ import { fixedField, fixedLine } from './layout.ts'
 export function boxTop(boxW: number, titlePlain: string, rightPlain?: string): string {
   const prefix = `${DIM}╭─ ${RESET}${titlePlain}${DIM} `
   const prefixVis = visibleWidth(prefix)
-  const rightVis =
-    rightPlain !== undefined && rightPlain.length > 0 ? visibleWidth(`${rightPlain}${DIM} `) : 0
+  const hasRight = rightPlain !== undefined && rightPlain.length > 0
+  const rightSuffix = hasRight ? ` ${RESET}${rightPlain}${DIM} ─` : ''
+  const rightVis = hasRight ? visibleWidth(rightSuffix) : 0
   const dashes = Math.max(1, boxW - prefixVis - rightVis - 1)
-  const rightSuffix =
-    rightPlain !== undefined && rightPlain.length > 0 ? `${rightPlain}${DIM} ` : ''
   return fixedLine(`${prefix}${'─'.repeat(dashes)}${rightSuffix}╮${RESET}`, boxW)
 }
 

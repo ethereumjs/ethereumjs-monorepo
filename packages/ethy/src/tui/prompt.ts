@@ -31,13 +31,13 @@ export function pushKeyChar(
   escapeBuffer: string,
   ch: string,
 ): { buffer: string; action?: KeyAction } {
+  if (ch === '\u0003') {
+    return { buffer: '', action: { type: 'exit' } }
+  }
+  if (ch === '\u0004') {
+    return { buffer: '', action: { type: 'toggleDebug' } }
+  }
   if (escapeBuffer === '') {
-    if (ch === '\u0003') {
-      return { buffer: '', action: { type: 'exit' } }
-    }
-    if (ch === '\u0004') {
-      return { buffer: '', action: { type: 'toggleDebug' } }
-    }
     if (ch === '\u007f' || ch === '\b') {
       return { buffer: '', action: { type: 'backspace' } }
     }

@@ -131,19 +131,18 @@ describe('[Ethy/TUI]: renderFrame', () => {
     setPhase(spine, 'HEAD_FOLLOWING')
     const lines = renderFrame(spine, createInitialViewState(), 100, 30)
     const top = stripAnsi(lines[0] ?? '')
-    assert.match(top, new RegExp(`^ Ethy v${getEthyClientVersion()} \\| SEPOLIA`))
-    assert.equal(top[0], ' ')
-    assert.equal(top[top.length - 1], ' ')
-    const rule = stripAnsi(lines[1] ?? '')
-    assert.equal(rule[0], '─')
-    assert.equal(rule[rule.length - 1], '─')
+    assert.match(top, new RegExp(`^   Ethy v${getEthyClientVersion()} \\| SEPOLIA`))
+    assert.equal(top.slice(0, 3), '   ')
+    assert.equal(top.slice(-3), '   ')
+    const spacerAfterTop = stripAnsi(lines[1] ?? '')
+    assert.equal(spacerAfterTop.trim(), '')
     assert.match(top, /○ Economy/)
     assert.match(top, /● State/)
     assert.match(top, /○ P2P/)
+    assert.match(top, /◐ AI/)
     assert.notInclude(top, 'Synced')
     assert.notInclude(top, 'Slash/Rule')
     assert.notInclude(top, '[')
-    assert.match(lines[1] ?? '', /─/)
   })
 
   it('capabilityBarClockLabel prefers CL slot over EL block number', () => {
@@ -219,9 +218,9 @@ describe('[Ethy/TUI]: renderFrame', () => {
 
   it('promptCaretPosition() sits just after the domain mark and draft', () => {
     const empty = promptCaretPosition(100, 30, '')
-    assert.deepEqual(empty, { row: 28, col: 11 })
+    assert.deepEqual(empty, { row: 28, col: 13 })
     const typed = promptCaretPosition(100, 30, 'ab')
-    assert.deepEqual(typed, { row: 28, col: 13 })
+    assert.deepEqual(typed, { row: 28, col: 15 })
   })
 
   it('renderFrame() P2P metrics show Served instead of Caps', () => {
@@ -261,15 +260,29 @@ describe('[Ethy/TUI]: renderFrame', () => {
     assert.include(startFrame, 'Welcome')
     assert.include(startFrame, '◆════╬════◆')
     assert.include(startFrame, 'Execution-Free Ethereum Node')
+    assert.notInclude(startFrame, 'Ctrl+D')
+    assert.notInclude(startFrame, '← →')
 
     const helpView = openDomainHelp(startView, spine, 'economy')
     assert.equal(helpView.viewHistory.length, 0)
-    const frame = stripAnsi(renderFrame(spine, helpView, 100, 30).join('\n'))
+    const helpLines = renderFrame(spine, helpView, 120, 36).map((l) => stripAnsi(l))
+    const frame = helpLines.join('\n')
     assert.include(frame, '/economy')
     assert.include(frame, '/contract')
-    assert.include(frame, '/help · Economy')
+    assert.include(frame, '/help · Economy · Commands | Debug (Ctrl+D)')
+    assert.include(frame, 'AI Examples')
     assert.include(frame, 'Peers')
     assert.equal(capabilityMark('p2p', 'locked').startsWith(CAPABILITY_FG.p2p), true)
+    assert.equal(capabilityMark('ai', 'partial').startsWith(CAPABILITY_FG.ai), true)
+
+    // Verify right column ("AI Examples") aligns horizontally with upper State box inner text ("Target")
+    const stateContentRow = helpLines.find((l) => l.includes('Target')) ?? ''
+    const helpHeaderRow = helpLines.find((l) => l.includes('AI Examples')) ?? ''
+    assert.isAbove(stateContentRow.indexOf('Target'), 0)
+    assert.equal(
+      helpHeaderRow.indexOf('AI Examples') - 2, // subtract 2 for "[DOT] " before "AI Examples"
+      stateContentRow.indexOf('Target'),
+    )
   })
 
   it('layoutTableColumns() keeps short diagnostic columns tight and gives Message the rest', () => {
@@ -450,9 +463,12 @@ describe('[Ethy/TUI]: prompt reducer', () => {
     assert.deepEqual(actions, [{ type: 'exit' }])
   })
 
-  it('decodeKey() maps Ctrl+D to toggleDebug', () => {
+  it('decodeKey() maps Ctrl+D to toggleDebug even when escapeBuffer is non-empty', () => {
     const { actions } = decodeKey('', '\u0004')
     assert.deepEqual(actions, [{ type: 'toggleDebug' }])
+    const interrupted = decodeKey('\u001b', '\u0004')
+    assert.deepEqual(interrupted.actions, [{ type: 'toggleDebug' }])
+    assert.equal(interrupted.buffer, '')
   })
 
   it('Ctrl+D reducer does not mutate draft', () => {

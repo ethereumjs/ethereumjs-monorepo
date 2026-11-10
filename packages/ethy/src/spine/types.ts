@@ -5,7 +5,11 @@ import type { EconomySnapshot } from '../economy/types.ts'
 
 export type CapabilityId = 'state' | 'economy' | 'p2p'
 
+export type CapabilityMarkId = CapabilityId | 'ai'
+
 export const DOMAIN_ORDER: readonly CapabilityId[] = ['economy', 'state', 'p2p']
+
+export const CAPABILITY_PILL_ORDER: readonly CapabilityMarkId[] = ['economy', 'state', 'p2p', 'ai']
 
 export const MAX_VIEW_HISTORY = 12
 
@@ -173,6 +177,7 @@ export interface EthySpine {
     state: CapabilityState
     economy: CapabilityState
     p2p: CapabilityState
+    ai: CapabilityState
   }
   peers: Map<string, PeerTelemetry>
   /** Latest worker discovery counters (live P2P only). */
@@ -300,6 +305,7 @@ export type WidgetSpec =
       kind: 'domain_help'
       domain: CapabilityId
       sections: DomainHelpSection[]
+      aiExamples?: string[]
       debugPage?: DebugSectionSpec[]
     }
   | {

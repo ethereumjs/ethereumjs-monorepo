@@ -1,8 +1,8 @@
 import { completeSlashDraft } from '../ai/slashComplete.ts'
 import type { LiveNotice } from '../notify/board.ts'
 import {
-  type CapabilityId,
-  DOMAIN_ORDER,
+  CAPABILITY_PILL_ORDER,
+  type CapabilityMarkId,
   type EthySpine,
   type TuiViewState,
 } from '../spine/types.ts'
@@ -18,9 +18,12 @@ import {
   fixedLineRight,
 } from './layout.ts'
 import { renderLowerArea } from './lowerArea.ts'
-import { layoutPage, measurePage } from './pageLayout.ts'
+import { type HorizontalPadding, bandContentWidth, layoutPage, measurePage } from './pageLayout.ts'
 
 const DELIMITER_PAD_ROWS = 1
+
+/** Inset header and footer so their left/right edges align with box inner content (`│ ` / ` │`). */
+const HEADER_FOOTER_PADDING: HorizontalPadding = { left: 2, right: 2 }
 
 /** Columns between `Slot N` and the first capability pill. */
 const SLOT_GAP = 8
@@ -44,11 +47,12 @@ function renderFooterHint(): string {
 /** Rhythm inside the pill cluster; spacer before cluster stays flexible. */
 const CAPABILITY_PILL_GAP = 2
 
-const CAPABILITY_IDS = DOMAIN_ORDER
-const CAPABILITY_LABEL: Record<CapabilityId, string> = {
+const CAPABILITY_IDS = CAPABILITY_PILL_ORDER
+const CAPABILITY_LABEL: Record<CapabilityMarkId, string> = {
   economy: 'Economy',
   state: 'State',
   p2p: 'P2P',
+  ai: 'AI',
 }
 
 function capabilityPillWidth(name: string): number {
@@ -132,12 +136,13 @@ export function promptCaretPosition(
   const safeCols = Math.max(40, cols)
   const safeRows = Math.max(12, rows)
   const page = measurePage(safeCols, safeRows)
-  const { left } = promptColumnWidths(page.contentWidth)
+  const barWidth = bandContentWidth(page, HEADER_FOOTER_PADDING)
+  const { left } = promptColumnWidths(barWidth)
   const draftWidth = Math.max(0, left - PROMPT_PREFIX_WIDTH)
   const shown = Math.min(visibleWidth(draft), draftWidth)
   return {
     row: safeRows - 2,
-    col: 1 + page.padding.left + PROMPT_PREFIX_WIDTH + shown,
+    col: 1 + page.padding.left + HEADER_FOOTER_PADDING.left + PROMPT_PREFIX_WIDTH + shown,
   }
 }
 
@@ -151,27 +156,31 @@ export function renderFrame(
   const safeCols = Math.max(40, cols)
   const safeRows = Math.max(12, rows)
   const page = measurePage(safeCols, safeRows)
+  const barWidth = bandContentWidth(page, HEADER_FOOTER_PADDING)
 
-  const capBar = renderCapabilityBar(spine, page.contentWidth)
+  const capBar = renderCapabilityBar(spine, barWidth)
   const cockpit = renderCockpit(spine, view, page.contentWidth)
-  const prompt = renderPrompt(spine, view, page.contentWidth)
-  const rule = { kind: 'delimiter' as const, open: DIM, close: RESET }
+  const prompt = renderPrompt(spine, view, barWidth)
   const pad = { kind: 'spacer' as const, rows: DELIMITER_PAD_ROWS }
 
-  let reserved =
-    capBar.length + 1 + cockpit.length + DELIMITER_PAD_ROWS + 1 + DELIMITER_PAD_ROWS + prompt.length
+  const reserved =
+    capBar.length +
+    DELIMITER_PAD_ROWS +
+    cockpit.length +
+    DELIMITER_PAD_ROWS +
+    DELIMITER_PAD_ROWS +
+    prompt.length
   const fillRows = Math.max(0, safeRows - reserved)
 
   const lowerLines = renderLowerArea(spine, view, page.contentWidth, fillRows)
 
   return layoutPage(page, [
-    { kind: 'content', lines: capBar },
-    rule,
+    { kind: 'content', lines: capBar, padding: HEADER_FOOTER_PADDING },
+    pad,
     { kind: 'content', lines: cockpit },
     pad,
     { kind: 'fill', lines: lowerLines },
-    rule,
     pad,
-    { kind: 'content', lines: prompt },
+    { kind: 'content', lines: prompt, padding: HEADER_FOOTER_PADDING },
   ])
 }
