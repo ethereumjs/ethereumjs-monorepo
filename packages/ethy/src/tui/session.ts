@@ -127,6 +127,9 @@ export async function runEthySession(node: EthyNode): Promise<void> {
     if (node.demo) {
       advanceDemo(node.spine, Date.now() - demoStart)
     }
+    if (view.activeWidget === null || view.activeWidget.kind === 'start_page') {
+      view = { ...view, carouselTick: view.carouselTick + 1 }
+    }
     const now = Date.now()
     const hasBlocks = node.spine.economy?.hasBlocks === true
     const allBucketsDone = node.spine.snapBuckets.every((b) => b.status === 'done')
@@ -354,7 +357,11 @@ export async function runEthySession(node: EthyNode): Promise<void> {
           }
         }
         if (domainCycle !== undefined) {
-          const domain = cycleDomain(view.activeDomain, domainCycle)
+          const onStartPage = view.activeWidget === null || view.activeWidget.kind === 'start_page'
+          const domain =
+            onStartPage && domainCycle === 1
+              ? view.activeDomain
+              : cycleDomain(view.activeDomain, domainCycle)
           view = openDomainHelp(view, node.spine, domain)
         }
         if (viewHistoryNav !== undefined) {

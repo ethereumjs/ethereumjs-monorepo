@@ -186,12 +186,12 @@ export function reducePromptKey(view: TuiViewState, action: KeyAction): PromptRe
 }
 
 export function createInitialViewState(spine?: EthySpine): TuiViewState {
-  const withHelp = spine !== undefined
+  void spine
   return {
     activeDomain: 'economy',
-    activeWidget: withHelp ? buildDomainHelpWidget(spine, 'economy') : null,
+    activeWidget: { kind: 'start_page' },
     interactionPage: 'main',
-    showingHelp: withHelp,
+    showingHelp: false,
     viewHistory: [],
     viewHistoryIndex: -1,
     promptDraft: '',

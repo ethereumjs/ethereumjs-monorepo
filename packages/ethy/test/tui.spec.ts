@@ -250,10 +250,21 @@ describe('[Ethy/TUI]: renderFrame', () => {
     }
   })
 
-  it('renderFrame() Tab help shows economy commands and p2p box stays fixed', () => {
+  it('renderFrame() starts on centered Welcome start page and Tab help opens economy commands without polluting history', () => {
     const spine = createSpine('sepolia', 11155111n)
-    const view = createInitialViewState(spine)
-    const frame = stripAnsi(renderFrame(spine, view, 100, 30).join('\n'))
+    const startView = createInitialViewState(spine)
+    assert.equal(startView.activeWidget?.kind, 'start_page')
+    assert.equal(startView.showingHelp, false)
+    assert.equal(startView.viewHistory.length, 0)
+
+    const startFrame = stripAnsi(renderFrame(spine, startView, 120, 36).join('\n'))
+    assert.include(startFrame, 'Welcome')
+    assert.include(startFrame, '◆════╬════◆')
+    assert.include(startFrame, 'Execution-Free Ethereum Node')
+
+    const helpView = openDomainHelp(startView, spine, 'economy')
+    assert.equal(helpView.viewHistory.length, 0)
+    const frame = stripAnsi(renderFrame(spine, helpView, 100, 30).join('\n'))
     assert.include(frame, '/economy')
     assert.include(frame, '/contract')
     assert.include(frame, '/help · Economy')

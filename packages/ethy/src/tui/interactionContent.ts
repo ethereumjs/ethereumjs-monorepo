@@ -13,6 +13,7 @@ import { capabilityMark } from './capabilityMark.ts'
 import { renderDebugPageUIComponent } from './components/DebugPageUIComponent.ts'
 import { renderDomainHelpUIComponent } from './components/DomainHelpUIComponent.ts'
 import { renderKeyValueUIComponent } from './components/KeyValueUIComponent.ts'
+import { renderStartPageUIComponent } from './components/StartPageUIComponent.ts'
 import { renderTableUIComponent } from './components/TableUIComponent.ts'
 import { composeFixedRow, fixedLine } from './layout.ts'
 import type { SuggestionMarks } from './widgets.ts'
@@ -23,6 +24,8 @@ export function renderInteractionWidgetBody(
   maxBodyLines: number,
   page: InteractionPage,
   marks?: SuggestionMarks,
+  spine?: EthySpine,
+  tick = 0,
 ): string[] {
   const w = Math.max(20, innerWidth)
   if (page === 'debug' && widget.debugPage !== undefined && widget.debugPage.length > 0) {
@@ -118,6 +121,11 @@ export function renderInteractionWidgetBody(
     case 'domain_help':
       pushLines(renderDomainHelpUIComponent(widget, w, budget))
       break
+    case 'start_page':
+      if (spine !== undefined) {
+        pushLines(renderStartPageUIComponent(spine, w, budget, tick))
+      }
+      break
   }
 
   return lines
@@ -133,7 +141,8 @@ export function interactionViewTitle(
   spine?: EthySpine,
 ): string {
   void page
-  if (widget === null) return `${BOLD}Welcome${RESET}`
+  void view
+  if (widget === null || widget.kind === 'start_page') return `${BOLD}Welcome${RESET}`
   let base = ''
   if (nlTitle !== undefined && nlTitle.length > 0 && lastSubmitted?.startsWith('/') !== true) {
     base = `${BOLD}${nlTitle}${RESET}`

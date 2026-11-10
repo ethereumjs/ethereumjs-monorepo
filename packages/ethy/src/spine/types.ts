@@ -302,6 +302,10 @@ export type WidgetSpec =
       sections: DomainHelpSection[]
       debugPage?: DebugSectionSpec[]
     }
+  | {
+      kind: 'start_page'
+      debugPage?: DebugSectionSpec[]
+    }
 
 export interface TuiViewState {
   activeDomain: CapabilityId

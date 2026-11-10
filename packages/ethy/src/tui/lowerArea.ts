@@ -37,7 +37,7 @@ export function renderLowerArea(
   const rightW = w2
   const gap = ' '.repeat(COCKPIT_COLUMN_GAP)
 
-  const widget = view.activeWidget ?? defaultCarousel(view.carouselTick)
+  const widget = view.activeWidget ?? { kind: 'start_page' as const }
   const marks: SuggestionMarks = {
     state: spine.capabilities.state.status,
     economy: spine.capabilities.economy.status,
@@ -50,6 +50,8 @@ export function renderLowerArea(
     innerH,
     view.interactionPage,
     marks,
+    spine,
+    view.carouselTick,
   )
   const title = interactionViewTitle(
     widget,
