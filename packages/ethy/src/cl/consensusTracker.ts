@@ -145,18 +145,22 @@ export function startConsensusTracker(opts: ConsensusTrackerOpts): ConsensusTrac
     witnessPeerExecutionHeader(opts.spine, blockNumber, blockHash, opts.notices)
 
   void (async () => {
+    let liveVerified = false
     try {
       await runner.ensureBootstrapped()
-      syncSpineFromClient(opts.spine, common, client, transport.activeEndpoint)
-      opts.notices?.post(
-        {
-          key: 'cl-ready',
-          level: 'info',
-          text: 'Consensus light client bootstrapped',
-          relevantForMs: 8_000,
-        },
-        Date.now(),
-      )
+      if (transport.activeEndpoint !== undefined) {
+        syncSpineFromClient(opts.spine, common, client, transport.activeEndpoint)
+        liveVerified = true
+        opts.notices?.post(
+          {
+            key: 'cl-ready',
+            level: 'info',
+            text: 'Consensus light client bootstrapped',
+            relevantForMs: 8_000,
+          },
+          Date.now(),
+        )
+      }
     } catch (e) {
       opts.spine.clStatus = 'p2p_only'
       recordDiagnostic(opts.spine, {
@@ -169,10 +173,28 @@ export function startConsensusTracker(opts: ConsensusTrackerOpts): ConsensusTrac
 
     while (!stopped) {
       try {
-        await runner.pollOnce()
-        syncSpineFromClient(opts.spine, common, client, transport.activeEndpoint)
+        const res = await runner.pollOnce()
+        if (res.error === undefined && transport.activeEndpoint !== undefined) {
+          syncSpineFromClient(opts.spine, common, client, transport.activeEndpoint)
+          if (!liveVerified) {
+            liveVerified = true
+            opts.notices?.post(
+              {
+                key: 'cl-ready',
+                level: 'info',
+                text: 'Consensus light client synced to live slot',
+                relevantForMs: 8_000,
+              },
+              Date.now(),
+            )
+          }
+        } else if (!liveVerified) {
+          opts.spine.clStatus = 'p2p_only'
+        }
       } catch {
-        opts.spine.clStatus = 'p2p_only'
+        if (!liveVerified) {
+          opts.spine.clStatus = 'p2p_only'
+        }
       }
       await new Promise((r) => setTimeout(r, slotMs))
     }
