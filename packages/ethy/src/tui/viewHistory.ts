@@ -36,15 +36,20 @@ export function activateHistoryEntry(
 ): Pick<
   TuiViewState,
   'activeWidget' | 'interactionPage' | 'interactionLabel' | 'interactionTitle' | 'showingHelp'
-> {
+> & { overviewNote?: string } {
   if (entry.kind === 'slash') {
     const widget = dispatchSlashWidget(entry.command, slashCtx)
+    const overviewNote =
+      widget.kind !== 'domain_help' && 'assistantComment' in widget
+        ? widget.assistantComment
+        : undefined
     return {
       activeWidget: widget,
       interactionPage: entry.page,
       interactionLabel: entry.command,
       interactionTitle: undefined,
       showingHelp: false,
+      overviewNote,
     }
   }
   return {
@@ -53,6 +58,7 @@ export function activateHistoryEntry(
     interactionLabel: entry.prompt,
     interactionTitle: entry.viewTitle,
     showingHelp: false,
+    overviewNote: entry.overviewNote,
   }
 }
 
@@ -69,7 +75,68 @@ export function openDomainHelp(
     interactionPage: 'main' as InteractionPage,
     interactionLabel: `/help · ${domain}`,
     interactionTitle: undefined,
+    aiOverviewSections: clearOverviewFocus(view.aiOverviewSections),
   }
+}
+
+export function clearOverviewFocus(
+  sections: AiOverviewSections | undefined,
+): AiOverviewSections | undefined {
+  if (sections === undefined || sections.focusNote === undefined) return sections
+  const { focusNote: _dropped, ...rest } = sections
+  return rest
+}
+
+export function inferDomainForCommandOrPrompt(
+  text: string,
+  fallback: TuiViewState['activeDomain'],
+): TuiViewState['activeDomain'] {
+  const lower = text.trim().toLowerCase()
+  const cmd = lower.split(/\s+/)[0] ?? ''
+  if (cmd === '/economy' || cmd === '/e' || cmd === '/contract' || cmd === '/co') {
+    return 'economy'
+  }
+  if (
+    cmd === '/peers' ||
+    cmd === '/p' ||
+    cmd === '/ethy' ||
+    cmd === '/diag' ||
+    cmd === '/d' ||
+    cmd === '/drop'
+  ) {
+    return 'p2p'
+  }
+  if (
+    cmd === '/buckets' ||
+    cmd === '/b' ||
+    cmd === '/snap' ||
+    cmd === '/range' ||
+    cmd === '/ra' ||
+    cmd === '/sample' ||
+    cmd === '/sa' ||
+    cmd === '/account' ||
+    cmd === '/a' ||
+    cmd === '/bal' ||
+    cmd === '/cl' ||
+    cmd === '/pause' ||
+    cmd === '/resume' ||
+    cmd === '/reassign' ||
+    cmd === '/r' ||
+    cmd === '/simulate' ||
+    cmd === '/s'
+  ) {
+    return 'state'
+  }
+  if (/contract|economy|base\s*fee|basefee|gwei|tps|volume|swap|erc-20|dex/i.test(lower)) {
+    return 'economy'
+  }
+  if (/peer|client|latency|ethy|handshake|enode|dpt|rlpx/i.test(lower)) {
+    return 'p2p'
+  }
+  if (/bucket|stall|snap|account|storage|bal|slot|head|pivot/i.test(lower)) {
+    return 'state'
+  }
+  return fallback
 }
 
 export function historyEntryTitle(entry: InteractionHistoryEntry): string {

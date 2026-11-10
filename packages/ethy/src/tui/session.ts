@@ -28,6 +28,8 @@ import { promptCaretPosition, renderFrame } from './renderFrame.ts'
 import {
   activateHistoryEntry,
   applyLiveSlashRefresh,
+  clearOverviewFocus,
+  inferDomainForCommandOrPrompt,
   mergeOverviewFocus,
   openDomainHelp,
   pushViewHistory,
@@ -76,38 +78,42 @@ export async function runEthySession(node: EthyNode): Promise<void> {
   refreshOverview('welcome')
 
   const navigateHistory = (direction: 'left' | 'right'): void => {
+    const activateAtIndex = (index: number) => {
+      const entry = view.viewHistory[index]
+      if (entry === undefined) return
+      const { overviewNote, ...activated } = activateHistoryEntry(entry, node.spine, slashCtx())
+      const targetDomain = inferDomainForCommandOrPrompt(
+        entry.kind === 'slash' ? entry.command : entry.prompt,
+        view.activeDomain,
+      )
+      const nextSections =
+        overviewNote !== undefined
+          ? mergeOverviewFocus(
+              clearOverviewFocus(view.aiOverviewSections),
+              overviewNote,
+              targetDomain,
+            )
+          : clearOverviewFocus(view.aiOverviewSections)
+      view = {
+        ...view,
+        viewHistoryIndex: index,
+        aiOverviewSections: nextSections,
+        ...activated,
+      }
+    }
     if (direction === 'left') {
       if (view.showingHelp && view.viewHistory.length > 0) {
-        const entry = view.viewHistory[view.viewHistoryIndex]
-        if (entry !== undefined) {
-          view = { ...view, ...activateHistoryEntry(entry, node.spine, slashCtx()) }
-        }
+        activateAtIndex(view.viewHistoryIndex)
         return
       }
       if (view.viewHistoryIndex > 0) {
-        const index = view.viewHistoryIndex - 1
-        const entry = view.viewHistory[index]
-        if (entry !== undefined) {
-          view = {
-            ...view,
-            viewHistoryIndex: index,
-            ...activateHistoryEntry(entry, node.spine, slashCtx()),
-          }
-        }
+        activateAtIndex(view.viewHistoryIndex - 1)
       }
       return
     }
     if (view.showingHelp) return
     if (view.viewHistoryIndex < view.viewHistory.length - 1) {
-      const index = view.viewHistoryIndex + 1
-      const entry = view.viewHistory[index]
-      if (entry !== undefined) {
-        view = {
-          ...view,
-          viewHistoryIndex: index,
-          ...activateHistoryEntry(entry, node.spine, slashCtx()),
-        }
-      }
+      activateAtIndex(view.viewHistoryIndex + 1)
     }
   }
 
@@ -182,15 +188,18 @@ export async function runEthySession(node: EthyNode): Promise<void> {
   ) => {
     if (gen !== intentGeneration) return
     lastQuerySlot = result.querySlot
+    const targetDomain = inferDomainForCommandOrPrompt(label, view.activeDomain)
     let nextSections = view.aiOverviewSections
     if (result.overviewNote !== undefined) {
       nextSections = mergeOverviewFocus(
-        view.aiOverviewSections,
+        clearOverviewFocus(view.aiOverviewSections),
         result.overviewNote,
-        view.activeDomain,
+        targetDomain,
       )
     } else if (isNl && view.aiOverviewSections?.focusNote?.text === ASKING_LLM_NOTE) {
-      nextSections = savedOverviewSections ?? view.aiOverviewSections
+      nextSections = savedOverviewSections ?? clearOverviewFocus(view.aiOverviewSections)
+    } else {
+      nextSections = clearOverviewFocus(view.aiOverviewSections)
     }
     view = {
       ...view,
@@ -237,12 +246,13 @@ export async function runEthySession(node: EthyNode): Promise<void> {
       if (view.aiOverviewSections?.focusNote === undefined) {
         savedOverviewSections = view.aiOverviewSections
       }
+      const targetDomain = inferDomainForCommandOrPrompt(text, view.activeDomain)
       view = {
         ...view,
         aiOverviewSections: mergeOverviewFocus(
           view.aiOverviewSections,
           ASKING_LLM_NOTE,
-          view.activeDomain,
+          targetDomain,
         ),
       }
       node.hybridEngine?.noteIntentInflight(1)

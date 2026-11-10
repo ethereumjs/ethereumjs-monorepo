@@ -218,23 +218,23 @@ export function renderAiOverviewSections(
       }
     })
   }
-  if (sections?.focusNote !== undefined) {
-    renderOne(sections.focusNote.domain, sections.focusNote.text)
-  } else {
-    for (const id of DOMAIN_ORDER) {
-      const text = sections?.[id]
-      if (text !== undefined && text.length > 0) {
-        if (blocks.length > 0) blocks.push('')
-        renderOne(id, text)
-      }
+  for (const id of DOMAIN_ORDER) {
+    const text =
+      sections?.focusNote !== undefined && sections.focusNote.domain === id
+        ? sections.focusNote.text
+        : sections?.[id]
+    if (text !== undefined && text.length > 0) {
+      if (blocks.length > 0) blocks.push('')
+      renderOne(id, text)
     }
   }
-  const gap = innerLines >= 18 && blocks.length < innerLines - 2 ? 2 : 1
+  const spacerCount = blocks.filter((b) => b === '').length
+  const extraGap = innerLines >= 18 && blocks.length + spacerCount <= innerLines - 2 ? 1 : 0
   const body: string[] = []
   for (let i = 0; i < blocks.length; i++) {
     body.push(blocks[i] ?? '')
-    if (blocks[i] === '' && i < blocks.length - 1) {
-      for (let g = 1; g < gap; g++) body.push('')
+    if (blocks[i] === '' && extraGap > 0) {
+      body.push('')
     }
   }
   const topPad = Math.max(0, Math.floor((innerLines - body.length) / 2))

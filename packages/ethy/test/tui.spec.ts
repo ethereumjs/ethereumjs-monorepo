@@ -18,6 +18,14 @@ import {
   reducePromptKey,
 } from '../src/tui/prompt.ts'
 import { promptCaretPosition, renderFrame } from '../src/tui/renderFrame.ts'
+import {
+  clearOverviewFocus,
+  historyEntryTitle,
+  inferDomainForCommandOrPrompt,
+  mergeOverviewFocus,
+  openDomainHelp,
+  pushViewHistory,
+} from '../src/tui/viewHistory.ts'
 import { layoutTableColumns, renderWidgetLines } from '../src/tui/widgets.ts'
 
 function assertFrameFits(lines: string[], cols: number, rows: number) {
@@ -338,6 +346,40 @@ describe('[Ethy/TUI]: renderFrame', () => {
   it('renderFrame() at 100x60 respects column width', () => {
     const spine = createSpine('sepolia', 11155111n)
     assertFrameFits(renderFrame(spine, createInitialViewState(), 100, 60), 100, 60)
+  })
+
+  it('renderFrame() keeps all 3 domain paragraphs visible when focusNote targets economy and openDomainHelp clears focusNote', () => {
+    const spine = createSpine('sepolia', 11155111n)
+    let view = createInitialViewState(spine)
+    view.aiOverviewSections = mergeOverviewFocus(
+      {
+        state: 'State sync at 100%.',
+        economy: 'Base fee 1.2 Gwei.',
+        p2p: '7 peers active.',
+      },
+      'Contract 0x1234 is a DEX Router.',
+      inferDomainForCommandOrPrompt('/contract 1', view.activeDomain),
+    )
+    assert.equal(view.aiOverviewSections?.focusNote?.domain, 'economy')
+    const frameWithFocus = stripAnsi(renderFrame(spine, view, 140, 36).join('\n'))
+    assert.include(frameWithFocus, 'State sync at 100%.')
+    assert.include(frameWithFocus, 'Contract 0x1234 is a')
+    assert.include(frameWithFocus, 'DEX Router.')
+    assert.include(frameWithFocus, '7 peers active.')
+
+    view = pushViewHistory(view, {
+      kind: 'slash',
+      command: '/peers',
+      label: '/peers',
+      page: 'main',
+    })
+    view = openDomainHelp(view, spine, 'p2p')
+    assert.isUndefined(view.aiOverviewSections?.focusNote)
+    const helpFrame = stripAnsi(renderFrame(spine, view, 120, 36).join('\n'))
+    assert.include(helpFrame, 'Base fee 1.2 Gwei.')
+    assert.include(helpFrame, '← back to /peers')
+    assert.equal(historyEntryTitle(view.viewHistory[0]!), '/peers')
+    assert.isUndefined(clearOverviewFocus(view.aiOverviewSections)?.focusNote)
   })
 })
 

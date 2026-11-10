@@ -15,17 +15,16 @@ function clampLine(text: string, max: number): string {
 
 export function clampOverviewSections(sections: AiOverviewSections): AiOverviewSections {
   const keys = (['state', 'economy', 'p2p'] as const).filter((k) => sections[k] !== undefined)
-  if (sections.focusNote !== undefined) {
-    return {
-      focusNote: {
-        domain: sections.focusNote.domain,
-        text: clampLine(sections.focusNote.text, MAX_AI_TOTAL_CHARS),
-      },
-    }
-  }
-  if (keys.length === 0) return {}
+  const focusNote =
+    sections.focusNote !== undefined
+      ? {
+          domain: sections.focusNote.domain,
+          text: clampLine(sections.focusNote.text, MAX_AI_OVERVIEW_CHARS),
+        }
+      : undefined
+  if (keys.length === 0) return focusNote !== undefined ? { focusNote } : {}
   let budget = MAX_AI_TOTAL_CHARS
-  const out: AiOverviewSections = {}
+  const out: AiOverviewSections = focusNote !== undefined ? { focusNote } : {}
   const lengths = keys.map((k) => (sections[k] ?? '').length)
   const total = lengths.reduce((a, b) => a + b, 0)
   for (let i = 0; i < keys.length; i++) {
@@ -96,8 +95,19 @@ export function buildDeterministicOverviewSections(
   }
 
   if (phase === 'BAL_CATCHUP') {
+    const catchUp = snapshots.economy
     sections.state = 'BAL catch-up in progress toward head.'
-    sections.p2p = `${peers} peers active.`
+    if (catchUp.hasBlocks && catchUp.baseFeeGwei !== undefined) {
+      const trend =
+        catchUp.trend === 'up' ? 'rising' : catchUp.trend === 'down' ? 'falling' : 'flat'
+      const hotRow = catchUp.topContracts[0]
+      const hotBit =
+        hotRow !== undefined
+          ? ` Hottest: ${hotRow.knownName ?? hotRow.archetype ?? 'contract'} ${hotRow.address.slice(0, 6)}…${hotRow.address.slice(-4)}.`
+          : ''
+      sections.economy = `Base fee ${catchUp.baseFeeGwei} Gwei (${trend}).${hotBit}`
+    }
+    sections.p2p = `${peers} peer${peers === 1 ? '' : 's'} active.`
     return clampOverviewSections(sections)
   }
 
