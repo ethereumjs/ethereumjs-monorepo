@@ -33,6 +33,8 @@ import { createSpine, setPhase } from '../src/spine/createSpine.ts'
 import {
   BAL_BATCH_SIZE,
   TAIL_BUNDLE_BATCH_SIZE,
+  materializeBalBatch,
+  pickBalCatchUpPeer,
   planBalBatch,
   shouldUseBalBatch,
 } from '../src/sync/balBatch.ts'
@@ -382,5 +384,67 @@ describe('[Ethy/Sync]: BAL catch-up oracle', () => {
     ] as never)
     assert.isNotNull(parseBlockHeadersBatchPayload(71, okPayload, n1, chain))
     assert.isAtLeast(encodeGetBlockHeadersRangePayload(71, n1, 32).length, 1)
+  })
+
+  it('pickBalCatchUpPeer() skips fast peers whose latestBlock is behind minBlock and materializeBalBatch() clamps full mode by body/receipt count', () => {
+    const spine = createSpine('sepolia', 11155111n)
+    spine.peers.set('lagging-fast', {
+      id: 'lagging-fast',
+      clientName: 'Geth',
+      caps: ['eth/71'],
+      hasHead: true,
+      latestBlock: 100n,
+      snapRequestsSent: 0,
+      snapResponsesOk: 0,
+      snapTimeouts: 0,
+      avgLatencyMs: 20,
+    })
+    spine.peers.set('ahead-normal', {
+      id: 'ahead-normal',
+      clientName: 'Nethermind',
+      caps: ['eth/71'],
+      hasHead: true,
+      latestBlock: 500n,
+      snapRequestsSent: 0,
+      snapResponsesOk: 0,
+      snapTimeouts: 0,
+      avgLatencyMs: 80,
+    })
+    const picked = pickBalCatchUpPeer(spine, new Map(), 200n)
+    assert.equal(picked?.id, 'ahead-normal')
+
+    const mat = materializeBalBatch({
+      peerId: 'ahead-normal',
+      ethVersion: 71,
+      startBlock: 200n,
+      count: 2,
+      mode: 'full',
+      stage: 'bal',
+      startedAt: Date.now(),
+      headerRequestId: 1,
+      headers: [
+        {
+          number: 200n,
+          hash: new Uint8Array(32).fill(1),
+          parentHash: new Uint8Array(32),
+          stateRoot: new Uint8Array(32),
+          headerRlp: new Uint8Array([0xc0]),
+        },
+        {
+          number: 201n,
+          hash: new Uint8Array(32).fill(2),
+          parentHash: new Uint8Array(32).fill(1),
+          stateRoot: new Uint8Array(32),
+          headerRlp: new Uint8Array([0xc0]),
+        },
+      ],
+      bodiesRlp: [new Uint8Array([0xc0])],
+      receiptsEth69: [new Uint8Array([0xc0])],
+      balRlp: [new Uint8Array(0), new Uint8Array(0)],
+    })
+    assert.equal(mat.ok, true)
+    if (mat.ok) {
+      assert.equal(mat.blocks.length, 1)
+    }
   })
 })

@@ -75,6 +75,8 @@ export type FinalizeBlockBundleOpts = {
   /** When false, skip heal RLP / bundle journal writes (WP-07e catch-up). */
   persistHeal?: boolean
   economy?: ETHEconomyDataManager
+  /** Pre-decoded BAL JSON when caller already verified and applied the batch (WP-07e). */
+  preDecodedBalJson?: BALJSONBlockAccessList
 }
 
 /** Register servable bundle and apply BAL when present. */
@@ -116,7 +118,7 @@ export async function finalizeBlockBundle(opts: FinalizeBlockBundleOpts): Promis
       })
     }
   }
-  let economyBalJson: BALJSONBlockAccessList | undefined
+  let economyBalJson: BALJSONBlockAccessList | undefined = opts.preDecodedBalJson
   if (opts.deferStateApply !== true) {
     const applied = await applyBlockBal(
       opts.stateManager,

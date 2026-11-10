@@ -289,6 +289,7 @@ export class BalChainStreamer {
   /** Clear buffered BAL blocks and in-flight fetches when resetting to a fresh pivot. */
   resetForFreshPivot(): void {
     this.catchUp = undefined
+    this.verifiedTipHash = undefined
     this.buffered.length = 0
     this.appliedBalLog.length = 0
   }
@@ -304,6 +305,7 @@ export class BalChainStreamer {
     spine.streamedBalCount = blocks.length
     spine.bufferedBalCount = blocks.length
     const last = blocks[blocks.length - 1]!
+    this.verifiedTipHash = last.blockHash
     spine.headBlockNumber = last.blockNumber
     spine.headStateRoot = last.stateRoot
     if (spine.bestPeerHead === undefined || last.blockNumber > spine.bestPeerHead) {
@@ -327,7 +329,9 @@ export class BalChainStreamer {
       if (result === 'ignore') return false
       if (result === 'failed') {
         restBalCatchUpPeer(this.peerRestUntil, batch.peerId)
+        this.verifiedTipHash = undefined
         this.catchUp!.batchInFlight = undefined
+        queueMicrotask(() => this.tick())
         return true
       }
       if (result === 'progress') return true
@@ -349,6 +353,7 @@ export class BalChainStreamer {
       if (this.catchUp !== undefined) {
         restBalCatchUpPeer(this.peerRestUntil, this.catchUp.peerId)
         this.catchUp.inFlight = undefined
+        queueMicrotask(() => this.tick())
       }
       return true
     }
@@ -382,6 +387,7 @@ export class BalChainStreamer {
     if (!materialized.ok) {
       restBalCatchUpPeer(this.peerRestUntil, batch.peerId)
       seq.batchInFlight = undefined
+      queueMicrotask(() => this.tick())
       return
     }
     const { spine } = this.opts
@@ -394,6 +400,9 @@ export class BalChainStreamer {
 
     if (!snapStreaming && batchBalJson.length > 0) {
       await this.opts.stateManager.consumeBALBatch(batchBalJson)
+      for (const balJson of batchBalJson) {
+        this.opts.onBalApplied?.(balJson)
+      }
     }
 
     for (let i = 0; i < blocks.length; i++) {
@@ -422,13 +431,14 @@ export class BalChainStreamer {
           hardfork: this.opts.hardfork,
           bundle,
           putServableBlock: (b) => this.opts.putServableBlock(b),
-          onBalApplied: snapStreaming ? undefined : this.opts.onBalApplied,
+          onBalApplied: undefined,
           appendHealBal: this.opts.appendHealBal,
           appendHealBundle: this.opts.appendHealBundle,
           syncBuckets: snapStreaming ? spine.snapBuckets : undefined,
-          deferStateApply: snapStreaming || batchBalJson.length > 0,
+          deferStateApply: true,
           persistHeal,
           economy: this.opts.economy,
+          preDecodedBalJson: row.balJson,
         })
       } else if (row.balJson !== undefined || row.balRlp !== undefined) {
         this.opts.economy?.noteBundle({
@@ -550,6 +560,9 @@ export class BalChainStreamer {
         spine.bestPeerHead = fields.number
       }
       const blockHash = bundle.hash ?? new Uint8Array(32)
+      if (bundle.hash !== undefined) {
+        this.verifiedTipHash = bundle.hash
+      }
       this.opts.onVerifiedExecutionHeader?.(fields.number, blockHash)
       if (snapStreaming) {
         const entry: VerifiedBalBlock = {
@@ -752,7 +765,8 @@ export class BalChainStreamer {
         : undefined
     if (batchPlan !== undefined) {
       const batchPeer =
-        pickBalCatchUpPeer(spine, this.peerRestUntil) ??
+        pickBalCatchUpPeer(spine, this.peerRestUntil, next + BigInt(batchPlan.count - 1)) ??
+        pickBalCatchUpPeer(spine, this.peerRestUntil, next) ??
         ({
           id: this.catchUp.peerId,
           ethVersion: this.catchUp.ethVersion,

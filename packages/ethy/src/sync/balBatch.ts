@@ -61,6 +61,7 @@ export type VerifiedBalBatchBlock = {
 export function pickBalCatchUpPeer(
   spine: EthySpine,
   peerRestUntil: ReadonlyMap<string, number>,
+  minBlock?: bigint,
   now = Date.now(),
 ): { id: string; ethVersion: number; latestBlock: bigint } | undefined {
   const candidates: PeerTelemetry[] = []
@@ -68,10 +69,11 @@ export function pickBalCatchUpPeer(
   for (const p of spine.peers.values()) {
     if (p.hasHead !== true || p.latestBlock === undefined) continue
     if (highestEthVersion(p.caps) < 71) continue
+    if (p.latestBlock > targetHead) targetHead = p.latestBlock
+    if (minBlock !== undefined && p.latestBlock < minBlock) continue
     const rest = peerRestUntil.get(p.id)
     if (rest !== undefined && now < rest) continue
     candidates.push(p)
-    if (p.latestBlock > targetHead) targetHead = p.latestBlock
   }
   if (candidates.length === 0 || targetHead === 0n) return undefined
   let best = candidates[0]!
@@ -260,7 +262,15 @@ export function materializeBalBatch(
     return { ok: false, reason: 'missing headers' }
   }
   const balLists = batch.balRlp ?? []
-  const m = Math.min(headers.length, balLists.length)
+  const m =
+    batch.mode === 'full'
+      ? Math.min(
+          headers.length,
+          balLists.length,
+          batch.bodiesRlp?.length ?? 0,
+          batch.receiptsEth69?.length ?? 0,
+        )
+      : Math.min(headers.length, balLists.length)
   if (m === 0) return { ok: false, reason: 'empty batch' }
 
   const blocks: VerifiedBalBatchBlock[] = []
