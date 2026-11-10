@@ -4,6 +4,7 @@ import { getEthyClientVersion } from '../src/clientMeta.ts'
 import { P2P_REACHABILITY_HINT } from '../src/notify/p2pLink.ts'
 import { createSpine, deriveCapabilities, setPhase } from '../src/spine/createSpine.ts'
 import type { WidgetSpec } from '../src/spine/types.ts'
+import { diagnosticsTableWidget } from '../src/tools/diagnose.ts'
 import { stripAnsi, visibleWidth } from '../src/tui/ansi.ts'
 import { CAPABILITY_FG, capabilityMark } from '../src/tui/capabilityMark.ts'
 import { cockpitColumnWidths } from '../src/tui/cockpit.ts'
@@ -17,6 +18,14 @@ import {
   reducePromptKey,
 } from '../src/tui/prompt.ts'
 import { promptCaretPosition, renderFrame } from '../src/tui/renderFrame.ts'
+import {
+  clearOverviewFocus,
+  historyEntryTitle,
+  inferDomainForCommandOrPrompt,
+  mergeOverviewFocus,
+  openDomainHelp,
+  pushViewHistory,
+} from '../src/tui/viewHistory.ts'
 import { layoutTableColumns, renderWidgetLines } from '../src/tui/widgets.ts'
 
 function assertFrameFits(lines: string[], cols: number, rows: number) {
@@ -38,8 +47,8 @@ describe('[Ethy/TUI]: renderFrame', () => {
     const topA = stripAnsi(renderFrame(spineA, view, 100, 30)[0] ?? '')
     const topB = stripAnsi(renderFrame(spineB, view, 100, 30)[0] ?? '')
     assert.equal(topA.indexOf('P2P'), topB.indexOf('P2P'))
-    assert.match(topA, /Slot 1 {8}\S P2P/)
-    assert.match(topB, /Slot 123,456 {8}\S P2P/)
+    assert.match(topA, /Slot 1 {8}\S STATE/)
+    assert.match(topB, /Slot 123,456 {8}\S STATE/)
     assert.isAbove(topA.indexOf('Slot'), topA.indexOf('SEPOLIA'))
   })
 
@@ -128,10 +137,9 @@ describe('[Ethy/TUI]: renderFrame', () => {
     const rule = stripAnsi(lines[1] ?? '')
     assert.equal(rule[0], '─')
     assert.equal(rule[rule.length - 1], '─')
-    assert.match(top, /● P2P/)
-    assert.match(top, /● SNAP/)
-    assert.match(top, /● HEAD/)
-    assert.match(top, /◐ AI/)
+    assert.match(top, /● STATE/)
+    assert.match(top, /○ ECONOMY/)
+    assert.match(top, /○ P2P/)
     assert.notInclude(top, 'Synced')
     assert.notInclude(top, 'Slash/Rule')
     assert.notInclude(top, '[')
@@ -178,9 +186,9 @@ describe('[Ethy/TUI]: renderFrame', () => {
     spineB.capabilities.p2p.label = '3 Peers'
     const topA = stripAnsi(renderFrame(spineA, view, 100, 30)[0] ?? '')
     const topB = stripAnsi(renderFrame(spineB, view, 100, 30)[0] ?? '')
-    assert.equal(topA.indexOf('SNAP'), topB.indexOf('SNAP'))
-    assert.equal(topA.indexOf('HEAD'), topB.indexOf('HEAD'))
-    assert.equal(topA.indexOf('AI'), topB.indexOf('AI'))
+    assert.equal(topA.indexOf('STATE'), topB.indexOf('STATE'))
+    assert.equal(topA.indexOf('ECONOMY'), topB.indexOf('ECONOMY'))
+    assert.equal(topA.indexOf('P2P'), topB.indexOf('P2P'))
   })
 
   it('renderFrame() shows 3-box cockpit and domain-lens hint row', () => {
@@ -188,11 +196,15 @@ describe('[Ethy/TUI]: renderFrame', () => {
     const view = createInitialViewState()
     const plain = renderFrame(spine, view, 100, 30).map((line) => stripAnsi(line))
     const joined = plain.join('\n')
-    assert.include(joined, 'Node Pulse')
+    assert.include(joined, 'Stage')
+    assert.notInclude(joined, 'Node Pulse')
+    assert.notInclude(joined, 'Commands')
+    assert.notInclude(joined, 'Metrics')
     assert.include(joined, '╭')
     assert.notInclude(joined, 'Which peers are connected')
     const hint = plain[plain.length - 1] ?? ''
-    assert.match(hint, /Tab switch domain/)
+    assert.match(hint, /Tab show domain help/)
+    assert.match(hint, /view history/)
     assert.notInclude(hint, 'Why is bucket')
     assert.match(plain[plain.length - 3] ?? '', /ethy >/)
     assert.notInclude(joined, 'All quiet')
@@ -240,15 +252,14 @@ describe('[Ethy/TUI]: renderFrame', () => {
     }
   })
 
-  it('renderFrame() cockpit command box follows activeDomain', () => {
+  it('renderFrame() Tab help shows state commands and p2p box stays fixed', () => {
     const spine = createSpine('sepolia', 11155111n)
-    const p2p = stripAnsi(renderFrame(spine, createInitialViewState(), 100, 30).join('\n'))
-    const snapView = { ...createInitialViewState(), activeDomain: 'snap' as const }
-    const snap = stripAnsi(renderFrame(spine, snapView, 100, 30).join('\n'))
-    assert.include(p2p, '/peers')
-    assert.include(snap, '/buckets')
-    assert.include(snap, '/range')
-    assert.include(snap, '/sample')
+    const view = createInitialViewState(spine)
+    const frame = stripAnsi(renderFrame(spine, view, 100, 30).join('\n'))
+    assert.include(frame, '/buckets')
+    assert.include(frame, '/range')
+    assert.include(frame, '/help · State')
+    assert.include(frame, 'Peers')
     assert.equal(capabilityMark('p2p', 'locked').startsWith(CAPABILITY_FG.p2p), true)
   })
 
@@ -289,7 +300,7 @@ describe('[Ethy/TUI]: renderFrame', () => {
     assert.include(lines.join('\n'), 'Test')
   })
 
-  it('renderFrame() reserves labeled discovery rows under the diagnostic table', () => {
+  it('renderFrame() keeps discovery telemetry on debug page only for /diag', () => {
     const spine = createSpine('sepolia', 11155111n)
     spine.discovery = {
       boundAddress: '134.93.187.137',
@@ -309,28 +320,66 @@ describe('[Ethy/TUI]: renderFrame', () => {
       },
       dpt: { banSkips: 40, bansIssued: 3, lastRemote: '10.0.0.9:30303' },
     }
-    const widget: WidgetSpec = {
-      kind: 'table',
-      title: 'Diagnostic ring (latest)',
-      headers: ['Time', 'Subsystem', 'Sev', 'Peer', 'Message'],
-      rows: Array.from({ length: 20 }, (_, i) => [String(i), 'devp2p', 'warn', '—', 'reset']),
-      footer: 'discovery',
+    const widget = diagnosticsTableWidget(spine)
+    const mainView = {
+      ...createInitialViewState(),
+      activeWidget: widget,
+      interactionPage: 'main' as const,
+      interactionLabel: '/diag',
     }
-    const view = { ...createInitialViewState(), activeWidget: widget }
-    const raw = renderFrame(spine, view, 120, 36)
-    assertFrameFits(raw, 120, 36)
-    const lines = raw.map((line) => stripAnsi(line))
-    const bindAt = lines.findIndex((line) => line.includes('udp 134.93.187.137:52520'))
-    const promptAt = lines.findIndex((line) => line.includes('ethy >'))
-    assert.isAbove(bindAt, 0)
-    assert.isAbove(promptAt, bindAt)
-    const block = lines.slice(bindAt, promptAt).join('\n')
-    assert.include(block, 'dial 626')
-    assert.include(block, 'status 1')
-    assert.include(block, 'sent 88')
-    assert.include(block, 'amsterdam')
-    assert.include(block, 'network 6')
-    assert.include(block, 'SUBPROTOCOL_ERROR/remote 40')
+    const mainPlain = stripAnsi(renderFrame(spine, mainView, 120, 36).join('\n'))
+    assert.notInclude(mainPlain, 'Boot ok')
+    assert.notInclude(mainPlain, 'udp 134.93.187.137')
+    const debugView = { ...mainView, interactionPage: 'debug' as const }
+    const debugPlain = stripAnsi(renderFrame(spine, debugView, 120, 36).join('\n'))
+    assert.include(debugPlain, 'Boot ok')
+    assert.include(debugPlain, 'RLPx status')
+  })
+
+  it('renderFrame() shows Economy in top cockpit row', () => {
+    const spine = createSpine('sepolia', 11155111n)
+    const joined = stripAnsi(renderFrame(spine, createInitialViewState(), 100, 40).join('\n'))
+    assert.include(joined, 'Economy')
+    assert.include(joined, 'Gas / Base')
+  })
+
+  it('renderFrame() at 100x60 respects column width', () => {
+    const spine = createSpine('sepolia', 11155111n)
+    assertFrameFits(renderFrame(spine, createInitialViewState(), 100, 60), 100, 60)
+  })
+
+  it('renderFrame() keeps all 3 domain paragraphs visible when focusNote targets economy and openDomainHelp clears focusNote', () => {
+    const spine = createSpine('sepolia', 11155111n)
+    let view = createInitialViewState(spine)
+    view.aiOverviewSections = mergeOverviewFocus(
+      {
+        state: 'State sync at 100%.',
+        economy: 'Base fee 1.2 Gwei.',
+        p2p: '7 peers active.',
+      },
+      'Contract 0x1234 is a DEX Router.',
+      inferDomainForCommandOrPrompt('/contract 1', view.activeDomain),
+    )
+    assert.equal(view.aiOverviewSections?.focusNote?.domain, 'economy')
+    const frameWithFocus = stripAnsi(renderFrame(spine, view, 140, 36).join('\n'))
+    assert.include(frameWithFocus, 'State sync at 100%.')
+    assert.include(frameWithFocus, 'Contract 0x1234 is a')
+    assert.include(frameWithFocus, 'DEX Router.')
+    assert.include(frameWithFocus, '7 peers active.')
+
+    view = pushViewHistory(view, {
+      kind: 'slash',
+      command: '/peers',
+      label: '/peers',
+      page: 'main',
+    })
+    view = openDomainHelp(view, spine, 'p2p')
+    assert.isUndefined(view.aiOverviewSections?.focusNote)
+    const helpFrame = stripAnsi(renderFrame(spine, view, 120, 36).join('\n'))
+    assert.include(helpFrame, 'Base fee 1.2 Gwei.')
+    assert.include(helpFrame, '← back to /peers')
+    assert.equal(historyEntryTitle(view.viewHistory[0]!), '/peers')
+    assert.isUndefined(clearOverviewFocus(view.aiOverviewSections)?.focusNote)
   })
 })
 
@@ -347,15 +396,21 @@ describe('[Ethy/TUI]: prompt reducer', () => {
     assert.equal(r.view.promptDraft, '/peers')
   })
 
-  it('Enter on empty draft opens deep view', () => {
+  it('Enter on empty draft is a no-op', () => {
     const r = reducePromptKey(createInitialViewState(), { type: 'enter' })
-    assert.isTrue(r.openDeepView)
+    assert.isUndefined(r.submittedLine)
+    assert.isUndefined(r.domainCycle)
   })
 
-  it('cycleDomain() walks p2p → snap → head → ai', () => {
-    assert.equal(cycleDomain('p2p', 1), 'snap')
-    assert.equal(cycleDomain('ai', 1), 'p2p')
-    assert.equal(cycleDomain('p2p', -1), 'ai')
+  it('cycleDomain() walks state → economy → p2p', () => {
+    assert.equal(cycleDomain('state', 1), 'economy')
+    assert.equal(cycleDomain('p2p', 1), 'state')
+    assert.equal(cycleDomain('state', -1), 'p2p')
+  })
+
+  it('decodeKey() maps left arrow on empty draft', () => {
+    const { actions } = decodeKey('', '\u001b[D')
+    assert.deepEqual(actions, [{ type: 'left' }])
   })
 
   it('Up/Down walks command history', () => {
@@ -383,6 +438,18 @@ describe('[Ethy/TUI]: prompt reducer', () => {
   it('decodeKey() maps Ctrl+C to exit', () => {
     const { actions } = decodeKey('', '\u0003')
     assert.deepEqual(actions, [{ type: 'exit' }])
+  })
+
+  it('decodeKey() maps Ctrl+D to toggleDebug', () => {
+    const { actions } = decodeKey('', '\u0004')
+    assert.deepEqual(actions, [{ type: 'toggleDebug' }])
+  })
+
+  it('Ctrl+D reducer does not mutate draft', () => {
+    const view = { ...createInitialViewState(), promptDraft: '/pe' }
+    const r = reducePromptKey(view, { type: 'toggleDebug' })
+    assert.equal(r.toggleDebug, true)
+    assert.equal(r.view.promptDraft, '/pe')
   })
 
   it('backspace removes last draft character', () => {

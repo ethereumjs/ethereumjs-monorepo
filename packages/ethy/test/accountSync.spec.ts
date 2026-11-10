@@ -572,4 +572,59 @@ describe('[Ethy/Sync]: synthetic snap account range', () => {
     })
     sync.stop()
   })
+
+  it('enqueueAccountRefreshCursor queues on a done bucket without reopening sweep', () => {
+    const spine = createSpine('sepolia', 11155111n)
+    const bucket = spine.snapBuckets[0]!
+    bucket.status = 'done'
+    bucket.currentLastHash = new Uint8Array(bucket.limitHash)
+    bucket.subRanges = []
+    const sync = new SnapAccountSynchronizer({
+      spine,
+      stateManager: createFlatStateManager(),
+      transport: mockSnapTransport(),
+      flightTracker: new SnapPeerFlightTracker(),
+      getSnapPeers: () => [],
+    })
+    const accountHash = new Uint8Array(32)
+    accountHash[0] = 0x01
+    sync.enqueueAccountRefreshCursor(accountHash)
+    assert.equal(bucket.status, 'done')
+    assert.isTrue(bucket.subRanges?.some((c) => c.refresh === true))
+  })
+
+  it('dispatching a refresh cursor on a done bucket keeps bucket.status as done', () => {
+    const spine = createSpine('sepolia', 11155111n)
+    spine.pivotStateRoot = new Uint8Array(32).fill(0x55)
+    for (const b of spine.snapBuckets) {
+      b.status = 'done'
+      b.currentLastHash = new Uint8Array(b.limitHash)
+      b.subRanges = []
+    }
+    const peer = {
+      id: 'aa11',
+      caps: ['snap/1'],
+      snapResponsesOk: 5,
+      snapTimeouts: 0,
+      avgLatencyMs: 25,
+    }
+    let dispatched = 0
+    const sync = new SnapAccountSynchronizer({
+      spine,
+      stateManager: createFlatStateManager(),
+      transport: mockSnapTransport({
+        snapPeers: () => [peer],
+        sendAccountRange() {
+          dispatched++
+        },
+      }),
+      flightTracker: new SnapPeerFlightTracker(),
+      getSnapPeers: () => [peer],
+    })
+    const accountHash = new Uint8Array(32)
+    accountHash[0] = 0x01
+    sync.enqueueAccountRefreshCursor(accountHash)
+    assert.equal(dispatched, 1)
+    assert.equal(spine.snapBuckets[0]!.status, 'done')
+  })
 })

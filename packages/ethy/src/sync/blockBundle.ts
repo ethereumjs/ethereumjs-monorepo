@@ -25,6 +25,7 @@ import {
 import type { EthySpine, SnapBucket } from '../spine/types.ts'
 import type { VerifiedBalBlock } from './balSync.ts'
 
+import type { ETHEconomyDataManager } from '../economy/economyDataManager.ts'
 import { applyBlockBal, pushBalWindow } from './balSync.ts'
 
 export type BlockBundleStage = 'headers' | 'bodies' | 'receipts' | 'bal'
@@ -71,6 +72,11 @@ export type FinalizeBlockBundleOpts = {
   syncBuckets?: SnapBucket[]
   /** When true, servable registration runs but state apply is deferred to pivot step. */
   deferStateApply?: boolean
+  /** When false, skip heal RLP / bundle journal writes (WP-07e catch-up). */
+  persistHeal?: boolean
+  economy?: ETHEconomyDataManager
+  /** Pre-decoded BAL JSON when caller already verified and applied the batch (WP-07e). */
+  preDecodedBalJson?: BALJSONBlockAccessList
 }
 
 /** Register servable bundle and apply BAL when present. */
@@ -92,10 +98,15 @@ export async function finalizeBlockBundle(opts: FinalizeBlockBundleOpts): Promis
     receiptsEth69Rlp: bundle.receiptsEth69Rlp,
     balRlp: bundle.balRlp,
   })
-  if (bundle.balRlp !== undefined && bundle.balRlp.length > 0) {
+  if (bundle.balRlp !== undefined && bundle.balRlp.length > 0 && opts.persistHeal !== false) {
     opts.appendHealBal?.(bundle.blockNumber, bundle.balRlp)
   }
-  if (opts.deferStateApply === true && bundle.balRlp !== undefined && bundle.balRlp.length > 0) {
+  if (
+    opts.deferStateApply === true &&
+    opts.persistHeal !== false &&
+    bundle.balRlp !== undefined &&
+    bundle.balRlp.length > 0
+  ) {
     const fields = headFieldsFromHeaderRlp(bundle.headerRlp, opts.chain, opts.hardfork)
     if (fields !== null && bundle.hash !== undefined) {
       opts.appendHealBundle?.({
@@ -107,6 +118,7 @@ export async function finalizeBlockBundle(opts: FinalizeBlockBundleOpts): Promis
       })
     }
   }
+  let economyBalJson: BALJSONBlockAccessList | undefined = opts.preDecodedBalJson
   if (opts.deferStateApply !== true) {
     const applied = await applyBlockBal(
       opts.stateManager,
@@ -117,10 +129,19 @@ export async function finalizeBlockBundle(opts: FinalizeBlockBundleOpts): Promis
       opts.syncBuckets,
     )
     if (applied.balJson !== undefined) {
+      economyBalJson = applied.balJson
       pushBalWindow(opts.spine, bundle.blockNumber, applied.balJson)
       opts.onBalApplied?.(applied.balJson)
     }
   }
+  opts.economy?.noteBundle({
+    blockNumber: bundle.blockNumber,
+    headerRlp: bundle.headerRlp,
+    bodyRlp: bundle.bodyRlp,
+    receiptsEth69Rlp: bundle.receiptsEth69Rlp,
+    balJson: economyBalJson,
+    balRlp: bundle.balRlp,
+  })
 }
 
 export function headFieldsFromHeaderRlp(

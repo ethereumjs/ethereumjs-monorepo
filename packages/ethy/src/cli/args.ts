@@ -1,5 +1,7 @@
 export type EthySyncMode = 'auto' | 'ethy' | 'snap'
 
+export type EthyAiMemory = 'ephemeral' | 'off'
+
 export interface EthyCliArgs {
   network: string
   demo: boolean
@@ -10,6 +12,10 @@ export interface EthyCliArgs {
   syncMode: EthySyncMode
   /** `enode://` URLs for direct dial after P2P start. */
   connectEnodeUrls: string[]
+  llmUrl?: string
+  llmAllowRemote: boolean
+  aiMemory: EthyAiMemory
+  recordFixturePath?: string
 }
 
 export function parseEthyArgs(argv: string[]): EthyCliArgs {
@@ -22,6 +28,10 @@ export function parseEthyArgs(argv: string[]): EthyCliArgs {
   let listenPort: number | undefined
   let syncMode: EthySyncMode = 'auto'
   const connectEnodeUrls: string[] = []
+  let llmUrl: string | undefined
+  let llmAllowRemote = false
+  let aiMemory: EthyAiMemory = 'ephemeral'
+  let recordFixturePath: string | undefined
 
   for (let i = 0; i < args.length; i++) {
     const a = args[i]
@@ -67,6 +77,34 @@ export function parseEthyArgs(argv: string[]): EthyCliArgs {
       syncMode = next
       continue
     }
+    if (a === '--llm-url') {
+      const next = args[++i]
+      if (next === undefined) throw new Error('--llm-url requires a base URL')
+      llmUrl = next
+      continue
+    }
+    if (a === '--llm-allow-remote') {
+      llmAllowRemote = true
+      continue
+    }
+    if (a === '--ai-memory') {
+      const next = args[++i]
+      if (next !== 'ephemeral' && next !== 'off') {
+        throw new Error('--ai-memory must be ephemeral or off')
+      }
+      aiMemory = next
+      continue
+    }
+    if (a === '--no-ai-history') {
+      aiMemory = 'off'
+      continue
+    }
+    if (a === '--record-fixture') {
+      const next = args[++i]
+      if (next === undefined) throw new Error('--record-fixture requires a path')
+      recordFixturePath = next
+      continue
+    }
     if (a === '--help' || a === '-h') {
       throw new Error('HELP')
     }
@@ -76,14 +114,30 @@ export function parseEthyArgs(argv: string[]): EthyCliArgs {
     network = a
   }
 
-  return { network, demo, headless, fresh, dataDir, listenPort, syncMode, connectEnodeUrls }
+  return {
+    network,
+    demo,
+    headless,
+    fresh,
+    dataDir,
+    listenPort,
+    syncMode,
+    connectEnodeUrls,
+    llmUrl,
+    llmAllowRemote,
+    aiMemory,
+    recordFixturePath,
+  }
 }
 
 export function printEthyUsage(): string {
   return `ethy — EthereumJS execution-free state node (Amsterdam focus)
 
 Usage:
-  ethy [network] [--demo] [--headless] [--fresh] [--sync-mode auto|ethy|snap] [--datadir PATH] [--port N] [--connect enode://...]
+  ethy [network] [--demo] [--headless] [--fresh] [--sync-mode auto|ethy|snap]
+        [--datadir PATH] [--port N] [--connect enode://...]
+        [--llm-url URL] [--llm-allow-remote] [--ai-memory ephemeral|off] [--no-ai-history]
+        [--record-fixture PATH]
 
 Networks: sepolia (default), mainnet, hoodi, holesky
 `

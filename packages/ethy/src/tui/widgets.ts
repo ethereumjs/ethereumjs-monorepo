@@ -1,85 +1,23 @@
 import type { CapabilityReadiness, WidgetSpec } from '../spine/types.ts'
-import type { CapabilityId } from '../spine/types.ts'
-import { BOLD, DIM, RESET, padVisible, truncateVisible } from './ansi.ts'
-import { capabilityMark } from './capabilityMark.ts'
-import {
-  type TwoColumnPair,
-  composeFixedRow,
-  fixedLine,
-  formatTwoColumnRows,
-  maxLabelWidth,
-} from './layout.ts'
+import { renderInteractionWidgetBody } from './interactionContent.ts'
 
 /** How often the suggestion carousel advances to the next set. */
 export const CAROUSEL_INTERVAL_MS = 12_000
 
 export type SuggestionMarks = {
+  state: CapabilityReadiness
+  economy: CapabilityReadiness
   p2p: CapabilityReadiness
-  snap: CapabilityReadiness
-  head: CapabilityReadiness
 }
 
+/** Legacy helper for unit tests — unbounded height, main page only. */
 export function renderWidgetLines(
   widget: WidgetSpec,
   innerWidth: number,
   marks?: SuggestionMarks,
 ): string[] {
-  const lines: string[] = []
   const w = Math.max(20, innerWidth)
-
-  switch (widget.kind) {
-    case 'onboarding_carousel':
-      for (const line of widget.lines) {
-        const id: CapabilityId =
-          line.group === 'P2P' ? 'p2p' : line.group === 'SNAP' ? 'snap' : 'head'
-        const status =
-          id === 'p2p'
-            ? (marks?.p2p ?? 'locked')
-            : id === 'snap'
-              ? (marks?.snap ?? 'locked')
-              : (marks?.head ?? 'locked')
-        const prefix = capabilityMark(id, status)
-        const half = Math.floor(w / 2)
-        lines.push(
-          composeFixedRow(
-            w,
-            [
-              { text: `${prefix} ${line.command}`, width: half },
-              { text: `${prefix} ${line.prose}`, width: w - half },
-            ],
-            2,
-          ),
-        )
-      }
-      break
-    case 'table':
-      if (widget.title) {
-        lines.push(fixedLine(`${BOLD}${widget.title}${RESET}`, w))
-      }
-      lines.push(...renderTable(widget.headers, widget.rows, w))
-      break
-    case 'key_value':
-      if (widget.title) {
-        lines.push(fixedLine(`${BOLD}${widget.title}${RESET}`, w))
-      }
-      {
-        const pairs: TwoColumnPair[] = widget.entries.map((e) => ({
-          label: `${DIM}${e.key}${RESET}`,
-          value: e.value,
-        }))
-        const lw = maxLabelWidth(pairs)
-        for (const row of formatTwoColumnRows(pairs, lw, w)) {
-          lines.push(fixedLine(row, w))
-        }
-      }
-      break
-  }
-
-  if (widget.assistantComment) {
-    lines.push(fixedLine(`${DIM}> ${widget.assistantComment}${RESET}`, w))
-  }
-
-  return lines
+  return renderInteractionWidgetBody(widget, w, 10_000, 'main', marks)
 }
 
 type ColPlan = { min: number; flex: number }
@@ -103,6 +41,60 @@ const TABLE_PLANS: Record<string, ColPlan[]> = {
     { min: 18, flex: 2 },
     { min: 8, flex: 0 },
     { min: 20, flex: 3 },
+  ],
+  'Peer|Client|Caps|Ethy|Avg ms|Last issue': [
+    { min: 14, flex: 1 },
+    { min: 16, flex: 2 },
+    { min: 16, flex: 2 },
+    { min: 6, flex: 0 },
+    { min: 7, flex: 0 },
+    { min: 14, flex: 2 },
+  ],
+  'Contract|Blocks|S-Writes|S-Reads|Net ETH': [
+    { min: 16, flex: 2 },
+    { min: 8, flex: 0 },
+    { min: 10, flex: 0 },
+    { min: 10, flex: 0 },
+    { min: 14, flex: 1 },
+  ],
+  'Block|Base|Full|Txs|ETH': [
+    { min: 14, flex: 1 },
+    { min: 12, flex: 1 },
+    { min: 8, flex: 0 },
+    { min: 8, flex: 0 },
+    { min: 14, flex: 1 },
+  ],
+  'Address|Balance|Nonce|S-Writes|S-Reads|Code': [
+    { min: 16, flex: 2 },
+    { min: 14, flex: 1 },
+    { min: 8, flex: 0 },
+    { min: 9, flex: 0 },
+    { min: 9, flex: 0 },
+    { min: 6, flex: 0 },
+  ],
+  'Field|Value': [
+    { min: 24, flex: 0 },
+    { min: 20, flex: 1 },
+  ],
+  'Call|Count': [
+    { min: 28, flex: 1 },
+    { min: 10, flex: 0 },
+  ],
+  'Event|Count': [
+    { min: 28, flex: 1 },
+    { min: 10, flex: 0 },
+  ],
+  'Client family|Peers|Avg latency|Snap OK': [
+    { min: 18, flex: 2 },
+    { min: 8, flex: 0 },
+    { min: 14, flex: 0 },
+    { min: 12, flex: 1 },
+  ],
+  'Contract|Blocks|Writes|Reads': [
+    { min: 18, flex: 2 },
+    { min: 8, flex: 0 },
+    { min: 10, flex: 0 },
+    { min: 10, flex: 0 },
   ],
   'Bucket|Status|Peer|Accounts|Issue': [
     { min: 8, flex: 0 },
@@ -160,10 +152,15 @@ function shrinkColumns(
   return overflow
 }
 
-/** Column widths for a table of `maxWidth`, including the box border. */
-export function layoutTableColumns(headers: string[], maxWidth: number): number[] {
-  const inner = Math.max(headers.length, maxWidth - 4)
-  const gapTotal = Math.max(0, headers.length - 1) * 3
+/** Column widths for a table. Default `borderPadding = 4` matches legacy bordered tables. */
+export function layoutTableColumns(
+  headers: string[],
+  maxWidth: number,
+  borderPadding = 4,
+): number[] {
+  const inner = Math.max(headers.length, maxWidth - borderPadding)
+  const colGap = borderPadding === 0 ? 2 : 3
+  const gapTotal = Math.max(0, headers.length - 1) * colGap
   const budget = Math.max(headers.length, inner - gapTotal)
   const plans = planFor(headers)
   const widths = plans.map((plan) => plan.min)
@@ -194,27 +191,6 @@ export function layoutTableColumns(headers: string[], maxWidth: number): number[
   }
   widths[best] += extra - given
   return widths
-}
-
-function renderTable(headers: string[], rows: string[][], maxWidth: number): string[] {
-  const colWidths = layoutTableColumns(headers, maxWidth)
-
-  const sep = colWidths.map((cw) => '─'.repeat(cw)).join('─┼─')
-  const fmtRow = (cells: string[]) =>
-    cells
-      .map((cell, i) => padVisible(truncateVisible(cell, colWidths[i] ?? 8), colWidths[i] ?? 8))
-      .join(' │ ')
-
-  const out: string[] = []
-  const top = fixedLine(`┌─${sep}─┐`, maxWidth)
-  out.push(top)
-  out.push(fixedLine(`│ ${fmtRow(headers)} │`, maxWidth))
-  out.push(fixedLine(`├─${sep}─┤`, maxWidth))
-  for (const row of rows) {
-    out.push(fixedLine(`│ ${fmtRow(row)} │`, maxWidth))
-  }
-  out.push(fixedLine(`└─${sep}─┘`, maxWidth))
-  return out
 }
 
 const COMMAND_SETS = [

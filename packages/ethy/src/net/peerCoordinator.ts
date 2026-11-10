@@ -19,6 +19,7 @@ import {
 } from '@ethereumjs/util'
 
 import { getEthyClientVersion } from '../clientMeta.ts'
+import type { ETHEconomyDataManager } from '../economy/economyDataManager.ts'
 import type { NoticeBoard } from '../notify/board.ts'
 import {
   discoveryLooksBlocked,
@@ -157,6 +158,7 @@ export type StartPeerCoordinatorOptions = {
   fresh?: boolean
   /** Direct `enode://` dials after worker start (WP-06b). */
   connectEnodeUrls?: string[]
+  economy?: ETHEconomyDataManager
   /** Base-state download preference (WP-06c). */
   syncMode?: SyncMode
 }
@@ -402,6 +404,7 @@ export async function startPeerCoordinator(
           )
           deriveCapabilities(spine)
         },
+        economy: opts.economy,
         onPivotStep: (newPivot) => {
           snapStore?.updatePivotHead({
             blockNumber: newPivot.blockNumber,
@@ -526,6 +529,10 @@ export async function startPeerCoordinator(
         peerBusy: (peerId) => snapSync?.peerBusy(peerId) ?? false,
         onBalRefreshAccount: (hash) => snapSync?.enqueueAccountRefreshCursor(hash),
       })
+      const contractProgress = snapStore?.takeContractProgress()
+      if (contractProgress !== undefined) {
+        codeSync.restoreContractTotals(contractProgress)
+      }
       codeSync.start()
     }
     if (spine.syncTransport === 'ethy' && codeSync.pendingDone() && getSnapPeers().length === 0) {
@@ -989,6 +996,7 @@ export async function startPeerCoordinator(
       bundle,
       putServableBlock: (b) => client.putServableBlock(b),
       ...bundleBalHooks,
+      economy: opts.economy,
     })
     recordDiagnostic(spine, {
       subsystem: 'devp2p',
@@ -1092,6 +1100,7 @@ export async function startPeerCoordinator(
       bundle,
       putServableBlock: (b) => client.putServableBlock(b),
       ...bundleBalHooks,
+      economy: opts.economy,
     }).then(() => {
       if (healSeq === undefined) return
       healSeq.nextBlock += 1n
@@ -1375,6 +1384,7 @@ export async function startPeerCoordinator(
         ensureSnapSync(client)
         maybeMarkBaseSyncComplete()
       },
+      economy: opts.economy,
     })
     ethySwarm.start()
     setPhase(spine, 'SNAP_SYNCING')

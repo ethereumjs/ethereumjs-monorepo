@@ -42,7 +42,7 @@ const DIAL_TCP_TIMEOUT_MS = 5_000
 /** Maximum simultaneous outbound TCP dials in flight so we don't trigger firewall storms or flood maxPeers. */
 const MAX_CONCURRENT_PENDING_DIALS = 6
 /** After remote TOO_MANY_PEERS, skip this id until hold expires (not a process-lifetime LRU pin). */
-export const TOO_MANY_PEERS_DIAL_HOLD_MS = 180_000
+export const TOO_MANY_PEERS_DIAL_HOLD_MS = 60_000
 
 /** RLPx transport: encrypted TCP sessions, HELLO/capability negotiation, and sub-protocol multiplexing. */
 export class RLPx {
@@ -396,17 +396,14 @@ export class RLPx {
         code === 'ENETUNREACH' ||
         code === 'ETIMEDOUT' ||
         message.includes('Connection timeout')
-      // A later bond must be allowed to dial again. Reset and timeout stay banned
-      // until that ban expires; other dial failures leave the table so refresh can retry.
+      // A later bond must be allowed to dial again. Do not ban or evict the node
+      // from the UDP DPT k-bucket on a TCP failure — bootnodes and full peers still
+      // route UDP findneighbours even when their TCP RLPx port resets or times out!
       if (dialFailed && peer.id !== undefined) {
-        this._peersLRU.delete(bytesToUnprefixedHex(peer.id))
+        const key = bytesToUnprefixedHex(peer.id)
+        this._peersLRU.delete(key)
+        this._peerDialHoldUntil.set(key, Date.now() + TOO_MANY_PEERS_DIAL_HOLD_MS)
       }
-      if (this._dpt === null || !dialFailed) return
-      if (code === 'ECONNRESET' || message.includes('Connection timeout')) {
-        this._dpt.banPeer(peer, 60_000)
-        return
-      }
-      this._dpt.removePeer(peer)
     })
   }
 

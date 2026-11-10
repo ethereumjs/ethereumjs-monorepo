@@ -42,6 +42,10 @@ async function main(): Promise<void> {
     fresh: cli.fresh,
     dataDir: cli.dataDir,
     enableFlightRecorder: !cli.demo,
+    llmUrl: cli.llmUrl,
+    llmAllowRemote: cli.llmAllowRemote,
+    aiMemory: cli.aiMemory,
+    recordFixturePath: cli.recordFixturePath,
   })
 
   let coordinatorStop: (() => void) | undefined
@@ -50,9 +54,7 @@ async function main(): Promise<void> {
   let p2pError: string | undefined
   const bindPeerCoordinator = (handle: Awaited<ReturnType<typeof startPeerCoordinator>>) => {
     node.disconnectPeer = handle.disconnectPeer
-    ;(
-      node.intentEngine as import('../ai/deterministicEngine.ts').DeterministicIntentEngine
-    ).setDisconnectPeer(handle.disconnectPeer)
+    node.intentEngine.setDisconnectPeer?.(handle.disconnectPeer)
     coordinatorStop = handle.stop
   }
   const reportP2pStartError = (e: unknown) => {
@@ -94,6 +96,7 @@ async function main(): Promise<void> {
       connectEnodeUrls: cli.connectEnodeUrls.length > 0 ? cli.connectEnodeUrls : undefined,
       syncMode: cli.syncMode,
       witnessExecutionHeader,
+      economy: node.economy,
     })
       .then((handle) => {
         bindPeerCoordinator(handle)

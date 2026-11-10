@@ -18,10 +18,12 @@
     "addMerkleStateProofData",
     "addMerkleStateStorageProof",
     "consumeBAL",
+    "consumeBALBatch",
     "createFlatStateManager",
     "fromMerkleStateProof",
     "getMerkleStateProof",
     "getRPCStateProof",
+    "mergeBALs",
     "verifyMerkleStateProof"
   ]
 }

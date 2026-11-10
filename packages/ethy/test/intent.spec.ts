@@ -9,67 +9,67 @@ import { createSpine, setPhase } from '../src/spine/createSpine.ts'
 describe('[Ethy/Intent]: routing', () => {
   const engine = new DeterministicIntentEngine({ stateManager: createFlatStateManager() })
 
-  it('short slash /p routes like /peers', () => {
+  it('short slash /p routes like /peers', async () => {
     const spine = createSpine('sepolia', 11155111n)
     advanceDemo(spine, 5000)
-    const r = engine.handle({ text: '/p', spine })
+    const r = await engine.handle({ text: '/p', spine })
     assert.equal(r.widget.kind, 'table')
   })
 
-  it('/peers routes to peer table', () => {
+  it('/peers routes to peer table', async () => {
     const spine = createSpine('sepolia', 11155111n)
     advanceDemo(spine, 5000)
-    const r = engine.handle({ text: '/peers', spine })
+    const r = await engine.handle({ text: '/peers', spine })
     assert.equal(r.widget.kind, 'table')
     assert.include(r.widget.kind === 'table' ? (r.widget.title ?? '') : '', 'Peer')
   })
 
-  it('/ethy routes to ETHY overview', () => {
+  it('/ethy routes to ETHY overview', async () => {
     const spine = createSpine('sepolia', 11155111n)
     advanceDemo(spine, 5000)
-    const r = engine.handle({ text: '/ethy', spine })
+    const r = await engine.handle({ text: '/ethy', spine })
     assert.equal(r.widget.kind, 'table')
     assert.include(r.widget.kind === 'table' ? (r.widget.title ?? '') : '', 'ETHY')
   })
 
-  it('keyword "stalled" routes to bucket table', () => {
+  it('keyword "stalled" routes to bucket table', async () => {
     const spine = createSpine('sepolia', 11155111n)
     advanceDemo(spine, 5000)
-    const r = engine.handle({ text: 'why stalled', spine })
+    const r = await engine.handle({ text: 'why stalled', spine })
     assert.equal(r.widget.kind, 'table')
   })
 
-  it('/drop removes peer from spine', () => {
+  it('/drop removes peer from spine', async () => {
     const spine = createSpine('sepolia', 11155111n)
     advanceDemo(spine, 5000)
     assert.isTrue(spine.peers.has('a8f1'))
-    engine.handle({ text: '/drop a8f1', spine })
+    await engine.handle({ text: '/drop a8f1', spine })
     assert.isFalse(spine.peers.has('a8f1'))
   })
 
-  it('/range and /sample return account tables', () => {
+  it('/range and /sample return account tables', async () => {
     const spine = createSpine('sepolia', 11155111n)
     advanceDemo(spine, 5000)
-    const range = engine.handle({ text: '/range', spine })
+    const range = await engine.handle({ text: '/range', spine })
     assert.equal(range.widget.kind, 'table')
-    const sample = engine.handle({ text: '/sample', spine })
+    const sample = await engine.handle({ text: '/sample', spine })
     assert.equal(sample.widget.kind, 'table')
   })
 
-  it('/pause and /resume toggle snapPaused', () => {
+  it('/pause and /resume toggle snapPaused', async () => {
     const spine = createSpine('sepolia', 11155111n)
     assert.isFalse(spine.snapPaused)
-    engine.handle({ text: '/pause', spine })
+    await engine.handle({ text: '/pause', spine })
     assert.isTrue(spine.snapPaused)
-    engine.handle({ text: '/resume', spine })
+    await engine.handle({ text: '/resume', spine })
     assert.isFalse(spine.snapPaused)
   })
 
-  it('/reassign 0x3 resets bucket status', () => {
+  it('/reassign 0x3 resets bucket status', async () => {
     const spine = createSpine('sepolia', 11155111n)
     advanceDemo(spine, 5000)
     assert.equal(spine.snapBuckets[3]?.status, 'stalled')
-    engine.handle({ text: '/reassign 0x3', spine })
+    await engine.handle({ text: '/reassign 0x3', spine })
     assert.equal(spine.snapBuckets[3]?.status, 'pending')
   })
 })
@@ -77,22 +77,25 @@ describe('[Ethy/Intent]: routing', () => {
 describe('[Ethy/Intent]: gating', () => {
   const engine = new DeterministicIntentEngine({ stateManager: createFlatStateManager() })
 
-  it('/account while head locked returns key_value without throwing', () => {
+  it('/account while head locked returns key_value without throwing', async () => {
     const spine = createSpine('sepolia', 11155111n)
     setPhase(spine, 'SNAP_SYNCING')
-    const r = engine.handle({ text: '/account 0xabc', spine })
+    const r = await engine.handle({ text: '/account 0xabc', spine })
     assert.equal(r.widget.kind, 'key_value')
     assert.include(r.widget.kind === 'key_value' ? (r.widget.title ?? '') : '', 'locked')
   })
 
-  it('/help omits head commands while head locked', () => {
+  it('/help opens domain help while state locked', async () => {
     const spine = createSpine('sepolia', 11155111n)
     setPhase(spine, 'P2P_WARMUP')
-    const r = engine.handle({ text: '/help', spine })
-    assert.equal(r.widget.kind, 'table')
-    if (r.widget.kind === 'table') {
-      const flat = r.widget.rows.flat().join(' ')
-      assert.notInclude(flat, '/account')
+    const r = await engine.handle({ text: '/help', spine })
+    assert.equal(r.widget.kind, 'domain_help')
+    assert.equal(r.widget.kind === 'domain_help' ? r.widget.domain : '', 'state')
+    if (r.widget.kind === 'domain_help') {
+      const flat = r.widget.sections
+        .flatMap((s) => s.rows?.map((row) => row.command) ?? [])
+        .join(' ')
+      assert.include(flat, '/account')
     }
   })
 })

@@ -1,29 +1,105 @@
-import type { EthySpine, WidgetSpec } from '../spine/types.ts'
+import type { CapabilityId, DomainHelpSection, EthySpine, WidgetSpec } from '../spine/types.ts'
 
-export function buildHelpWidget(spine: EthySpine): WidgetSpec {
-  const rows: string[][] = [
-    ['/peers', 'Peer table (latency, caps, ETHY seed bits)'],
-    ['/ethy', 'ETHY/0 transport, local seed, serve counters'],
-    ['/buckets, /snap', '16-bucket snap progress'],
-    ['/diag', 'Diagnostic ring buffer'],
-    ['/cl', 'Consensus light client (BLS / finality)'],
-    ['/drop <peerId>', 'Remove peer (dev)'],
-    ['/reassign <bucket>', 'Reassign bucket (dev)'],
+const DOMAIN_LABEL: Record<CapabilityId, string> = {
+  state: 'State',
+  economy: 'Economy',
+  p2p: 'P2P',
+}
+
+function stateSections(): DomainHelpSection[] {
+  return [
+    {
+      title: 'State & Sync Inspection',
+      rows: [
+        { command: '/buckets', detail: '16-bucket progress, cursors & speeds' },
+        { command: '/range [hex]', detail: 'Browse synced accounts by hash prefix' },
+        { command: '/sample', detail: 'Top synced accounts ranked by ETH balance' },
+        { command: '/account <0x>', detail: 'Inspect account balance, nonce, code & BAL hits' },
+        { command: '/bal', detail: 'Latest block access list diff table' },
+        { command: '/cl', detail: 'Beacon light client finality & BLS %' },
+      ],
+    },
+    {
+      title: 'State Control',
+      rows: [
+        { command: '/pause · /resume', detail: 'Pause or resume range synchronization' },
+        { command: '/reassign <0x>', detail: 'Reassign a stalled bucket' },
+      ],
+    },
+    {
+      title: 'Ask in Plain English',
+      prompts: [
+        'Why is bucket 0x3 slower?',
+        'What changed in the latest BAL?',
+        'Show top ETH holders',
+      ],
+    },
   ]
-  if (spine.capabilities.head.status !== 'locked') {
-    rows.push(['/account <addr>', 'Inspect account at head'])
-    rows.push(['/bal', 'Latest block access list'])
-    rows.push(['/simulate', 'Simulate tx on head'])
-  }
-  const comment =
-    spine.capabilities.head.status === 'locked'
-      ? 'Head tools unlock after snap sync reaches the chain head.'
-      : 'All stage tools are available.'
-  return {
-    kind: 'table',
-    title: 'Commands',
-    headers: ['Command', 'Description'],
-    rows,
-    assistantComment: comment,
-  }
+}
+
+function economySections(): DomainHelpSection[] {
+  return [
+    {
+      title: 'Chain & Contract Intelligence',
+      rows: [
+        { command: '/economy', detail: '64-block fee market, TPS, ETH volume & top contracts' },
+        {
+          command: '/contract [addr|1..10]',
+          detail: 'Bytecode, proxy, ABI calls & events microscope',
+        },
+      ],
+    },
+    {
+      title: 'Ask in Plain English',
+      prompts: [
+        'Which contracts write the most storage?',
+        'Explain the hottest contract',
+        'How is base fee trending?',
+      ],
+    },
+  ]
+}
+
+function p2pSections(): DomainHelpSection[] {
+  return [
+    {
+      title: 'Swarm & Diagnostics',
+      rows: [
+        { command: '/peers', detail: 'Connected client table, caps, ETHY seed & latency' },
+        { command: '/ethy', detail: 'ETHY/0 swarm status & served chunks' },
+        { command: '/diag', detail: 'Flight-recorder diagnostic ring buffer' },
+        { command: '/drop <peerId>', detail: 'Disconnect a peer session' },
+      ],
+    },
+    {
+      title: 'Ask in Plain English',
+      prompts: [
+        'Compare Nethermind vs Geth peers',
+        'Who is the fastest peer?',
+        'Any handshake anomalies?',
+      ],
+    },
+  ]
+}
+
+export function parseHelpDomainArg(parts: string[]): CapabilityId | undefined {
+  const arg = parts[1]?.toLowerCase()
+  if (arg === 'state' || arg === 'economy' || arg === 'p2p') return arg
+  return undefined
+}
+
+export function buildDomainHelpWidget(spine: EthySpine, domain: CapabilityId): WidgetSpec {
+  const sections =
+    domain === 'state' ? stateSections() : domain === 'economy' ? economySections() : p2pSections()
+  void spine
+  return { kind: 'domain_help', domain, sections }
+}
+
+/** Legacy flat command table (tests / carousel). */
+export function buildHelpWidget(spine: EthySpine): WidgetSpec {
+  return buildDomainHelpWidget(spine, 'state')
+}
+
+export function helpDomainLabel(domain: CapabilityId): string {
+  return DOMAIN_LABEL[domain]
 }

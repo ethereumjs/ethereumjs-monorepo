@@ -57,9 +57,10 @@ type WorkerRequest =
   | {
       id: number
       kind: 'storage'
-      storageRoot: Uint8Array
       origin: Uint8Array
       payload: Uint8Array
+      accounts?: Array<{ accountHash: Uint8Array; storageRoot: Uint8Array }>
+      storageRoot?: Uint8Array
     }
 
 export function defaultSnapVerifyPoolSize(parallelism?: number): number {
@@ -125,13 +126,15 @@ export class SnapVerifyPool {
   }
 
   verifyStorageRange(opts: {
-    storageRoot: Uint8Array
+    storageRoot?: Uint8Array
+    accounts?: Array<{ accountHash: Uint8Array; storageRoot: Uint8Array }>
     origin: Uint8Array
     payload: Uint8Array
   }): Promise<StorageRangeVerifyResult> {
     if (this.inProcess) {
       return verifyStorageRangeJob({
         storageRoot: opts.storageRoot,
+        accounts: opts.accounts,
         origin: opts.origin,
         replyPayload: opts.payload,
       })
@@ -141,6 +144,7 @@ export class SnapVerifyPool {
       id: this.nextId++,
       kind: 'storage',
       storageRoot: opts.storageRoot,
+      accounts: opts.accounts,
       origin: opts.origin,
       payload,
     }) as Promise<StorageRangeVerifyResult>

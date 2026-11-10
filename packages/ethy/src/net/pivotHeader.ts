@@ -6,6 +6,7 @@ import {
   type PrefixedHexString,
   bytesToBigInt,
   bytesToHex,
+  equalsBytes,
   hexToBytes,
   intToUnpaddedBytes,
 } from '@ethereumjs/util'
@@ -265,13 +266,196 @@ export function parseReceiptsReplyPayload(
 export function parseFirstBalFromBlockAccessListsPayload(
   payload: Uint8Array,
 ): Uint8Array | undefined {
-  const decoded = RLP.decode(payload) as unknown
-  if (!Array.isArray(decoded) || decoded.length < 2) return undefined
-  const lists = decoded[1]
-  if (!Array.isArray(lists) || lists.length === 0) return undefined
+  const lists = parseBlockAccessListsBatchPayload(payload)
+  if (lists === null || lists.length === 0) return undefined
   const first = lists[0]
-  if (first instanceof Uint8Array) return first.length === 0 ? undefined : first
-  return undefined
+  return first !== undefined && first.length > 0 ? first : undefined
+}
+
+export type ParsedBatchHeader = {
+  number: bigint
+  hash: Uint8Array
+  parentHash: Uint8Array
+  stateRoot: Uint8Array
+  blockAccessListHash?: Uint8Array
+  headerRlp: Uint8Array
+}
+
+/** RLP payload for `GET_BLOCK_HEADERS` starting at `startBlock` with `maxHeaders` (≤ 32). */
+export function encodeGetBlockHeadersRangePayload(
+  ethVersion: number,
+  startBlock: bigint,
+  maxHeaders: number,
+  requestId = 1,
+): Uint8Array {
+  const reqHex = `0x${requestId.toString(16).padStart(2, '0')}`
+  const input = buildGetBlockHeadersFromJSON(
+    ethVersion,
+    {
+      requestId: reqHex,
+      block: `0x${startBlock.toString(16)}`,
+      max: maxHeaders,
+      skip: 0,
+      reverse: false,
+    },
+    (s) => hexToBytes(hx(s)),
+  )
+  return RLP.encode(input)
+}
+
+function headersRawFromBlockHeadersPayload(
+  ethVersion: number,
+  payload: Uint8Array,
+): unknown[] | null {
+  const decoded = RLP.decode(payload) as unknown
+  if (!Array.isArray(decoded)) return null
+  let headersRaw: unknown
+  if (ethUsesRequestId(ethVersion)) {
+    if (decoded.length < 2) return null
+    headersRaw = decoded[1]
+  } else {
+    headersRaw = decoded[0]
+  }
+  if (!Array.isArray(headersRaw) || headersRaw.length === 0) return null
+  return headersRaw
+}
+
+/** Decode a contiguous header batch; verifies parentHash chain from `priorTipHash` when set. */
+export function parseBlockHeadersBatchPayload(
+  ethVersion: number,
+  payload: Uint8Array,
+  startBlock: bigint,
+  chain: ChainConfig,
+  priorTipHash?: Uint8Array,
+): ParsedBatchHeader[] | null {
+  const headersRaw = headersRawFromBlockHeadersPayload(ethVersion, payload)
+  if (headersRaw === null) return null
+  const out: ParsedBatchHeader[] = []
+  let expectNumber = startBlock
+  let priorHash = priorTipHash
+  for (const raw of headersRaw) {
+    const headerRlp = raw instanceof Uint8Array ? raw : RLP.encode(raw as never)
+    const header = headerFromRaw(raw, chain)
+    if (header.number !== expectNumber) return null
+    const hash = header.hash()
+    if (priorHash !== undefined && !equalsBytes(header.parentHash, priorHash)) return null
+    out.push({
+      number: header.number,
+      hash,
+      parentHash: header.parentHash,
+      stateRoot: header.stateRoot,
+      blockAccessListHash: header.blockAccessListHash,
+      headerRlp,
+    })
+    priorHash = hash
+    expectNumber += 1n
+  }
+  return out.length > 0 ? out : null
+}
+
+export function encodeGetBlockAccessListsBatchPayload(
+  ethVersion: number,
+  blockHashes: Uint8Array[],
+  requestId = 4,
+): Uint8Array {
+  const id = intToUnpaddedBytes(requestId)
+  return RLP.encode([id, blockHashes] as never)
+}
+
+/** Parse all RLP block access lists in a batch reply (may be shorter than requested). */
+export function parseBlockAccessListsBatchPayload(payload: Uint8Array): Uint8Array[] | null {
+  const decoded = RLP.decode(payload) as unknown
+  if (!Array.isArray(decoded) || decoded.length < 2) return null
+  const lists = decoded[1]
+  if (!Array.isArray(lists)) return null
+  const out: Uint8Array[] = []
+  for (const item of lists) {
+    if (!(item instanceof Uint8Array)) return null
+    out.push(item)
+  }
+  return out
+}
+
+export function encodeGetBlockBodiesBatchPayload(
+  ethVersion: number,
+  blockHashes: Uint8Array[],
+  requestId = 2,
+): Uint8Array {
+  const id = intToUnpaddedBytes(requestId)
+  const inner = blockHashes
+  const body = ethUsesRequestId(ethVersion) ? [id, inner] : inner
+  return RLP.encode(body as never)
+}
+
+export function parseBlockBodiesBatchPayload(payload: Uint8Array): Uint8Array[] | null {
+  const decoded = RLP.decode(payload) as unknown
+  if (!Array.isArray(decoded) || decoded.length < 2) return null
+  const bodies = decoded[1]
+  if (!Array.isArray(bodies)) return null
+  const out: Uint8Array[] = []
+  for (const item of bodies) {
+    if (item instanceof Uint8Array) {
+      out.push(item)
+    } else if (item !== null && item !== undefined) {
+      out.push(RLP.encode(item as never))
+    } else {
+      return null
+    }
+  }
+  return out
+}
+
+export function encodeGetReceiptsBatchPayload(
+  ethVersion: number,
+  blockHashes: Uint8Array[],
+  requestId = 3,
+): Uint8Array {
+  const id = intToUnpaddedBytes(requestId)
+  const body =
+    ethVersion >= 70
+      ? [id, intToUnpaddedBytes(0), blockHashes]
+      : ethUsesRequestId(ethVersion)
+        ? [id, blockHashes]
+        : blockHashes
+  return RLP.encode(body as never)
+}
+
+export type ParsedReceiptsBatchItem = ParsedReceiptsReply
+
+/** Parse receipt lists aligned with a hash batch (eth/70+ last-item incomplete flag). */
+export function parseBlockReceiptsBatchPayload(
+  ethVersion: number,
+  payload: Uint8Array,
+): ParsedReceiptsBatchItem[] | null {
+  const decoded = RLP.decode(payload) as unknown
+  if (!Array.isArray(decoded)) return null
+  if (ethVersion >= 70) {
+    if (decoded.length < 3) return null
+    const flag = decoded[1]
+    const lists = decoded[2]
+    if (!(flag instanceof Uint8Array) || !Array.isArray(lists)) return null
+    const lastIncomplete = bytesToBigInt(flag) === 1n
+    const out: ParsedReceiptsBatchItem[] = []
+    for (let i = 0; i < lists.length; i++) {
+      const list = lists[i]
+      if (list === undefined) return null
+      out.push({
+        receiptsListRlp: RLP.encode(list as never),
+        lastBlockIncomplete: lastIncomplete && i === lists.length - 1,
+      })
+    }
+    return out
+  }
+  if (ethUsesRequestId(ethVersion)) {
+    if (decoded.length < 2) return null
+    const lists = decoded[1]
+    if (!Array.isArray(lists)) return null
+    return lists.map((list) => ({
+      receiptsListRlp: RLP.encode(list as never),
+      lastBlockIncomplete: false,
+    }))
+  }
+  return null
 }
 
 export { bytesToHex, EthMessageCodes }

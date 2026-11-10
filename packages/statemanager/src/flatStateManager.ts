@@ -18,7 +18,7 @@ import { keccak_256 } from '@noble/hashes/sha3.js'
 
 import { BinaryAccountArena } from './binaryAccountArena.ts'
 import { OriginalStorageCache } from './cache/originalStorageCache.ts'
-import { consumeBAL as consumeBALUtil } from './consumeBAL.ts'
+import { consumeBAL as consumeBALUtil, mergeBALs } from './consumeBAL.ts'
 import { modifyAccountFields } from './util.ts'
 
 import type {
@@ -518,6 +518,18 @@ export class FlatStateManager implements StateManagerInterface {
       }
     }
     return consumeBALUtil(this, bal, optsOrExpectedStateRoot)
+  }
+
+  async consumeBALBatch(
+    accessLists: BALJSONBlockAccessList[],
+    optsOrExpectedStateRoot?: Uint8Array | ConsumeBALOptions,
+  ): Promise<void> {
+    if (accessLists.length === 0) return
+    if (accessLists.length === 1) {
+      return this.consumeBAL(accessLists[0]!, optsOrExpectedStateRoot)
+    }
+    const merged = mergeBALs(accessLists)
+    return this.consumeBAL(merged, optsOrExpectedStateRoot)
   }
 
   getStateRoot(): Promise<Uint8Array> {

@@ -163,6 +163,7 @@ export class DPT {
       ethyDiscoveryTag: options.ethyDiscoveryTag,
     })
     this._server.events.once('listening', () => {
+      this._server.syncEndpointFromSocket(options.endpoint?.tcpPort ?? 0)
       this.events.emit('listening')
       if (this._shouldFindNeighbours && this._storedBootstrapNodes.length > 0) {
         const seeds = this._storedBootstrapNodes.splice(0, 8)
@@ -366,13 +367,24 @@ export class DPT {
         })
       }
       // When a Common instance is set, verify the neighbour's EIP-868 eth forkHash via ENRRequest
-      // before emitting peer:new to RLPx so alien chains (Mainnet/Polygon/BSC) never touch TCP!
+      // before emitting peer:new to RLPx so alien chains never touch TCP. If we are behind NAT
+      // and the remote drops ENRRequest (missing reverse ping bond), fall back to TCP dial after 600ms
+      // if the peer was not banned by a mismatched ENRResponse.
       if (
         this._common !== undefined &&
         obj.chainDirectory !== true &&
         obj.ethForkId === undefined
       ) {
         this._server.requestEnr(peer)
+        if (peer.id !== undefined && typeof peer.tcpPort === 'number' && peer.tcpPort > 0) {
+          const idHex = bytesToUnprefixedHex(peer.id)
+          const timer = setTimeout(() => {
+            if (this._discoveryPaused || this._banlist.has(peer)) return
+            if (this._confirmedPeers.has(idHex)) return
+            this.events.emit('peer:new', peer)
+          }, 600)
+          timer.unref?.()
+        }
       } else {
         this.events.emit('peer:new', peer)
       }

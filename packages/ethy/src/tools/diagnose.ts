@@ -1,4 +1,6 @@
-import type { EthySpine, PeerTelemetry, WidgetSpec } from '../spine/types.ts'
+import { ensureBucketSubRanges } from '../spine/buckets.ts'
+import { DIAGNOSTIC_RING_CAPACITY } from '../spine/diagnostics.ts'
+import type { DebugSectionSpec, EthySpine, PeerTelemetry, WidgetSpec } from '../spine/types.ts'
 
 function countSeedBits16(mask: number): number {
   let n = 0
@@ -71,21 +73,65 @@ export function peersTableWidget(spine: EthySpine): WidgetSpec {
     title: 'Peer health',
     headers: ['Peer', 'Client', 'Caps', 'Ethy', 'Avg ms', 'Last issue'],
     rows,
-    assistantComment: (() => {
-      const s = spine.serving
-      const window =
-        s?.earliestBlock !== undefined && s.latestBlock !== undefined
-          ? `Window #${s.earliestBlock}..#${s.latestBlock}`
-          : 'Window —'
-      const breakdown =
-        s === undefined
-          ? 'Serve —'
-          : `Serve h:${s.headersServed} b:${s.bodiesServed} r:${s.receiptsServed} bal:${s.accessListsServed} ethy:${s.ethyChunksServed}ch/${s.ethyBalBlocksServed}blk`
-      const enode = spine.discovery?.localEnode
-      const enodeLine = enode !== undefined ? ` Local enode: ${enode}.` : ''
-      return `${spine.peers.size} connected peers on ${spine.network}. ${breakdown}. ${window}.${enodeLine}`
-    })(),
+    debugPage: peersDebugSections(spine),
   }
+}
+
+function peersDebugSections(spine: EthySpine): DebugSectionSpec[] {
+  const d = spine.discovery
+  const s = spine.serving
+  const discovery: DebugSectionSpec = {
+    title: 'Discovery funnel',
+    entries:
+      d === undefined
+        ? [{ key: 'Status', value: 'Metrics unavailable' }]
+        : [
+            { key: 'DPT table', value: String(d.tablePeers) },
+            { key: 'RLPx dials', value: String(d.rlpx.dials) },
+            { key: 'Connected', value: String(d.rlpx.connected) },
+            { key: 'STATUS ok', value: String(d.rlpx.statusOk) },
+            {
+              key: 'Slot rejects',
+              value: String(d.rlpx.handshakeRejects?.slots ?? 0),
+            },
+          ],
+  }
+  const serving: DebugSectionSpec = {
+    title: 'Serving telemetry',
+    entries:
+      s === undefined
+        ? [{ key: 'Serve', value: '—' }]
+        : [
+            { key: 'Headers', value: String(s.headersServed) },
+            { key: 'Bodies', value: String(s.bodiesServed) },
+            { key: 'Receipts', value: String(s.receiptsServed) },
+            { key: 'BALs', value: String(s.accessListsServed) },
+            {
+              key: 'ETHY',
+              value: `${s.ethyChunksServed ?? 0} ch / ${s.ethyBalBlocksServed ?? 0} blk`,
+            },
+            {
+              key: 'Window',
+              value:
+                s.earliestBlock !== undefined && s.latestBlock !== undefined
+                  ? `#${s.earliestBlock}..#${s.latestBlock}`
+                  : '—',
+            },
+          ],
+  }
+  const identity: DebugSectionSpec = {
+    title: 'Local identity',
+    entries: [
+      { key: 'Network', value: spine.network },
+      { key: 'Peers', value: String(spine.peers.size) },
+      { key: 'Enode', value: spine.discovery?.localEnode ?? '—' },
+      {
+        key: 'Logs',
+        value: spine.logsDirPath !== undefined ? `${spine.logsDirPath}/ethy.log` : '—',
+      },
+    ],
+  }
+  return [discovery, serving, identity]
 }
 
 export function bucketsTableWidget(spine: EthySpine): WidgetSpec {
@@ -97,17 +143,52 @@ export function bucketsTableWidget(spine: EthySpine): WidgetSpec {
     b.lastStallReason ?? '—',
   ])
   const stalled = spine.snapBuckets.find((b) => b.status === 'stalled')
-  let comment = `Snap phase: ${spine.phase}. ${spine.totalAccountsSynced.toLocaleString()} accounts synced.`
-  if (stalled) {
-    const diag = spine.diagnosticRingBuffer.find((e) => e.bucketIndex === stalled.index)
-    comment = `Bucket ${stalled.prefix} stalled: ${stalled.lastStallReason ?? diag?.message ?? 'unknown'}. ${comment}`
-  }
+  const cursorRows = spine.snapBuckets.map((b) => {
+    const ranges = ensureBucketSubRanges(b)
+    const inFlight = ranges.filter((c) => c.inFlightReqKey !== undefined).length
+    const verifying = ranges.reduce((a, c) => a + (c.verifyingCount ?? 0), 0)
+    return `${b.prefix}: ${ranges.length} cursors · ${inFlight} in-flight · ${verifying} verify`
+  })
   return {
     kind: 'table',
     title: 'Snap buckets (0x0..0xf)',
     headers: ['Bucket', 'Status', 'Peer', 'Accounts', 'Issue'],
     rows,
-    assistantComment: comment,
+    debugPage: [
+      {
+        title: 'Cursors',
+        entries: cursorRows.map((line, i) => ({
+          key: spine.snapBuckets[i]?.prefix ?? String(i),
+          value: line.split(': ')[1] ?? line,
+        })),
+      },
+      {
+        title: 'Sync summary',
+        entries: [
+          { key: 'Phase', value: spine.phase },
+          {
+            key: 'Accounts',
+            value: spine.totalAccountsSynced.toLocaleString('en-US'),
+          },
+          {
+            key: 'Code',
+            value: `${spine.codesSynced}/${spine.codesTotal ?? spine.codesSynced + spine.codesQueued}`,
+          },
+          {
+            key: 'Storage acc',
+            value: `${spine.storageAccountsSynced ?? 0}/${spine.storageAccountsTotal ?? 0}`,
+          },
+          ...(stalled
+            ? [
+                {
+                  key: 'Stalled',
+                  value: `${stalled.prefix}: ${stalled.lastStallReason ?? 'unknown'}`,
+                },
+              ]
+            : []),
+        ],
+      },
+    ],
   }
 }
 
@@ -123,15 +204,38 @@ export function diagnosticsTableWidget(spine: EthySpine): WidgetSpec {
   if (rows.length === 0) {
     rows.push(['—', '—', '—', '—', 'No diagnostics recorded'])
   }
+  const d = spine.discovery
+  const discoveryEntries =
+    d === undefined
+      ? [{ key: 'Discovery', value: 'Metrics unavailable' }]
+      : [
+          { key: 'Boot ok', value: `${d.bootstrap.ok}/${d.bootstrap.attempts}` },
+          { key: 'DNS added', value: `${d.dns.peersAdded}/${d.dns.attempts}` },
+          { key: 'RLPx status', value: String(d.rlpx.statusOk) },
+          {
+            key: 'Ring',
+            value: `${spine.diagnosticRingBuffer.length}/${DIAGNOSTIC_RING_CAPACITY}`,
+          },
+        ]
   return {
     kind: 'table',
     title: 'Diagnostic ring (latest)',
     headers: ['Time', 'Subsystem', 'Sev', 'Peer', 'Message'],
     rows,
-    footer: 'discovery',
-    assistantComment:
-      spine.logsDirPath !== undefined
-        ? `Flight recorder active: ${spine.logsDirPath}/{ethy.log,errors.log,events.jsonl}`
-        : undefined,
+    debugPage: [
+      { title: 'Discovery', entries: discoveryEntries },
+      {
+        title: 'Flight recorder',
+        entries: [
+          {
+            key: 'Path',
+            value:
+              spine.logsDirPath !== undefined
+                ? `${spine.logsDirPath}/{ethy.log,errors.log,events.jsonl}`
+                : '—',
+          },
+        ],
+      },
+    ],
   }
 }

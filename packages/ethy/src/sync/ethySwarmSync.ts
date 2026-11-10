@@ -10,6 +10,7 @@ import {
   intToUnpaddedBytes,
 } from '@ethereumjs/util'
 
+import type { ETHEconomyDataManager } from '../economy/economyDataManager.ts'
 import { activeHardfork, chainConfigForNetwork } from '../net/chainHardfork.ts'
 import { peerIdToBytes } from '../net/pivotHeader.ts'
 import type { SnapPivotStore } from '../persist/snapStore.ts'
@@ -39,6 +40,7 @@ export type EthySwarmSyncOpts = {
   onBucketDone?: (bucketIndex: number) => void
   onAccountsComplete?: () => void
   onSwarmComplete?: () => void
+  economy?: ETHEconomyDataManager
 }
 
 type ManifestEntry = {
@@ -483,6 +485,12 @@ export class EthySwarmSynchronizer {
           pushBalWindow(this.opts.spine, block.blockNumber, applied.balJson)
           this.opts.spine.appliedBalCount = (this.opts.spine.appliedBalCount ?? 0) + 1
         }
+        this.opts.economy?.noteBundle({
+          blockNumber: block.blockNumber,
+          headerRlp: block.headerRlp,
+          balJson: applied.balJson,
+          balRlp: block.balRlp,
+        })
         const fields = headFieldsFromHeaderRlp(block.headerRlp, chain, hardfork)
         const pivot = this.opts.spine.pivotBlockNumber
         if (

@@ -36,7 +36,7 @@ export function tooManyPeersHoldMs(vip: boolean, streak: number): number {
 export const PEER_BOOK_STARTUP_DIALS = 6
 /** Backoff cap for peers with no successful snap responses (WP-04a). */
 export const PEER_TOO_MANY_PEERS_HOLD_MAX_MS = 5 * 60 * 1000
-export const PEER_TOO_MANY_PEERS_VIP_CAP_MS = 120 * 1000
+export const PEER_TOO_MANY_PEERS_VIP_CAP_MS = 45 * 1000
 export const PEER_STALE_SUCCESS_MS = 7 * 24 * 60 * 60 * 1000
 export const PEER_RESET_REMOVE_STREAK = 3
 
@@ -66,11 +66,12 @@ function lastSuccessAt(row: PeerBookRow): number | undefined {
   return m > 0 ? m : undefined
 }
 
-/** Order rows for startup redial: snap success, then STATUS-only; skip dial hold. */
+/** Order rows for startup redial: snap success, then STATUS-only, then HELLO-proven snapCapable; skip dial hold. */
 export function rankPeerRows(rows: Iterable<PeerBookRow>, now: number): PeerBookRow[] {
   const tier = (r: PeerBookRow): number => {
-    if (r.lastSnapSuccessAt !== undefined && r.lastSnapSuccessAt > 0) return 2
-    if (r.lastStatusAt !== undefined && r.lastStatusAt > 0) return 1
+    if (r.lastSnapSuccessAt !== undefined && r.lastSnapSuccessAt > 0) return 3
+    if (r.lastStatusAt !== undefined && r.lastStatusAt > 0) return 2
+    if (r.snapCapable === true) return 1
     return 0
   }
   return [...rows]
@@ -87,7 +88,7 @@ export function rankPeerRows(rows: Iterable<PeerBookRow>, now: number): PeerBook
       const ta = tier(a)
       const tb = tier(b)
       if (ta !== tb) return tb - ta
-      if (ta === 2) {
+      if (ta === 3) {
         const aAff = clientAffinityRank(a.clientFamily)
         const bAff = clientAffinityRank(b.clientFamily)
         if (aAff !== bAff) return aAff - bAff
@@ -98,7 +99,7 @@ export function rankPeerRows(rows: Iterable<PeerBookRow>, now: number): PeerBook
           return b.snapResponsesOk - a.snapResponsesOk
         }
       }
-      if (ta === 1) {
+      if (ta === 2 || ta === 1) {
         const aBad = a.snapTimeouts > 0 && a.snapResponsesOk === 0 ? 1 : 0
         const bBad = b.snapTimeouts > 0 && b.snapResponsesOk === 0 ? 1 : 0
         if (aBad !== bBad) return aBad - bBad
@@ -189,13 +190,23 @@ export class PeerBookStore {
         this._dirty = true
         continue
       }
-      // Clear expired dial holds on fresh boot so previous-session TOO_MANY_PEERS holds don't block warm start
-      if (row.dialAfter > now && row.snapResponsesOk > 0) {
-        row.dialAfter = 0
+      // Clear previous-session dial holds and streaks on fresh boot so proven/snapCapable peers start with fast 15s retries
+      if (row.snapResponsesOk > 0 || row.snapCapable === true) {
+        if (row.dialAfter > now) row.dialAfter = 0
+        if ((row.tooManyPeersStreak ?? 0) > 0) row.tooManyPeersStreak = 0
+        if (row.resetStreak > 0) row.resetStreak = 0
         this._dirty = true
       }
       const success = lastSuccessAt(row)
-      if (success === undefined || now - success > PEER_STALE_SUCCESS_MS) {
+      if (success === undefined) {
+        if (row.snapCapable === true && peerBookDialEligible(row)) {
+          continue
+        }
+        this._rows.delete(id)
+        this._dirty = true
+        continue
+      }
+      if (now - success > PEER_STALE_SUCCESS_MS) {
         this._rows.delete(id)
         this._dirty = true
       }
@@ -243,12 +254,7 @@ export class PeerBookStore {
   /** VIP snap peers eligible for gentle redial (WP-04a). */
   vipDialCandidates(now: number, limit = PEER_BOOK_STARTUP_DIALS): PeerInfo[] {
     const ranked = rankPeerRows(this._rows.values(), now)
-    const snapProven = ranked.filter((row) => row.snapResponsesOk > 0)
-    const statusOnly = ranked.filter(
-      (row) => row.snapResponsesOk <= 0 && (row.lastStatusAt ?? 0) > 0,
-    )
-    const ordered = [...snapProven, ...statusOnly]
-    return ordered.slice(0, limit).map((row) => this._rowToPeerInfo(row))
+    return ranked.slice(0, limit).map((row) => this._rowToPeerInfo(row))
   }
 
   private _rowToPeerInfo(row: PeerBookRow): PeerInfo {
@@ -301,7 +307,10 @@ export class PeerBookStore {
     if (row === undefined) return
     row.lastSnapSuccessAt = now
     row.snapResponsesOk++
+    row.snapCapable = true
     row.dialAfter = 0
+    row.resetStreak = 0
+    row.tooManyPeersStreak = 0
     this.schedulePersist()
   }
 
@@ -365,7 +374,12 @@ export class PeerBookStore {
 
     if (resetLike) {
       row.resetStreak++
-      if (row.resetStreak >= PEER_RESET_REMOVE_STREAK) {
+      // Never delete a proven snap/1 peer or a HELLO-verified snapCapable peer on ECONNRESET:
+      // busy Nethermind/Geth nodes often reject inbound TCP connects with RST when their slots are full!
+      if (row.snapResponsesOk > 0 || row.snapCapable === true) {
+        const vip = row.snapResponsesOk > 0
+        row.dialAfter = now + tooManyPeersHoldMs(vip, row.resetStreak - 1)
+      } else if (row.resetStreak >= PEER_RESET_REMOVE_STREAK) {
         this._rows.delete(id)
       }
       this.schedulePersist()

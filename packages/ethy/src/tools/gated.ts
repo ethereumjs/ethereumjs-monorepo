@@ -1,3 +1,4 @@
+import { headInspectUnlocked } from '../spine/headInspect.ts'
 import type { EthySpine, WidgetSpec } from '../spine/types.ts'
 
 export function headLockedWidget(toolName: string, spine: EthySpine): WidgetSpec {
@@ -6,10 +7,10 @@ export function headLockedWidget(toolName: string, spine: EthySpine): WidgetSpec
     title: `${toolName} (locked)`,
     entries: [
       { key: 'Phase', value: spine.phase },
-      { key: 'Head capability', value: spine.capabilities.head.status },
+      { key: 'State sync', value: spine.capabilities.state.status },
     ],
     assistantComment:
-      'Finish snap sync and reach HEAD_FOLLOWING before account, BAL, or simulation tools unlock.',
+      'BAL stream or head following must be active before account, BAL, or simulation tools unlock.',
   }
 }
 

@@ -1,7 +1,13 @@
 import type { WorkerDiscoverySnapshot, WorkerServingSnapshot } from '@ethereumjs/devp2p'
 import type { BALJSONBlockAccessList } from '@ethereumjs/util'
 
-export type CapabilityId = 'p2p' | 'snap' | 'head' | 'ai'
+import type { EconomySnapshot } from '../economy/types.ts'
+
+export type CapabilityId = 'state' | 'economy' | 'p2p'
+
+export const DOMAIN_ORDER: readonly CapabilityId[] = ['state', 'economy', 'p2p']
+
+export const MAX_VIEW_HISTORY = 12
 
 export type EthyPhase = 'BOOTING' | 'P2P_WARMUP' | 'SNAP_SYNCING' | 'BAL_CATCHUP' | 'HEAD_FOLLOWING'
 
@@ -107,6 +113,7 @@ export type PivotBridgingProgress = {
   fromBlock: bigint
   currentBlock: bigint
   targetBlock: bigint
+  blocksPerSec?: number
 }
 
 /**
@@ -152,6 +159,8 @@ export interface EthySpine {
     fromBlock: bigint
     applied: number
     total: number
+    /** Live catch-up throughput for Node Pulse (WP-07e). */
+    blocksPerSec?: number
   }
   /** Rolling pivot steps completed during snap (WP-04k). */
   pivotStepsCompleted?: number
@@ -161,10 +170,9 @@ export interface EthySpine {
   /** One-shot celebration payload for Zone 2 after snap completes (WP-04k). */
   headFlipSummary?: WidgetSpec
   capabilities: {
+    state: CapabilityState
+    economy: CapabilityState
     p2p: CapabilityState
-    snap: CapabilityState
-    head: CapabilityState
-    ai: CapabilityState
   }
   peers: Map<string, PeerTelemetry>
   /** Latest worker discovery counters (live P2P only). */
@@ -181,14 +189,27 @@ export interface EthySpine {
   /** Smoothed ETA in minutes for the active snap sync stage (refreshed every ~5s). */
   snapEtaMinutes?: number
   codesSynced: number
+  /** Total unique contract code hashes discovered (WP-06f). */
+  codesTotal?: number
   /** Code hashes still queued or in flight. */
   codesQueued: number
   storageSlotsSynced: number
+  /** Storage-bearing accounts completed (WP-06f). */
+  storageAccountsSynced?: number
+  /** Total storage-bearing accounts discovered (WP-06f). */
+  storageAccountsTotal?: number
   /** Storage accounts still queued or in flight. */
   storageQueued: number
+  /** Combined code + storage account completion rate during code/storage phase (WP-06f). */
+  contractsPerSec?: number
+  storageEtaMinutes?: number
   /** Rolling BAL summaries for `/bal` and `/account` (newest first, max 64). */
   balWindow: BalWindowEntry[]
+  /** Live Ethereum economy lens (WP-07a). */
+  economy?: EconomySnapshot
   snapPaused: boolean
+  /** When true, deriveCapabilities shows AI pill as Local LLM (WP-07c pulse). */
+  llmPulseReady?: boolean
   diagnosticRingBuffer: DiagnosticEvent[]
   /** Consensus light client witness (WP-05b). */
   clStatus?: 'verified' | 'syncing' | 'p2p_only' | 'mismatch'
@@ -209,11 +230,48 @@ export interface EthySpine {
   logsDirPath?: string
 }
 
+export type DebugSectionSpec = {
+  title: string
+  entries: Array<{ key: string; value: string }>
+}
+
+export type InteractionPage = 'main' | 'debug'
+
+export type DomainHelpSection = {
+  title: string
+  rows?: Array<{ command: string; detail: string }>
+  prompts?: string[]
+}
+
+export type InteractionHistoryEntry =
+  | {
+      kind: 'slash'
+      command: string
+      label: string
+      page: InteractionPage
+    }
+  | {
+      kind: 'ai'
+      prompt: string
+      viewTitle: string
+      widget: WidgetSpec
+      overviewNote?: string
+      page: InteractionPage
+    }
+
+export interface AiOverviewSections {
+  state?: string
+  economy?: string
+  p2p?: string
+  focusNote?: { domain: CapabilityId; text: string }
+}
+
 export type WidgetSpec =
   | {
       kind: 'onboarding_carousel'
       lines: Array<{ group: 'P2P' | 'SNAP' | 'HEAD'; command: string; prose: string }>
       assistantComment?: string
+      debugPage?: DebugSectionSpec[]
     }
   | {
       kind: 'table'
@@ -221,22 +279,46 @@ export type WidgetSpec =
       headers: string[]
       rows: string[][]
       assistantComment?: string
-      /** Live P2P counters, drawn in reserved rows under the table. */
+      /** @deprecated WP-07b: use `debugPage` instead of footer discovery rows. */
       footer?: 'discovery'
+      preface?: Array<{ key: string; value: string }>
+      secondaryTable?: {
+        title?: string
+        headers: string[]
+        rows: string[][]
+      }
+      debugPage?: DebugSectionSpec[]
     }
   | {
       kind: 'key_value'
       title?: string
       entries: Array<{ key: string; value: string }>
       assistantComment?: string
+      debugPage?: DebugSectionSpec[]
+    }
+  | {
+      kind: 'domain_help'
+      domain: CapabilityId
+      sections: DomainHelpSection[]
+      debugPage?: DebugSectionSpec[]
     }
 
 export interface TuiViewState {
   activeDomain: CapabilityId
   activeWidget: WidgetSpec | null
+  interactionPage: InteractionPage
+  /** Three-domain situational prose for the full-height AI box (refreshed in session). */
+  aiOverviewSections?: AiOverviewSections
+  showingHelp: boolean
+  viewHistory: InteractionHistoryEntry[]
+  viewHistoryIndex: number
   promptDraft: string
   carouselTick: number
   history: string[]
   historyIndex: number
   shouldExit: boolean
+  /** Last command or prompt that opened the interaction view (title chrome). */
+  interactionLabel?: string
+  /** LLM-suggested short title for NL queries (WP-07c). */
+  interactionTitle?: string
 }

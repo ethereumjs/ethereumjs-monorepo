@@ -34,12 +34,22 @@ export type ProvenChunkVerifyResult = {
   rangeOrigin?: Uint8Array
 }
 
+export type StorageAccountVerifyResult = {
+  accountIndex: number
+  ok: boolean
+  hasRight: boolean
+  lastKey?: Uint8Array
+  reason?: string
+  slots?: Array<{ slotHash: Uint8Array; value: Uint8Array }>
+}
+
 export type StorageRangeVerifyResult = {
   ok: boolean
   hasRight: boolean
   lastKey?: Uint8Array
   reason?: string
   slots?: Array<{ slotHash: Uint8Array; value: Uint8Array }>
+  perAccount?: StorageAccountVerifyResult[]
 }
 
 function errorText(err: unknown): string {
@@ -198,40 +208,31 @@ export async function verifyProvenAccountChunkJob(
   }
 }
 
-/** CPU-heavy STORAGE_RANGES verify (safe to run off the main thread). */
-export async function verifyStorageRangeJob(
-  opts: {
-    storageRoot: Uint8Array
-    replyPayload: Uint8Array
-    origin: Uint8Array
-  },
-  useKeyHashingFunction: HashKeysFunction = ethyKeccak256,
-): Promise<StorageRangeVerifyResult> {
-  await initEthyKeccak()
-  let decoded: unknown[]
-  try {
-    decoded = RLP.decode(opts.replyPayload) as unknown[]
-  } catch {
-    return { ok: false, hasRight: false, reason: 'storage RLP decode failed' }
-  }
-  const ranges = decoded[1] as unknown
-  const proofRaw = decoded[2]
-  if (!Array.isArray(ranges) || ranges.length === 0) {
-    return { ok: true, hasRight: false }
-  }
-  const slotsNested = ranges[0] as Array<[unknown, unknown]>
+function decodeSlotList(slotsNested: unknown):
+  | {
+      ok: true
+      keys: Uint8Array[]
+      values: Uint8Array[]
+      decodedSlots: Array<{ slotHash: Uint8Array; value: Uint8Array }>
+    }
+  | { ok: false; reason: string } {
   if (!Array.isArray(slotsNested)) {
-    return { ok: false, hasRight: false, reason: 'storage slots shape invalid' }
+    return { ok: false, reason: 'storage slots shape invalid' }
   }
   const keys: Uint8Array[] = []
   const values: Uint8Array[] = []
   const decodedSlots: Array<{ slotHash: Uint8Array; value: Uint8Array }> = []
-  for (const [slotHashRaw, slotValueRlp] of slotsNested) {
+  for (const row of slotsNested) {
+    if (!Array.isArray(row) || row.length < 2) {
+      return { ok: false, reason: 'storage slot row invalid' }
+    }
+    const slotHashRaw = row[0]
+    const slotValueRlp = row[1]
     if (!(slotHashRaw instanceof Uint8Array) || !(slotValueRlp instanceof Uint8Array)) {
-      return { ok: false, hasRight: false, reason: 'storage slot not bytes' }
+      return { ok: false, reason: 'storage slot not bytes' }
     }
     if (slotValueRlp.length === 0) {
-      return { ok: false, hasRight: false, reason: 'empty storage slot RLP' }
+      return { ok: false, reason: 'empty storage slot RLP' }
     }
     keys.push(slotHashRaw)
     values.push(slotValueRlp)
@@ -240,22 +241,30 @@ export async function verifyStorageRangeJob(
       const dec = RLP.decode(slotValueRlp)
       inner = dec instanceof Uint8Array ? dec : new Uint8Array(0)
     } catch {
-      return { ok: false, hasRight: false, reason: 'storage slot inner decode failed' }
+      return { ok: false, reason: 'storage slot inner decode failed' }
     }
     decodedSlots.push({ slotHash: slotHashRaw, value: inner })
   }
-  let proof: Uint8Array[] | null = null
-  if (Array.isArray(proofRaw)) {
-    proof = proofRaw.map((n) => {
-      if (!(n instanceof Uint8Array)) throw new Error('proof node not bytes')
-      return n
-    })
+  return { ok: true, keys, values, decodedSlots }
+}
+
+async function verifyAccountSlotList(
+  storageRoot: Uint8Array,
+  origin: Uint8Array,
+  keys: Uint8Array[],
+  values: Uint8Array[],
+  proof: Uint8Array[] | null,
+  isLastInReply: boolean,
+  useKeyHashingFunction: HashKeysFunction,
+): Promise<{ ok: true; hasRight: boolean } | { ok: false; reason: string }> {
+  if (keys.length === 0) {
+    return { ok: true, hasRight: false }
   }
   try {
     let hasRight: boolean
-    if (proof !== null && proof.length === 0 && keys.length > 0) {
+    if (proof !== null && proof.length === 0) {
       hasRight = await verifyMerkleRangeProof(
-        opts.storageRoot,
+        storageRoot,
         null,
         null,
         keys,
@@ -263,11 +272,11 @@ export async function verifyStorageRangeJob(
         null,
         useKeyHashingFunction,
       )
-    } else if (proof !== null && proof.length > 0 && keys.length > 0) {
+    } else if (isLastInReply && proof !== null && proof.length > 0) {
       const lastKey = keys[keys.length - 1]!
       hasRight = await verifyMerkleRangeProof(
-        opts.storageRoot,
-        opts.origin,
+        storageRoot,
+        origin,
         lastKey,
         keys,
         values,
@@ -275,15 +284,134 @@ export async function verifyStorageRangeJob(
         useKeyHashingFunction,
       )
     } else {
-      return { ok: true, hasRight: false }
+      hasRight = await verifyMerkleRangeProof(
+        storageRoot,
+        null,
+        null,
+        keys,
+        values,
+        null,
+        useKeyHashingFunction,
+      )
     }
-    return { ok: true, hasRight, lastKey: keys[keys.length - 1], slots: decodedSlots }
+    return { ok: true, hasRight }
   } catch (err: unknown) {
-    return {
-      ok: false,
-      hasRight: false,
-      reason: err instanceof Error ? err.message : String(err),
+    return { ok: false, reason: errorText(err) }
+  }
+}
+
+/** CPU-heavy STORAGE_RANGES verify (safe to run off the main thread). */
+export async function verifyStorageRangeJob(
+  opts: {
+    storageRoot?: Uint8Array
+    accounts?: Array<{ accountHash: Uint8Array; storageRoot: Uint8Array }>
+    replyPayload: Uint8Array
+    origin: Uint8Array
+  },
+  useKeyHashingFunction: HashKeysFunction = ethyKeccak256,
+): Promise<StorageRangeVerifyResult> {
+  await initEthyKeccak()
+  const accounts =
+    opts.accounts ??
+    (opts.storageRoot !== undefined
+      ? [{ accountHash: new Uint8Array(32), storageRoot: opts.storageRoot }]
+      : [])
+  let decoded: unknown[]
+  try {
+    decoded = RLP.decode(opts.replyPayload) as unknown[]
+  } catch {
+    return { ok: false, hasRight: false, reason: 'storage RLP decode failed' }
+  }
+  const ranges = decoded[1] as unknown
+  const proofRaw = decoded[2]
+  if (!Array.isArray(ranges)) {
+    return { ok: false, hasRight: false, reason: 'storage ranges not array' }
+  }
+  let proof: Uint8Array[] | null = null
+  if (Array.isArray(proofRaw)) {
+    try {
+      proof = proofRaw.map((n) => {
+        if (!(n instanceof Uint8Array)) throw new Error('proof node not bytes')
+        return n
+      })
+    } catch (err: unknown) {
+      return { ok: false, hasRight: false, reason: errorText(err) }
     }
+  }
+  if (ranges.length === 0) {
+    if (proof !== null && proof.length > 0 && accounts.length > 0) {
+      try {
+        await verifyMerkleRangeProof(
+          accounts[0]!.storageRoot,
+          opts.origin,
+          null,
+          [],
+          [],
+          proof,
+          useKeyHashingFunction,
+        )
+        return {
+          ok: true,
+          hasRight: false,
+          perAccount: [{ accountIndex: 0, ok: true, hasRight: false, slots: [] }],
+        }
+      } catch (err: unknown) {
+        return {
+          ok: true,
+          hasRight: false,
+          perAccount: [{ accountIndex: 0, ok: false, hasRight: false, reason: errorText(err) }],
+        }
+      }
+    }
+    return { ok: false, hasRight: false, reason: 'empty storage range without proof' }
+  }
+  const perAccount: StorageAccountVerifyResult[] = []
+  let flightHasRight = false
+  for (let i = 0; i < ranges.length; i++) {
+    const parsed = decodeSlotList(ranges[i])
+    if (!parsed.ok) {
+      return { ok: false, hasRight: false, reason: parsed.reason }
+    }
+    const storageRoot = accounts[i]?.storageRoot ?? accounts[0]?.storageRoot
+    if (storageRoot === undefined) {
+      return { ok: false, hasRight: false, reason: 'storage account root missing' }
+    }
+    const isLast = i === ranges.length - 1
+    const verified = await verifyAccountSlotList(
+      storageRoot,
+      opts.origin,
+      parsed.keys,
+      parsed.values,
+      proof,
+      isLast,
+      useKeyHashingFunction,
+    )
+    if (!verified.ok) {
+      perAccount.push({
+        accountIndex: i,
+        ok: false,
+        hasRight: false,
+        reason: verified.reason,
+      })
+      continue
+    }
+    const hasRight = verified.hasRight
+    if (hasRight) flightHasRight = true
+    perAccount.push({
+      accountIndex: i,
+      ok: true,
+      hasRight,
+      lastKey: parsed.keys[parsed.keys.length - 1],
+      slots: parsed.decodedSlots,
+    })
+  }
+  const first = perAccount[0]
+  return {
+    ok: true,
+    hasRight: flightHasRight,
+    lastKey: first?.lastKey,
+    slots: first?.slots,
+    perAccount,
   }
 }
 

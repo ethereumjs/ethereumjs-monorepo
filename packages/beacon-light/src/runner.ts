@@ -83,27 +83,26 @@ export class LightClientRunner {
     return applied
   }
 
+  async bootstrapFromLiveFinality(): Promise<void> {
+    const root = await this.transport.discoverBootstrapBlockRoot()
+    const bootstrap = await this.transport.fetchBootstrap(root)
+    this.client.bootstrap(bootstrap)
+    await this.catchUpUpdates(2)
+    this.persist()
+  }
+
   async pollOnce(): Promise<LightClientPollResult> {
     if (!this.client.isBootstrapped()) {
       throw EthereumJSErrorWithoutCode('light client not bootstrapped')
     }
     let optimisticApplied = false
     let finalityApplied = false
+    let updatesApplied = 0
     let participantCount = 0
+    let lastApplyError: string | undefined
+    let opt
     try {
-      const opt = await this.transport.fetchOptimisticUpdate()
-      try {
-        const optResult = this.client.applyOptimisticUpdate(opt)
-        optimisticApplied = optResult.optimisticUpdated
-      } catch (applyErr) {
-        return {
-          optimisticApplied: false,
-          finalityApplied: false,
-          updatesApplied: 0,
-          participantCount: 0,
-          error: (applyErr as Error).message,
-        }
-      }
+      opt = await this.transport.fetchOptimisticUpdate()
     } catch (e) {
       return {
         optimisticApplied: false,
@@ -111,6 +110,27 @@ export class LightClientRunner {
         updatesApplied: 0,
         participantCount: 0,
         error: (e as Error).message,
+      }
+    }
+
+    try {
+      const optResult = this.client.applyOptimisticUpdate(opt)
+      optimisticApplied = optResult.optimisticUpdated
+    } catch (firstErr) {
+      // Stored snapshot may be 1+ sync-committee periods behind live head.
+      // Catch up committee periods (or re-bootstrap from live finality if pruned) before giving up.
+      updatesApplied += await this.catchUpUpdates(4)
+      try {
+        const retryResult = this.client.applyOptimisticUpdate(opt)
+        optimisticApplied = retryResult.optimisticUpdated
+      } catch {
+        try {
+          await this.bootstrapFromLiveFinality()
+          const rebootResult = this.client.applyOptimisticUpdate(opt)
+          optimisticApplied = rebootResult.optimisticUpdated
+        } catch (finalErr) {
+          lastApplyError = (finalErr as Error).message ?? (firstErr as Error).message
+        }
       }
     }
 
@@ -136,13 +156,18 @@ export class LightClientRunner {
       headBefore !== undefined ? this.common.syncCommitteePeriodAtSlot(headBefore.slot) : 0
     const finPeriod =
       finBefore !== undefined ? this.common.syncCommitteePeriodAtSlot(finBefore.slot) : 0
-    const updatesApplied =
-      !this.client.hasNextSyncCommittee() || headPeriod > finPeriod
-        ? await this.catchUpUpdates(2)
-        : 0
+    if (!this.client.hasNextSyncCommittee() || headPeriod > finPeriod) {
+      updatesApplied += await this.catchUpUpdates(2)
+    }
     const head = this.client.getHeadExecution()
     if (head !== undefined) participantCount = head.participantCount
     this.persist()
-    return { optimisticApplied, finalityApplied, updatesApplied, participantCount }
+    return {
+      optimisticApplied,
+      finalityApplied,
+      updatesApplied,
+      participantCount,
+      ...(lastApplyError !== undefined ? { error: lastApplyError } : {}),
+    }
   }
 }

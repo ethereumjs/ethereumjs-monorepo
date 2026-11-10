@@ -52,8 +52,8 @@ export function ensureBucketSubRanges(bucket: SnapBucket): SnapRangeCursor[] {
     }
     return bucket.subRanges
   }
-  if (compareBytes32(bucket.currentLastHash, bucket.limitHash) >= 0) {
-    bucket.subRanges = []
+  if (bucket.status === 'done' || compareBytes32(bucket.currentLastHash, bucket.limitHash) >= 0) {
+    bucket.subRanges = bucket.subRanges ?? []
     return bucket.subRanges
   }
   const origin = new Uint8Array(bucket.currentLastHash)
@@ -73,11 +73,11 @@ export function cursorActive(cursor: SnapRangeCursor): boolean {
   return compareBytes32(cursor.origin, cursor.limit) <= 0
 }
 
-/** True when a cursor still has uncommitted Merkle verify work (WP-06e). */
+/** True when a non-refresh cursor still has uncommitted Merkle verify work (WP-06e / WP-06f). */
 export function bucketCursorsPendingVerify(bucket: SnapBucket): boolean {
   const ranges = bucket.subRanges
   if (ranges === undefined) return false
-  return ranges.some((c) => (c.verifyingCount ?? 0) > 0)
+  return ranges.some((c) => c.refresh !== true && (c.verifyingCount ?? 0) > 0)
 }
 
 export function cursorBlockedForDispatch(cursor: SnapRangeCursor): boolean {
@@ -85,6 +85,17 @@ export function cursorBlockedForDispatch(cursor: SnapRangeCursor): boolean {
   const pending = cursor.verifyingCount ?? 0
   if (pending > 0 && cursor.pipelinedVerify !== true) return true
   return false
+}
+
+/** True when the bucket has active one-account refresh cursors (WP-06f). */
+export function bucketHasActiveRefreshCursors(bucket: SnapBucket): boolean {
+  const ranges = bucket.subRanges
+  if (ranges === undefined) return false
+  return ranges.some((c) => c.refresh === true && cursorActive(c))
+}
+
+export function spineHasActiveRefreshCursors(buckets: readonly SnapBucket[]): boolean {
+  return buckets.some((b) => bucketHasActiveRefreshCursors(b))
 }
 
 export function syncBucketCursorFields(bucket: SnapBucket): void {
@@ -98,6 +109,8 @@ export function syncBucketCursorFields(bucket: SnapBucket): void {
   }
   const active = ranges.filter((c) => cursorActive(c))
   bucket.subRanges = active
+  const sweepActive = active.filter((c) => c.refresh !== true)
+  const refreshActive = active.filter((c) => c.refresh === true)
   if (active.length === 0) {
     if (bucketCursorsPendingVerify(bucket)) {
       bucket.status = 'verifying_proof'
@@ -109,14 +122,23 @@ export function syncBucketCursorFields(bucket: SnapBucket): void {
     bucket.lastStallReason = undefined
     return
   }
-  let minOrigin = active[0]!.origin
-  for (const c of active) {
+  if (sweepActive.length === 0 && refreshActive.length > 0) {
+    if (!bucketCursorsPendingVerify(bucket)) {
+      bucket.currentLastHash = new Uint8Array(bucket.limitHash)
+      bucket.status = 'done'
+      bucket.assignedPeerId = undefined
+      bucket.lastStallReason = undefined
+    }
+    return
+  }
+  let minOrigin = sweepActive[0]!.origin
+  for (const c of sweepActive) {
     if (compareBytes32(c.origin, minOrigin) < 0) {
       minOrigin = c.origin
     }
   }
   bucket.currentLastHash = new Uint8Array(minOrigin)
-  if (bucket.status === 'done') {
+  if (bucket.status === 'done' && sweepActive.length > 0) {
     bucket.status = 'pending'
   }
 }
@@ -315,20 +337,21 @@ export function computeAccountRangeFraction(buckets: readonly SnapBucket[]): num
   return buckets.reduce((sum, b) => sum + bucketCursorFraction(b), 0) / buckets.length
 }
 
-/** Continuous snap progress: 85% accounts, then 15% code+storage when all buckets are done. */
+/** Continuous snap progress: 75% accounts, then 25% code+storage when all buckets are done (WP-06f). */
 export function computeSnapProgressPct(spine: EthySpine): number {
   const buckets = spine.snapBuckets
   const accountFraction = computeAccountRangeFraction(buckets)
   const allDone = buckets.every((b) => b.status === 'done')
   if (!allDone) {
-    return Math.min(100, Math.max(0, Math.round(0.85 * accountFraction * 100)))
+    return Math.min(100, Math.max(0, Math.round(0.75 * accountFraction * 100)))
   }
-  const codeTotal = spine.codesSynced + spine.codesQueued
+  const codeTotal = Math.max(spine.codesTotal ?? 0, spine.codesSynced + spine.codesQueued)
   const codeFrac = codeTotal <= 0 ? 1 : spine.codesSynced / codeTotal
-  const storTotal = spine.storageSlotsSynced + spine.storageQueued
-  const storFrac = storTotal <= 0 ? 1 : spine.storageSlotsSynced / storTotal
+  const storSynced = spine.storageAccountsSynced ?? 0
+  const storAccTotal = Math.max(spine.storageAccountsTotal ?? 0, storSynced + spine.storageQueued)
+  const storFrac = storAccTotal <= 0 ? 1 : storSynced / storAccTotal
   const cs = (codeFrac + storFrac) / 2
-  return Math.min(100, Math.max(0, Math.round((0.85 + 0.15 * cs) * 100)))
+  return Math.min(100, Math.max(0, Math.round((0.75 + 0.25 * cs) * 100)))
 }
 
 const PROGRESS_BAR_CELLS = 16

@@ -129,6 +129,17 @@ export class SnapPivotStore {
   private readonly journalFdCache = new Map<number, number>()
   private contractScan?: { bucket: number; byteOffset: number; segment?: string }
   private contractScanComplete = false
+  private contractProgress?: {
+    codesTotal: number
+    codesSynced: number
+    storageAccountsTotal: number
+    storageAccountsSynced: number
+    storageSlotsSynced: number
+  }
+  private readonly codeWriteChains = new Map<string, Promise<void>>()
+  private readonly storageWriteChains = new Map<string, Promise<void>>()
+  private readonly persistedCodeHashes = new Set<string>()
+  private readonly persistedStorageAccounts = new Set<string>()
   private restoredHealBlocks: VerifiedBalBlock[] = []
 
   private constructor(opts: SnapStoreOpenOpts & { root: string; networkDir: string }) {
@@ -402,6 +413,11 @@ export class SnapPivotStore {
       } else {
         this.resetPrefixCursorFromBucket(bucket)
       }
+      if (((active.ethyBucketsBitmask ?? 0) & (1 << i)) !== 0) {
+        bucket.status = 'done'
+        bucket.subRanges = []
+        bucket.currentLastHash = new Uint8Array(bucket.limitHash)
+      }
       syncBucketCursorFields(bucket)
       if (bucket.status === 'done' && !snapBucketCursorExhausted(bucket)) {
         bucket.status = 'pending'
@@ -603,6 +619,11 @@ export class SnapPivotStore {
       } else {
         this.resetPrefixCursorFromBucket(bucket)
       }
+      if (((active.ethyBucketsBitmask ?? 0) & (1 << i)) !== 0) {
+        bucket.status = 'done'
+        bucket.subRanges = []
+        bucket.currentLastHash = new Uint8Array(bucket.limitHash)
+      }
       syncBucketCursorFields(bucket)
       if (bucket.status === 'done' && !snapBucketCursorExhausted(bucket)) {
         bucket.status = 'pending'
@@ -637,6 +658,42 @@ export class SnapPivotStore {
   contractScanRemaining(): boolean {
     if (!this.enabled || this.contractScanComplete) return false
     return this.contractScan !== undefined
+  }
+
+  /** Fraction (`0.0 .. 1.0`) of the 16 account buckets scanned by `contractScan` (WP-06f). */
+  contractScanFraction(): number {
+    if (!this.enabled || this.contractScanComplete) return 1
+    if (this.contractScan === undefined || this.activeStateRoot === undefined) return 0
+    const b = Math.min(16, Math.max(0, this.contractScan.bucket))
+    if (b >= 16) return 1
+    const file = this.contractScanJournalFile()
+    let withinBucket = 0
+    if (file !== undefined && fs.existsSync(file)) {
+      try {
+        const size = fs.statSync(file).size
+        if (size > BINARY_ACCOUNT_JOURNAL_MAGIC.length) {
+          withinBucket = Math.min(
+            1,
+            Math.max(
+              0,
+              (this.contractScan.byteOffset - BINARY_ACCOUNT_JOURNAL_MAGIC.length) /
+                (size - BINARY_ACCOUNT_JOURNAL_MAGIC.length),
+            ),
+          )
+        }
+      } catch {
+        // ignore stat error
+      }
+    }
+    return (b + withinBucket) / 16
+  }
+
+  hasPersistedCode(codeHash: Uint8Array): boolean {
+    return this.persistedCodeHashes.has(bytesToHex(codeHash).slice(2).toLowerCase())
+  }
+
+  hasPersistedStorageAccount(accountHash: Uint8Array): boolean {
+    return this.persistedStorageAccounts.has(bytesToHex(accountHash).slice(2).toLowerCase())
   }
 
   /** Arm on-disk journal contract scan when live ingest exceeds in-memory contract task cap. */
@@ -1252,6 +1309,7 @@ export class SnapPivotStore {
   /** Wait for async journal appends and bucket metadata flushes (tests and clean shutdown). */
   async drainPendingFlushes(): Promise<void> {
     await Promise.all([...this.accountWriteChains.values()])
+    await Promise.all([...this.codeWriteChains.values(), ...this.storageWriteChains.values()])
     if (this.bucketsFlushInFlight !== undefined) {
       await this.bucketsFlushInFlight
       this.bucketsFlushInFlight = undefined
@@ -1266,11 +1324,23 @@ export class SnapPivotStore {
   appendCode(codeHash: Uint8Array, code: Uint8Array): void {
     if (!this.enabled || this.activeStateRoot === undefined) return
     const hex = bytesToHex(codeHash).slice(2).toLowerCase()
-    const file = path.join(this.pivotDir(this.activeStateRoot), 'code', `${hex}.bin`)
-    fs.mkdirSync(path.dirname(file), { recursive: true })
-    const header = new Uint8Array(4)
-    new DataView(header.buffer).setUint32(0, code.length, false)
-    fs.writeFileSync(file, Buffer.concat([Buffer.from(header), Buffer.from(code)]))
+    this.persistedCodeHashes.add(hex)
+    const pivot = this.pivotDir(this.activeStateRoot)
+    const shard = codeHash[0]!.toString(16).padStart(2, '0')
+    const file = path.join(pivot, 'code', `shard-${shard}.bin`)
+    const record = new Uint8Array(32 + 4 + code.length)
+    record.set(codeHash, 0)
+    new DataView(record.buffer, record.byteOffset + 32, 4).setUint32(0, code.length, false)
+    record.set(code, 36)
+    const prior = this.codeWriteChains.get(file) ?? Promise.resolve()
+    const next = prior.then(async () => {
+      await fs.promises.mkdir(path.dirname(file), { recursive: true })
+      await fs.promises.appendFile(file, record)
+    })
+    this.codeWriteChains.set(file, next)
+    void next.catch(() => {
+      if (this.codeWriteChains.get(file) === next) this.codeWriteChains.delete(file)
+    })
   }
 
   appendHealBal(blockNumber: bigint, balRlp: Uint8Array): void {
@@ -1425,9 +1495,22 @@ export class SnapPivotStore {
 
   private loadContractScanCursor(stateRootHex: string): void {
     this.contractScanComplete = false
+    this.contractProgress = undefined
+    this.persistedCodeHashes.clear()
+    this.persistedStorageAccounts.clear()
+    this.indexExistingCodeAndStorageDirs(stateRootHex)
     const p = this.contractScanPath(stateRootHex)
     if (!fs.existsSync(p)) {
       this.contractScan = { bucket: 0, byteOffset: BINARY_ACCOUNT_JOURNAL_MAGIC.length }
+      if (this.persistedCodeHashes.size > 0 || this.persistedStorageAccounts.size > 0) {
+        this.contractProgress = {
+          codesTotal: this.persistedCodeHashes.size,
+          codesSynced: this.persistedCodeHashes.size,
+          storageAccountsTotal: this.persistedStorageAccounts.size,
+          storageAccountsSynced: this.persistedStorageAccounts.size,
+          storageSlotsSynced: 0,
+        }
+      }
       return
     }
     try {
@@ -1436,7 +1519,32 @@ export class SnapPivotStore {
         byteOffset: number
         segment?: string
         done?: boolean
+        codesTotal?: number
+        codesSynced?: number
+        storageAccountsTotal?: number
+        storageAccountsSynced?: number
+        storageSlotsSynced?: number
       }>(p)
+      if (
+        doc.codesTotal !== undefined ||
+        doc.codesSynced !== undefined ||
+        doc.storageAccountsTotal !== undefined ||
+        this.persistedCodeHashes.size > 0 ||
+        this.persistedStorageAccounts.size > 0
+      ) {
+        const codesSynced = Math.max(doc.codesSynced ?? 0, this.persistedCodeHashes.size)
+        const storageAccountsSynced = Math.max(
+          doc.storageAccountsSynced ?? 0,
+          this.persistedStorageAccounts.size,
+        )
+        this.contractProgress = {
+          codesTotal: Math.max(doc.codesTotal ?? 0, codesSynced),
+          codesSynced,
+          storageAccountsTotal: Math.max(doc.storageAccountsTotal ?? 0, storageAccountsSynced),
+          storageAccountsSynced,
+          storageSlotsSynced: doc.storageSlotsSynced ?? 0,
+        }
+      }
       if (doc.done === true) {
         this.contractScanComplete = true
         this.contractScan = undefined
@@ -1452,11 +1560,101 @@ export class SnapPivotStore {
     }
   }
 
+  private indexExistingCodeAndStorageDirs(stateRootHex: string): void {
+    const dir = this.pivotDir(stateRootHex)
+    const codeDir = path.join(dir, 'code')
+    if (fs.existsSync(codeDir)) {
+      try {
+        for (const name of fs.readdirSync(codeDir)) {
+          if (name.endsWith('.bin') && name.length === 68 && !name.startsWith('shard-')) {
+            this.persistedCodeHashes.add(name.slice(0, 64).toLowerCase())
+          } else if (name.startsWith('shard-') && name.endsWith('.bin')) {
+            this.scanCodeShardHashes(path.join(codeDir, name))
+          }
+        }
+      } catch {
+        // ignore read error
+      }
+    }
+    const storageDir = path.join(dir, 'storage')
+    if (fs.existsSync(storageDir)) {
+      try {
+        for (const name of fs.readdirSync(storageDir)) {
+          if (name.endsWith('.bin') && name.length === 68 && !name.startsWith('shard-')) {
+            this.persistedStorageAccounts.add(name.slice(0, 64).toLowerCase())
+          }
+        }
+      } catch {
+        // ignore read error
+      }
+    }
+  }
+
+  private scanCodeShardHashes(filePath: string): void {
+    try {
+      const stat = fs.statSync(filePath)
+      if (stat.size < 36) return
+      const fd = fs.openSync(filePath, 'r')
+      const header = Buffer.alloc(36)
+      try {
+        let offset = 0
+        while (offset + 36 <= stat.size) {
+          const n = fs.readSync(fd, header, 0, 36, offset)
+          if (n < 36) break
+          const hashHex = header.subarray(0, 32).toString('hex')
+          const len = header.readUInt32BE(32)
+          this.persistedCodeHashes.add(hashHex)
+          offset += 36 + len
+        }
+      } finally {
+        fs.closeSync(fd)
+      }
+    } catch {
+      // ignore malformed tail
+    }
+  }
+
+  /** Restored contract counters for {@link SnapCodeAndStorageSynchronizer} (WP-06f). */
+  takeContractProgress():
+    | {
+        codesTotal: number
+        codesSynced: number
+        storageAccountsTotal: number
+        storageAccountsSynced: number
+        storageSlotsSynced: number
+      }
+    | undefined {
+    const p = this.contractProgress
+    this.contractProgress = undefined
+    return p
+  }
+
+  persistContractProgress(
+    codesTotal: number,
+    codesSynced: number,
+    storageAccountsTotal: number,
+    storageAccountsSynced: number,
+    storageSlotsSynced: number,
+  ): void {
+    this.contractProgress = {
+      codesTotal,
+      codesSynced,
+      storageAccountsTotal,
+      storageAccountsSynced,
+      storageSlotsSynced,
+    }
+    this.persistContractScanCursor()
+  }
+
   private persistContractScanCursor(): void {
     if (!this.enabled || this.activeStateRoot === undefined) return
     const p = this.contractScanPath(this.activeStateRoot)
+    const progress = this.contractProgress
     if (this.contractScanComplete) {
-      writeAtomicDoc(p, { done: true })
+      writeAtomicDoc(p, {
+        done: true,
+        ...(progress ?? {}),
+      })
       return
     }
     if (this.contractScan === undefined) return
@@ -1464,6 +1662,7 @@ export class SnapPivotStore {
       bucket: this.contractScan.bucket,
       byteOffset: this.contractScan.byteOffset,
       segment: this.contractScan.segment,
+      ...(progress ?? {}),
     })
   }
 
@@ -1472,23 +1671,32 @@ export class SnapPivotStore {
     slots: Array<{ slotHash: Uint8Array; value: Uint8Array }>,
   ): void {
     if (!this.enabled || this.activeStateRoot === undefined || slots.length === 0) return
-    const ah = bytesToHex(accountHash).slice(2).toLowerCase()
-    const file = path.join(this.pivotDir(this.activeStateRoot), 'storage', `${ah}.bin`)
-    fs.mkdirSync(path.dirname(file), { recursive: true })
-    const fd = fs.openSync(file, 'a')
-    try {
-      for (const { slotHash, value } of slots) {
-        const record = new Uint8Array(32 + 4 + value.length)
-        const view = new DataView(record.buffer, record.byteOffset, record.byteLength)
-        record.set(slotHash, 0)
-        view.setUint32(32, value.length, false)
-        record.set(value, 36)
-        fs.writeSync(fd, record)
-      }
-      fs.fsyncSync(fd)
-    } finally {
-      fs.closeSync(fd)
+    this.persistedStorageAccounts.add(bytesToHex(accountHash).slice(2).toLowerCase())
+    const pivot = this.pivotDir(this.activeStateRoot)
+    const shard = accountHash[0]!.toString(16).padStart(2, '0')
+    const file = path.join(pivot, 'storage', `shard-${shard}.bin`)
+    const total = 32 + slots.reduce((sum, s) => sum + 32 + 4 + s.value.length, 0)
+    const body = new Uint8Array(total)
+    let off = 0
+    body.set(accountHash, off)
+    off += 32
+    for (const { slotHash, value } of slots) {
+      body.set(slotHash, off)
+      off += 32
+      new DataView(body.buffer, body.byteOffset + off, 4).setUint32(0, value.length, false)
+      off += 4
+      body.set(value, off)
+      off += value.length
     }
+    const prior = this.storageWriteChains.get(file) ?? Promise.resolve()
+    const next = prior.then(async () => {
+      await fs.promises.mkdir(path.dirname(file), { recursive: true })
+      await fs.promises.appendFile(file, body)
+    })
+    this.storageWriteChains.set(file, next)
+    void next.catch(() => {
+      if (this.storageWriteChains.get(file) === next) this.storageWriteChains.delete(file)
+    })
   }
 }
 

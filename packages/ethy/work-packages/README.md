@@ -169,12 +169,57 @@ Every Work Package delivers a **runnable, observable, and live-testable incremen
                       │         Zero-Bubble Cursor Pipelining   │                 │
                       └───────────────────┬─────────────────────┘                 │
                                           │                                       │
+                                          ▼                                       │
+                      ┌─────────────────────────────────────────┐                 │
+                      │ WP-06f: Storage & Code Sync Engine —    │                 │
+                      │         Pre-Hashed Storage Trie Fix,    │                 │
+                      │         16-Acc Batching & Progress UI   │                 │
+                      └───────────────────┬─────────────────────┘                 │
+                                          │                                       │
                                           └───────────────────┬───────────────────┘
                                                               ▼
                                           ┌─────────────────────────────────────────┐
-                                          │ WP-07: Bidirectional Local LLM          │
-                                          │        IntentEngine (<ethy_state>       │
-                                          │        & Dynamic Tool Gating)           │
+                                          │ WP-07a: ETHEconomyDataManager,          │
+                                          │         Permission-Structured Domain    │
+                                          │         Snapshots & /economy Tool       │
+                                          └───────────────────┬─────────────────────┘
+                                                              │
+                                                              ▼
+                                          ┌─────────────────────────────────────────┐
+                                          │ WP-07b: Spatial Cockpit Redesign        │
+                                          │         (Economy + AI Overview +        │
+                                          │         TableUIComponent + Ctrl+D Debug)│
+                                          └───────────────────┬─────────────────────┘
+                                                              │
+                                                              ▼
+                                          ┌─────────────────────────────────────────┐
+                                          │ WP-07c: Local LLM Dual-Mode Engine      │
+                                          │         (30-60s Read-Only Pulse,        │
+                                          │         IntentEngine & UI Composer)     │
+                                          └───────────────────┬─────────────────────┘
+                                                              │
+                                                              ▼
+                                          ┌─────────────────────────────────────────┐
+                                          │ WP-07d: Dynamic Contract Intelligence   │
+                                          │         (Bytecode PUSH4/Proxy Scanner,  │
+                                          │         Local ABI Lens, BAL Classifier  │
+                                          │         & /contract Microscope)         │
+                                          └───────────────────┬─────────────────────┘
+                                                              │
+                                                              ▼
+                                          ┌─────────────────────────────────────────┐
+                                          │ WP-07e: 20x-50x BAL Catch-Up & Bridge   │
+                                          │         Engine (32-Block eth/71 Batches,│
+                                          │         Header+BAL Fast Path &          │
+                                          │         statemanager consumeBALBatch)   │
+                                          └───────────────────┬─────────────────────┘
+                                                              │
+                                                              ▼
+                                          ┌─────────────────────────────────────────┐
+                                          │ WP-07f: 3-Domain Cockpit Streamline     │
+                                          │         (State · Economy · P2P, Full-   │
+                                          │         Height 3-Part AI, Tab Help &    │
+                                          │         Left/Right View History)        │
                                           └───────────────────┬─────────────────────┘
                                                               │
                                                               ▼

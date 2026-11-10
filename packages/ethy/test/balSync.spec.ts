@@ -31,7 +31,7 @@ describe('[Ethy/Sync]: BAL window and head phase', () => {
     } as never)
     assert.equal(entered, true)
     assert.equal(spine.phase, 'HEAD_FOLLOWING')
-    assert.equal(spine.capabilities.head.status, 'ready')
+    assert.equal(spine.capabilities.state.status, 'ready')
 
     spine.pivotBlockNumber = 100n
     setPhase(spine, 'SNAP_SYNCING')
@@ -40,7 +40,7 @@ describe('[Ethy/Sync]: BAL window and head phase', () => {
     assert.equal(catchUp, true)
     assert.equal(spine.phase, 'BAL_CATCHUP')
     assert.equal(spine.balCatchUp?.total, 25)
-    assert.equal(spine.capabilities.head.status, 'partial')
+    assert.equal(spine.capabilities.state.status, 'partial')
   })
 
   it('flat and merkle stay aligned after shared consumeBAL oracle', async () => {
@@ -63,12 +63,12 @@ describe('[Ethy/Sync]: BAL window and head phase', () => {
     assert.equal(flatAcc!.balance, hexToBigInt('0x01ec30'))
   })
 
-  it('/bal works when head capability is ready', () => {
+  it('/bal works when head capability is ready', async () => {
     const spine = createSpine('sepolia', 11155111n)
     setPhase(spine, 'HEAD_FOLLOWING')
     pushBalWindow(spine, 200n, balSimpleJSON as BALJSONBlockAccessList)
     const engine = new DeterministicIntentEngine({ stateManager: new FlatStateManager() })
-    const r = engine.handle({ text: '/bal', spine })
+    const r = await engine.handle({ text: '/bal', spine })
     assert.equal(r.widget.kind, 'table')
   })
 })
