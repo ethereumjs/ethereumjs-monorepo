@@ -318,20 +318,20 @@ export function renderCockpit(
   while (econLines.length < COCKPIT_CONTENT_ROWS) econLines.push('')
   while (metLines.length < COCKPIT_CONTENT_ROWS) metLines.push('')
 
-  const state = renderBox(
-    w0,
-    cockpitBoxTitle(spine, view, 'state'),
-    pulseLines.slice(0, COCKPIT_CONTENT_ROWS),
-  )
   const economy = renderBox(
-    w1,
+    w0,
     cockpitBoxTitle(spine, view, 'economy'),
     econLines.slice(0, COCKPIT_CONTENT_ROWS),
+  )
+  const state = renderBox(
+    w1,
+    cockpitBoxTitle(spine, view, 'state'),
+    pulseLines.slice(0, COCKPIT_CONTENT_ROWS),
   )
   const p2p = renderBox(
     w2,
     cockpitBoxTitle(spine, view, 'p2p'),
     metLines.slice(0, COCKPIT_CONTENT_ROWS),
   )
-  return joinBoxColumns([state, economy, p2p], contentWidth)
+  return joinBoxColumns([economy, state, p2p], contentWidth)
 }

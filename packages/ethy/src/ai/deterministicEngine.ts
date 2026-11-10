@@ -65,7 +65,7 @@ export function dispatchSlashWidget(line: string, ctx: SlashDispatchCtx): Widget
       return diagnosticsTableWidget(spine)
     case '/help':
     case '/h': {
-      const domain = parseHelpDomainArg(parts) ?? 'state'
+      const domain = parseHelpDomainArg(parts) ?? 'economy'
       return buildDomainHelpWidget(spine, domain)
     }
     case '/drop':

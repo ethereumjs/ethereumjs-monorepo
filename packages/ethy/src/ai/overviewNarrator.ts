@@ -1,5 +1,5 @@
 import type { EthyDomainSnapshots } from '../domains/types.ts'
-import type { AiOverviewSections } from '../spine/types.ts'
+import { type AiOverviewSections, DOMAIN_ORDER } from '../spine/types.ts'
 
 export const MAX_AI_TOTAL_CHARS = 600
 /** @deprecated Use `MAX_AI_TOTAL_CHARS` for the three-domain AI box. */
@@ -14,7 +14,7 @@ function clampLine(text: string, max: number): string {
 }
 
 export function clampOverviewSections(sections: AiOverviewSections): AiOverviewSections {
-  const keys = (['state', 'economy', 'p2p'] as const).filter((k) => sections[k] !== undefined)
+  const keys = DOMAIN_ORDER.filter((k) => sections[k] !== undefined)
   const focusNote =
     sections.focusNote !== undefined
       ? {

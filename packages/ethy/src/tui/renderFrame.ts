@@ -18,7 +18,6 @@ import {
   fixedLineRight,
 } from './layout.ts'
 import { renderLowerArea } from './lowerArea.ts'
-import { renderNoticeLine } from './noticeLine.ts'
 import { layoutPage, measurePage } from './pageLayout.ts'
 
 const DELIMITER_PAD_ROWS = 1
@@ -37,7 +36,6 @@ function renderFooterHint(): string {
   return [
     hintSegment('Tab', 'show domain help'),
     hintSegment('←/→', 'view history'),
-    hintSegment('Ctrl+D', 'debug page'),
     hintSegment('/', 'command'),
     hintSegment('Esc', 'exit'),
   ].join(`${DIM} · ${RESET}`)
@@ -47,13 +45,17 @@ function renderFooterHint(): string {
 const CAPABILITY_PILL_GAP = 2
 
 const CAPABILITY_IDS = DOMAIN_ORDER
-const CAPABILITY_NAMES = ['STATE', 'ECONOMY', 'P2P'] as const
+const CAPABILITY_LABEL: Record<CapabilityId, string> = {
+  economy: 'Economy',
+  state: 'State',
+  p2p: 'P2P',
+}
 
 function capabilityPillWidth(name: string): number {
   return visibleWidth(formatCapabilityPill('●', name))
 }
 
-const CAPABILITY_PILL_WIDTHS = CAPABILITY_NAMES.map((name) => capabilityPillWidth(name))
+const CAPABILITY_PILL_WIDTHS = CAPABILITY_IDS.map((id) => capabilityPillWidth(CAPABILITY_LABEL[id]))
 
 function formatCapabilityPill(dot: string, name: string): string {
   return `${dot} ${BOLD}${name}${RESET}`
@@ -63,10 +65,8 @@ function formatCapabilityPill(dot: string, name: string): string {
 function renderCapabilityBar(spine: EthySpine, cols: number): string[] {
   const network = spine.network.toUpperCase()
   const brand = `${BOLD}${spine.clientName} v${spine.clientVersion}${RESET} | ${network}`
-  const { state, economy, p2p } = spine.capabilities
-  const statuses = [state.status, economy.status, p2p.status]
-  const pillTexts = CAPABILITY_IDS.map((id, i) =>
-    formatCapabilityPill(capabilityMark(id, statuses[i] ?? 'locked'), CAPABILITY_NAMES[i] ?? id),
+  const pillTexts = CAPABILITY_IDS.map((id) =>
+    formatCapabilityPill(capabilityMark(id, spine.capabilities[id].status), CAPABILITY_LABEL[id]),
   )
 
   const line = composeBrandAndRightPills(
@@ -105,12 +105,7 @@ function renderLeftHint(draft: string, leftW: number): string {
   )
 }
 
-function renderPrompt(
-  spine: EthySpine,
-  view: TuiViewState,
-  cols: number,
-  notice: LiveNotice | null,
-): string[] {
+function renderPrompt(spine: EthySpine, view: TuiViewState, cols: number): string[] {
   const { left, right } = promptColumnWidths(cols)
   const gap = ' '.repeat(Math.min(COCKPIT_COLUMN_GAP, Math.max(0, cols - left - right)))
   const mark = capabilityMark(view.activeDomain, spine.capabilities[view.activeDomain].status)
@@ -118,11 +113,10 @@ function renderPrompt(
   const draftWidth = Math.max(0, left - PROMPT_PREFIX_WIDTH)
   const prompt = `${prefix}${fixedField(view.promptDraft, draftWidth)}`
   const hint = renderLeftHint(view.promptDraft, left)
-  const noticeCell = renderNoticeLine(notice, right)
   return [
     fixedLine(`${fixedField(prompt, left)}${gap}${fixedField('', right)}`, cols),
     fixedLine(`${fixedField('', left)}${gap}${fixedField('', right)}`, cols),
-    fixedLine(`${hint}${gap}${noticeCell}`, cols),
+    fixedLine(`${hint}${gap}${fixedField('', right)}`, cols),
   ]
 }
 
@@ -152,7 +146,7 @@ export function renderFrame(
   view: TuiViewState,
   cols: number,
   rows: number,
-  notice: LiveNotice | null = null,
+  _notice: LiveNotice | null = null,
 ): string[] {
   const safeCols = Math.max(40, cols)
   const safeRows = Math.max(12, rows)
@@ -160,7 +154,7 @@ export function renderFrame(
 
   const capBar = renderCapabilityBar(spine, page.contentWidth)
   const cockpit = renderCockpit(spine, view, page.contentWidth)
-  const prompt = renderPrompt(spine, view, page.contentWidth, notice)
+  const prompt = renderPrompt(spine, view, page.contentWidth)
   const rule = { kind: 'delimiter' as const, open: DIM, close: RESET }
   const pad = { kind: 'spacer' as const, rows: DELIMITER_PAD_ROWS }
 

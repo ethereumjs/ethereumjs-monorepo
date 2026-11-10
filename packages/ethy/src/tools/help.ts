@@ -1,4 +1,10 @@
-import type { CapabilityId, DomainHelpSection, EthySpine, WidgetSpec } from '../spine/types.ts'
+import type {
+  CapabilityId,
+  DebugSectionSpec,
+  DomainHelpSection,
+  EthySpine,
+  WidgetSpec,
+} from '../spine/types.ts'
 
 const DOMAIN_LABEL: Record<CapabilityId, string> = {
   state: 'State',
@@ -88,16 +94,40 @@ export function parseHelpDomainArg(parts: string[]): CapabilityId | undefined {
   return undefined
 }
 
+function domainHelpDebugPage(spine: EthySpine): DebugSectionSpec[] {
+  const { economy, state, p2p } = spine.capabilities
+  return [
+    {
+      title: 'Node',
+      entries: [
+        { key: 'Phase', value: spine.phase },
+        { key: 'Network', value: spine.network },
+      ],
+    },
+    {
+      title: 'Capabilities',
+      entries: [
+        { key: 'Economy', value: `${economy.status} (${economy.label})` },
+        { key: 'State', value: `${state.status} (${state.label})` },
+        { key: 'P2P', value: `${p2p.status} (${p2p.label})` },
+      ],
+    },
+    {
+      title: 'Peers',
+      entries: [{ key: 'Connected', value: String(spine.peers.size) }],
+    },
+  ]
+}
+
 export function buildDomainHelpWidget(spine: EthySpine, domain: CapabilityId): WidgetSpec {
   const sections =
     domain === 'state' ? stateSections() : domain === 'economy' ? economySections() : p2pSections()
-  void spine
-  return { kind: 'domain_help', domain, sections }
+  return { kind: 'domain_help', domain, sections, debugPage: domainHelpDebugPage(spine) }
 }
 
 /** Legacy flat command table (tests / carousel). */
 export function buildHelpWidget(spine: EthySpine): WidgetSpec {
-  return buildDomainHelpWidget(spine, 'state')
+  return buildDomainHelpWidget(spine, 'economy')
 }
 
 export function helpDomainLabel(domain: CapabilityId): string {

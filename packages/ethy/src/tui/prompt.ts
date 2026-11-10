@@ -20,7 +20,7 @@ export type KeyAction =
 export function cycleDomain(id: CapabilityId, direction: 1 | -1): CapabilityId {
   const idx = DOMAIN_ORDER.indexOf(id)
   const next = (idx + direction + DOMAIN_ORDER.length) % DOMAIN_ORDER.length
-  return DOMAIN_ORDER[next] ?? 'state'
+  return DOMAIN_ORDER[next] ?? 'economy'
 }
 
 /**
@@ -188,8 +188,8 @@ export function reducePromptKey(view: TuiViewState, action: KeyAction): PromptRe
 export function createInitialViewState(spine?: EthySpine): TuiViewState {
   const withHelp = spine !== undefined
   return {
-    activeDomain: 'state',
-    activeWidget: withHelp ? buildDomainHelpWidget(spine, 'state') : null,
+    activeDomain: 'economy',
+    activeWidget: withHelp ? buildDomainHelpWidget(spine, 'economy') : null,
     interactionPage: 'main',
     showingHelp: withHelp,
     viewHistory: [],

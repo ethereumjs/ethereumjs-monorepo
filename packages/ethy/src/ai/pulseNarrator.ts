@@ -1,6 +1,6 @@
 import { readDomainSnapshots } from '../domains/domainManagers.ts'
 import { deriveCapabilities } from '../spine/createSpine.ts'
-import type { AiOverviewSections, EthySpine } from '../spine/types.ts'
+import { type AiOverviewSections, DOMAIN_ORDER, type EthySpine } from '../spine/types.ts'
 import { buildCompactDomainContext } from './compactContext.ts'
 import type { LlmTransport } from './fixtureEngine.ts'
 import { parseLlmJSONObject } from './llmClient.ts'
@@ -23,7 +23,7 @@ export type AiPulseNarratorOpts = {
 
 function parsePulseSections(obj: Record<string, unknown>): AiOverviewSections {
   const out: AiOverviewSections = {}
-  for (const k of ['state', 'economy', 'p2p'] as const) {
+  for (const k of DOMAIN_ORDER) {
     const v = obj[k]
     if (typeof v === 'string' && v.trim().length > 0) out[k] = v.trim()
   }

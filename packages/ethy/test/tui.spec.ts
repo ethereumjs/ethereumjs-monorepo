@@ -47,8 +47,8 @@ describe('[Ethy/TUI]: renderFrame', () => {
     const topA = stripAnsi(renderFrame(spineA, view, 100, 30)[0] ?? '')
     const topB = stripAnsi(renderFrame(spineB, view, 100, 30)[0] ?? '')
     assert.equal(topA.indexOf('P2P'), topB.indexOf('P2P'))
-    assert.match(topA, /Slot 1 {8}\S STATE/)
-    assert.match(topB, /Slot 123,456 {8}\S STATE/)
+    assert.match(topA, /Slot 1 {8}\S Economy/)
+    assert.match(topB, /Slot 123,456 {8}\S Economy/)
     assert.isAbove(topA.indexOf('Slot'), topA.indexOf('SEPOLIA'))
   })
 
@@ -137,8 +137,8 @@ describe('[Ethy/TUI]: renderFrame', () => {
     const rule = stripAnsi(lines[1] ?? '')
     assert.equal(rule[0], '─')
     assert.equal(rule[rule.length - 1], '─')
-    assert.match(top, /● STATE/)
-    assert.match(top, /○ ECONOMY/)
+    assert.match(top, /○ Economy/)
+    assert.match(top, /● State/)
     assert.match(top, /○ P2P/)
     assert.notInclude(top, 'Synced')
     assert.notInclude(top, 'Slash/Rule')
@@ -150,11 +150,14 @@ describe('[Ethy/TUI]: renderFrame', () => {
     const spine = createSpine('sepolia', 11155111n)
     spine.clOptimisticSlot = 12_071_120
     spine.pivotBlockNumber = 12_070_000n
-    assert.include(capabilityBarClockLabel(spine), 'Slot 12,071,120')
+    const both = capabilityBarClockLabel(spine)
+    assert.include(both, 'Block 12,070,000')
+    assert.include(both, 'Slot 12,071,120')
+    assert.isBelow(both.indexOf('Block'), both.indexOf('Slot'))
     spine.clOptimisticSlot = undefined
     spine.demoClock = undefined
     spine.bestPeerHead = 12_071_450n
-    assert.include(capabilityBarClockLabel(spine), 'Block #12,071,450')
+    assert.include(capabilityBarClockLabel(spine), 'Block 12,071,450')
   })
 
   it('renderFrame() Node Pulse shows bridge target distinct from capability slot', () => {
@@ -186,8 +189,8 @@ describe('[Ethy/TUI]: renderFrame', () => {
     spineB.capabilities.p2p.label = '3 Peers'
     const topA = stripAnsi(renderFrame(spineA, view, 100, 30)[0] ?? '')
     const topB = stripAnsi(renderFrame(spineB, view, 100, 30)[0] ?? '')
-    assert.equal(topA.indexOf('STATE'), topB.indexOf('STATE'))
-    assert.equal(topA.indexOf('ECONOMY'), topB.indexOf('ECONOMY'))
+    assert.equal(topA.indexOf('Economy'), topB.indexOf('Economy'))
+    assert.equal(topA.indexOf('State'), topB.indexOf('State'))
     assert.equal(topA.indexOf('P2P'), topB.indexOf('P2P'))
   })
 
@@ -198,7 +201,6 @@ describe('[Ethy/TUI]: renderFrame', () => {
     const joined = plain.join('\n')
     assert.include(joined, 'Stage')
     assert.notInclude(joined, 'Node Pulse')
-    assert.notInclude(joined, 'Commands')
     assert.notInclude(joined, 'Metrics')
     assert.include(joined, '╭')
     assert.notInclude(joined, 'Which peers are connected')
@@ -207,16 +209,12 @@ describe('[Ethy/TUI]: renderFrame', () => {
     assert.match(hint, /view history/)
     assert.notInclude(hint, 'Why is bucket')
     assert.match(plain[plain.length - 3] ?? '', /ethy >/)
-    assert.notInclude(joined, 'All quiet')
     const raw = renderFrame(spine, view, 100, 30, {
       text: P2P_REACHABILITY_HINT,
       level: 'warn',
     })
     const footer = stripAnsi(raw[raw.length - 1] ?? '')
-    assert.include(footer, P2P_REACHABILITY_HINT)
-    const right = cockpitColumnWidths(measurePage(100, 30).contentWidth)[2]
-    assert.isAtMost(footer.length, 100)
-    assert.isAtLeast(footer.indexOf('Discovery'), 100 - right)
+    assert.notInclude(footer, P2P_REACHABILITY_HINT)
   })
 
   it('promptCaretPosition() sits just after the domain mark and draft', () => {
@@ -252,13 +250,13 @@ describe('[Ethy/TUI]: renderFrame', () => {
     }
   })
 
-  it('renderFrame() Tab help shows state commands and p2p box stays fixed', () => {
+  it('renderFrame() Tab help shows economy commands and p2p box stays fixed', () => {
     const spine = createSpine('sepolia', 11155111n)
     const view = createInitialViewState(spine)
     const frame = stripAnsi(renderFrame(spine, view, 100, 30).join('\n'))
-    assert.include(frame, '/buckets')
-    assert.include(frame, '/range')
-    assert.include(frame, '/help · State')
+    assert.include(frame, '/economy')
+    assert.include(frame, '/contract')
+    assert.include(frame, '/help · Economy')
     assert.include(frame, 'Peers')
     assert.equal(capabilityMark('p2p', 'locked').startsWith(CAPABILITY_FG.p2p), true)
   })
@@ -377,7 +375,8 @@ describe('[Ethy/TUI]: renderFrame', () => {
     assert.isUndefined(view.aiOverviewSections?.focusNote)
     const helpFrame = stripAnsi(renderFrame(spine, view, 120, 36).join('\n'))
     assert.include(helpFrame, 'Base fee 1.2 Gwei.')
-    assert.include(helpFrame, '← back to /peers')
+    assert.include(helpFrame, 'Commands')
+    assert.include(helpFrame, '←')
     assert.equal(historyEntryTitle(view.viewHistory[0]!), '/peers')
     assert.isUndefined(clearOverviewFocus(view.aiOverviewSections)?.focusNote)
   })
@@ -402,10 +401,10 @@ describe('[Ethy/TUI]: prompt reducer', () => {
     assert.isUndefined(r.domainCycle)
   })
 
-  it('cycleDomain() walks state → economy → p2p', () => {
-    assert.equal(cycleDomain('state', 1), 'economy')
-    assert.equal(cycleDomain('p2p', 1), 'state')
-    assert.equal(cycleDomain('state', -1), 'p2p')
+  it('cycleDomain() walks economy → state → p2p', () => {
+    assert.equal(cycleDomain('economy', 1), 'state')
+    assert.equal(cycleDomain('p2p', 1), 'economy')
+    assert.equal(cycleDomain('economy', -1), 'p2p')
   })
 
   it('decodeKey() maps left arrow on empty draft', () => {

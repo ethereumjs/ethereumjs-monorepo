@@ -85,17 +85,24 @@ describe('[Ethy/Intent]: gating', () => {
     assert.include(r.widget.kind === 'key_value' ? (r.widget.title ?? '') : '', 'locked')
   })
 
-  it('/help opens domain help while state locked', async () => {
+  it('/help opens economy domain help by default while state locked', async () => {
     const spine = createSpine('sepolia', 11155111n)
     setPhase(spine, 'P2P_WARMUP')
     const r = await engine.handle({ text: '/help', spine })
     assert.equal(r.widget.kind, 'domain_help')
-    assert.equal(r.widget.kind === 'domain_help' ? r.widget.domain : '', 'state')
+    assert.equal(r.widget.kind === 'domain_help' ? r.widget.domain : '', 'economy')
     if (r.widget.kind === 'domain_help') {
       const flat = r.widget.sections
         .flatMap((s) => s.rows?.map((row) => row.command) ?? [])
         .join(' ')
-      assert.include(flat, '/account')
+      assert.include(flat, '/economy')
+    }
+    const stateHelp = await engine.handle({ text: '/help state', spine })
+    if (stateHelp.widget.kind === 'domain_help') {
+      const stateFlat = stateHelp.widget.sections
+        .flatMap((s) => s.rows?.map((row) => row.command) ?? [])
+        .join(' ')
+      assert.include(stateFlat, '/account')
     }
   })
 })

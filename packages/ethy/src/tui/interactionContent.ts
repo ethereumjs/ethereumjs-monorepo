@@ -15,7 +15,6 @@ import { renderDomainHelpUIComponent } from './components/DomainHelpUIComponent.
 import { renderKeyValueUIComponent } from './components/KeyValueUIComponent.ts'
 import { renderTableUIComponent } from './components/TableUIComponent.ts'
 import { composeFixedRow, fixedLine } from './layout.ts'
-import { historyEntryTitle } from './viewHistory.ts'
 import type { SuggestionMarks } from './widgets.ts'
 
 export function renderInteractionWidgetBody(
@@ -133,14 +132,8 @@ export function interactionViewTitle(
   view?: TuiViewState,
   spine?: EthySpine,
 ): string {
+  void page
   if (widget === null) return `${BOLD}Welcome${RESET}`
-  const hasDebug = (widget.debugPage?.length ?? 0) > 0
-  const pageHint =
-    hasDebug === true
-      ? page === 'debug'
-        ? `${DIM} · [2/2 Debug · Ctrl+D Table]${RESET}`
-        : `${DIM} · [1/2 Table · Ctrl+D Debug]${RESET}`
-      : ''
   let base = ''
   if (nlTitle !== undefined && nlTitle.length > 0 && lastSubmitted?.startsWith('/') !== true) {
     base = `${BOLD}${nlTitle}${RESET}`
@@ -167,19 +160,7 @@ export function interactionViewTitle(
     const mark = capabilityMark(widget.domain, spine.capabilities[widget.domain].status)
     base = `${mark} ${BOLD}/help · ${helpDomainLabel(widget.domain)}${RESET}`
   }
-  let historyHint = ''
-  if (view !== undefined) {
-    if (view.showingHelp && view.viewHistory.length > 0) {
-      const last = view.viewHistory[view.viewHistoryIndex]
-      if (last !== undefined) {
-        historyHint = `${DIM} · [← back to ${historyEntryTitle(last)}]${RESET}`
-      }
-    } else if (!view.showingHelp && view.viewHistory.length > 1) {
-      const idx = view.viewHistoryIndex + 1
-      historyHint = `${DIM} · [${idx}/${view.viewHistory.length} ← →]${RESET}`
-    }
-  }
-  return `${base}${pageHint}${historyHint}`
+  return base
 }
 
 function wrapSectionText(text: string, wrapW: number): string[] {

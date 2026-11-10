@@ -135,9 +135,9 @@ renderFrame(spine: EthySpine, viewState: TuiViewState, cols: number, rows: numbe
 ```
 
 ```text
- Ethy v10.1.3 | SEPOLIA                        Slot 11,482,910        ● STATE  ◐ ECONOMY  ● P2P
+ Ethy v10.1.3 | SEPOLIA      Block 12,123,234        Slot 11,482,910        ◐ Economy  ● State  ● P2P
 ──────────────────────────────────────────────────────────────────────────────────────────────────
- ╭─ ● State • ────────────────╮  ╭─ ● Economy ────────────────╮  ╭─ ● P2P ──────────────────────╮
+ ╭─ ● Economy • ──────────────╮  ╭─ ● State ──────────────────╮  ╭─ ● P2P ──────────────────────╮
  │ 4-row node pulse           │  │ economy cockpit pairs      │  │ peers / served / latency     │
  ╰────────────────────────────╯  ╰────────────────────────────╯  ╰────────────────────────────────╯
 
@@ -147,15 +147,13 @@ renderFrame(spine: EthySpine, viewState: TuiViewState, cols: number, rows: numbe
 
 ──────────────────────────────────────────────────────────────────────────────────────────────────
  ● ethy > █
- Tab show domain help · ←/→ view history · Ctrl+D debug page · / command · Esc exit
+ Tab show domain help · ←/→ view history · / command · Esc exit
 ```
 
 ### Key UX & Keyboard Mechanics
 
-1. **Ultra-Minimal Top Bar (`● STATE  ◐ ECONOMY  ● P2P`):**
-   - Domains are `state` (yellow), `economy` (magenta), and `p2p` (green); readiness changes only the glyph (`●` / `◐` / `○`). `llmPulseReady` is spine-only; no `AI` pill.
-2. **Domain help (`Tab` / `Shift+Tab` on empty draft):**
-   - Cycles `activeDomain`, moves the cockpit title `•`, and mounts `domain_help` (boot starts on State help). Help does not append to `viewHistory`; empty `Enter` does nothing.
+1. **Ultra-Minimal Top Bar (`Economy · State · P2P` title-case pills):** EL `Block <n>` appears left of CL/demo `Slot <n>` when both are known.
+2. **Domain help (`Tab` / `Shift+Tab` on empty draft):** Cycles `economy` → `state` → `p2p`, mounts `domain_help` (boot on Economy). Interaction title chrome: `Commands | Debug (Ctrl+D)` and `←`/`→` on the box top-right; footer omits live notices and Ctrl+D hint.
 3. **Interaction view history (`←` / `→` on empty draft):**
    - Up to 12 entries: slash commands refresh live on each frame; natural-language results keep widget snapshots. From help, `←` jumps back to the current history entry.
 4. **Prefix Slash Completion (`/p` + `Tab` or `Enter`):**

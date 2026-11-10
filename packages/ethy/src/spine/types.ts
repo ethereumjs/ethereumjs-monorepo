@@ -5,7 +5,7 @@ import type { EconomySnapshot } from '../economy/types.ts'
 
 export type CapabilityId = 'state' | 'economy' | 'p2p'
 
-export const DOMAIN_ORDER: readonly CapabilityId[] = ['state', 'economy', 'p2p']
+export const DOMAIN_ORDER: readonly CapabilityId[] = ['economy', 'state', 'p2p']
 
 export const MAX_VIEW_HISTORY = 12
 
