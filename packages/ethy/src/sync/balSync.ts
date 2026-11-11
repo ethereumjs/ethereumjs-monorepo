@@ -739,14 +739,29 @@ export class BalChainStreamer {
     const tip = this.downloadTip(spine)
     if (tip === undefined) return
     const peer = this.opts.pickEthPeer()
-    if (peer?.latestBlock === undefined) return
-    const peerHead = BigInt(peer.latestBlock)
+    const bestKnownHead =
+      peer?.latestBlock !== undefined
+        ? spine.bestPeerHead !== undefined && spine.bestPeerHead > BigInt(peer.latestBlock)
+          ? spine.bestPeerHead
+          : BigInt(peer.latestBlock)
+        : spine.bestPeerHead
+    if (peer === undefined || bestKnownHead === undefined) return
+    const peerHead = bestKnownHead
+    const catchUpPeer = pickBalCatchUpPeer(spine, this.peerRestUntil, tip + 1n) ??
+      pickBalCatchUpPeer(spine, this.peerRestUntil) ?? {
+        id: peer.id,
+        ethVersion: peer.ethVersion,
+        latestBlock: peerHead,
+      }
     if (this.catchUp === undefined || this.catchUp.targetHead < peerHead) {
       this.catchUp = {
-        peerId: peer.id,
-        ethVersion: peer.ethVersion,
+        peerId: catchUpPeer.id,
+        ethVersion: catchUpPeer.ethVersion,
         targetHead: peerHead,
       }
+    } else {
+      this.catchUp.peerId = catchUpPeer.id
+      this.catchUp.ethVersion = catchUpPeer.ethVersion
     }
     if (peerHead <= tip) {
       if (spine.phase === 'BAL_CATCHUP') {

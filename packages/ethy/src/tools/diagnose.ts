@@ -32,9 +32,15 @@ export function ethyOverviewWidget(spine: EthySpine): WidgetSpec {
     spine.pivotBlockNumber !== undefined
       ? `#${spine.pivotBlockNumber.toLocaleString('en-US')}`
       : '—'
+  const servableCount =
+    s?.earliestBlock !== undefined && s?.latestBlock !== undefined
+      ? BigInt(s.latestBlock) >= BigInt(s.earliestBlock)
+        ? Number(BigInt(s.latestBlock) - BigInt(s.earliestBlock) + 1n)
+        : (s.blocksStored ?? 0)
+      : (s?.blocksStored ?? 0)
   const servableWindow =
     s?.earliestBlock !== undefined && s?.latestBlock !== undefined
-      ? `#${BigInt(s.earliestBlock).toLocaleString('en-US')}..#${BigInt(s.latestBlock).toLocaleString('en-US')} (64 blocks)`
+      ? `#${BigInt(s.earliestBlock).toLocaleString('en-US')}..#${BigInt(s.latestBlock).toLocaleString('en-US')} (${servableCount} block${servableCount === 1 ? '' : 's'})`
       : '—'
   return {
     kind: 'table',

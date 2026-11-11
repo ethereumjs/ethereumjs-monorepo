@@ -369,6 +369,34 @@ describe('[Ethy/Persist]: snap pivot store', () => {
     const rows = lookup.sampleAccountsFromDisk({ limit: 5, sortByBalanceDesc: true })
     assert.isAtLeast(rows.length, 1)
     assert.equal(bytesToHex(rows[0]!.accountHash), bytesToHex(hash))
+
+    // Also verify prefix browse starts at the beginning of the sorted bucket journal, not the tail
+    const hashEarly = new Uint8Array(32)
+    hashEarly[0] = 0x50
+    hashEarly[1] = 0x10
+    const hashLate = new Uint8Array(32)
+    hashLate[0] = 0x5f
+    hashLate[1] = 0xff
+    const dir2 = tempDir()
+    const store2 = openStore(dir2)
+    store2.activatePivot({ blockNumber: 3n, blockHash: new Uint8Array(32), stateRoot: root })
+    store2.appendVerifiedRange(
+      5,
+      [
+        { accountHash: hashEarly, binaryAccount: binary },
+        { accountHash: hashLate, binaryAccount: binary },
+      ],
+      createSnapBuckets(),
+    )
+    await store2.drainPendingFlushes()
+    const lookup2 = openStore(dir2)
+    const prefixRows = lookup2.sampleAccountsFromDisk({
+      prefixHex: '0x5010',
+      limit: 1,
+      sortByBalanceDesc: false,
+    })
+    assert.equal(prefixRows.length, 1)
+    assert.equal(bytesToHex(prefixRows[0]!.accountHash), bytesToHex(hashEarly))
   })
 
   it('demo store does not touch disk', () => {

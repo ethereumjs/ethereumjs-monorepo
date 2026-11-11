@@ -936,28 +936,31 @@ export class SnapPivotStore {
     const rows: Array<{ accountHash: Uint8Array; account: Account }> = []
     const rowSize = BINARY_ACCOUNT_JOURNAL_RECORD_SIZE
     const payloadStart = BINARY_ACCOUNT_JOURNAL_MAGIC.length
+    const isTopBalanceScan = opts.sortByBalanceDesc === true
     for (const bucket of buckets) {
-      if (rows.length >= opts.limit) break
+      if (!isTopBalanceScan && rows.length >= opts.limit) break
       const files = [
         this.accountFile(bucket, this.activeStateRoot),
         ...this.listSegmentJournalFiles(bucket, this.activeStateRoot),
       ]
       for (const file of files) {
-        if (rows.length >= opts.limit) break
+        if (!isTopBalanceScan && rows.length >= opts.limit) break
         if (!fs.existsSync(file)) continue
         const stat = fs.statSync(file)
         const recordCount = Math.floor((stat.size - payloadStart) / rowSize)
-        const want = Math.min(
-          recordCount,
-          opts.sortByBalanceDesc === true ? 256 : opts.limit - rows.length,
-        )
-        const start = Math.max(payloadStart, stat.size - want * rowSize)
+        if (recordCount <= 0) continue
+        const want = Math.min(recordCount, isTopBalanceScan ? 256 : opts.limit - rows.length)
+        const start = isTopBalanceScan
+          ? Math.max(payloadStart, stat.size - want * rowSize)
+          : payloadStart
+        const maxPerFile = isTopBalanceScan ? want : opts.limit - rows.length
+        let readInFile = 0
         const fd = fs.openSync(file, 'r')
         const rowBuf = Buffer.alloc(rowSize)
         try {
           for (
             let offset = start;
-            offset + rowSize <= stat.size && rows.length < opts.limit;
+            offset + rowSize <= stat.size && readInFile < maxPerFile;
             offset += rowSize
           ) {
             fs.readSync(fd, rowBuf, 0, rowSize, offset)
@@ -966,13 +969,14 @@ export class SnapPivotStore {
             if (prefix.length > 0 && !hashHex.startsWith(prefix)) continue
             const account = binaryAccountToAccount(new Uint8Array(rowBuf.subarray(32, rowSize)))
             rows.push({ accountHash, account })
+            readInFile++
           }
         } finally {
           fs.closeSync(fd)
         }
       }
     }
-    if (opts.sortByBalanceDesc === true && rows.length > 1) {
+    if (isTopBalanceScan && rows.length > 1) {
       rows.sort((a, b) => (a.account.balance > b.account.balance ? -1 : 1))
     }
     return rows.slice(0, opts.limit)
@@ -1748,9 +1752,7 @@ export class SnapPivotStore {
         storageSlotsSynced: number
       }
     | undefined {
-    const p = this.contractProgress
-    this.contractProgress = undefined
-    return p
+    return this.contractProgress
   }
 
   persistContractProgress(
