@@ -3,6 +3,7 @@ import type { FlatStateManager } from '@ethereumjs/statemanager'
 
 import { getCommandAvailability } from '../domains/commandAvailability.ts'
 import type { ETHEconomyDataManager } from '../economy/economyDataManager.ts'
+import type { EthySandbox } from '../evm/sandbox.ts'
 import type { SnapPivotStore } from '../persist/snapStore.ts'
 import { headInspectUnlocked } from '../spine/headInspect.ts'
 import type { WidgetSpec } from '../spine/types.ts'
@@ -22,6 +23,7 @@ import { buildDomainHelpWidget, buildHelpWidget, parseHelpDomainArg } from '../t
 import { livePlazaWidget } from '../tools/livePlaza.ts'
 import { inspectRawAccountRange, sampleSyncedAccounts } from '../tools/range.ts'
 import { rpcMicroscopeWidget } from '../tools/rpcTools.ts'
+import { sendTxWidget, simulateMicroscopeWidget } from '../tools/simulateTools.ts'
 import { renderCommandUnavailableWidget } from '../tui/components/CommandUnavailableUIComponent.ts'
 import type { IntentEngine, IntentRequest, IntentResult } from './intentEngine.ts'
 import { expandSlashCommand } from './slashComplete.ts'
@@ -42,7 +44,10 @@ export type DeterministicIntentEngineOpts = {
   disconnectPeer?: (peerId: string) => void
   economy?: ETHEconomyDataManager
   chain?: ChainConfig
+  sandbox?: EthySandbox
 }
+
+type RawTxSubmitter = (hex: string) => Promise<{ result: string } | { error: { message: string } }>
 
 /** Shared slash router for deterministic and LLM tool dispatch. */
 export type SlashDispatchCtx = {
@@ -160,15 +165,18 @@ export function dispatchSlashWidget(line: string, ctx: SlashDispatchCtx): Widget
       }
       return contractMicroscopeWidget(spine, stateManager, chain, economy, arg)
     }
-    case '/simulate': {
-      const locked = slashIfLocked('/simulate', spine)
-      if (locked !== undefined) return locked
+    case '/simulate':
       return {
         kind: 'key_value',
-        title: 'simulateTxOnHead (stub)',
-        entries: [{ key: 'Note', value: 'EVM sandbox ships in WP-08' }],
+        title: '/simulate',
+        entries: [{ key: 'Note', value: 'Run via intent engine (async sandbox).' }],
       }
-    }
+    case '/send':
+      return {
+        kind: 'key_value',
+        title: '/send',
+        entries: [{ key: 'Note', value: 'Run via intent engine (async submit).' }],
+      }
     case '/clear':
       return {
         kind: 'key_value',
@@ -198,13 +206,16 @@ export class DeterministicIntentEngine implements IntentEngine {
   private readonly snapStore?: SnapPivotStore
   private readonly economy?: ETHEconomyDataManager
   private readonly chain?: ChainConfig
+  private readonly sandbox?: EthySandbox
   private disconnectPeer?: (peerId: string) => void
+  private submitRawTransaction?: RawTxSubmitter
 
   constructor(opts: DeterministicIntentEngineOpts) {
     this.stateManager = opts.stateManager
     this.snapStore = opts.snapStore
     this.economy = opts.economy
     this.chain = opts.chain
+    this.sandbox = opts.sandbox
     this.disconnectPeer = opts.disconnectPeer
   }
 
@@ -212,23 +223,59 @@ export class DeterministicIntentEngine implements IntentEngine {
     this.disconnectPeer = fn
   }
 
-  handle(req: IntentRequest): Promise<IntentResult> {
+  setSubmitRawTransaction(fn: RawTxSubmitter): void {
+    this.submitRawTransaction = fn
+  }
+
+  async handle(req: IntentRequest): Promise<IntentResult> {
     const { text, spine, lastQuerySlot } = req
     const trimmed = expandSlashCommand(text)
     const querySlot = spine.currentSlot
     const stateHeader = formatEthyStateHeader(spine, lastQuerySlot)
 
     let widget: WidgetSpec
+    let frozenSlashWidget: WidgetSpec | undefined
 
     if (trimmed.startsWith('/')) {
-      widget = dispatchSlashWidget(trimmed, {
-        spine,
-        stateManager: this.stateManager,
-        snapStore: this.snapStore,
-        disconnectPeer: this.disconnectPeer,
-        economy: this.economy,
-        chain: this.chain,
-      })
+      const cmd = trimmed.split(/\s+/)[0]?.toLowerCase() ?? ''
+      if (cmd === '/simulate') {
+        const locked = slashIfLocked('/simulate', spine)
+        if (locked !== undefined) {
+          widget = locked
+        } else if (this.sandbox === undefined) {
+          widget = {
+            kind: 'key_value',
+            title: '/simulate',
+            entries: [{ key: 'Error', value: 'EVM sandbox unavailable' }],
+          }
+        } else {
+          widget = await simulateMicroscopeWidget(this.sandbox, trimmed)
+          frozenSlashWidget = widget
+        }
+      } else if (cmd === '/send') {
+        const locked = slashIfLocked('/send', spine)
+        if (locked !== undefined) {
+          widget = locked
+        } else if (this.submitRawTransaction === undefined) {
+          widget = {
+            kind: 'key_value',
+            title: '/send',
+            entries: [{ key: 'Error', value: 'Transaction pool unavailable' }],
+          }
+        } else {
+          widget = await sendTxWidget(this.submitRawTransaction, trimmed)
+          frozenSlashWidget = widget
+        }
+      } else {
+        widget = dispatchSlashWidget(trimmed, {
+          spine,
+          stateManager: this.stateManager,
+          snapStore: this.snapStore,
+          disconnectPeer: this.disconnectPeer,
+          economy: this.economy,
+          chain: this.chain,
+        })
+      }
     } else if (
       matchKeywords(trimmed, ['hottest contract', 'explain contract', 'what is contract']) ||
       (/0x[0-9a-f]{40}/i.test(trimmed) && matchKeywords(trimmed, ['contract', 'explain', 'what']))
@@ -259,11 +306,12 @@ export class DeterministicIntentEngine implements IntentEngine {
       widget.kind !== 'domain_help' && 'assistantComment' in widget
         ? widget.assistantComment
         : undefined
-    return Promise.resolve({
+    return {
       widget,
       stateHeader,
       querySlot,
       overviewNote,
-    })
+      frozenSlashWidget,
+    }
   }
 }

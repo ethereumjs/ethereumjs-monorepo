@@ -93,6 +93,13 @@ async function main(): Promise<void> {
       port: cli.rpcPort,
       portExplicit: cli.rpcPortExplicit,
       economy: node.economy,
+      blockWindow: node.blockWindow,
+      submitRawTransaction: (hex) => {
+        if (node.submitRawTransaction !== undefined) {
+          return node.submitRawTransaction(hex)
+        }
+        return Promise.resolve({ error: { code: -32000, message: 'Transaction pool unavailable' } })
+      },
     })
   } else {
     node.spine.rpc = {
@@ -139,6 +146,12 @@ async function main(): Promise<void> {
       .then((handle) => {
         bindPeerCoordinator(handle)
         noteChainHead = handle.noteChainHead
+        node.submitRawTransaction = handle.submitRawTransaction
+        node.hybridEngine?.setSubmitRawTransaction((hex) =>
+          handle
+            .submitRawTransaction(hex)
+            .then((out) => ('error' in out ? { error: { message: out.error.message } } : out)),
+        )
       })
       .catch((e: unknown) => {
         reportP2pStartError(e)

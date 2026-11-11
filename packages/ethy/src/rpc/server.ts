@@ -4,6 +4,7 @@ import type { ChainConfig } from '@ethereumjs/common'
 import type { FlatStateManager } from '@ethereumjs/statemanager'
 
 import type { ETHEconomyDataManager } from '../economy/economyDataManager.ts'
+import { createEthySandbox } from '../evm/sandbox.ts'
 import type { EthySpine } from '../spine/types.ts'
 import { RpcBlockWindowStore } from './blockWindowStore.ts'
 import { type RpcHandlerContext, dispatchRpcMethod, initRpcTelemetry } from './methods.ts'
@@ -30,6 +31,8 @@ export type StartJsonRpcOpts = {
   port?: number
   portExplicit?: boolean
   economy?: ETHEconomyDataManager
+  blockWindow?: RpcBlockWindowStore
+  submitRawTransaction?: RpcHandlerContext['submitRawTransaction']
 }
 
 function recordCall(
@@ -97,7 +100,14 @@ export async function startJsonRpcServer(
   const host = opts.host ?? '127.0.0.1'
   const requestedPort = opts.port ?? RPC_PORT_DEFAULT
   const portExplicit = opts.portExplicit === true
-  const blockWindow = new RpcBlockWindowStore(opts.chain, opts.hardfork)
+  const blockWindow = opts.blockWindow ?? new RpcBlockWindowStore(opts.chain, opts.hardfork)
+  const sandbox = createEthySandbox({
+    spine: opts.spine,
+    stateManager: opts.stateManager,
+    chain: opts.chain,
+    hardfork: opts.hardfork,
+    blockWindow,
+  })
   const ctx: RpcHandlerContext = {
     spine: opts.spine,
     stateManager: opts.stateManager,
@@ -106,6 +116,8 @@ export async function startJsonRpcServer(
     demo: opts.demo,
     blockWindow,
     economy: opts.economy,
+    sandbox,
+    submitRawTransaction: opts.submitRawTransaction,
   }
 
   const server = http.createServer(async (req, res) => {

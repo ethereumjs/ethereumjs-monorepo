@@ -90,6 +90,15 @@ export function activateHistoryEntry(
   'activeWidget' | 'interactionPage' | 'interactionLabel' | 'interactionTitle' | 'showingHelp'
 > & { overviewNote?: string } {
   if (entry.kind === 'slash') {
+    if (entry.frozenWidget !== undefined) {
+      return {
+        activeWidget: entry.frozenWidget,
+        interactionPage: entry.page,
+        interactionLabel: entry.command,
+        interactionTitle: undefined,
+        showingHelp: false,
+      }
+    }
     const widget = dispatchSlashWidget(entry.command, slashCtx)
     const overviewNote =
       widget.kind !== 'domain_help' && 'assistantComment' in widget
@@ -212,6 +221,7 @@ export function applyLiveSlashRefresh(
   if (view.showingHelp || view.viewHistory.length === 0) return view
   const entry = view.viewHistory[view.viewHistoryIndex]
   if (entry === undefined || entry.kind !== 'slash') return view
+  if (entry.frozenWidget !== undefined) return view
   const widget = dispatchSlashWidget(entry.command, slashCtx)
   return { ...view, activeWidget: widget }
 }

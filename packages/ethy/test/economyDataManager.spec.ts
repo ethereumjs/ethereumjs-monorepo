@@ -185,7 +185,7 @@ describe('[Ethy/Economy]: snapshots and tools', () => {
     assertRegistryMatchesSlashList()
     assert.deepEqual(
       registryWriteActions().sort(),
-      ['/drop', '/pause', '/reassign', '/resume'].sort(),
+      ['/drop', '/pause', '/reassign', '/resume', '/send'].sort(),
     )
     assert.equal(expandSlashCommand('/e'), '/economy')
     assert.equal(expandSlashCommand('/et'), '/ethy')

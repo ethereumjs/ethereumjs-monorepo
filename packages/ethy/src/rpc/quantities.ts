@@ -23,6 +23,16 @@ export function data32Hex(bytes: Uint8Array): string {
   return bytesToHex(setLengthLeft(bytes, 32))
 }
 
+export function parseDataHex(hex: unknown): Uint8Array | undefined {
+  if (typeof hex !== 'string') return undefined
+  try {
+    const normalized = (hex.startsWith('0x') ? hex : `0x${hex}`) as `0x${string}`
+    return hexToBytes(normalized)
+  } catch {
+    return undefined
+  }
+}
+
 export function parseData32Hex(hex: string): Uint8Array | undefined {
   try {
     const normalized = (hex.startsWith('0x') ? hex : `0x${hex}`) as `0x${string}`

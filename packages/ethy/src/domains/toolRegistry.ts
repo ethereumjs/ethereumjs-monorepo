@@ -27,7 +27,7 @@ const READ_COMMANDS = [
   '/ai',
 ] as const
 
-const WRITE_COMMANDS = ['/drop', '/reassign', '/pause', '/resume'] as const
+const WRITE_COMMANDS = ['/drop', '/reassign', '/pause', '/resume', '/send'] as const
 
 function normalizeCmd(cmd: string): string {
   return cmd.trim().toLowerCase().split(/\s+/)[0] ?? cmd

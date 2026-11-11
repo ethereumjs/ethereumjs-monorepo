@@ -3,6 +3,7 @@ import type { FlatStateManager } from '@ethereumjs/statemanager'
 import type { ETHEconomyDataManager } from '../economy/economyDataManager.ts'
 import type { SnapPivotStore } from '../persist/snapStore.ts'
 
+import type { EthySandbox } from '../evm/sandbox.ts'
 import { DeterministicIntentEngine } from './deterministicEngine.ts'
 import type { LlmTransport } from './fixtureEngine.ts'
 import type { IntentEngine, IntentRequest, IntentResult } from './intentEngine.ts'
@@ -21,6 +22,7 @@ export type HybridIntentEngineOpts = {
   memoryMode?: AiMemoryMode
   economy?: ETHEconomyDataManager
   chain?: ChainConfig
+  sandbox?: EthySandbox
 }
 
 export class HybridIntentEngine implements IntentEngine {
@@ -41,6 +43,7 @@ export class HybridIntentEngine implements IntentEngine {
       snapStore: opts.snapStore,
       economy: opts.economy,
       chain: opts.chain,
+      sandbox: opts.sandbox,
     })
     this.llmBase = opts.llmBase
     if (opts.transport !== undefined) {
@@ -59,6 +62,12 @@ export class HybridIntentEngine implements IntentEngine {
   setDisconnectPeer(fn: (peerId: string) => void): void {
     this.deterministic.setDisconnectPeer(fn)
     this.local?.setDisconnectPeer(fn)
+  }
+
+  setSubmitRawTransaction(
+    fn: (hex: string) => Promise<{ result: string } | { error: { message: string } }>,
+  ): void {
+    this.deterministic.setSubmitRawTransaction(fn)
   }
 
   clearMemory(): void {

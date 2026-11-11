@@ -48,6 +48,7 @@ function stateSections(): { sections: DomainHelpSection[]; aiExamples: string[] 
           { command: '/account <0x>', detail: 'Balance, nonce & code' },
           { command: '/bal', detail: 'Latest BAL state diffs' },
           { command: '/cl', detail: 'Beacon finality & BLS %' },
+          { command: '/simulate <to> <data>', detail: 'EVM microscope at head' },
         ],
       },
       {
@@ -79,6 +80,7 @@ function p2pSections(): { sections: DomainHelpSection[]; aiExamples: string[] } 
           { command: '/rpc', detail: 'JSON-RPC endpoint & method stats' },
           { command: '/diag', detail: 'Diagnostic ring buffer' },
           { command: '/drop <peerId>', detail: 'Disconnect peer session' },
+          { command: '/send <signedTxHex>', detail: 'Submit raw tx to the pool' },
         ],
       },
     ],

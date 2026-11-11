@@ -283,6 +283,8 @@ export type InteractionHistoryEntry =
       command: string
       label: string
       page: InteractionPage
+      /** Frozen EVM snapshot for `/simulate` and `/send` (WP-08b). */
+      frozenWidget?: WidgetSpec
     }
   | {
       kind: 'ai'

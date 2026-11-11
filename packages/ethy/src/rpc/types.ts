@@ -17,5 +17,3 @@ export type JsonRpcError = {
 export type JsonRpcResponse =
   | { jsonrpc: '2.0'; id: string | number | null; result?: unknown }
   | { jsonrpc: '2.0'; id: string | number | null; error: JsonRpcError }
-
-export const WP08B_STUB_MESSAGE = 'On-demand EVM execution and tx broadcast arrive in WP-08b'

@@ -245,6 +245,7 @@ export async function runEthySession(node: EthyNode): Promise<void> {
         command: label,
         label,
         page: 'main',
+        frozenWidget: result.frozenSlashWidget,
       }
       view = pushViewHistory(view, entry)
     }

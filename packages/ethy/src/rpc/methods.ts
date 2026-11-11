@@ -8,14 +8,15 @@ import { KECCAK256_NULL, createAddressFromString, hexToBytes } from '@ethereumjs
 import { getEthyClientVersion } from '../clientMeta.ts'
 import { ethyKeccak256 } from '../crypto/keccak.ts'
 import type { ETHEconomyDataManager } from '../economy/economyDataManager.ts'
+import type { EthySandbox } from '../evm/sandbox.ts'
 import { isNodeAtChainHead, localVerifiedBlock, resolveChainHeadClock } from '../spine/chainHead.ts'
 import type { EthySpine } from '../spine/types.ts'
 import type { RpcBlockWindowStore } from './blockWindowStore.ts'
+import { headBlockNumber } from './executionContext.ts'
 import { decodeRpcHeader, formatRpcBlock, formatRpcTransaction } from './formatBlock.ts'
 import { type RpcLog, collectLogsFromBlock, formatRpcReceipt } from './formatReceipt.ts'
 import { data32Hex, dataHex, parseData32Hex, parseQuantityHex, quantityHex } from './quantities.ts'
 import type { JsonRpcError } from './types.ts'
-import { WP08B_STUB_MESSAGE } from './types.ts'
 
 export type RpcHandlerContext = {
   spine: EthySpine
@@ -25,6 +26,8 @@ export type RpcHandlerContext = {
   demo: boolean
   blockWindow: RpcBlockWindowStore
   economy?: ETHEconomyDataManager
+  sandbox: EthySandbox
+  submitRawTransaction?: (hex: string) => Promise<{ result: string } | { error: JsonRpcError }>
 }
 
 const ONE_GWEI = 1_000_000_000n
@@ -46,10 +49,6 @@ export function initRpcTelemetry(spine: EthySpine, enabled: boolean): void {
 
 function err(code: number, message: string): JsonRpcError {
   return { code, message }
-}
-
-function headBlockNumber(spine: EthySpine): bigint {
-  return localVerifiedBlock(spine) ?? spine.pivotBlockNumber ?? 0n
 }
 
 function flatStateError(requested: bigint, head: bigint): JsonRpcError {
@@ -200,22 +199,11 @@ function latestBaseFee(ctx: RpcHandlerContext): bigint {
   }
 }
 
-const STUB_METHODS = new Set([
-  'eth_call',
-  'eth_estimateGas',
-  'eth_createAccessList',
-  'eth_sendRawTransaction',
-])
-
 export async function dispatchRpcMethod(
   ctx: RpcHandlerContext,
   method: string,
   params: unknown[],
 ): Promise<{ result?: unknown; error?: JsonRpcError }> {
-  if (STUB_METHODS.has(method)) {
-    return { error: err(-32601, WP08B_STUB_MESSAGE) }
-  }
-
   switch (method) {
     case 'web3_clientVersion': {
       const ver = getEthyClientVersion()
@@ -615,6 +603,44 @@ export async function dispatchRpcMethod(
     }
     case 'ethy_economy':
       return { result: ctx.spine.economy ?? {} }
+    case 'eth_call': {
+      const tx = params[0]
+      const tag = params[1]
+      const stateOverride = params[2]
+      const resolved = resolveStateTag(tag, ctx)
+      if ('error' in resolved) return { error: resolved.error }
+      void resolved
+      return ctx.sandbox.runEthCall(tx, stateOverride)
+    }
+    case 'eth_estimateGas': {
+      const tx = params[0]
+      const tag = params[1]
+      const stateOverride = params[2]
+      const resolved = resolveStateTag(tag, ctx)
+      if ('error' in resolved) return { error: resolved.error }
+      void resolved
+      return ctx.sandbox.runEstimateGas(tx, stateOverride)
+    }
+    case 'eth_createAccessList': {
+      const tx = params[0]
+      const tag = params[1]
+      const resolved = resolveStateTag(tag, ctx)
+      if ('error' in resolved) return { error: resolved.error }
+      void resolved
+      return ctx.sandbox.runCreateAccessList(tx)
+    }
+    case 'eth_sendRawTransaction': {
+      const raw = params[0]
+      if (typeof raw !== 'string') {
+        return { error: err(-32602, 'Expected signed transaction hex string') }
+      }
+      if (ctx.submitRawTransaction === undefined) {
+        return { error: err(-32000, 'Transaction pool unavailable') }
+      }
+      const out = await ctx.submitRawTransaction(raw)
+      if ('error' in out) return out
+      return { result: out.result }
+    }
     default:
       return { error: err(-32601, `Method not found: ${method}`) }
   }

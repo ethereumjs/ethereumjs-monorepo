@@ -16,11 +16,11 @@ import { keccak_256 } from '@noble/hashes/sha3.js'
 import { assert, describe, it } from 'vitest'
 
 import { getCommandAvailability } from '../src/domains/commandAvailability.ts'
+import { createEthySandbox } from '../src/evm/sandbox.ts'
 import { activeHardfork, chainConfigForNetwork } from '../src/net/chainHardfork.ts'
 import { RpcBlockWindowStore } from '../src/rpc/blockWindowStore.ts'
 import { type RpcHandlerContext, dispatchRpcMethod } from '../src/rpc/methods.ts'
 import { startJsonRpcServer } from '../src/rpc/server.ts'
-import { WP08B_STUB_MESSAGE } from '../src/rpc/types.ts'
 import { createSpine } from '../src/spine/createSpine.ts'
 
 function buildCtx(sm: ReturnType<typeof createFlatStateManager>): RpcHandlerContext {
@@ -31,13 +31,22 @@ function buildCtx(sm: ReturnType<typeof createFlatStateManager>): RpcHandlerCont
   spine.totalAccountsSynced = 1
   const chain = chainConfigForNetwork('sepolia')
   const hardfork = activeHardfork(chain)
+  const blockWindow = new RpcBlockWindowStore(chain, hardfork)
+  const sandbox = createEthySandbox({
+    spine,
+    stateManager: sm,
+    chain,
+    hardfork,
+    blockWindow,
+  })
   return {
     spine,
     stateManager: sm,
     chain,
     hardfork,
     demo: false,
-    blockWindow: new RpcBlockWindowStore(chain, hardfork),
+    blockWindow,
+    sandbox,
   }
 }
 
@@ -51,7 +60,7 @@ async function postJSON(port: number, body: unknown): Promise<unknown> {
 }
 
 describe('[Ethy/JSON-RPC]: WP-08a server', () => {
-  it('eth_chainId and execution stubs over HTTP', async () => {
+  it('eth_chainId and eth_call over HTTP', async () => {
     const spine = createSpine('sepolia', 11155111n)
     const chain = chainConfigForNetwork('sepolia')
     const handle = await startJsonRpcServer({
@@ -76,14 +85,14 @@ describe('[Ethy/JSON-RPC]: WP-08a server', () => {
       id: 1,
     })) as { result: string }
     assert.equal(chainId.result, '0xaa36a7')
-    const stub = (await postJSON(port, {
+    const to = '0x5555555555555555555555555555555555555555'
+    const call = (await postJSON(port, {
       jsonrpc: '2.0',
       method: 'eth_call',
-      params: [],
+      params: [{ to, data: '0x' }, 'latest', { [to]: { code: '0x602a6000526001601ff3' } }],
       id: 2,
-    })) as { error: { code: number; message: string } }
-    assert.equal(stub.error.code, -32601)
-    assert.include(stub.error.message, WP08B_STUB_MESSAGE)
+    })) as { result: string }
+    assert.equal(call.result, '0x2a')
     await handle!.stop()
   })
 

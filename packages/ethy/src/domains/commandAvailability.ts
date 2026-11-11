@@ -193,13 +193,12 @@ export function getCommandAvailability(
         return {
           status: 'locked',
           shortTag: 'awaiting state',
-          reason: 'Simulation needs head-verified state (WP-08 will run the EVM here).',
+          reason: 'Simulation needs head-verified flat state.',
         }
       }
-      return {
-        status: 'ready',
-        reason: 'On-demand EVM sandbox ships in WP-08; command is reserved.',
-      }
+      return { status: 'ready', reason: 'On-demand EVM call at head (overlay sandbox).' }
+    case '/send':
+      return { status: 'ready', reason: 'Broadcast a signed raw transaction to eth peers.' }
     default:
       return { status: 'ready' }
   }

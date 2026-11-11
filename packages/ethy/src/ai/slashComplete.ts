@@ -15,6 +15,7 @@ export const SLASH_COMMANDS = [
   '/account ',
   '/bal',
   '/simulate',
+  '/send ',
   '/help',
   '/cl',
   '/economy',

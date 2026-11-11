@@ -34,6 +34,7 @@ import {
 } from '../persist/peerBook.ts'
 import type { PeerBookStore } from '../persist/peerBook.ts'
 import { SnapPivotStore, snapBucketsUnfinished } from '../persist/snapStore.ts'
+import type { JsonRpcError } from '../rpc/types.ts'
 import type { RpcBundleNote } from '../rpc/types.ts'
 import { enqueueProtocol } from '../runtime/lanes.ts'
 import { ResourceBudgetWatchdog } from '../runtime/resourceBudget.ts'
@@ -84,6 +85,7 @@ import {
   shouldLockSnapAfterGrace,
 } from '../sync/syncSourceSelector.ts'
 import { livePlazaWidget } from '../tools/livePlaza.ts'
+import { createEthyTxPool } from '../txpool/pool.ts'
 import { activeHardfork, advertisedForkHash, chainConfigForNetwork } from './chainHardfork.ts'
 import {
   VIP_SNAP_PEER_TARGET,
@@ -173,6 +175,7 @@ export type PeerCoordinatorHandle = {
   refreshPivotHeader: () => void
   disconnectPeer: (peerId: string) => void
   noteChainHead: (blockNumber: bigint) => void
+  submitRawTransaction: (hex: string) => Promise<{ result: string } | { error: JsonRpcError }>
 }
 
 function workerChainId(network: string): WorkerChainId {
@@ -1331,6 +1334,8 @@ export async function startPeerCoordinator(
     message: `ETH STATUS out: hardfork ${hardfork} genesis ${status.genesisHash} fork ${advertisedForkHash(chain, hardfork)}`,
   })
 
+  let txPool: ReturnType<typeof createEthyTxPool> | undefined
+
   client = await createThreadedNetwork(
     {
       inProcess: opts.inProcess,
@@ -1360,6 +1365,19 @@ export async function startPeerCoordinator(
     },
     workerModuleUrl,
   )
+
+  txPool = createEthyTxPool({
+    stateManager,
+    chain,
+    hardfork,
+    chainId: spine.chainId,
+    worker: client,
+    getEthPeerIds: () =>
+      lastTelemetryPeers
+        .filter((p) => p.bestHash !== undefined && p.bestHash.length > 2)
+        .map((p) => p.id),
+    sendEth: sendEthToPeer,
+  })
 
   const startEthySwarmSync = () => {
     if (
@@ -1781,6 +1799,12 @@ export async function startPeerCoordinator(
     refreshPivotHeader: () => {
       clearPivotInFlight()
       pivotBlockedPeers.clear()
+    },
+    submitRawTransaction: (hex) => {
+      if (txPool === undefined) {
+        return Promise.resolve({ error: { code: -32000, message: 'P2P not ready' } })
+      }
+      return txPool.submitRawTransactionHex(hex)
     },
   }
 }
