@@ -149,6 +149,27 @@ describe('[Ethy/TUI]: renderFrame', () => {
     assert.notInclude(top, '[')
   })
 
+  it('capabilityBarClockLabel includes JSON-RPC between slot and pills', () => {
+    const spine = createSpine('sepolia', 11155111n)
+    spine.clOptimisticBlockNumber = 12_071_450n
+    spine.clOptimisticSlot = 11_500_000
+    spine.phase = 'HEAD_FOLLOWING'
+    spine.lastVerifiedBlockNumber = 12_071_450n
+    spine.rpc = {
+      enabled: true,
+      listening: true,
+      host: '127.0.0.1',
+      port: 8545,
+      url: 'http://127.0.0.1:8545',
+      totalRequests: 0,
+      totalErrors: 0,
+      methodStats: {},
+      recentCalls: [],
+    }
+    const label = stripAnsi(capabilityBarClockLabel(spine))
+    assert.include(label, 'JSON-RPC')
+  })
+
   it('capabilityBarClockLabel dims Block when lagging canonical head', () => {
     const spine = createSpine('sepolia', 11155111n)
     setPhase(spine, 'HEAD_FOLLOWING')

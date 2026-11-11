@@ -12,6 +12,7 @@ const READ_TOOLS: Omit<ToolCatalogEntry, 'permission'>[] = [
   { id: 'live', slash: '/live', description: 'Ethereum Plaza live head observatory' },
   { id: 'peers', slash: '/peers', description: 'Peer health table' },
   { id: 'ethy', slash: '/ethy', description: 'ETHY/0 swarm overview' },
+  { id: 'rpc', slash: '/rpc', description: 'JSON-RPC endpoint telemetry' },
   { id: 'buckets', slash: '/buckets', description: '16 snap bucket progress' },
   { id: 'diag', slash: '/diag', description: 'Diagnostic ring buffer' },
   { id: 'economy', slash: '/economy', description: 'Live economy deep view' },

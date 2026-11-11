@@ -76,6 +76,7 @@ function p2pSections(): { sections: DomainHelpSection[]; aiExamples: string[] } 
         rows: [
           { command: '/peers', detail: 'Client table, caps & RTT' },
           { command: '/ethy', detail: 'ETHY/0 swarm & serve stats' },
+          { command: '/rpc', detail: 'JSON-RPC endpoint & method stats' },
           { command: '/diag', detail: 'Diagnostic ring buffer' },
           { command: '/drop <peerId>', detail: 'Disconnect peer session' },
         ],

@@ -21,6 +21,7 @@ import { inspectAccount, inspectLatestBAL } from '../tools/headTools.ts'
 import { buildDomainHelpWidget, buildHelpWidget, parseHelpDomainArg } from '../tools/help.ts'
 import { livePlazaWidget } from '../tools/livePlaza.ts'
 import { inspectRawAccountRange, sampleSyncedAccounts } from '../tools/range.ts'
+import { rpcMicroscopeWidget } from '../tools/rpcTools.ts'
 import { renderCommandUnavailableWidget } from '../tui/components/CommandUnavailableUIComponent.ts'
 import type { IntentEngine, IntentRequest, IntentResult } from './intentEngine.ts'
 import { expandSlashCommand } from './slashComplete.ts'
@@ -75,6 +76,11 @@ export function dispatchSlashWidget(line: string, ctx: SlashDispatchCtx): Widget
       return peersTableWidget(spine)
     case '/ethy':
       return ethyOverviewWidget(spine)
+    case '/rpc': {
+      const locked = slashIfLocked('/rpc', spine)
+      if (locked !== undefined) return locked
+      return rpcMicroscopeWidget(spine)
+    }
     case '/buckets':
     case '/snap':
       return bucketsTableWidget(spine)

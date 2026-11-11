@@ -82,6 +82,8 @@ export function createEthyNode(opts: CreateEthyNodeOptions): EthyNode {
           maxResidentAccounts: 500_000,
           coldAccountLookup: (accountHash) => snapStore.lookupBinaryAccountByHash(accountHash),
           coldCodeLookup: (codeHash) => snapStore.lookupCodeByHash(codeHash),
+          coldStorageLookup: (accountHash, slotHash) =>
+            snapStore.lookupStorageByHash(accountHash, slotHash),
         },
   )
   const peerBook = PeerBookStore.open({

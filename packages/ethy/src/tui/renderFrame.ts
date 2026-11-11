@@ -9,7 +9,7 @@ import {
 import { BOLD, DIM, RESET, visibleWidth } from './ansi.ts'
 import { capabilityMark } from './capabilityMark.ts'
 import { COCKPIT_COLUMN_GAP, cockpitColumnWidths, renderCockpit } from './cockpit.ts'
-import { capabilityBarClockLabel } from './headerClock.ts'
+import { capabilityBarClockLabel, isRpcReady } from './headerClock.ts'
 import {
   composeBrandAndRightPills,
   composeFixedRow,
@@ -26,7 +26,7 @@ const DELIMITER_PAD_ROWS = 1
 const HEADER_FOOTER_PADDING: HorizontalPadding = { left: 2, right: 2 }
 
 /** Columns between `Slot N` and the first capability pill. */
-const SLOT_GAP = 8
+const SLOT_GAP = 6
 
 export const PROMPT_PREFIX_WIDTH = 9
 
@@ -91,6 +91,21 @@ function promptColumnWidths(contentWidth: number): { left: number; right: number
   return { left, right }
 }
 
+function renderRightFooterRpc(spine: EthySpine, width: number): string {
+  const rpc = spine.rpc
+  if (rpc === undefined || rpc.enabled === false) {
+    return fixedField(`${DIM}JSON-RPC off${RESET}`, width)
+  }
+  if (rpc.listening !== true) {
+    return fixedField(`${DIM}JSON-RPC bind failed${RESET}`, width)
+  }
+  const ready = isRpcReady(spine)
+  if (ready) {
+    return fixedLineRight(`${DIM}JSON-RPC${RESET} ${BOLD}${rpc.url}${RESET}`, width)
+  }
+  return fixedLineRight(`${DIM}JSON-RPC ${rpc.url}${RESET}`, width)
+}
+
 function renderLeftHint(draft: string, leftW: number): string {
   const leftHint = `${renderFooterHint()}${RESET}`
   const slash =
@@ -118,10 +133,11 @@ function renderPrompt(spine: EthySpine, view: TuiViewState, cols: number): strin
   const draftWidth = Math.max(0, left - PROMPT_PREFIX_WIDTH)
   const prompt = `${prefix}${fixedField(view.promptDraft, draftWidth)}`
   const hint = renderLeftHint(view.promptDraft, left)
+  const footerRpc = renderRightFooterRpc(spine, right)
   return [
     fixedLine(`${fixedField(prompt, left)}${gap}${fixedField('', right)}`, cols),
     fixedLine(`${fixedField('', left)}${gap}${fixedField('', right)}`, cols),
-    fixedLine(`${hint}${gap}${fixedField('', right)}`, cols),
+    fixedLine(`${hint}${gap}${footerRpc}`, cols),
   ]
 }
 

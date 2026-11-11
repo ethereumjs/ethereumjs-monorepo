@@ -245,6 +245,7 @@ export type HeadFollowerOpts = {
   /** WP-05b: cross-check EL block hash against consensus light client. */
   onVerifiedExecutionHeader?: (blockNumber: bigint, blockHash: Uint8Array) => void
   economy?: ETHEconomyDataManager
+  onRpcBundle?: (note: import('../rpc/types.ts').RpcBundleNote) => void
 }
 
 type HeadCatchUp = {
@@ -459,14 +460,16 @@ export class BalChainStreamer {
           persistHeal,
           economy: this.opts.economy,
           preDecodedBalJson: row.balJson,
+          onRpcBundle: this.opts.onRpcBundle,
         })
       } else {
-        this.opts.economy?.noteBundle({
+        const note = {
           blockNumber: row.header.number,
           headerRlp: row.header.headerRlp,
           balJson: row.balJson,
-          balRlp: row.balRlp,
-        })
+        }
+        this.opts.economy?.noteBundle({ ...note, balRlp: row.balRlp })
+        this.opts.onRpcBundle?.(note)
       }
       this.opts.onVerifiedExecutionHeader?.(row.header.number, row.header.hash)
       if (snapStreaming) {
@@ -568,6 +571,7 @@ export class BalChainStreamer {
       deferStateApply: snapStreaming,
       persistHeal: snapStreaming,
       economy: this.opts.economy,
+      onRpcBundle: this.opts.onRpcBundle,
     })
     const fields =
       bundle.headerRlp !== undefined

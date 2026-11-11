@@ -34,6 +34,7 @@ import {
 } from '../persist/peerBook.ts'
 import type { PeerBookStore } from '../persist/peerBook.ts'
 import { SnapPivotStore, snapBucketsUnfinished } from '../persist/snapStore.ts'
+import type { RpcBundleNote } from '../rpc/types.ts'
 import { enqueueProtocol } from '../runtime/lanes.ts'
 import { ResourceBudgetWatchdog } from '../runtime/resourceBudget.ts'
 import { createSnapBuckets } from '../spine/buckets.ts'
@@ -162,6 +163,7 @@ export type StartPeerCoordinatorOptions = {
   /** Direct `enode://` dials after worker start (WP-06b). */
   connectEnodeUrls?: string[]
   economy?: ETHEconomyDataManager
+  onRpcBundle?: (note: RpcBundleNote) => void
   /** Base-state download preference (WP-06c). */
   syncMode?: SyncMode
 }
@@ -399,6 +401,7 @@ export async function startPeerCoordinator(
           deriveCapabilities(spine)
         },
         economy: opts.economy,
+        onRpcBundle: opts.onRpcBundle,
         onPivotStep: (newPivot) => {
           snapStore?.updatePivotHead({
             blockNumber: newPivot.blockNumber,
@@ -999,6 +1002,7 @@ export async function startPeerCoordinator(
       putServableBlock: (b) => client.putServableBlock(b),
       ...bundleBalHooks,
       economy: opts.economy,
+      onRpcBundle: opts.onRpcBundle,
     })
     recordDiagnostic(spine, {
       subsystem: 'devp2p',
@@ -1108,6 +1112,7 @@ export async function startPeerCoordinator(
       putServableBlock: (b) => client.putServableBlock(b),
       ...bundleBalHooks,
       economy: opts.economy,
+      onRpcBundle: opts.onRpcBundle,
     }).then(() => {
       if (healSeq === undefined) return
       healSeq.nextBlock += 1n

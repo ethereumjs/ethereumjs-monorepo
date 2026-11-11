@@ -233,6 +233,35 @@ export interface EthySpine {
   onDiagnosticRecorded?: (entry: DiagnosticEvent) => void
   /** Active logs directory path (`~/.ethy/networks/<net>/logs`). */
   logsDirPath?: string
+  /** Loopback JSON-RPC 2.0 telemetry (WP-08a). */
+  rpc?: RpcTelemetry
+}
+
+export type RpcMethodStat = {
+  calls: number
+  errors: number
+  lastLatencyMs: number
+}
+
+export type RpcRecentCall = {
+  timestamp: number
+  method: string
+  status: 'ok' | 'err'
+  durationMs: number
+}
+
+export type RpcTelemetry = {
+  enabled: boolean
+  listening: boolean
+  host: string
+  port: number
+  url: string
+  totalRequests: number
+  totalErrors: number
+  lastMethod?: string
+  lastRequestAt?: number
+  methodStats: Record<string, RpcMethodStat>
+  recentCalls: RpcRecentCall[]
 }
 
 export type DebugSectionSpec = {
