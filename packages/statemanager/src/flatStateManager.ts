@@ -86,6 +86,7 @@ export class FlatStateManager implements StateManagerInterface {
   private readonly _pinnedKeys = new Set<string>()
   private readonly _storage = new Map<string, Uint8Array>()
   private readonly _code = new Map<string, Uint8Array>()
+  private readonly _coldHydratedCodeKeys = new Set<string>()
   private readonly _hashToAddress = new Map<string, Address>()
   private readonly _deltaStack: DeltaFrame[] = []
   private readonly _overlayFrames: DeltaFrame[] = []
@@ -316,9 +317,10 @@ export class FlatStateManager implements StateManagerInterface {
   }
 
   private trimColdCodeCacheIfNeeded(): void {
-    while (this._code.size > MAX_COLD_CODE_CACHE) {
-      const oldest = this._code.keys().next().value as string | undefined
+    while (this._coldHydratedCodeKeys.size > MAX_COLD_CODE_CACHE) {
+      const oldest = this._coldHydratedCodeKeys.keys().next().value as string | undefined
       if (oldest === undefined) break
+      this._coldHydratedCodeKeys.delete(oldest)
       this._code.delete(oldest)
     }
   }
@@ -329,6 +331,7 @@ export class FlatStateManager implements StateManagerInterface {
     if (cold === undefined) return undefined
     const owned = new Uint8Array(cold)
     this._code.set(key, owned)
+    this._coldHydratedCodeKeys.add(key)
     this.trimColdCodeCacheIfNeeded()
     return owned
   }
@@ -351,8 +354,10 @@ export class FlatStateManager implements StateManagerInterface {
     }
     if (value === undefined) {
       this._code.delete(key)
+      this._coldHydratedCodeKeys.delete(key)
     } else {
       this._code.set(key, value)
+      this._coldHydratedCodeKeys.delete(key)
     }
   }
 
