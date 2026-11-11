@@ -231,6 +231,13 @@ Every Work Package delivers a **runnable, observable, and live-testable incremen
                                                               │
                                                               ▼
                                           ┌─────────────────────────────────────────┐
+                                          │ WP-07h: Ethereum Plaza (/live), Block   │
+                                          │         Moment Detector, 16-District    │
+                                          │         State Lights & Enter-to-Plaza   │
+                                          └───────────────────┬─────────────────────┘
+                                                              │
+                                                              ▼
+                                          ┌─────────────────────────────────────────┐
                                           │ WP-08: On-Demand @ethereumjs/evm        │
                                           │        Sandbox, P2P Tx Broadcast &      │
                                           │        Headless SDK (FYP / MCP Ready)   │
