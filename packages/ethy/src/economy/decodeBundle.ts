@@ -531,6 +531,7 @@ export function decodeBundle(input: DecodeBundleInput): BlockEconomyRecord {
     }
     if (snaps.length > 0) base.balSnapshots = snaps
     base.nibbleTouches = nibbleTouchesFromBal(bal)
+    base.resolvedBalJson = bal
   }
 
   if (bodyParse !== undefined) {

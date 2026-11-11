@@ -1,3 +1,5 @@
+import type { BALJSONBlockAccessList } from '@ethereumjs/util'
+
 export type DomainPermission = 'read' | 'write'
 
 export type BaseFeeTrend = 'up' | 'down' | 'flat'
@@ -56,6 +58,8 @@ export type BlockEconomyRecord = {
   extraDataHex?: string
   /** Per-bucket account touches in this block (`keccak(address)[0] >> 4`). */
   nibbleTouches?: number[]
+  /** Decoded BAL JSON when resolved from `balJson` or `balRlp` (WP-07h). */
+  resolvedBalJson?: BALJSONBlockAccessList
   baseFeeWei?: bigint
   gasFullPct: number
   blobGasUsed?: bigint

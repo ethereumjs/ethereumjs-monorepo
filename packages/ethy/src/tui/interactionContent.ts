@@ -154,7 +154,15 @@ export function interactionViewTitle(
   void view
   if (widget === null || widget.kind === 'start_page') return `${BOLD}Welcome${RESET}`
   let base = ''
-  if (nlTitle !== undefined && nlTitle.length > 0 && lastSubmitted?.startsWith('/') !== true) {
+  if (widget.kind === 'live_plaza') {
+    const n = spine?.economy?.latestBlockNumber
+    const suffix = n !== undefined ? ` · #${Number(n).toLocaleString('en-US')}` : ''
+    base = `${BOLD}/live · Ethereum Plaza${suffix}${RESET}`
+  } else if (
+    nlTitle !== undefined &&
+    nlTitle.length > 0 &&
+    lastSubmitted?.startsWith('/') !== true
+  ) {
     base = `${BOLD}${nlTitle}${RESET}`
   } else if (lastSubmitted?.startsWith('/') === true) {
     const cmd = lastSubmitted.split(/\s+/)[0] ?? lastSubmitted
@@ -172,10 +180,6 @@ export function interactionViewTitle(
     base = `${BOLD}${widget.title}${RESET}`
   } else if (widget.kind === 'key_value' && widget.title) {
     base = `${BOLD}${widget.title}${RESET}`
-  } else if (widget.kind === 'live_plaza') {
-    const n = spine?.economy?.latestBlockNumber
-    const suffix = n !== undefined ? ` · #${Number(n).toLocaleString('en-US')}` : ''
-    base = `${BOLD}/live · Ethereum Plaza${suffix}${RESET}`
   } else {
     base = `${BOLD}Interaction${RESET}`
   }

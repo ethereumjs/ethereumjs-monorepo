@@ -119,7 +119,7 @@ export class ETHEconomyDataManager {
       }
       this.applyBlock(record)
       this.applyContractSignals(record)
-      this.ingestMoments(record, input.balJson)
+      this.ingestMoments(record, input.balJson ?? record.resolvedBalJson)
       this.enforceAddressCap()
       if (this.newestIngested === undefined || input.blockNumber >= this.newestIngested) {
         this.newestIngested = input.blockNumber
@@ -385,7 +385,8 @@ export class ETHEconomyDataManager {
 
   private ingestMoments(record: BlockEconomyRecord, balJson?: BALJSONBlockAccessList): void {
     const fresh = detectBlockMoments({ record, balJson })
-    for (const m of fresh) {
+    for (let i = fresh.length - 1; i >= 0; i--) {
+      const m = fresh[i]!
       const dup = this.momentFeed.findIndex((x) => x.id === m.id)
       if (dup >= 0) this.momentFeed.splice(dup, 1)
       this.momentFeed.unshift(m)

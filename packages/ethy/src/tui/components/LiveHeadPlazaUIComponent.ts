@@ -38,13 +38,13 @@ function mutGlyph(value: number, max: number): string {
   return MUT_GLYPHS[idx]!
 }
 
-function barRow(label: string, fill: number, width: number, totalW: number): string {
-  const labelW = Math.min(18, visibleWidth(label) + 1)
-  const barW = 10
+function barRow(label: string, fill: number, barW: number, totalW: number, suffix = ''): string {
+  const labelW = 11
   const filled = Math.max(0, Math.min(barW, fill))
-  const bar = `${'█'.repeat(filled)}${'░'.repeat(barW - filled)}`
-  const line = `${BOLD}${label}${RESET} ${bar}`
-  return fixedLine(line, totalW)
+  const bar = `${FG.magenta}${'█'.repeat(filled)}${RESET}${DIM}${'░'.repeat(barW - filled)}${RESET}`
+  const paddedLabel = fixedField(`${BOLD}${label}${RESET}`, labelW)
+  const tail = suffix.length > 0 ? ` ${DIM}${suffix}${RESET}` : ''
+  return fixedLine(`${paddedLabel} ${bar}${tail}`, totalW)
 }
 
 function formatUtcTime(sec: number): string {
@@ -149,7 +149,7 @@ export function renderLiveHeadPlazaUIComponent(
   lines.push(fixedLine('', w))
 
   const leftLines = buildLeftColumn(econ, leftColW)
-  const rightLines = buildRightColumn(econ, rightColW, maxBodyLines - lines.length - 1)
+  const rightLines = buildRightColumn(econ, rightColW, Math.max(1, maxBodyLines - lines.length))
   const rowCount = Math.min(
     maxBodyLines - lines.length,
     Math.max(leftLines.length, rightLines.length),
@@ -179,14 +179,18 @@ function renderHorizon(
   let gasRow = ''
   let mutRow = ''
   const start = Math.max(0, skyline.length - skyW)
+  const shown = skyline.length - start
   for (let i = start; i < skyline.length; i++) {
     const p = skyline[i]!
     gasRow += gasGlyph(p.gasFullPct)
     mutRow += mutGlyph(p.mutation, mutMax)
   }
-  gasRow = gasRow.padEnd(skyW, ' ')
-  mutRow = mutRow.padEnd(skyW, ' ')
-  const ruler = '───┴' + '─'.repeat(Math.max(0, skyW - 4)) + (skyW >= 4 ? '┴' : '')
+  if (shown < skyW) {
+    const pad = ' '.repeat(skyW - shown)
+    gasRow += pad
+    mutRow += pad
+  }
+  const ruler = `${DIM}${'───┴' + '─'.repeat(Math.max(0, skyW - 4)) + (skyW >= 4 ? '┴' : '')}${RESET}`
   const blockN = econ.latestBlockNumber ?? '—'
   const graffiti = econ.latestProposerGraffiti
   const blockLine =
@@ -224,16 +228,38 @@ function buildLeftColumn(econ: EconomySnapshot, colW: number): string[] {
   const out: string[] = []
   out.push(fixedLine(`${BOLD}● BLOCK ANATOMY (#${econ.latestBlockNumber ?? '—'})${RESET}`, colW))
   const split = econ.txTypeSplit
-  const txMax = Math.max(1, econ.txCount ?? 1)
-  const bars: Array<{ label: string; count: number }> = [
-    { label: 'EIP-1559', count: split?.feeMarket ?? 0 },
-    { label: 'EIP-4844', count: split?.blob ?? 0 },
-    { label: 'EIP-7702', count: split?.setCode ?? 0 },
-    { label: 'Contracts', count: econ.activeAccounts ?? 0 },
+  const txTotal = Math.max(1, econ.txCount ?? 1)
+  const feeMarket = split?.feeMarket ?? 0
+  const feePct = econ.txCount && econ.txCount > 0 ? Math.round((feeMarket * 100) / txTotal) : 0
+  const blobs = split?.blob ?? 0
+  const delegations = split?.setCode ?? 0
+  const activeAcc = econ.activeAccounts ?? 0
+  const newDeploys = econ.newDeployments ?? 0
+  const contractMax = Math.max(1, activeAcc, txTotal)
+  const bars: Array<{ label: string; fill: number; suffix: string }> = [
+    {
+      label: 'EIP-1559',
+      fill: Math.round((10 * feeMarket) / txTotal),
+      suffix: `${feeMarket} txs (${feePct}%)`,
+    },
+    {
+      label: 'EIP-4844',
+      fill: blobs > 0 ? Math.max(1, Math.min(10, blobs * 2)) : 0,
+      suffix: `${blobs} blob${blobs === 1 ? '' : 's'} (L2)`,
+    },
+    {
+      label: 'EIP-7702',
+      fill: delegations > 0 ? Math.max(1, Math.min(10, delegations * 2)) : 0,
+      suffix: `${delegations} setCode`,
+    },
+    {
+      label: 'Contracts',
+      fill: activeAcc > 0 ? Math.max(1, Math.round((10 * activeAcc) / contractMax)) : 0,
+      suffix: newDeploys > 0 ? `${activeAcc} touched / ${newDeploys} new` : `${activeAcc} touched`,
+    },
   ]
   for (const b of bars) {
-    const fill = Math.round((10 * b.count) / txMax)
-    out.push(barRow(b.label, fill, 10, colW))
+    out.push(barRow(b.label, b.fill, 10, colW, b.suffix))
   }
   out.push(fixedLine('', colW))
   out.push(fixedLine(`${BOLD}● NEIGHBORHOOD LIGHTS (0x0..0xf)${RESET}`, colW))
@@ -245,7 +271,7 @@ function buildLeftColumn(econ: EconomySnapshot, colW: number): string[] {
     for (let col = 0; col < 4; col++) {
       const i = row * 4 + col
       const spark = nibbleSpark(heat[i] ?? 0, maxH)
-      cells.push(`0x${i.toString(16)} ${spark}`)
+      cells.push(`${DIM}0x${i.toString(16)}${RESET} ${FG.yellow}${spark}${RESET}`)
     }
     out.push(fixedLine(cells.join('  '), colW))
   }
@@ -261,11 +287,11 @@ function buildRightColumn(econ: EconomySnapshot, colW: number, budget: number): 
   const textW = Math.max(8, colW - timeW - badgeW - 2)
   let used = 1
   for (const m of moments) {
-    if (used >= budget - 1) break
+    if (used >= budget) break
     const color = BADGE_COLOR[m.kind] ?? RESET
     const [line1, line2] = wrapHeadline(m.headline, textW)
     const prefix = `${DIM}${formatUtcTime(m.timestampSec)}${RESET} ${color}${BOLD}${m.badge}${RESET} `
-    const padPrefix = ' '.repeat(timeW + badgeW + 1)
+    const padPrefix = ' '.repeat(timeW + badgeW + 2)
     out.push(fixedLine(`${prefix}${line1}`, colW))
     used += 1
     if (line2 !== undefined && used < budget) {

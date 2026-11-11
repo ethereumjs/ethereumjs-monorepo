@@ -12,7 +12,7 @@ const HEADLINE_MAX = 96
 const BADGE: Record<BlockMomentKind, string> = {
   birth: '[NEW] ',
   choreography: '[FLOW]',
-  whale: '[1ETH ]',
+  whale: '[1ETH]',
   first_step: '[1ST] ',
   veteran: '[VET] ',
   eip7702: '[7702]',
