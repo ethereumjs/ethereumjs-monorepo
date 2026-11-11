@@ -238,9 +238,16 @@ Every Work Package delivers a **runnable, observable, and live-testable incremen
                                                               │
                                                               ▼
                                           ┌─────────────────────────────────────────┐
-                                          │ WP-08: On-Demand @ethereumjs/evm        │
-                                          │        Sandbox, P2P Tx Broadcast &      │
-                                          │        Headless SDK (FYP / MCP Ready)   │
+                                          │ WP-08a: Default-On JSON-RPC 2.0 Server  │
+                                          │         (:8545), coldStorageLookup,     │
+                                          │         Header/Footer Chrome & /rpc     │
+                                          └───────────────────┬─────────────────────┘
+                                                              │
+                                                              ▼
+                                          ┌─────────────────────────────────────────┐
+                                          │ WP-08b: On-Demand @ethereumjs/evm       │
+                                          │         (eth_call, /simulate), P2P Tx   │
+                                          │         Broadcast & Headless SDK        │
                                           └───────────────────┬─────────────────────┘
                                                               │
                                                               ▼ (Optional)
