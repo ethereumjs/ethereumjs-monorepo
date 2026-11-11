@@ -3,8 +3,10 @@ import * as path from 'node:path'
 
 import type { FlatStateManager } from '@ethereumjs/statemanager'
 import {
+  Account,
   KECCAK256_NULL,
   KECCAK256_RLP,
+  binaryAccountToAccount,
   createBlockLevelAccessListFromRLP,
   equalsBytes,
   getBinaryAccountCodeHash,
@@ -140,6 +142,10 @@ export class SnapPivotStore {
   private readonly storageWriteChains = new Map<string, Promise<void>>()
   private readonly persistedCodeHashes = new Set<string>()
   private readonly persistedStorageAccounts = new Set<string>()
+  private readonly codeLookupIndex = new Map<
+    string,
+    { fileSize: number; entries: Map<string, { offset: number; length: number }> }
+  >()
   private restoredHealBlocks: VerifiedBalBlock[] = []
 
   private constructor(opts: SnapStoreOpenOpts & { root: string; networkDir: string }) {
@@ -852,6 +858,128 @@ export class SnapPivotStore {
     this.contractScan.bucket++
     this.contractScan.segment = undefined
     this.contractScan.byteOffset = BINARY_ACCOUNT_JOURNAL_MAGIC.length
+  }
+
+  private buildCodeShardIndex(file: string): Map<string, { offset: number; length: number }> {
+    const entries = new Map<string, { offset: number; length: number }>()
+    try {
+      const stat = fs.statSync(file)
+      const fd = fs.openSync(file, 'r')
+      const header = Buffer.alloc(36)
+      try {
+        let offset = 0
+        while (offset + 36 <= stat.size) {
+          const n = fs.readSync(fd, header, 0, 36, offset)
+          if (n < 36) break
+          const hashHex = header.subarray(0, 32).toString('hex')
+          const len = header.readUInt32BE(32)
+          entries.set(hashHex, { offset: offset + 36, length: len })
+          offset += 36 + len
+        }
+      } finally {
+        fs.closeSync(fd)
+      }
+    } catch {
+      // ignore malformed shard
+    }
+    return entries
+  }
+
+  /** Cold bytecode lookup for {@link FlatStateManager} (`code/shard-*.bin` journals). */
+  lookupCodeByHash(codeHash: Uint8Array): Uint8Array | undefined {
+    if (!this.enabled) return undefined
+    if (this.activeStateRoot === undefined) {
+      const active = this.readActive()
+      if (active === undefined) return undefined
+      this.activeStateRoot = active.stateRoot
+    }
+    const shard = codeHash[0]!.toString(16).padStart(2, '0')
+    const file = path.join(this.pivotDir(this.activeStateRoot), 'code', `shard-${shard}.bin`)
+    if (!fs.existsSync(file)) return undefined
+    const hashHex = bytesToHex(codeHash).slice(2).toLowerCase()
+    const stat = fs.statSync(file)
+    let cached = this.codeLookupIndex.get(file)
+    if (cached === undefined || cached.fileSize !== stat.size) {
+      cached = { fileSize: stat.size, entries: this.buildCodeShardIndex(file) }
+      this.codeLookupIndex.set(file, cached)
+    }
+    const entry = cached.entries.get(hashHex)
+    if (entry === undefined) return undefined
+    const fd = fs.openSync(file, 'r')
+    const buf = Buffer.alloc(entry.length)
+    try {
+      const n = fs.readSync(fd, buf, 0, entry.length, entry.offset)
+      if (n < entry.length) return undefined
+      return new Uint8Array(buf)
+    } finally {
+      fs.closeSync(fd)
+    }
+  }
+
+  sampleAccountsFromDisk(opts: {
+    prefixHex?: string
+    limit: number
+    sortByBalanceDesc?: boolean
+  }): Array<{ accountHash: Uint8Array; account: Account }> {
+    if (!this.enabled || opts.limit <= 0) return []
+    if (this.activeStateRoot === undefined) {
+      const active = this.readActive()
+      if (active === undefined) return []
+      this.activeStateRoot = active.stateRoot
+    }
+    const prefix = opts.prefixHex?.trim().replace(/^0x/i, '').toLowerCase() ?? ''
+    const nibble = prefix.length > 0 ? Number.parseInt(prefix.slice(0, 1), 16) : undefined
+    const buckets =
+      nibble !== undefined && !Number.isNaN(nibble)
+        ? [nibble]
+        : Array.from({ length: 16 }, (_, i) => i)
+    const rows: Array<{ accountHash: Uint8Array; account: Account }> = []
+    const rowSize = BINARY_ACCOUNT_JOURNAL_RECORD_SIZE
+    const payloadStart = BINARY_ACCOUNT_JOURNAL_MAGIC.length
+    const isTopBalanceScan = opts.sortByBalanceDesc === true
+    for (const bucket of buckets) {
+      if (!isTopBalanceScan && rows.length >= opts.limit) break
+      const files = [
+        this.accountFile(bucket, this.activeStateRoot),
+        ...this.listSegmentJournalFiles(bucket, this.activeStateRoot),
+      ]
+      for (const file of files) {
+        if (!isTopBalanceScan && rows.length >= opts.limit) break
+        if (!fs.existsSync(file)) continue
+        const stat = fs.statSync(file)
+        const recordCount = Math.floor((stat.size - payloadStart) / rowSize)
+        if (recordCount <= 0) continue
+        const want = Math.min(recordCount, isTopBalanceScan ? 256 : opts.limit - rows.length)
+        const start = isTopBalanceScan
+          ? Math.max(payloadStart, stat.size - want * rowSize)
+          : payloadStart
+        const maxPerFile = isTopBalanceScan ? want : opts.limit - rows.length
+        let readInFile = 0
+        const fd = fs.openSync(file, 'r')
+        const rowBuf = Buffer.alloc(rowSize)
+        try {
+          for (
+            let offset = start;
+            offset + rowSize <= stat.size && readInFile < maxPerFile;
+            offset += rowSize
+          ) {
+            fs.readSync(fd, rowBuf, 0, rowSize, offset)
+            const accountHash = new Uint8Array(rowBuf.subarray(0, 32))
+            const hashHex = bytesToHex(accountHash).slice(2).toLowerCase()
+            if (prefix.length > 0 && !hashHex.startsWith(prefix)) continue
+            const account = binaryAccountToAccount(new Uint8Array(rowBuf.subarray(32, rowSize)))
+            rows.push({ accountHash, account })
+            readInFile++
+          }
+        } finally {
+          fs.closeSync(fd)
+        }
+      }
+    }
+    if (isTopBalanceScan && rows.length > 1) {
+      rows.sort((a, b) => (a.account.balance > b.account.balance ? -1 : 1))
+    }
+    return rows.slice(0, opts.limit)
   }
 
   /** Cold account lookup for {@link FlatStateManager} (sorted binary journals). */
@@ -1624,9 +1752,7 @@ export class SnapPivotStore {
         storageSlotsSynced: number
       }
     | undefined {
-    const p = this.contractProgress
-    this.contractProgress = undefined
-    return p
+    return this.contractProgress
   }
 
   persistContractProgress(

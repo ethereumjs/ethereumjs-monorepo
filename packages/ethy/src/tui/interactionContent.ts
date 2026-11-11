@@ -11,11 +11,16 @@ import { helpDomainLabel } from '../tools/help.ts'
 import { BOLD, DIM, RESET, visibleWidth } from './ansi.ts'
 import { capabilityMark } from './capabilityMark.ts'
 import { renderDebugPageUIComponent } from './components/DebugPageUIComponent.ts'
-import { renderDomainHelpUIComponent } from './components/DomainHelpUIComponent.ts'
+import {
+  type DomainHelpColumnMetrics,
+  renderDomainHelpUIComponent,
+} from './components/DomainHelpUIComponent.ts'
+import { renderHeaderPageSwitchUIComponent } from './components/HeaderPageSwitchUIComponent.ts'
 import { renderKeyValueUIComponent } from './components/KeyValueUIComponent.ts'
+import { renderLiveHeadPlazaUIComponent } from './components/LiveHeadPlazaUIComponent.ts'
+import { renderStartPageUIComponent } from './components/StartPageUIComponent.ts'
 import { renderTableUIComponent } from './components/TableUIComponent.ts'
 import { composeFixedRow, fixedLine } from './layout.ts'
-import { historyEntryTitle } from './viewHistory.ts'
 import type { SuggestionMarks } from './widgets.ts'
 
 export function renderInteractionWidgetBody(
@@ -24,6 +29,9 @@ export function renderInteractionWidgetBody(
   maxBodyLines: number,
   page: InteractionPage,
   marks?: SuggestionMarks,
+  spine?: EthySpine,
+  tick = 0,
+  colMetrics?: DomainHelpColumnMetrics,
 ): string[] {
   const w = Math.max(20, innerWidth)
   if (page === 'debug' && widget.debugPage !== undefined && widget.debugPage.length > 0) {
@@ -117,14 +125,24 @@ export function renderInteractionWidgetBody(
       pushLines(renderKeyValueUIComponent(widget.entries, w))
       break
     case 'domain_help':
-      pushLines(renderDomainHelpUIComponent(widget, w, budget))
+      pushLines(renderDomainHelpUIComponent(widget, w, budget, spine, colMetrics))
+      break
+    case 'start_page':
+      if (spine !== undefined) {
+        pushLines(renderStartPageUIComponent(spine, w, budget, tick))
+      }
+      break
+    case 'live_plaza':
+      if (spine !== undefined) {
+        pushLines(renderLiveHeadPlazaUIComponent(spine, w, budget, tick, colMetrics))
+      }
       break
   }
 
   return lines
 }
 
-/** Build Interaction View title including optional Ctrl+D hint. */
+/** Build Interaction View title including inline Commands | Debug (Ctrl+D) switch when debugPage exists. */
 export function interactionViewTitle(
   widget: WidgetSpec | null,
   page: InteractionPage,
@@ -133,16 +151,18 @@ export function interactionViewTitle(
   view?: TuiViewState,
   spine?: EthySpine,
 ): string {
-  if (widget === null) return `${BOLD}Welcome${RESET}`
-  const hasDebug = (widget.debugPage?.length ?? 0) > 0
-  const pageHint =
-    hasDebug === true
-      ? page === 'debug'
-        ? `${DIM} · [2/2 Debug · Ctrl+D Table]${RESET}`
-        : `${DIM} · [1/2 Table · Ctrl+D Debug]${RESET}`
-      : ''
+  void view
+  if (widget === null || widget.kind === 'start_page') return `${BOLD}Welcome${RESET}`
   let base = ''
-  if (nlTitle !== undefined && nlTitle.length > 0 && lastSubmitted?.startsWith('/') !== true) {
+  if (widget.kind === 'live_plaza') {
+    const n = spine?.economy?.latestBlockNumber
+    const suffix = n !== undefined ? ` · #${Number(n).toLocaleString('en-US')}` : ''
+    base = `${BOLD}/live · Ethereum Plaza${suffix}${RESET}`
+  } else if (
+    nlTitle !== undefined &&
+    nlTitle.length > 0 &&
+    lastSubmitted?.startsWith('/') !== true
+  ) {
     base = `${BOLD}${nlTitle}${RESET}`
   } else if (lastSubmitted?.startsWith('/') === true) {
     const cmd = lastSubmitted.split(/\s+/)[0] ?? lastSubmitted
@@ -167,19 +187,13 @@ export function interactionViewTitle(
     const mark = capabilityMark(widget.domain, spine.capabilities[widget.domain].status)
     base = `${mark} ${BOLD}/help · ${helpDomainLabel(widget.domain)}${RESET}`
   }
-  let historyHint = ''
-  if (view !== undefined) {
-    if (view.showingHelp && view.viewHistory.length > 0) {
-      const last = view.viewHistory[view.viewHistoryIndex]
-      if (last !== undefined) {
-        historyHint = `${DIM} · [← back to ${historyEntryTitle(last)}]${RESET}`
-      }
-    } else if (!view.showingHelp && view.viewHistory.length > 1) {
-      const idx = view.viewHistoryIndex + 1
-      historyHint = `${DIM} · [${idx}/${view.viewHistory.length} ← →]${RESET}`
-    }
-  }
-  return `${base}${pageHint}${historyHint}`
+  const hasDebugPage = (widget.debugPage?.length ?? 0) > 0
+  const switchSuffix = renderHeaderPageSwitchUIComponent({
+    page,
+    hasDebugPage,
+    mainLabel: widget?.kind === 'live_plaza' ? 'Live' : 'Commands',
+  })
+  return `${base}${switchSuffix}`
 }
 
 function wrapSectionText(text: string, wrapW: number): string[] {

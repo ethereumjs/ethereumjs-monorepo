@@ -1,11 +1,14 @@
 import { BOLD, DIM, RESET, visibleWidth } from './ansi.ts'
 import { fixedField, fixedLine } from './layout.ts'
 
-export function boxTop(boxW: number, titlePlain: string): string {
+export function boxTop(boxW: number, titlePlain: string, rightPlain?: string): string {
   const prefix = `${DIM}╭─ ${RESET}${titlePlain}${DIM} `
   const prefixVis = visibleWidth(prefix)
-  const dashes = Math.max(1, boxW - prefixVis - 1)
-  return fixedLine(`${prefix}${'─'.repeat(dashes)}╮${RESET}`, boxW)
+  const hasRight = rightPlain !== undefined && rightPlain.length > 0
+  const rightSuffix = hasRight ? ` ${RESET}${rightPlain}${DIM} ─` : ''
+  const rightVis = hasRight ? visibleWidth(rightSuffix) : 0
+  const dashes = Math.max(1, boxW - prefixVis - rightVis - 1)
+  return fixedLine(`${prefix}${'─'.repeat(dashes)}${rightSuffix}╮${RESET}`, boxW)
 }
 
 export function boxRow(boxW: number, text: string): string {
@@ -19,10 +22,15 @@ export function boxBottom(boxW: number): string {
 }
 
 /** Rounded box: top, pad, `contentLines`, pad, bottom (8 lines when 4 content rows). */
-export function renderBox(boxW: number, titlePlain: string, contentLines: string[]): string[] {
+export function renderBox(
+  boxW: number,
+  titlePlain: string,
+  contentLines: string[],
+  titleRightPlain?: string,
+): string[] {
   const pad = boxRow(boxW, '')
   return [
-    boxTop(boxW, titlePlain),
+    boxTop(boxW, titlePlain, titleRightPlain),
     pad,
     ...contentLines.map((r) => boxRow(boxW, r)),
     pad,

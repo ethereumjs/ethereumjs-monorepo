@@ -59,10 +59,19 @@ function deriveP2pCapability(spine: EthySpine): void {
   }
 }
 
+function deriveAiCapability(spine: EthySpine): void {
+  if (spine.llmPulseReady === true) {
+    spine.capabilities.ai = { status: 'ready', label: 'Local LLM' }
+  } else {
+    spine.capabilities.ai = { status: 'partial', label: 'Slash/Rule' }
+  }
+}
+
 export function deriveCapabilities(spine: EthySpine): void {
   deriveStateCapability(spine)
   deriveEconomyCapability(spine)
   deriveP2pCapability(spine)
+  deriveAiCapability(spine)
 }
 
 export function createSpine(network: string, chainId: bigint): EthySpine {
@@ -79,6 +88,7 @@ export function createSpine(network: string, chainId: bigint): EthySpine {
       state: { status: 'locked', label: 'Starting' },
       economy: { status: 'locked', label: 'No blocks' },
       p2p: { status: 'locked', label: 'None' },
+      ai: { status: 'partial', label: 'Slash/Rule' },
     },
     peers: new Map(),
     snapBuckets: createSnapBuckets(),

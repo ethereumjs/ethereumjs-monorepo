@@ -27,11 +27,13 @@ import { createInitialViewState, cycleDomain, pushKeyChar, reducePromptKey } fro
 import { promptCaretPosition, renderFrame } from './renderFrame.ts'
 import {
   activateHistoryEntry,
+  activateLivePlazaFlip,
   applyLiveSlashRefresh,
   clearOverviewFocus,
   inferDomainForCommandOrPrompt,
   mergeOverviewFocus,
   openDomainHelp,
+  openPlazaView,
   pushViewHistory,
   snapshotFlipWidget,
 } from './viewHistory.ts'
@@ -50,6 +52,7 @@ export async function runEthySession(node: EthyNode): Promise<void> {
   let escapeBuf = ''
   let lastPhase = node.spine.phase
   let lastEconomyHasBlocks = node.spine.economy?.hasBlocks === true
+  let lastPlazaCarouselMs = 0
   let lastAllBucketsDone = node.spine.snapBuckets.every((b) => b.status === 'done')
   let lastOverviewMs = Date.now()
   const OVERVIEW_INTERVAL_MS = 30_000
@@ -61,6 +64,7 @@ export async function runEthySession(node: EthyNode): Promise<void> {
   const slashCtx = (): SlashDispatchCtx => ({
     spine: node.spine,
     stateManager: node.stateManager,
+    snapStore: node.snapStore,
     disconnectPeer: node.disconnectPeer,
     economy: node.economy,
     chain: chainConfigForNetwork(node.spine.network),
@@ -127,6 +131,13 @@ export async function runEthySession(node: EthyNode): Promise<void> {
     if (node.demo) {
       advanceDemo(node.spine, Date.now() - demoStart)
     }
+    const nowDraw = Date.now()
+    if (view.activeWidget === null || view.activeWidget.kind === 'start_page') {
+      view = { ...view, carouselTick: view.carouselTick + 1 }
+    } else if (view.activeWidget.kind === 'live_plaza' && nowDraw - lastPlazaCarouselMs >= 1000) {
+      lastPlazaCarouselMs = nowDraw
+      view = { ...view, carouselTick: view.carouselTick + 1 }
+    }
     const now = Date.now()
     const hasBlocks = node.spine.economy?.hasBlocks === true
     const allBucketsDone = node.spine.snapBuckets.every((b) => b.status === 'done')
@@ -160,11 +171,18 @@ export async function runEthySession(node: EthyNode): Promise<void> {
     view = applyLiveSlashRefresh(view, node.spine, slashCtx())
     const flip = node.spine.headFlipSummary
     if (flip !== undefined) {
-      const title =
-        flip.kind === 'key_value' || flip.kind === 'table'
-          ? (flip.title ?? 'Head flip')
-          : 'Head flip'
-      view = snapshotFlipWidget(view, flip, title)
+      const w = view.activeWidget
+      if (w === null || w.kind === 'start_page') {
+        if (flip.kind === 'live_plaza') {
+          view = activateLivePlazaFlip(view, flip)
+        } else {
+          const title =
+            flip.kind === 'key_value' || flip.kind === 'table'
+              ? (flip.title ?? 'Head flip')
+              : 'Head flip'
+          view = snapshotFlipWidget(view, flip, title)
+        }
+      }
       node.spine.headFlipSummary = undefined
     }
     const cols = output.columns ?? 100
@@ -328,8 +346,12 @@ export async function runEthySession(node: EthyNode): Promise<void> {
           domainCycle,
           viewHistoryNav,
           toggleDebug,
+          openPlaza,
         } = reducePromptKey(view, action)
         view = nextView
+        if (openPlaza === true) {
+          view = openPlazaView(view, node.spine, slashCtx())
+        }
         if (toggleDebug === true) {
           const w = view.activeWidget
           if (w?.debugPage !== undefined && w.debugPage.length > 0) {
@@ -354,7 +376,11 @@ export async function runEthySession(node: EthyNode): Promise<void> {
           }
         }
         if (domainCycle !== undefined) {
-          const domain = cycleDomain(view.activeDomain, domainCycle)
+          const onStartPage = view.activeWidget === null || view.activeWidget.kind === 'start_page'
+          const domain =
+            onStartPage && domainCycle === 1
+              ? view.activeDomain
+              : cycleDomain(view.activeDomain, domainCycle)
           view = openDomainHelp(view, node.spine, domain)
         }
         if (viewHistoryNav !== undefined) {

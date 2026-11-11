@@ -1,8 +1,14 @@
+import { getCommandAvailability } from '../domains/commandAvailability.ts'
 import { findBucketByPrefix } from '../spine/buckets.ts'
 import { deriveCapabilities } from '../spine/createSpine.ts'
 import type { EthySpine, WidgetSpec } from '../spine/types.ts'
+import { renderCommandUnavailableWidget } from '../tui/components/CommandUnavailableUIComponent.ts'
 
 export function pauseSnapSync(spine: EthySpine): WidgetSpec {
+  const avail = getCommandAvailability('/pause', spine)
+  if (avail.status === 'locked') {
+    return renderCommandUnavailableWidget('/pause', avail, spine)
+  }
   spine.snapPaused = true
   deriveCapabilities(spine)
   return {
@@ -13,6 +19,10 @@ export function pauseSnapSync(spine: EthySpine): WidgetSpec {
 }
 
 export function resumeSnapSync(spine: EthySpine): WidgetSpec {
+  const avail = getCommandAvailability('/resume', spine)
+  if (avail.status === 'locked') {
+    return renderCommandUnavailableWidget('/resume', avail, spine)
+  }
   spine.snapPaused = false
   deriveCapabilities(spine)
   return {
@@ -27,6 +37,10 @@ export function dropPeer(
   peerId: string,
   disconnectPeer?: (id: string) => void,
 ): WidgetSpec {
+  const avail = getCommandAvailability('/drop', spine)
+  if (avail.status === 'locked') {
+    return renderCommandUnavailableWidget('/drop', avail, spine)
+  }
   const id = peerId.trim().toLowerCase()
   if (!spine.peers.has(id)) {
     return {
@@ -47,6 +61,10 @@ export function dropPeer(
 }
 
 export function reassignBucket(spine: EthySpine, bucketArg: string): WidgetSpec {
+  const avail = getCommandAvailability('/reassign', spine)
+  if (avail.status === 'locked') {
+    return renderCommandUnavailableWidget('/reassign', avail, spine)
+  }
   const bucket = findBucketByPrefix(spine.snapBuckets, bucketArg.trim())
   if (bucket === undefined) {
     return {

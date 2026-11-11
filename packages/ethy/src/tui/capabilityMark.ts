@@ -1,14 +1,15 @@
-import type { CapabilityId, CapabilityReadiness } from '../spine/types.ts'
+import type { CapabilityMarkId, CapabilityReadiness } from '../spine/types.ts'
 import { FG, RESET } from './ansi.ts'
 
 /**
  * Canonical foreground for each capability.
  * Ready, partial, and locked states keep this color; only the glyph changes.
  */
-export const CAPABILITY_FG: Record<CapabilityId, string> = {
+export const CAPABILITY_FG: Record<CapabilityMarkId, string> = {
   state: FG.yellow,
   economy: FG.magenta,
   p2p: FG.green,
+  ai: FG.cyan,
 }
 
 function capabilityGlyph(status: CapabilityReadiness): string {
@@ -23,6 +24,6 @@ function capabilityGlyph(status: CapabilityReadiness): string {
 }
 
 /** Colored status glyph for one capability. Color comes from `CAPABILITY_FG`. */
-export function capabilityMark(id: CapabilityId, status: CapabilityReadiness): string {
+export function capabilityMark(id: CapabilityMarkId, status: CapabilityReadiness): string {
   return `${CAPABILITY_FG[id]}${capabilityGlyph(status)}${RESET}`
 }

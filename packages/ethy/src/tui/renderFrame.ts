@@ -1,8 +1,8 @@
 import { completeSlashDraft } from '../ai/slashComplete.ts'
 import type { LiveNotice } from '../notify/board.ts'
 import {
-  type CapabilityId,
-  DOMAIN_ORDER,
+  CAPABILITY_PILL_ORDER,
+  type CapabilityMarkId,
   type EthySpine,
   type TuiViewState,
 } from '../spine/types.ts'
@@ -18,10 +18,12 @@ import {
   fixedLineRight,
 } from './layout.ts'
 import { renderLowerArea } from './lowerArea.ts'
-import { renderNoticeLine } from './noticeLine.ts'
-import { layoutPage, measurePage } from './pageLayout.ts'
+import { type HorizontalPadding, bandContentWidth, layoutPage, measurePage } from './pageLayout.ts'
 
 const DELIMITER_PAD_ROWS = 1
+
+/** Inset header and footer so their left/right edges align with box inner content (`│ ` / ` │`). */
+const HEADER_FOOTER_PADDING: HorizontalPadding = { left: 2, right: 2 }
 
 /** Columns between `Slot N` and the first capability pill. */
 const SLOT_GAP = 8
@@ -36,8 +38,8 @@ function hintSegment(key: string, prose: string): string {
 function renderFooterHint(): string {
   return [
     hintSegment('Tab', 'show domain help'),
+    hintSegment('Enter', 'plaza'),
     hintSegment('←/→', 'view history'),
-    hintSegment('Ctrl+D', 'debug page'),
     hintSegment('/', 'command'),
     hintSegment('Esc', 'exit'),
   ].join(`${DIM} · ${RESET}`)
@@ -46,14 +48,19 @@ function renderFooterHint(): string {
 /** Rhythm inside the pill cluster; spacer before cluster stays flexible. */
 const CAPABILITY_PILL_GAP = 2
 
-const CAPABILITY_IDS = DOMAIN_ORDER
-const CAPABILITY_NAMES = ['STATE', 'ECONOMY', 'P2P'] as const
+const CAPABILITY_IDS = CAPABILITY_PILL_ORDER
+const CAPABILITY_LABEL: Record<CapabilityMarkId, string> = {
+  economy: 'Economy',
+  state: 'State',
+  p2p: 'P2P',
+  ai: 'AI',
+}
 
 function capabilityPillWidth(name: string): number {
   return visibleWidth(formatCapabilityPill('●', name))
 }
 
-const CAPABILITY_PILL_WIDTHS = CAPABILITY_NAMES.map((name) => capabilityPillWidth(name))
+const CAPABILITY_PILL_WIDTHS = CAPABILITY_IDS.map((id) => capabilityPillWidth(CAPABILITY_LABEL[id]))
 
 function formatCapabilityPill(dot: string, name: string): string {
   return `${dot} ${BOLD}${name}${RESET}`
@@ -63,10 +70,8 @@ function formatCapabilityPill(dot: string, name: string): string {
 function renderCapabilityBar(spine: EthySpine, cols: number): string[] {
   const network = spine.network.toUpperCase()
   const brand = `${BOLD}${spine.clientName} v${spine.clientVersion}${RESET} | ${network}`
-  const { state, economy, p2p } = spine.capabilities
-  const statuses = [state.status, economy.status, p2p.status]
-  const pillTexts = CAPABILITY_IDS.map((id, i) =>
-    formatCapabilityPill(capabilityMark(id, statuses[i] ?? 'locked'), CAPABILITY_NAMES[i] ?? id),
+  const pillTexts = CAPABILITY_IDS.map((id) =>
+    formatCapabilityPill(capabilityMark(id, spine.capabilities[id].status), CAPABILITY_LABEL[id]),
   )
 
   const line = composeBrandAndRightPills(
@@ -105,12 +110,7 @@ function renderLeftHint(draft: string, leftW: number): string {
   )
 }
 
-function renderPrompt(
-  spine: EthySpine,
-  view: TuiViewState,
-  cols: number,
-  notice: LiveNotice | null,
-): string[] {
+function renderPrompt(spine: EthySpine, view: TuiViewState, cols: number): string[] {
   const { left, right } = promptColumnWidths(cols)
   const gap = ' '.repeat(Math.min(COCKPIT_COLUMN_GAP, Math.max(0, cols - left - right)))
   const mark = capabilityMark(view.activeDomain, spine.capabilities[view.activeDomain].status)
@@ -118,11 +118,10 @@ function renderPrompt(
   const draftWidth = Math.max(0, left - PROMPT_PREFIX_WIDTH)
   const prompt = `${prefix}${fixedField(view.promptDraft, draftWidth)}`
   const hint = renderLeftHint(view.promptDraft, left)
-  const noticeCell = renderNoticeLine(notice, right)
   return [
     fixedLine(`${fixedField(prompt, left)}${gap}${fixedField('', right)}`, cols),
     fixedLine(`${fixedField('', left)}${gap}${fixedField('', right)}`, cols),
-    fixedLine(`${hint}${gap}${noticeCell}`, cols),
+    fixedLine(`${hint}${gap}${fixedField('', right)}`, cols),
   ]
 }
 
@@ -138,12 +137,13 @@ export function promptCaretPosition(
   const safeCols = Math.max(40, cols)
   const safeRows = Math.max(12, rows)
   const page = measurePage(safeCols, safeRows)
-  const { left } = promptColumnWidths(page.contentWidth)
+  const barWidth = bandContentWidth(page, HEADER_FOOTER_PADDING)
+  const { left } = promptColumnWidths(barWidth)
   const draftWidth = Math.max(0, left - PROMPT_PREFIX_WIDTH)
   const shown = Math.min(visibleWidth(draft), draftWidth)
   return {
     row: safeRows - 2,
-    col: 1 + page.padding.left + PROMPT_PREFIX_WIDTH + shown,
+    col: 1 + page.padding.left + HEADER_FOOTER_PADDING.left + PROMPT_PREFIX_WIDTH + shown,
   }
 }
 
@@ -152,32 +152,36 @@ export function renderFrame(
   view: TuiViewState,
   cols: number,
   rows: number,
-  notice: LiveNotice | null = null,
+  _notice: LiveNotice | null = null,
 ): string[] {
   const safeCols = Math.max(40, cols)
   const safeRows = Math.max(12, rows)
   const page = measurePage(safeCols, safeRows)
+  const barWidth = bandContentWidth(page, HEADER_FOOTER_PADDING)
 
-  const capBar = renderCapabilityBar(spine, page.contentWidth)
+  const capBar = renderCapabilityBar(spine, barWidth)
   const cockpit = renderCockpit(spine, view, page.contentWidth)
-  const prompt = renderPrompt(spine, view, page.contentWidth, notice)
-  const rule = { kind: 'delimiter' as const, open: DIM, close: RESET }
+  const prompt = renderPrompt(spine, view, barWidth)
   const pad = { kind: 'spacer' as const, rows: DELIMITER_PAD_ROWS }
 
-  let reserved =
-    capBar.length + 1 + cockpit.length + DELIMITER_PAD_ROWS + 1 + DELIMITER_PAD_ROWS + prompt.length
+  const reserved =
+    capBar.length +
+    DELIMITER_PAD_ROWS +
+    cockpit.length +
+    DELIMITER_PAD_ROWS +
+    DELIMITER_PAD_ROWS +
+    prompt.length
   const fillRows = Math.max(0, safeRows - reserved)
 
   const lowerLines = renderLowerArea(spine, view, page.contentWidth, fillRows)
 
   return layoutPage(page, [
-    { kind: 'content', lines: capBar },
-    rule,
+    { kind: 'content', lines: capBar, padding: HEADER_FOOTER_PADDING },
+    pad,
     { kind: 'content', lines: cockpit },
     pad,
     { kind: 'fill', lines: lowerLines },
-    rule,
     pad,
-    { kind: 'content', lines: prompt },
+    { kind: 'content', lines: prompt, padding: HEADER_FOOTER_PADDING },
   ])
 }

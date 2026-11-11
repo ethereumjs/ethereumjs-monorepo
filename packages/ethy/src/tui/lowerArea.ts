@@ -1,6 +1,8 @@
 import type { EthySpine, TuiViewState } from '../spine/types.ts'
 import { BOLD, RESET } from './ansi.ts'
+import { capabilityMark } from './capabilityMark.ts'
 import { COCKPIT_COLUMN_GAP, cockpitColumnWidths } from './cockpit.ts'
+import { interactionBoxRightChrome } from './components/interactionChrome.ts'
 import {
   interactionViewTitle,
   renderAiOverviewSections,
@@ -14,6 +16,7 @@ function buildVariableBox(
   boxW: number,
   totalHeight: number,
   title: string,
+  titleRight: string,
   contentLines: string[],
 ): string[] {
   const innerLines = Math.max(0, totalHeight - 4)
@@ -21,7 +24,7 @@ function buildVariableBox(
   for (let i = 0; i < innerLines; i++) {
     body.push(contentLines[i] ?? '')
   }
-  return renderBox(boxW, title, body)
+  return renderBox(boxW, title, body, titleRight)
 }
 
 export function renderLowerArea(
@@ -35,7 +38,7 @@ export function renderLowerArea(
   const rightW = w2
   const gap = ' '.repeat(COCKPIT_COLUMN_GAP)
 
-  const widget = view.activeWidget ?? defaultCarousel(view.carouselTick)
+  const widget = view.activeWidget ?? { kind: 'start_page' as const }
   const marks: SuggestionMarks = {
     state: spine.capabilities.state.status,
     economy: spine.capabilities.economy.status,
@@ -48,6 +51,9 @@ export function renderLowerArea(
     innerH,
     view.interactionPage,
     marks,
+    spine,
+    view.carouselTick,
+    { leftBoxOuterW: w0, middleBoxOuterW: w1 },
   )
   const title = interactionViewTitle(
     widget,
@@ -57,16 +63,19 @@ export function renderLowerArea(
     view,
     spine,
   )
-  const leftBox = buildVariableBox(leftW, fillRows, title, bodyLines)
+  const hasDebugPage = (widget.debugPage?.length ?? 0) > 0
+  const titleRight = interactionBoxRightChrome(view, view.interactionPage, hasDebugPage)
+  const leftBox = buildVariableBox(leftW, fillRows, title, titleRight, bodyLines)
 
-  const aiTitle = `${BOLD}AI${RESET}`
+  const aiMark = capabilityMark('ai', spine.capabilities.ai.status)
+  const aiTitle = `${aiMark} ${BOLD}AI${RESET}`
   const aiBody = renderAiOverviewSections(
     spine,
     view.aiOverviewSections,
     innerRowWidth(rightW),
     innerH,
   )
-  const rightBox = buildVariableBox(rightW, fillRows, aiTitle, aiBody)
+  const rightBox = buildVariableBox(rightW, fillRows, aiTitle, '', aiBody)
 
   while (rightBox.length < fillRows) rightBox.push(fixedLine('', rightW))
   const rightCol = rightBox.slice(0, fillRows)

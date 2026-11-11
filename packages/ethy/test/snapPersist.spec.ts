@@ -334,6 +334,71 @@ describe('[Ethy/Persist]: snap pivot store', () => {
     assert.isDefined(lookupStore.lookupBinaryAccountByHash(hashC))
   })
 
+  it('lookupCodeByHash reads bytecode from on-disk code shards', async () => {
+    const dir = tempDir()
+    const store = openStore(dir)
+    const root = new Uint8Array(32)
+    root[31] = 0xcc
+    store.activatePivot({ blockNumber: 1n, blockHash: new Uint8Array(32), stateRoot: root })
+    const codeHash = new Uint8Array(32)
+    codeHash[0] = 0x0a
+    codeHash[31] = 0x01
+    const code = new Uint8Array([0x60, 0x00, 0x60, 0x00, 0xfd])
+    store.appendCode(codeHash, code)
+    await store.drainPendingFlushes()
+    const lookup = openStore(dir)
+    assert.deepEqual(lookup.lookupCodeByHash(codeHash), code)
+  })
+
+  it('sampleAccountsFromDisk fills rows when RAM sample is sparse', async () => {
+    const dir = tempDir()
+    const root = new Uint8Array(32)
+    root[31] = 0xdd
+    const store = openStore(dir)
+    store.activatePivot({ blockNumber: 2n, blockHash: new Uint8Array(32), stateRoot: root })
+    const hash = new Uint8Array(32)
+    hash[0] = 0x05
+    const binary = accountToBinaryAccount(
+      createAccount({ nonce: 2n, balance: 3_000_000_000_000_000_000n }),
+    )
+    const buckets = createSnapBuckets()
+    buckets[5]!.accountsLoaded = 1
+    store.appendVerifiedRange(5, [{ accountHash: hash, binaryAccount: binary }], buckets)
+    await store.drainPendingFlushes()
+    const lookup = openStore(dir)
+    const rows = lookup.sampleAccountsFromDisk({ limit: 5, sortByBalanceDesc: true })
+    assert.isAtLeast(rows.length, 1)
+    assert.equal(bytesToHex(rows[0]!.accountHash), bytesToHex(hash))
+
+    // Also verify prefix browse starts at the beginning of the sorted bucket journal, not the tail
+    const hashEarly = new Uint8Array(32)
+    hashEarly[0] = 0x50
+    hashEarly[1] = 0x10
+    const hashLate = new Uint8Array(32)
+    hashLate[0] = 0x5f
+    hashLate[1] = 0xff
+    const dir2 = tempDir()
+    const store2 = openStore(dir2)
+    store2.activatePivot({ blockNumber: 3n, blockHash: new Uint8Array(32), stateRoot: root })
+    store2.appendVerifiedRange(
+      5,
+      [
+        { accountHash: hashEarly, binaryAccount: binary },
+        { accountHash: hashLate, binaryAccount: binary },
+      ],
+      createSnapBuckets(),
+    )
+    await store2.drainPendingFlushes()
+    const lookup2 = openStore(dir2)
+    const prefixRows = lookup2.sampleAccountsFromDisk({
+      prefixHex: '0x5010',
+      limit: 1,
+      sortByBalanceDesc: false,
+    })
+    assert.equal(prefixRows.length, 1)
+    assert.equal(bytesToHex(prefixRows[0]!.accountHash), bytesToHex(hashEarly))
+  })
+
   it('demo store does not touch disk', () => {
     const dir = tempDir()
     const store = SnapPivotStore.open({

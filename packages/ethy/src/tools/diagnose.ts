@@ -32,6 +32,16 @@ export function ethyOverviewWidget(spine: EthySpine): WidgetSpec {
     spine.pivotBlockNumber !== undefined
       ? `#${spine.pivotBlockNumber.toLocaleString('en-US')}`
       : '—'
+  const servableCount =
+    s?.earliestBlock !== undefined && s?.latestBlock !== undefined
+      ? BigInt(s.latestBlock) >= BigInt(s.earliestBlock)
+        ? Number(BigInt(s.latestBlock) - BigInt(s.earliestBlock) + 1n)
+        : (s.blocksStored ?? 0)
+      : (s?.blocksStored ?? 0)
+  const servableWindow =
+    s?.earliestBlock !== undefined && s?.latestBlock !== undefined
+      ? `#${BigInt(s.earliestBlock).toLocaleString('en-US')}..#${BigInt(s.latestBlock).toLocaleString('en-US')} (${servableCount} block${servableCount === 1 ? '' : 's'})`
+      : '—'
   return {
     kind: 'table',
     title: 'ETHY/0 swarm',
@@ -41,8 +51,13 @@ export function ethyOverviewWidget(spine: EthySpine): WidgetSpec {
       ['Local seed buckets', `${localBits}/16`],
       ['ETHY sessions', String(ethyPeers)],
       ['Pivot', pivot],
-      ['Chunks served (local)', String(chunks)],
-      ['BAL blocks served (local)', String(balBlocks)],
+      ['Servable head window (eth)', servableWindow],
+      ['Headers served (eth)', String(s?.headersServed ?? 0)],
+      ['Bodies served (eth)', String(s?.bodiesServed ?? 0)],
+      ['Receipts served (eth)', String(s?.receiptsServed ?? 0)],
+      ['BALs served (eth)', String(s?.accessListsServed ?? 0)],
+      ['Chunks served (ETHY)', String(chunks)],
+      ['BAL blocks served (ETHY)', String(balBlocks)],
     ],
     assistantComment:
       transport === 'ethy'

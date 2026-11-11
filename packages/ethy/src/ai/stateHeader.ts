@@ -4,7 +4,7 @@ function capSummary(spine: EthySpine): string {
   const { state, economy, p2p } = spine.capabilities
   const fmt = (name: string, c: { status: string; label: string }) =>
     `${name}=${c.status.toUpperCase()}(${c.label})`
-  return [fmt('state', state), fmt('economy', economy), fmt('p2p', p2p)].join(', ')
+  return [fmt('economy', economy), fmt('state', state), fmt('p2p', p2p)].join(', ')
 }
 
 export function formatEthyStateHeader(spine: EthySpine, lastQuerySlot?: number): string {

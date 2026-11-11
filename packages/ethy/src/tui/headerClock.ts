@@ -1,13 +1,34 @@
+import { isNodeAtChainHead, raiseBestPeerHead, resolveChainHeadClock } from '../spine/chainHead.ts'
 import type { EthySpine } from '../spine/types.ts'
+import { BOLD, DIM, RESET } from './ansi.ts'
 
-/** Top capability bar clock label: CL slot, demo slot, or EL block number (WP-06d). */
+const CLOCK_INNER_GAP = 8
+
+export { isNodeAtChainHead, raiseBestPeerHead, resolveChainHeadClock }
+export type { ChainHeadClock } from '../spine/chainHead.ts'
+
+function formatBlockLabel(block: bigint, atHead: boolean): string {
+  const num = block.toLocaleString('en-US')
+  if (atHead) return `${BOLD}Block${RESET} ${num}`
+  return `${DIM}Block ${num}${RESET}`
+}
+
+function formatSlotLabel(slot: number, brightSlot: boolean, atHead: boolean): string {
+  const num = slot.toLocaleString('en-US')
+  if (atHead && brightSlot) return `${BOLD}Slot${RESET} ${num}`
+  return `${DIM}Slot ${num}${RESET}`
+}
+
+/** Top capability bar: synchronized canonical chain head; dimmed while catching up. */
 export function capabilityBarClockLabel(spine: EthySpine): string {
-  if (spine.clOptimisticSlot !== undefined && spine.clOptimisticSlot > 0) {
-    return `Slot ${spine.clOptimisticSlot.toLocaleString('en-US')}`
+  const clock = resolveChainHeadClock(spine)
+  if (clock === undefined) return ''
+  const atHead = isNodeAtChainHead(spine)
+  const brightSlot = spine.clStatus === 'verified' || spine.demoClock === true
+  const block = formatBlockLabel(clock.chainHeadBlock, atHead)
+  if (clock.chainHeadSlot !== undefined) {
+    const slot = formatSlotLabel(clock.chainHeadSlot, brightSlot, atHead)
+    return `${block}${' '.repeat(CLOCK_INNER_GAP)}${slot}`
   }
-  if (spine.demoClock === true) {
-    return `Slot ${spine.currentSlot.toLocaleString('en-US')}`
-  }
-  const block = spine.bestPeerHead ?? spine.headBlockNumber ?? spine.pivotBlockNumber ?? 0n
-  return `Block #${block.toLocaleString('en-US')}`
+  return block
 }

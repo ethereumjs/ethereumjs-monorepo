@@ -12,6 +12,7 @@ import {
 
 import type { ETHEconomyDataManager } from '../economy/economyDataManager.ts'
 import { compareBytes32 } from '../spine/buckets.ts'
+import { raiseBestPeerHead } from '../spine/chainHead.ts'
 import { setPhase } from '../spine/createSpine.ts'
 import type { EthySpine, SnapBucket } from '../spine/types.ts'
 import type { SnapAccountSynchronizer } from './accountSync.ts'
@@ -42,7 +43,7 @@ export const SAFE_HEAD_MARGIN = 2n
 export const HEAD_FOLLOW_POLL_MS = 5_000
 export const TIP_POLL_MS = 4_000
 export const BUNDLE_IN_FLIGHT_TIMEOUT_MS = 10_000
-export const LAPTOP_WAKE_BLOCK_GAP = 2n
+export const LAPTOP_WAKE_BLOCK_GAP = 16n
 
 function balBatchEnabled(spine: EthySpine): boolean {
   if (spine.phase === 'BAL_CATCHUP') return true
@@ -250,6 +251,7 @@ type HeadCatchUp = {
   peerId: string
   ethVersion: number
   targetHead: bigint
+  probingNextTip?: boolean
   inFlight?: InFlightBlockBundle
   batchInFlight?: InFlightBalBatch
 }
@@ -286,6 +288,20 @@ export class BalChainStreamer {
     this.catchUp = undefined
   }
 
+  /** Wake follower when consensus or P2P reports a newer execution head (WP-07g). */
+  noteChainHead(blockNumber: bigint): void {
+    const { spine } = this.opts
+    if (
+      spine.phase !== 'SNAP_SYNCING' &&
+      spine.phase !== 'BAL_CATCHUP' &&
+      spine.phase !== 'HEAD_FOLLOWING'
+    ) {
+      return
+    }
+    raiseBestPeerHead(spine, blockNumber)
+    void this.tick()
+  }
+
   /** Clear buffered BAL blocks and in-flight fetches when resetting to a fresh pivot. */
   resetForFreshPivot(): void {
     this.catchUp = undefined
@@ -308,9 +324,7 @@ export class BalChainStreamer {
     this.verifiedTipHash = last.blockHash
     spine.headBlockNumber = last.blockNumber
     spine.headStateRoot = last.stateRoot
-    if (spine.bestPeerHead === undefined || last.blockNumber > spine.bestPeerHead) {
-      spine.bestPeerHead = last.blockNumber
-    }
+    raiseBestPeerHead(spine, last.blockNumber)
     void this.maybePivotStep()
   }
 
@@ -351,9 +365,15 @@ export class BalChainStreamer {
     if (result === 'ignore') return false
     if (result === 'failed') {
       if (this.catchUp !== undefined) {
-        restBalCatchUpPeer(this.peerRestUntil, this.catchUp.peerId)
-        this.catchUp.inFlight = undefined
-        queueMicrotask(() => this.tick())
+        const probe = this.catchUp.probingNextTip === true && inFlight.stage === 'headers'
+        if (probe) {
+          this.catchUp = undefined
+        } else {
+          restBalCatchUpPeer(this.peerRestUntil, this.catchUp.peerId)
+          this.catchUp.inFlight = undefined
+          this.catchUp.probingNextTip = undefined
+          queueMicrotask(() => this.tick())
+        }
       }
       return true
     }
@@ -440,7 +460,7 @@ export class BalChainStreamer {
           economy: this.opts.economy,
           preDecodedBalJson: row.balJson,
         })
-      } else if (row.balJson !== undefined || row.balRlp !== undefined) {
+      } else {
         this.opts.economy?.noteBundle({
           blockNumber: row.header.number,
           headerRlp: row.header.headerRlp,
@@ -556,9 +576,7 @@ export class BalChainStreamer {
     if (fields !== null) {
       spine.headBlockNumber = fields.number
       spine.headStateRoot = fields.stateRoot
-      if (spine.bestPeerHead === undefined || fields.number > spine.bestPeerHead) {
-        spine.bestPeerHead = fields.number
-      }
+      raiseBestPeerHead(spine, fields.number)
       const blockHash = bundle.hash ?? new Uint8Array(32)
       if (bundle.hash !== undefined) {
         this.verifiedTipHash = bundle.hash
@@ -721,14 +739,29 @@ export class BalChainStreamer {
     const tip = this.downloadTip(spine)
     if (tip === undefined) return
     const peer = this.opts.pickEthPeer()
-    if (peer?.latestBlock === undefined) return
-    const peerHead = BigInt(peer.latestBlock)
+    const bestKnownHead =
+      peer?.latestBlock !== undefined
+        ? spine.bestPeerHead !== undefined && spine.bestPeerHead > BigInt(peer.latestBlock)
+          ? spine.bestPeerHead
+          : BigInt(peer.latestBlock)
+        : spine.bestPeerHead
+    if (peer === undefined || bestKnownHead === undefined) return
+    const peerHead = bestKnownHead
+    const catchUpPeer = pickBalCatchUpPeer(spine, this.peerRestUntil, tip + 1n) ??
+      pickBalCatchUpPeer(spine, this.peerRestUntil) ?? {
+        id: peer.id,
+        ethVersion: peer.ethVersion,
+        latestBlock: peerHead,
+      }
     if (this.catchUp === undefined || this.catchUp.targetHead < peerHead) {
       this.catchUp = {
-        peerId: peer.id,
-        ethVersion: peer.ethVersion,
+        peerId: catchUpPeer.id,
+        ethVersion: catchUpPeer.ethVersion,
         targetHead: peerHead,
       }
+    } else {
+      this.catchUp.peerId = catchUpPeer.id
+      this.catchUp.ethVersion = catchUpPeer.ethVersion
     }
     if (peerHead <= tip) {
       if (spine.phase === 'BAL_CATCHUP') {
@@ -744,11 +777,18 @@ export class BalChainStreamer {
       if (now - this.lastTipProbeAt >= TIP_POLL_MS) {
         this.lastTipProbeAt = now
         const next = tip + 1n
+        const probePeer = pickBalCatchUpPeer(this.opts.spine, this.peerRestUntil, next) ?? peer
         this.catchUp = {
-          peerId: peer.id,
-          ethVersion: peer.ethVersion,
+          peerId: probePeer.id,
+          ethVersion: probePeer.ethVersion,
           targetHead: next,
-          inFlight: startBlockBundleByNumber(this.opts.getClient(), peer.id, peer.ethVersion, next),
+          probingNextTip: true,
+          inFlight: startBlockBundleByNumber(
+            this.opts.getClient(),
+            probePeer.id,
+            probePeer.ethVersion,
+            next,
+          ),
         }
         return
       }

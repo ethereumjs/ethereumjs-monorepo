@@ -20,7 +20,7 @@ export type KeyAction =
 export function cycleDomain(id: CapabilityId, direction: 1 | -1): CapabilityId {
   const idx = DOMAIN_ORDER.indexOf(id)
   const next = (idx + direction + DOMAIN_ORDER.length) % DOMAIN_ORDER.length
-  return DOMAIN_ORDER[next] ?? 'state'
+  return DOMAIN_ORDER[next] ?? 'economy'
 }
 
 /**
@@ -31,13 +31,13 @@ export function pushKeyChar(
   escapeBuffer: string,
   ch: string,
 ): { buffer: string; action?: KeyAction } {
+  if (ch === '\u0003') {
+    return { buffer: '', action: { type: 'exit' } }
+  }
+  if (ch === '\u0004') {
+    return { buffer: '', action: { type: 'toggleDebug' } }
+  }
   if (escapeBuffer === '') {
-    if (ch === '\u0003') {
-      return { buffer: '', action: { type: 'exit' } }
-    }
-    if (ch === '\u0004') {
-      return { buffer: '', action: { type: 'toggleDebug' } }
-    }
     if (ch === '\u007f' || ch === '\b') {
       return { buffer: '', action: { type: 'backspace' } }
     }
@@ -107,6 +107,8 @@ export interface PromptReduceResult {
   domainCycle?: 1 | -1
   viewHistoryNav?: 'left' | 'right'
   toggleDebug?: true
+  /** Empty Enter: return to plaza or Welcome. */
+  openPlaza?: true
 }
 
 export function reducePromptKey(view: TuiViewState, action: KeyAction): PromptReduceResult {
@@ -150,7 +152,7 @@ export function reducePromptKey(view: TuiViewState, action: KeyAction): PromptRe
       break
     case 'enter': {
       if (next.promptDraft.trim().length === 0) {
-        break
+        return { view: next, openPlaza: true }
       }
       const line = next.promptDraft.trim()
       submittedLine = line
@@ -186,12 +188,12 @@ export function reducePromptKey(view: TuiViewState, action: KeyAction): PromptRe
 }
 
 export function createInitialViewState(spine?: EthySpine): TuiViewState {
-  const withHelp = spine !== undefined
+  void spine
   return {
-    activeDomain: 'state',
-    activeWidget: withHelp ? buildDomainHelpWidget(spine, 'state') : null,
+    activeDomain: 'economy',
+    activeWidget: { kind: 'start_page' },
     interactionPage: 'main',
-    showingHelp: withHelp,
+    showingHelp: false,
     viewHistory: [],
     viewHistoryIndex: -1,
     promptDraft: '',

@@ -9,6 +9,7 @@ export type ToolCatalogEntry = {
 }
 
 const READ_TOOLS: Omit<ToolCatalogEntry, 'permission'>[] = [
+  { id: 'live', slash: '/live', description: 'Ethereum Plaza live head observatory' },
   { id: 'peers', slash: '/peers', description: 'Peer health table' },
   { id: 'ethy', slash: '/ethy', description: 'ETHY/0 swarm overview' },
   { id: 'buckets', slash: '/buckets', description: '16 snap bucket progress' },

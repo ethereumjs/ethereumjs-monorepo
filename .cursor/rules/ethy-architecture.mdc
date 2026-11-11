@@ -24,7 +24,7 @@ Ethy (`@ethereumjs/ethy`) is an **Execution-Free State & Intelligence Node** for
 - **Pure layout rendering (`src/tui/`):**
   - `renderFrame(spine, view, width, height): string[]` is a pure, synchronous function of state and terminal dimensions. Details: [`packages/ethy/.cursor/rules/ethy-tui.mdc`](../../packages/ethy/.cursor/rules/ethy-tui.mdc).
   - The screen is organized into 4 vertical bands:
-    1. **Band 1 — Minimal Top Header:** `Ethy v… | NETWORK` on the left, `Slot N` / `Block #N` just left of the right-packed capability marks (`● STATE  ◐ ECONOMY  ● P2P`), followed by a full-bleed `─` rule. Never show bracketed sub-labels in the top bar.
+    1. **Band 1 — Minimal Top Header:** `Ethy v… | NETWORK` on the left; `Block N` then `Slot N` (when both known) just left of title-case capability pills (`Economy`, `State`, `P2P`), then a full-bleed `─` rule. No bracketed sub-labels in the top bar.
     2. **Band 2 — 3-Box Cockpit Row (8 visible rows per box, rounded `╭─╮` boxes):**
        - **Left Box (`Node Pulse`):** Always-anchored overview (Phase, Pivot/Head block, 16-bucket progress bar, throughput summary).
        - **Middle Box (`Economy`):** Four-row live economic telemetry from `spine.economy` (`economyCockpitPairs`).

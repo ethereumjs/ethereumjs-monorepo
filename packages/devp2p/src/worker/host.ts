@@ -223,6 +223,9 @@ export class Devp2pWorkerHost {
         }
         case 'setAdvertiseBlockRange':
           this._advertiseBlockRangeInStatus = cmd.enabled
+          if (cmd.enabled === true) {
+            this._syncBlockRangeFromStore(true)
+          }
           break
         case 'disconnectPeer':
           this._rlpx?.disconnect(cmd.peerId)
@@ -474,6 +477,7 @@ export class Devp2pWorkerHost {
       const eth = protocol as ETH
       eth.events.on('status', () => {
         this._discoveryMetrics.recordRlpxStatusOk()
+        this._sendBlockRangeUpdateToPeer(eth)
         this._emitTelemetry()
       })
       eth.events.on('blockRangeUpdate', () => {
@@ -652,6 +656,9 @@ export class Devp2pWorkerHost {
       earliest: bigIntToUnpaddedBytes(range.earliestBlock),
       latest: bigIntToUnpaddedBytes(range.latestBlock),
       latestHash: range.latestBlockHash,
+    }
+    if (!this._advertiseBlockRangeInStatus) {
+      return
     }
     if (!force) {
       if (
@@ -877,17 +884,21 @@ export class Devp2pWorkerHost {
     snap.sendMessage(code as never, RLP.decode(payload))
   }
 
+  private _sendBlockRangeUpdateToPeer(eth: ETH): void {
+    if (!this._advertiseBlockRangeInStatus || this._blockRange === null) return
+    if (eth.getVersion() < 69) return
+    const { earliest, latest, latestHash } = this._blockRange
+    eth.sendMessage(EthMessageCodes.BLOCK_RANGE_UPDATE, [earliest, latest, latestHash])
+  }
+
   private _broadcastBlockRange(): void {
     if (!this._advertiseBlockRangeInStatus || this._blockRange === null || this._rlpx === null) {
       return
     }
-    const { earliest, latest, latestHash } = this._blockRange
     for (const peer of this._rlpx.getPeers()) {
       for (const protocol of peer.getProtocols()) {
         if (protocol.constructor.name !== 'ETH') continue
-        const eth = protocol as ETH
-        if (eth.getVersion() < 69) continue
-        eth.sendMessage(EthMessageCodes.BLOCK_RANGE_UPDATE, [earliest, latest, latestHash])
+        this._sendBlockRangeUpdateToPeer(protocol as ETH)
       }
     }
   }
@@ -930,12 +941,13 @@ export class Devp2pWorkerHost {
         ethySession: protocols.some((p) => p.constructor.name === 'ETHY'),
         ...(ethyStatus !== undefined ? { ethyStatus } : {}),
         caps:
-          hello?.capabilities.map((c) => `${c.name}/${c.version}`) ??
-          protocols.map((p) => {
-            if (p.constructor.name === 'ETH') return `eth/${(p as ETH).getVersion()}`
-            if (p.constructor.name === 'ETHY') return `ethy/${(p as ETHY).getVersion()}`
-            return `snap/${(p as SNAP).getVersion()}`
-          }),
+          protocols.length > 0
+            ? protocols.map((p) => {
+                if (p.constructor.name === 'ETH') return `eth/${(p as ETH).getVersion()}`
+                if (p.constructor.name === 'ETHY') return `ethy/${(p as ETHY).getVersion()}`
+                return `snap/${(p as SNAP).getVersion()}`
+              })
+            : (hello?.capabilities.map((c) => `${c.name}/${c.version}`) ?? []),
         rttMs: this._peerRtt.get(id),
         bestHash,
         latestBlock,

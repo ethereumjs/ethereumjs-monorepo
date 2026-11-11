@@ -82,9 +82,9 @@ describe('[Ethy/Perf]: scale invariants', () => {
     const t0 = performance.now()
     sync.noteAccounts(entries)
     const elapsed = performance.now() - t0
-    // Quadratic scans of 20k entries take seconds. 200ms still fails that case.
-    // The ethy coverage job measured ~87ms here (v8 instrumentation).
-    assert.isBelow(elapsed, 200)
+    // Quadratic scans of 20k entries take seconds. Sub-second budgets still catch that case.
+    // CI coverage (v8) adds overhead — observed ~270ms on GitHub runners (2026-11).
+    assert.isBelow(elapsed, 400)
     assert.equal(spine.codesQueued, 20_000)
     sync.noteAccounts(entries)
     assert.equal(spine.codesQueued, 20_000)

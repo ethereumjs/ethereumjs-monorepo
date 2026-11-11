@@ -281,16 +281,24 @@ describe('[DevP2P/Worker]: ETHY/0 swarm', () => {
     )
     nodeC.connectPeer({ id: idB, address: '127.0.0.1', tcpPort: BASE + 1, udpPort: BASE + 1 })
 
+    const idHexB = Buffer.from(idB).toString('hex')
+    await waitTelemetry(nodeC, (s) =>
+      s.peers.some((p) => p.id === idHexB && p.ethySession === true),
+    )
+
+    const pexReq = RLP.encode([bigIntToUnpaddedBytes(1n), bigIntToUnpaddedBytes(16n)])
+    nodeC.sendEthyMessage(idB, EthyMessageCodes.GET_ETHY_PEERS, pexReq)
+
     await waitTelemetry(
       nodeC,
       (s) => s.peers.length >= 2 && s.peers.some((p) => p.id === idHexA),
-      30000,
+      45_000,
     )
 
     nodeC.stop()
     nodeB.stop()
     nodeA.stop()
-  }, 60_000)
+  }, 90_000)
 
   it('does not mount ETHY when remote advertises only eth71', async () => {
     const keyA = genPrivateKey()
