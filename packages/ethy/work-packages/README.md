@@ -224,6 +224,13 @@ Every Work Package delivers a **runnable, observable, and live-testable incremen
                                                               │
                                                               ▼
                                           ┌─────────────────────────────────────────┐
+                                          │ WP-07g: Holistic Head Stability, Synced │
+                                          │         Chain-Head Clock, Dual Serving  │
+                                          │         (eth/69-71 + ETHY/0) & Cap UX   │
+                                          └───────────────────┬─────────────────────┘
+                                                              │
+                                                              ▼
+                                          ┌─────────────────────────────────────────┐
                                           │ WP-08: On-Demand @ethereumjs/evm        │
                                           │        Sandbox, P2P Tx Broadcast &      │
                                           │        Headless SDK (FYP / MCP Ready)   │
