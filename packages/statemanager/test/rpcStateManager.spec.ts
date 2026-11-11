@@ -242,6 +242,49 @@ describe('[StateManager/RPC]: account API', () => {
   })
 })
 
+describe('[StateManager/RPC]: checkpointing', () => {
+  const address = createAddressFromString('0x1000000000000000000000000000000000000001')
+  const key = setLengthLeft(bigIntToBytes(1n), 32)
+
+  it('reverts storage written under nested checkpoints that were committed', async () => {
+    const state = new RPCStateManager({ provider, blockTag: 1n })
+    await state.putStorage(address, key, hexToBytes('0x01'))
+    await state.checkpoint()
+    // Two calls inside the outer checkpoint, each committed (as a VM commits
+    // a successful message call), each writing the same slot.
+    await state.checkpoint()
+    await state.putStorage(address, key, hexToBytes('0x02'))
+    await state.commit()
+    await state.checkpoint()
+    await state.putStorage(address, key, hexToBytes('0x03'))
+    await state.commit()
+    await state.revert()
+    assert.deepEqual(
+      await state.getStorage(address, key),
+      hexToBytes('0x01'),
+      'storage is back to its value before the outer checkpoint',
+    )
+  })
+
+  it('reverts code written under a nested checkpoint that was committed', async () => {
+    const state = new RPCStateManager({ provider, blockTag: 1n })
+    await state.putCode(address, hexToBytes('0x01'))
+    await state.checkpoint()
+    await state.checkpoint()
+    await state.putCode(address, hexToBytes('0x02'))
+    await state.commit()
+    await state.checkpoint()
+    await state.putCode(address, hexToBytes('0x03'))
+    await state.commit()
+    await state.revert()
+    assert.deepEqual(
+      await state.getCode(address),
+      hexToBytes('0x01'),
+      'code is back to its value before the outer checkpoint',
+    )
+  })
+})
+
 describe('[StateManager/RPC]: runTx transfer', () => {
   it('runs a signed fee-market transfer against mocked RPC state', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
