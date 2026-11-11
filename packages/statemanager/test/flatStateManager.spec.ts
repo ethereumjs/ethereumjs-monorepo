@@ -41,6 +41,21 @@ describe('[StateManager/FlatStateManager]', () => {
     assert.strictEqual((await sm.getAccount(a2))?.nonce, 2n)
   })
 
+  it('overlayMutations() lists overlay storage writes only on child', async () => {
+    const base = new FlatStateManager()
+    assert.deepEqual(base.overlayMutations(), { storage: [], accounts: [] })
+    const overlay = base.shallowCopy() as FlatStateManager
+    const addr = new Address(hexToBytes(`0x${'44'.repeat(20)}`))
+    await overlay.putAccount(addr, createAccount({ nonce: 1n }))
+    const slot = setLengthLeft(hexToBytes('0x01'), 32)
+    const val = setLengthLeft(hexToBytes('0x02'), 32)
+    await overlay.putStorage(addr, slot, val)
+    const mut = overlay.overlayMutations()
+    assert.isAtLeast(mut.accounts.length, 1)
+    assert.isAtLeast(mut.storage.length, 1)
+    assert.deepEqual(base.overlayMutations(), { storage: [], accounts: [] })
+  })
+
   it('shallowCopy() isolates writes and reads parent updates', async () => {
     const base = new FlatStateManager()
     const addr = new Address(hexToBytes(`0x${'33'.repeat(20)}`))

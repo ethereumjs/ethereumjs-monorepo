@@ -571,6 +571,39 @@ export class FlatStateManager implements StateManagerInterface {
     return new FlatStateManager({ common: this.common }, this)
   }
 
+  /**
+   * Overlay-only write set for sandbox microscopes ({@link FlatStateManager.shallowCopy} children).
+   * Root managers return empty lists — no parent or disk scan.
+   */
+  overlayMutations(): {
+    storage: { key: string; value?: Uint8Array }[]
+    accounts: { key: string }[]
+  } {
+    if (this._parent === undefined) {
+      return { storage: [], accounts: [] }
+    }
+    const storage: { key: string; value?: Uint8Array }[] = []
+    for (const [key, value] of this._storage) {
+      storage.push({ key, value })
+    }
+    for (const key of this._storageTombstones) {
+      if (!this._storage.has(key)) {
+        storage.push({ key, value: undefined })
+      }
+    }
+    const accountKeys = new Set<string>()
+    for (const shard of this._overlayAccountShards) {
+      for (const key of shard.keys()) {
+        accountKeys.add(key)
+      }
+    }
+    for (const key of this._localAccountKeys) {
+      accountKeys.add(key)
+    }
+    const accounts = [...accountKeys].map((key) => ({ key }))
+    return { storage, accounts }
+  }
+
   async consumeBAL(
     bal: BALJSONBlockAccessList,
     optsOrExpectedStateRoot?: Uint8Array | ConsumeBALOptions,
