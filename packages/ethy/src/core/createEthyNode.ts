@@ -227,7 +227,12 @@ export function createEthyNode(opts: CreateEthyNodeOptions): EthyNode {
             blockWindow,
             economy,
             sandbox,
-            submitRawTransaction,
+            submitRawTransaction: (hex) =>
+              node.submitRawTransaction !== undefined
+                ? node.submitRawTransaction(hex)
+                : Promise.resolve({
+                    error: { code: -32000, message: 'Transaction pool unavailable' },
+                  }),
           },
           method,
           params,

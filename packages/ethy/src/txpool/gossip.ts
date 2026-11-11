@@ -2,10 +2,10 @@ import { EthMessageCodes } from '@ethereumjs/devp2p'
 import { RLP } from '@ethereumjs/rlp'
 import { bigIntToUnpaddedBytes, bytesToHex, hexToBytes } from '@ethereumjs/util'
 
-/** RLP byte length of a signed tx (for eth/68 pooled hash announce). */
+/** RLP byte length of a signed tx as encoded in `PooledTransactions` (EIP-5793 `eth/68`). */
 export function rlpByteLength(raw: Uint8Array): Uint8Array {
-  const encoded = RLP.encode(raw)
-  return bigIntToUnpaddedBytes(BigInt(encoded.length))
+  const byteLen = raw.length > 0 && raw[0]! <= 0x7f ? RLP.encode(raw).length : raw.length
+  return bigIntToUnpaddedBytes(BigInt(byteLen))
 }
 
 /** Tx type byte for pooled hash announce (0x00 legacy envelope). */
@@ -16,8 +16,16 @@ export function txTypeByte(raw: Uint8Array): Uint8Array {
   return new Uint8Array([0x00])
 }
 
+/** Wire element for `Transactions (0x02)` / `PooledTransactions (0x0a)` (EIP-2718). */
+export function txWireItem(raw: Uint8Array): unknown {
+  if (raw.length > 0 && raw[0]! <= 0x7f) {
+    return raw
+  }
+  return RLP.decode(raw)
+}
+
 export function encodeTransactionsPayload(raw: Uint8Array): Uint8Array {
-  return RLP.encode([raw])
+  return RLP.encode([txWireItem(raw)] as never)
 }
 
 export function encodeNewPooledTransactionHashes(raw: Uint8Array, hash: Uint8Array): Uint8Array {

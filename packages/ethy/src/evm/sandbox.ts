@@ -21,7 +21,7 @@ export type ExecutionOutcome = { result: unknown } | { error: JsonRpcError }
 export type EthySandbox = {
   runEthCall: (tx: unknown, stateOverride?: unknown) => Promise<ExecutionOutcome>
   runEstimateGas: (tx: unknown, stateOverride?: unknown) => Promise<ExecutionOutcome>
-  runCreateAccessList: (tx: unknown) => Promise<ExecutionOutcome>
+  runCreateAccessList: (tx: unknown, stateOverride?: unknown) => Promise<ExecutionOutcome>
   runSimulateCall: (parsed: ParsedRpcCall) => Promise<{
     gasUsed: bigint
     returnData: Uint8Array
@@ -49,8 +49,9 @@ function buildUnsignedTx(
   parsed: ParsedRpcCall,
   common: ReturnType<typeof buildExecutionBlock>['common'],
   baseFee: bigint,
+  gasLimitOverride?: bigint,
 ): { tx: TypedTransaction } | { error: JsonRpcError } {
-  const gasLimit = parsed.gasLimit ?? 30_000_000n
+  const gasLimit = gasLimitOverride ?? parsed.gasLimit ?? 30_000_000n
   const maxFee = parsed.maxFeePerGas ?? parsed.gasPrice ?? (baseFee > 0n ? baseFee : 1_000_000_000n)
   const maxPrio = parsed.maxPriorityFeePerGas ?? 0n
   const txData: Record<string, unknown> = {
@@ -80,21 +81,21 @@ function buildUnsignedTx(
 
 async function runTxOnOverlay(
   overlay: FlatStateManager,
-  tx: TypedTransaction,
+  parsed: ParsedRpcCall,
+  common: ReturnType<typeof buildExecutionBlock>['common'],
+  baseFee: bigint,
   block: ReturnType<typeof buildExecutionBlock>['block'],
   opts: { gasLimit: bigint; reportAccessList?: boolean },
 ): Promise<
   | { ok: true; gas: bigint; returnValue: Uint8Array; accessList?: AccessList }
   | { error: JsonRpcError }
 > {
-  const vm = await createVM({ common: overlay.common, stateManager: overlay })
-  const txWithGas = tx
-  if (tx.gasLimit !== opts.gasLimit) {
-    Object.assign(txWithGas, { gasLimit: opts.gasLimit })
-  }
+  const built = buildUnsignedTx(parsed, common, baseFee, opts.gasLimit)
+  if ('error' in built) return built
+  const vm = await createVM({ common, stateManager: overlay })
   try {
     const result = await runTx(vm, {
-      tx: txWithGas,
+      tx: built.tx,
       block,
       skipNonce: true,
       skipBalance: true,
@@ -169,25 +170,43 @@ export function createEthySandbox(opts: {
         const prep = await prepareOverlay(stateManager, stateOverride)
         if ('error' in prep) return prep
         const { block, common, baseFee } = buildExecutionBlock(spine, chain, hardfork, blockWindow)
-        const built = buildUnsignedTx(parsed.parsed, common, baseFee)
-        if ('error' in built) return built
         const cap = gasCapForContext(blockWindow, chain, hardfork, parsed.parsed.gasLimit)
-        const hi = await runTxOnOverlay(prep.overlay, built.tx, block, { gasLimit: cap })
+        const built = buildUnsignedTx(parsed.parsed, common, baseFee, cap)
+        if ('error' in built) return built
+        const hi = await runTxOnOverlay(prep.overlay, parsed.parsed, common, baseFee, block, {
+          gasLimit: cap,
+        })
         if ('error' in hi) return hi
         let low = built.tx.getIntrinsicGas()
         let high = cap
         let best = high
         if (hi.gas <= high) {
-          const exact = await runTxOnOverlay(prep.overlay, built.tx, block, { gasLimit: hi.gas })
+          const exactPrep = await prepareOverlay(stateManager, stateOverride)
+          if ('error' in exactPrep) return exactPrep
+          const exact = await runTxOnOverlay(
+            exactPrep.overlay,
+            parsed.parsed,
+            common,
+            baseFee,
+            block,
+            { gasLimit: hi.gas },
+          )
           if (!('error' in exact)) {
             return { result: quantityHex(hi.gas) }
           }
         }
         for (let i = 0; i < 20 && low < high; i++) {
           const mid = (low + high) / 2n
-          const probeOverlay = stateManager.shallowCopy() as FlatStateManager
-          await applyStateOverride(probeOverlay, stateOverride)
-          const run = await runTxOnOverlay(probeOverlay, built.tx, block, { gasLimit: mid })
+          const probePrep = await prepareOverlay(stateManager, stateOverride)
+          if ('error' in probePrep) return probePrep
+          const run = await runTxOnOverlay(
+            probePrep.overlay,
+            parsed.parsed,
+            common,
+            baseFee,
+            block,
+            { gasLimit: mid },
+          )
           if ('error' in run) {
             low = mid + 1n
           } else {
@@ -199,17 +218,15 @@ export function createEthySandbox(opts: {
       })
     },
 
-    runCreateAccessList(txObj) {
+    runCreateAccessList(txObj, stateOverride) {
       return enqueueSandbox(async () => {
         const parsed = parseRpcTxObject(txObj)
         if ('error' in parsed) return parsed
-        const prep = await prepareOverlay(stateManager, undefined)
+        const prep = await prepareOverlay(stateManager, stateOverride)
         if ('error' in prep) return prep
         const { block, common, baseFee } = buildExecutionBlock(spine, chain, hardfork, blockWindow)
-        const built = buildUnsignedTx(parsed.parsed, common, baseFee)
-        if ('error' in built) return built
         const cap = gasCapForContext(blockWindow, chain, hardfork, parsed.parsed.gasLimit)
-        const run = await runTxOnOverlay(prep.overlay, built.tx, block, {
+        const run = await runTxOnOverlay(prep.overlay, parsed.parsed, common, baseFee, block, {
           gasLimit: cap,
           reportAccessList: true,
         })

@@ -169,6 +169,8 @@ export function inferDomainForCommandOrPrompt(
     cmd === '/peers' ||
     cmd === '/p' ||
     cmd === '/ethy' ||
+    cmd === '/rpc' ||
+    cmd === '/send' ||
     cmd === '/diag' ||
     cmd === '/d' ||
     cmd === '/drop'

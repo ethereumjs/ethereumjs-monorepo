@@ -2,6 +2,7 @@ import { type Block, createBlock } from '@ethereumjs/block'
 import type { ChainConfig } from '@ethereumjs/common'
 import { Common } from '@ethereumjs/common'
 
+import { ethyKeccak256 } from '../crypto/keccak.ts'
 import type { RpcBlockWindowStore } from '../rpc/blockWindowStore.ts'
 import { headBlockNumber } from '../rpc/executionContext.ts'
 import { decodeRpcHeader } from '../rpc/formatBlock.ts'
@@ -38,7 +39,11 @@ export function buildExecutionBlock(
   hardfork: string,
   blockWindow: RpcBlockWindowStore,
 ): { block: Block; common: Common; baseFee: bigint } {
-  const common = new Common({ chain, hardfork })
+  const common = new Common({
+    chain,
+    hardfork,
+    customCrypto: { keccak256: ethyKeccak256 },
+  })
   const head = headBlockNumber(spine)
   const latestN = blockWindow.latest() ?? head
   const stored = blockWindow.getByNumber(latestN)

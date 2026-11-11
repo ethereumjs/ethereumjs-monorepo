@@ -1,4 +1,9 @@
-import { createAddressFromString, createZeroAddress, hexToBytes } from '@ethereumjs/util'
+import {
+  bytesToBigInt,
+  createAddressFromString,
+  createZeroAddress,
+  hexToBytes,
+} from '@ethereumjs/util'
 
 import { formatCalldataPreview } from '../contracts/localAbi.ts'
 import {
@@ -40,7 +45,8 @@ function parseSimulateArgs(parts: string[]): { parsed: ParsedRpcCall } | { error
   let value = 0n
   if (parts[3] !== undefined) {
     try {
-      value = BigInt(parts[3].startsWith('0x') ? parts[3] : `0x${parts[3]}`)
+      value = BigInt(parts[3])
+      if (value < 0n) return { error: 'Invalid value' }
     } catch {
       return { error: 'Invalid value' }
     }
@@ -54,6 +60,16 @@ function parseSimulateArgs(parts: string[]): { parsed: ParsedRpcCall } | { error
   const built = parseRpcTxObject(tx)
   if ('error' in built) return { error: built.error.message }
   return { parsed: built.parsed }
+}
+
+function formatReturnDataPreview(returnData: Uint8Array): string {
+  if (returnData.length === 0) return '0x'
+  const hex = dataHex(returnData)
+  if (returnData.length === 32) {
+    const uintVal = bytesToBigInt(returnData)
+    return `${hex} (${uintVal.toString(10)})`
+  }
+  return hex
 }
 
 export async function simulateMicroscopeWidget(
@@ -72,6 +88,7 @@ export async function simulateMicroscopeWidget(
       title: '/simulate',
       entries: [
         { key: 'To', value: args.parsed.to?.toString() ?? '—' },
+        { key: 'Gas used', value: run.gasUsed.toString() },
         { key: 'Error', value: run.execError.message },
       ],
     }
@@ -80,25 +97,49 @@ export async function simulateMicroscopeWidget(
     args.parsed.data.length >= 4
       ? lookupFunctionSelector(`0x${dataHex(args.parsed.data.subarray(0, 4)).slice(2)}`)
       : undefined
+  const mutations = run.overlay.overlayMutations()
   const entries: { key: string; value: string }[] = [
+    { key: 'To', value: args.parsed.to?.toString() ?? '—' },
+    ...(args.parsed.data.length >= 4
+      ? [
+          {
+            key: 'Call',
+            value:
+              selector !== undefined
+                ? `${selector.signature} (${formatCalldataPreview(args.parsed.data)})`
+                : formatCalldataPreview(args.parsed.data),
+          },
+        ]
+      : []),
     { key: 'Gas used', value: run.gasUsed.toString() },
-    {
-      key: 'Return data',
-      value:
-        run.returnData.length > 0
-          ? `${dataHex(run.returnData)}${selector !== undefined ? ` · ${selector.signature}` : ''}`
-          : args.parsed.data.length >= 4
-            ? formatCalldataPreview(args.parsed.data)
-            : '0x',
-    },
+    { key: 'Return data', value: formatReturnDataPreview(run.returnData) },
     { key: 'Logs emitted', value: String(run.logs.length) },
-    { key: 'Accounts touched', value: String(run.overlay.overlayMutations().accounts.length) },
+    { key: 'Accounts touched', value: String(mutations.accounts.length) },
+    { key: 'Storage slot diffs', value: String(mutations.storage.length) },
+  ]
+  const debugPage = [
     {
-      key: 'Storage slot diffs',
-      value: String(run.overlay.overlayMutations().storage.length),
+      title: 'Storage slot diffs',
+      entries:
+        mutations.storage.length > 0
+          ? mutations.storage.slice(0, 12).map((s) => ({
+              key: `${s.key.slice(0, 10)}…:${s.key.slice(65, 75)}…`,
+              value: s.value !== undefined ? dataHex(s.value) : '0x0 (cleared)',
+            }))
+          : [{ key: 'Slots', value: 'none' }],
+    },
+    {
+      title: 'Logs emitted',
+      entries:
+        run.logs.length > 0
+          ? run.logs.slice(0, 8).map((l, i) => ({
+              key: `#${i} ${l.address.slice(0, 10)}…`,
+              value: `${l.topics[0]?.slice(0, 14) ?? 'no-topic'}… (${l.data.length > 2 ? `${(l.data.length - 2) / 2}B` : '0B'})`,
+            }))
+          : [{ key: 'Logs', value: 'none' }],
     },
   ]
-  return { kind: 'key_value', title: '/simulate', entries }
+  return { kind: 'key_value', title: '/simulate', entries, debugPage }
 }
 
 export async function sendTxWidget(

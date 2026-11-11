@@ -85,4 +85,27 @@ describe('[Ethy/sandbox]: WP-08b overlays', () => {
     assert.equal((a as { result: string }).result, '0x2a')
     assert.equal((b as { result: string }).result, '0x1b')
   })
+
+  it('eth_estimateGas and eth_createAccessList isolate each trial overlay', async () => {
+    const sm = createFlatStateManager()
+    const sandbox = buildSandbox(sm)
+    const to = '0x9999999999999999999999999999999999999999'
+    // Bytecode that reverts if slot 0 is non-zero, otherwise writes 1 to slot 0 and returns:
+    // PUSH1 0x00 SLOAD ISZERO PUSH1 0x0c JUMPI PUSH1 0x00 PUSH1 0x00 REVERT JUMPDEST PUSH1 0x01 PUSH1 0x00 SSTORE STOP
+    // 60 00 54 15 60 0c 57 60 00 60 00 fd 5b 60 01 60 00 55 00
+    const onceOnlyCode = '0x60005415600c5760006000fd5b600160005500'
+    const est = await sandbox.runEstimateGas({ to, data: '0x' }, { [to]: { code: onceOnlyCode } })
+    assert.isUndefined((est as { error?: unknown }).error)
+    assert.match((est as { result: string }).result, /^0x[0-9a-f]+$/)
+
+    const al = await sandbox.runCreateAccessList(
+      { to, data: '0x' },
+      { [to]: { code: onceOnlyCode } },
+    )
+    assert.isUndefined((al as { error?: unknown }).error)
+    const result = (al as { result: { accessList: Array<{ address: string }>; gasUsed: string } })
+      .result
+    assert.isArray(result.accessList)
+    assert.isTrue(result.accessList.some((row) => row.address.toLowerCase() === to.toLowerCase()))
+  })
 })

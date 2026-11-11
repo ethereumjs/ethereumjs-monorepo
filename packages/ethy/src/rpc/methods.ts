@@ -624,10 +624,11 @@ export async function dispatchRpcMethod(
     case 'eth_createAccessList': {
       const tx = params[0]
       const tag = params[1]
+      const stateOverride = params[2]
       const resolved = resolveStateTag(tag, ctx)
       if ('error' in resolved) return { error: resolved.error }
       void resolved
-      return ctx.sandbox.runCreateAccessList(tx)
+      return ctx.sandbox.runCreateAccessList(tx, stateOverride)
     }
     case 'eth_sendRawTransaction': {
       const raw = params[0]
