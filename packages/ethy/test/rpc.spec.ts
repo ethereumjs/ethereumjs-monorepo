@@ -1,17 +1,21 @@
 import { createBlockHeader } from '@ethereumjs/block'
 import { Common } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
 import { createFlatStateManager } from '@ethereumjs/statemanager'
+import { createFeeMarket1559Tx, createLegacyTx } from '@ethereumjs/tx'
 import {
   accountToBinaryAccount,
   bytesToHex,
   createAccount,
   createAddressFromString,
   hexToBytes,
+  intToUnpaddedBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
 import { keccak_256 } from '@noble/hashes/sha3.js'
 import { assert, describe, it } from 'vitest'
 
+import { getCommandAvailability } from '../src/domains/commandAvailability.ts'
 import { activeHardfork, chainConfigForNetwork } from '../src/net/chainHardfork.ts'
 import { RpcBlockWindowStore } from '../src/rpc/blockWindowStore.ts'
 import { type RpcHandlerContext, dispatchRpcMethod } from '../src/rpc/methods.ts'
@@ -37,7 +41,7 @@ function buildCtx(sm: ReturnType<typeof createFlatStateManager>): RpcHandlerCont
   }
 }
 
-async function postJson(port: number, body: unknown): Promise<unknown> {
+async function postJSON(port: number, body: unknown): Promise<unknown> {
   const res = await fetch(`http://127.0.0.1:${port}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -65,14 +69,14 @@ describe('[Ethy/JSON-RPC]: WP-08a server', () => {
     assert.isDefined(handle)
     assert.isDefined(spine.rpc?.port)
     const port = spine.rpc!.port
-    const chainId = (await postJson(port, {
+    const chainId = (await postJSON(port, {
       jsonrpc: '2.0',
       method: 'eth_chainId',
       params: [],
       id: 1,
     })) as { result: string }
     assert.equal(chainId.result, '0xaa36a7')
-    const stub = (await postJson(port, {
+    const stub = (await postJSON(port, {
       jsonrpc: '2.0',
       method: 'eth_call',
       params: [],
@@ -157,5 +161,120 @@ describe('[Ethy/JSON-RPC]: WP-08a server', () => {
     const out = await dispatchRpcMethod(ctx, 'eth_getBlockByNumber', ['0x32', false])
     assert.isObject(out.result)
     assert.equal((out.result as { number: string }).number, '0x32')
+  })
+
+  it('batch requests, empty batch error, tx/receipt/log decoding, and command availability', async () => {
+    const chain = chainConfigForNetwork('sepolia')
+    const hardfork = activeHardfork(chain)
+    const common = new Common({ chain, hardfork })
+    const pk = hexToBytes('0x0101010101010101010101010101010101010101010101010101010101010101')
+    const tx1 = createLegacyTx(
+      {
+        nonce: 0n,
+        gasPrice: 1_000_000_000n,
+        gasLimit: 21_000n,
+        to: '0x3333333333333333333333333333333333333333',
+        value: 100n,
+      },
+      { common },
+    ).sign(pk)
+    const tx2 = createFeeMarket1559Tx(
+      {
+        nonce: 1n,
+        maxFeePerGas: 2_000_000_000n,
+        maxPriorityFeePerGas: 1_000_000_000n,
+        gasLimit: 50_000n,
+        to: '0x4444444444444444444444444444444444444444',
+        data: '0xa9059cbb',
+      },
+      { common },
+    ).sign(pk)
+
+    const header = createBlockHeader(
+      { number: 100n, gasLimit: 30_000_000n, gasUsed: 71_000n, baseFeePerGas: 1_000_000_000n },
+      { common },
+    )
+    const bodyRlp = RLP.encode([[tx1.raw(), tx2.serialize()], [], []])
+    const topic0 = keccak_256(new Uint8Array([1, 2, 3]))
+    const logAddr = hexToBytes('0x4444444444444444444444444444444444444444')
+    // eth/69 4-tuple receipts: [txType, status, cumulativeGas, logs]
+    // tx1 succeeds (status 1), tx2 reverts (status 0 = empty bytes)
+    const receiptsEth69Rlp = RLP.encode([
+      [
+        intToUnpaddedBytes(0),
+        intToUnpaddedBytes(1),
+        intToUnpaddedBytes(21_000),
+        [[logAddr, [topic0], hexToBytes('0xdead')]],
+      ],
+      [intToUnpaddedBytes(2), new Uint8Array(0), intToUnpaddedBytes(71_000), []],
+    ])
+
+    const ctx = buildCtx(createFlatStateManager({ common }))
+    ctx.blockWindow.noteBundle({
+      blockNumber: 100n,
+      headerRlp: header.serialize(),
+      bodyRlp,
+      receiptsEth69Rlp,
+    })
+
+    const tx1Hash = bytesToHex(tx1.hash())
+    const tx2Hash = bytesToHex(tx2.hash())
+    const txOut = await dispatchRpcMethod(ctx, 'eth_getTransactionByHash', [tx1Hash])
+    const txObj = txOut.result as Record<string, string>
+    assert.equal(txObj.hash.toLowerCase(), tx1Hash.toLowerCase())
+    assert.equal(txObj.gas, '0x5208')
+    assert.equal(txObj.input, '0x')
+
+    const rc1 = (await dispatchRpcMethod(ctx, 'eth_getTransactionReceipt', [tx1Hash]))
+      .result as Record<string, unknown>
+    assert.equal(rc1.status, '0x1')
+    assert.equal(rc1.gasUsed, '0x5208')
+    assert.lengthOf(rc1.logs as unknown[], 1)
+
+    const rc2 = (await dispatchRpcMethod(ctx, 'eth_getTransactionReceipt', [tx2Hash]))
+      .result as Record<string, unknown>
+    assert.equal(rc2.status, '0x0')
+    assert.equal(rc2.gasUsed, '0xc350')
+
+    const logsOut = await dispatchRpcMethod(ctx, 'eth_getLogs', [
+      { fromBlock: '0x64', toBlock: '0x64', topics: [bytesToHex(topic0)] },
+    ])
+    assert.lengthOf(logsOut.result as unknown[], 1)
+
+    // EIP-1898 block object tag at head
+    const balOut = await dispatchRpcMethod(ctx, 'eth_getBalance', [
+      '0x3333333333333333333333333333333333333333',
+      { blockNumber: '0x64' },
+    ])
+    assert.equal(balOut.result, '0x0')
+
+    // Command availability: /peers stays ready even when RPC is not listening
+    assert.equal(getCommandAvailability('/peers', ctx.spine).status, 'ready')
+    assert.equal(getCommandAvailability('/buckets', ctx.spine).status, 'ready')
+    assert.equal(getCommandAvailability('/rpc', ctx.spine).status, 'locked')
+
+    // HTTP batch and empty batch
+    const handle = await startJsonRpcServer({
+      spine: ctx.spine,
+      stateManager: ctx.stateManager,
+      chain,
+      hardfork,
+      demo: true,
+      host: '127.0.0.1',
+      port: 0,
+      portExplicit: true,
+    })
+    const port = ctx.spine.rpc!.port
+    const batchRes = (await postJSON(port, [
+      { jsonrpc: '2.0', method: 'eth_chainId', params: [], id: 1 },
+      { jsonrpc: '2.0', method: 'net_version', params: [], id: 2 },
+    ])) as Array<{ id: number; result: string }>
+    assert.lengthOf(batchRes, 2)
+    assert.equal(batchRes[0]!.result, '0xaa36a7')
+    assert.equal(batchRes[1]!.result, '11155111')
+
+    const emptyBatch = (await postJSON(port, [])) as { error: { code: number } }
+    assert.equal(emptyBatch.error.code, -32600)
+    await handle!.stop()
   })
 })

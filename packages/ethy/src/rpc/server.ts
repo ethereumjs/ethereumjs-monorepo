@@ -53,10 +53,11 @@ function recordCall(
   if (rpc.recentCalls.length > 32) rpc.recentCalls.length = 32
 }
 
-async function handleOne(
-  ctx: RpcHandlerContext,
-  body: { jsonrpc?: string; method?: string; params?: unknown; id?: unknown },
-): Promise<JsonRpcResponse> {
+async function handleOne(ctx: RpcHandlerContext, rawBody: unknown): Promise<JsonRpcResponse> {
+  if (rawBody === null || typeof rawBody !== 'object' || Array.isArray(rawBody)) {
+    return { jsonrpc: '2.0', id: null, error: { code: -32600, message: 'Invalid Request' } }
+  }
+  const body = rawBody as { jsonrpc?: string; method?: string; params?: unknown; id?: unknown }
   const id = body.id === undefined ? null : (body.id as string | number | null)
   if (body.jsonrpc !== '2.0' || typeof body.method !== 'string') {
     return { jsonrpc: '2.0', id, error: { code: -32600, message: 'Invalid Request' } }
@@ -156,6 +157,17 @@ export async function startJsonRpcServer(
     }
     try {
       if (Array.isArray(parsed)) {
+        if (parsed.length === 0) {
+          res.writeHead(200, { 'Content-Type': 'application/json' })
+          res.end(
+            JSON.stringify({
+              jsonrpc: '2.0',
+              id: null,
+              error: { code: -32600, message: 'Invalid Request' },
+            }),
+          )
+          return
+        }
         if (parsed.length > BATCH_MAX) {
           res.writeHead(200, { 'Content-Type': 'application/json' })
           res.end(
@@ -169,13 +181,13 @@ export async function startJsonRpcServer(
         }
         const batch: JsonRpcResponse[] = []
         for (const row of parsed) {
-          batch.push(await handleOne(ctx, row as never))
+          batch.push(await handleOne(ctx, row))
         }
         res.writeHead(200, { 'Content-Type': 'application/json' })
         res.end(JSON.stringify(batch))
         return
       }
-      const single = await handleOne(ctx, parsed as never)
+      const single = await handleOne(ctx, parsed)
       res.writeHead(200, { 'Content-Type': 'application/json' })
       res.end(JSON.stringify(single))
     } catch {

@@ -1729,6 +1729,13 @@ export class SnapPivotStore {
         for (const name of fs.readdirSync(storageDir)) {
           if (name.endsWith('.bin') && name.length === 68 && !name.startsWith('shard-')) {
             this.persistedStorageAccounts.add(name.slice(0, 64).toLowerCase())
+          } else if (name.startsWith('shard-') && name.endsWith('.bin')) {
+            const batches = this.buildStorageShardBatchIndex(path.join(storageDir, name))
+            if (batches !== undefined) {
+              for (const b of batches) {
+                this.persistedStorageAccounts.add(b.accountHashHex)
+              }
+            }
           }
         }
       } catch {
@@ -1937,7 +1944,8 @@ export class SnapPivotStore {
     const fd = fs.openSync(file, 'r')
     const scratch = Buffer.alloc(64)
     try {
-      for (const batch of cached.batches) {
+      for (let bi = cached.batches.length - 1; bi >= 0; bi--) {
+        const batch = cached.batches[bi]!
         if (batch.accountHashHex !== accountHex) continue
         let pos = batch.batchOffset + 8 + 32
         for (let i = 0; i < batch.slotCount; i++) {

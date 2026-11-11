@@ -1,4 +1,3 @@
-import { createBlockHeaderFromBytesArray } from '@ethereumjs/block'
 import type { ChainConfig } from '@ethereumjs/common'
 import { Common } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
@@ -12,7 +11,7 @@ import type { ETHEconomyDataManager } from '../economy/economyDataManager.ts'
 import { isNodeAtChainHead, localVerifiedBlock, resolveChainHeadClock } from '../spine/chainHead.ts'
 import type { EthySpine } from '../spine/types.ts'
 import type { RpcBlockWindowStore } from './blockWindowStore.ts'
-import { formatRpcBlock } from './formatBlock.ts'
+import { decodeRpcHeader, formatRpcBlock, formatRpcTransaction } from './formatBlock.ts'
 import { type RpcLog, collectLogsFromBlock, formatRpcReceipt } from './formatReceipt.ts'
 import { data32Hex, dataHex, parseData32Hex, parseQuantityHex, quantityHex } from './quantities.ts'
 import type { JsonRpcError } from './types.ts'
@@ -65,6 +64,20 @@ function resolveStateTag(
   ctx: RpcHandlerContext,
 ): { blockNumber: bigint } | { error: JsonRpcError } {
   const head = headBlockNumber(ctx.spine)
+  if (tag !== null && typeof tag === 'object') {
+    const obj = tag as Record<string, unknown>
+    if (typeof obj.blockNumber === 'string') {
+      return resolveStateTag(obj.blockNumber, ctx)
+    }
+    if (typeof obj.blockHash === 'string') {
+      const stored = ctx.blockWindow.getByHash(obj.blockHash)
+      if (stored !== undefined) {
+        if (stored.blockNumber !== head) return { error: flatStateError(stored.blockNumber, head) }
+        return { blockNumber: head }
+      }
+      return { blockNumber: head }
+    }
+  }
   if (tag === undefined || tag === 'latest' || tag === 'pending') {
     return { blockNumber: head }
   }
@@ -89,6 +102,15 @@ function resolveWindowTag(
   tag: unknown,
   ctx: RpcHandlerContext,
 ): { blockNumber: bigint } | { hash: string } | { missing: true } | { error: JsonRpcError } {
+  if (tag !== null && typeof tag === 'object') {
+    const obj = tag as Record<string, unknown>
+    if (typeof obj.blockNumber === 'string') {
+      return resolveWindowTag(obj.blockNumber, ctx)
+    }
+    if (typeof obj.blockHash === 'string') {
+      return resolveWindowTag(obj.blockHash, ctx)
+    }
+  }
   if (tag === 'earliest') {
     const e = ctx.blockWindow.earliest()
     return e !== undefined ? { blockNumber: e } : { missing: true }
@@ -146,10 +168,12 @@ function medianTipWei(ctx: RpcHandlerContext): bigint {
         if ('maxPriorityFeePerGas' in tx && tx.maxPriorityFeePerGas !== undefined) {
           tips.push(tx.maxPriorityFeePerGas)
         } else if ('gasPrice' in tx && tx.gasPrice !== undefined && stored.headerRlp) {
-          const header = createBlockHeaderFromBytesArray(RLP.decode(stored.headerRlp) as never, {
-            common,
-            skipConsensusFormatValidation: true,
-          })
+          const header = decodeRpcHeader(
+            stored.headerRlp,
+            ctx.chain,
+            ctx.hardfork,
+            stored.blockNumber,
+          )
           const base = header.baseFeePerGas ?? 0n
           if (tx.gasPrice > base) tips.push(tx.gasPrice - base)
         }
@@ -168,12 +192,8 @@ function latestBaseFee(ctx: RpcHandlerContext): bigint {
   if (latestN === undefined) return 0n
   const stored = ctx.blockWindow.getByNumber(latestN)
   if (stored === undefined) return 0n
-  const common = new Common({ chain: ctx.chain, hardfork: ctx.hardfork })
   try {
-    const header = createBlockHeaderFromBytesArray(RLP.decode(stored.headerRlp) as never, {
-      common,
-      skipConsensusFormatValidation: true,
-    })
+    const header = decodeRpcHeader(stored.headerRlp, ctx.chain, ctx.hardfork, stored.blockNumber)
     return header.baseFeePerGas ?? 0n
   } catch {
     return 0n
@@ -204,9 +224,15 @@ export async function dispatchRpcMethod(
     }
     case 'web3_sha3': {
       const data = params[0]
-      if (typeof data !== 'string') return { error: err(-32602, 'Expected data hex string') }
-      const bytes = hexToBytes(data as `0x${string}`)
-      return { result: dataHex(ethyKeccak256(bytes)) }
+      if (typeof data !== 'string' || !data.startsWith('0x')) {
+        return { error: err(-32602, 'Expected 0x-prefixed data hex string') }
+      }
+      try {
+        const bytes = hexToBytes(data as `0x${string}`)
+        return { result: dataHex(ethyKeccak256(bytes)) }
+      } catch {
+        return { error: err(-32602, 'Invalid hex data') }
+      }
     }
     case 'net_version':
       return { result: ctx.spine.chainId.toString(10) }
@@ -217,7 +243,7 @@ export async function dispatchRpcMethod(
     case 'eth_chainId':
       return { result: quantityHex(ctx.spine.chainId) }
     case 'eth_syncing': {
-      if (isNodeAtChainHead(ctx.spine)) return { result: false }
+      if (ctx.demo || isNodeAtChainHead(ctx.spine)) return { result: false }
       const clock = resolveChainHeadClock(ctx.spine)
       const current = localVerifiedBlock(ctx.spine) ?? 0n
       const highest = clock?.chainHeadBlock ?? ctx.spine.bestPeerHead ?? current
@@ -325,20 +351,17 @@ export async function dispatchRpcMethod(
     }
     case 'eth_getTransactionByHash': {
       if (typeof params[0] !== 'string') return { error: err(-32602, 'Invalid hash') }
-      const row = ctx.blockWindow.getTx(params[0].replace(/^0x/i, '').toLowerCase())
+      const row = ctx.blockWindow.getTx(params[0])
       if (row === undefined) return { result: null }
       const common = new Common({ chain: ctx.chain, hardfork: ctx.hardfork })
       const tx = createTxFromBlockBodyData(row.rawTx, { common })
-      const json = tx.toJSON()
       return {
-        result: {
-          ...json,
-          blockHash: dataHex(row.block.blockHash),
-          blockNumber: quantityHex(row.block.blockNumber),
-          transactionIndex: quantityHex(BigInt(row.txIndex)),
-          hash: tx.hash(),
-          from: tx.getSenderAddress().toString(),
-        },
+        result: formatRpcTransaction(
+          tx,
+          dataHex(row.block.blockHash),
+          row.block.blockNumber,
+          row.txIndex,
+        ),
       }
     }
     case 'eth_getTransactionByBlockNumberAndIndex':
@@ -348,7 +371,7 @@ export async function dispatchRpcMethod(
       let stored: ReturnType<RpcBlockWindowStore['getByNumber']>
       if (method.endsWith('ByHash')) {
         if (typeof params[0] !== 'string') return { error: err(-32602, 'Invalid hash') }
-        stored = ctx.blockWindow.getByHash(params[0].replace(/^0x/i, '').toLowerCase())
+        stored = ctx.blockWindow.getByHash(params[0])
       } else {
         const resolved = resolveWindowTag(params[0], ctx)
         if ('error' in resolved) return { error: resolved.error }
@@ -360,21 +383,18 @@ export async function dispatchRpcMethod(
       if (rawTx === undefined) return { result: null }
       const common = new Common({ chain: ctx.chain, hardfork: ctx.hardfork })
       const tx = createTxFromBlockBodyData(rawTx, { common })
-      const json = tx.toJSON()
       return {
-        result: {
-          ...json,
-          blockHash: dataHex(stored.blockHash),
-          blockNumber: quantityHex(stored.blockNumber),
-          transactionIndex: quantityHex(index),
-          hash: tx.hash(),
-          from: tx.getSenderAddress().toString(),
-        },
+        result: formatRpcTransaction(
+          tx,
+          dataHex(stored.blockHash),
+          stored.blockNumber,
+          Number(index),
+        ),
       }
     }
     case 'eth_getTransactionReceipt': {
       if (typeof params[0] !== 'string') return { error: err(-32602, 'Invalid hash') }
-      const row = ctx.blockWindow.getTx(params[0].replace(/^0x/i, '').toLowerCase())
+      const row = ctx.blockWindow.getTx(params[0])
       if (row === undefined) return { result: null }
       return {
         result: formatRpcReceipt(row.block, row.txIndex, row.rawTx, ctx.chain, ctx.hardfork),
@@ -404,14 +424,21 @@ export async function dispatchRpcMethod(
       if (latestN === undefined) return { result: '0x0' }
       const stored = ctx.blockWindow.getByNumber(latestN)
       if (stored === undefined) return { result: '0x0' }
-      const common = new Common({ chain: ctx.chain, hardfork: ctx.hardfork })
       try {
-        const header = createBlockHeaderFromBytesArray(RLP.decode(stored.headerRlp) as never, {
-          common,
-          skipConsensusFormatValidation: true,
-        })
-        const excess = header.excessBlobGas ?? 0n
-        return { result: quantityHex(excess) }
+        const header = decodeRpcHeader(
+          stored.headerRlp,
+          ctx.chain,
+          ctx.hardfork,
+          stored.blockNumber,
+        )
+        if (header.excessBlobGas !== undefined) {
+          try {
+            return { result: quantityHex(header.getBlobGasPrice()) }
+          } catch {
+            return { result: quantityHex(header.excessBlobGas) }
+          }
+        }
+        return { result: '0x0' }
       } catch {
         return { result: '0x0' }
       }
@@ -441,12 +468,13 @@ export async function dispatchRpcMethod(
       for (let n = oldest; n <= newest; n++) {
         const stored = ctx.blockWindow.getByNumber(n)
         if (stored === undefined) continue
-        const common = new Common({ chain: ctx.chain, hardfork: ctx.hardfork })
         try {
-          const header = createBlockHeaderFromBytesArray(RLP.decode(stored.headerRlp) as never, {
-            common,
-            skipConsensusFormatValidation: true,
-          })
+          const header = decodeRpcHeader(
+            stored.headerRlp,
+            ctx.chain,
+            ctx.hardfork,
+            stored.blockNumber,
+          )
           baseFeePerGas.push(quantityHex(header.baseFeePerGas ?? 0n))
           const ratio = header.gasLimit > 0n ? Number(header.gasUsed) / Number(header.gasLimit) : 0
           gasUsedRatio.push(Number.isFinite(ratio) ? ratio : 0)

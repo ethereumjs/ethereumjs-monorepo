@@ -73,21 +73,24 @@ function bumpTxType(split: TxTypeSplit, type: number): void {
 }
 
 function receiptStatus(receipt: unknown): bigint | undefined {
-  if (receipt instanceof Uint8Array && receipt.length > 0 && receipt[0]! <= 0x7f) {
+  let payload = receipt
+  if (payload instanceof Uint8Array && payload.length > 0 && payload[0]! <= 0x7f) {
     try {
-      const inner = RLP.decode(receipt.subarray(1)) as unknown
-      if (Array.isArray(inner) && inner[0] instanceof Uint8Array) {
-        return bytesToBigInt(inner[0])
-      }
+      payload = RLP.decode(payload.subarray(1)) as unknown
     } catch {
       return undefined
     }
   }
-  if (Array.isArray(receipt) && receipt[0] instanceof Uint8Array) {
-    try {
-      return bytesToBigInt(receipt[0])
-    } catch {
-      return undefined
+  if (Array.isArray(payload) && payload.length >= 3) {
+    const isEth69 =
+      payload.length === 4 && payload[2] instanceof Uint8Array && payload[2].length !== 256
+    const statusBytes = isEth69 ? payload[1] : payload[0]
+    if (statusBytes instanceof Uint8Array) {
+      try {
+        return bytesToBigInt(statusBytes)
+      } catch {
+        return undefined
+      }
     }
   }
   return undefined

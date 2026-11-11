@@ -1,10 +1,11 @@
-import { createBlockHeaderFromBytesArray } from '@ethereumjs/block'
 import type { ChainConfig } from '@ethereumjs/common'
 import { Common } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { createTxFromBlockBodyData } from '@ethereumjs/tx'
 import type { BALJSONBlockAccessList } from '@ethereumjs/util'
 
+import { decodeRpcHeader } from './formatBlock.ts'
+import { dataHex } from './quantities.ts'
 import type { RpcBundleNote } from './types.ts'
 
 export const RPC_BLOCK_WINDOW = 64
@@ -18,6 +19,10 @@ export type StoredRpcBlock = {
   balJson?: BALJSONBlockAccessList
   txHashes: string[]
   rawTxs: Uint8Array[]
+}
+
+function normalizeHashKey(hashHex: string): string {
+  return hashHex.replace(/^0x/i, '').toLowerCase()
 }
 
 export class RpcBlockWindowStore {
@@ -57,11 +62,11 @@ export class RpcBlockWindowStore {
   }
 
   getByHash(hashHex: string): StoredRpcBlock | undefined {
-    return this.byHash.get(hashHex.toLowerCase())
+    return this.byHash.get(normalizeHashKey(hashHex))
   }
 
   getTx(txHash: string): { block: StoredRpcBlock; txIndex: number; rawTx: Uint8Array } | undefined {
-    const row = this.txByHash.get(txHash.toLowerCase())
+    const row = this.txByHash.get(normalizeHashKey(txHash))
     if (row === undefined) return undefined
     const block = this.byNumber.get(row.blockNumber)
     if (block === undefined) return undefined
@@ -72,10 +77,7 @@ export class RpcBlockWindowStore {
     const common = new Common({ chain: this.chain, hardfork: this.hardfork })
     let blockHash: Uint8Array
     try {
-      const header = createBlockHeaderFromBytesArray(RLP.decode(input.headerRlp) as never, {
-        common,
-        skipConsensusFormatValidation: true,
-      })
+      const header = decodeRpcHeader(input.headerRlp, this.chain, this.hardfork, input.blockNumber)
       if (header.number !== input.blockNumber) return
       blockHash = header.hash()
     } catch {
@@ -90,7 +92,7 @@ export class RpcBlockWindowStore {
     if (existing !== undefined) {
       this.byHash.delete(Buffer.from(existing.blockHash).toString('hex').toLowerCase())
       for (const h of existing.txHashes) {
-        this.txByHash.delete(h)
+        this.txByHash.delete(normalizeHashKey(h))
       }
     }
     const txHashes: string[] = []
@@ -103,14 +105,11 @@ export class RpcBlockWindowStore {
           for (const raw of body[0]) {
             try {
               const tx = createTxFromBlockBodyData(raw as Uint8Array | Uint8Array[], { common })
-              const hash = tx.hash().toString().toLowerCase()
-              const serialized =
-                raw instanceof Uint8Array
-                  ? new Uint8Array(raw)
-                  : new Uint8Array(raw[0] as Uint8Array)
-              txHashes.push(hash)
+              const hashHex = dataHex(tx.hash()).toLowerCase()
+              const serialized = tx.serialize()
+              txHashes.push(hashHex)
               rawTxs.push(serialized)
-              this.txByHash.set(hash, {
+              this.txByHash.set(normalizeHashKey(hashHex), {
                 blockNumber: input.blockNumber,
                 blockHash,
                 txIndex: idx,
@@ -147,7 +146,7 @@ export class RpcBlockWindowStore {
       if (old !== undefined) {
         const hk = Buffer.from(old.blockHash).toString('hex').toLowerCase()
         this.byHash.delete(hk)
-        for (const h of old.txHashes) this.txByHash.delete(h)
+        for (const h of old.txHashes) this.txByHash.delete(normalizeHashKey(h))
       }
     }
   }

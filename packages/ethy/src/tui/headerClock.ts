@@ -22,7 +22,7 @@ function formatSlotLabel(slot: number, brightSlot: boolean, atHead: boolean): st
 /** JSON-RPC endpoint is ready for wallet traffic (WP-08a). */
 export function isRpcReady(spine: EthySpine): boolean {
   if (spine.rpc?.listening !== true) return false
-  if (isNodeAtChainHead(spine)) return true
+  if (spine.demoClock === true || isNodeAtChainHead(spine)) return true
   if (
     spine.totalAccountsSynced > 0 &&
     (spine.phase === 'HEAD_FOLLOWING' || spine.phase === 'BAL_CATCHUP')

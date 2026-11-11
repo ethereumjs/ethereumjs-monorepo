@@ -1,14 +1,8 @@
-import {
-  bigIntToUnpaddedBytes,
-  bytesToHex,
-  hexToBigInt,
-  hexToBytes,
-  setLengthLeft,
-} from '@ethereumjs/util'
+import { bytesToHex, hexToBigInt, hexToBytes, setLengthLeft } from '@ethereumjs/util'
 
 export function quantityHex(n: bigint): string {
-  if (n === 0n) return '0x0'
-  return bytesToHex(bigIntToUnpaddedBytes(n))
+  if (n <= 0n) return '0x0'
+  return `0x${n.toString(16)}`
 }
 
 export function parseQuantityHex(hex: string): bigint | undefined {

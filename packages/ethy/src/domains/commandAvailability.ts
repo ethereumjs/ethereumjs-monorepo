@@ -82,6 +82,7 @@ export function getCommandAvailability(
     case '/cl':
     case '/peers':
     case '/ethy':
+      return { status: 'ready' }
     case '/rpc':
       if (spine.rpc?.listening === true) return { status: 'ready' }
       if (spine.rpc?.enabled === false) {

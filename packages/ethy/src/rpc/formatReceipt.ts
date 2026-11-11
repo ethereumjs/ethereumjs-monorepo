@@ -1,15 +1,16 @@
-import { createBlockHeaderFromBytesArray } from '@ethereumjs/block'
 import type { ChainConfig } from '@ethereumjs/common'
 import { Common } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { createTxFromBlockBodyData } from '@ethereumjs/tx'
 import {
+  bytesToBigInt,
   bytesToUnprefixedHex,
   createAddressFromString,
   createContractAddress,
 } from '@ethereumjs/util'
 
 import type { StoredRpcBlock } from './blockWindowStore.ts'
+import { decodeRpcHeader } from './formatBlock.ts'
 import { dataHex, quantityHex } from './quantities.ts'
 
 export type RpcLog = {
@@ -41,21 +42,31 @@ export type RpcReceipt = {
   type: string
 }
 
-function receiptPayload(receipt: unknown): unknown[] | undefined {
+function receiptFields(
+  receipt: unknown,
+): { status: bigint; cumulativeGas: bigint; logsRaw: unknown } | undefined {
   try {
     let payload = receipt
     if (payload instanceof Uint8Array && payload.length > 0 && payload[0]! <= 0x7f) {
       payload = RLP.decode(payload.subarray(1)) as unknown
     }
-    if (!Array.isArray(payload)) return undefined
-    return payload
+    if (!Array.isArray(payload) || payload.length < 3) return undefined
+    // eth/69 (EIP-7642): [txType, postStateOrStatus, cumulativeGas, logs]
+    // eth/68: [postStateOrStatus, cumulativeGas, logsBloom(256B), logs] or [postStateOrStatus, cumulativeGas, logs]
+    const isEth69 =
+      payload.length === 4 && payload[2] instanceof Uint8Array && payload[2].length !== 256
+    const statusBytes = isEth69 ? payload[1] : payload[0]
+    const cumGasBytes = isEth69 ? payload[2] : payload[1]
+    const logsRaw = payload[payload.length - 1]
+    const status = statusBytes instanceof Uint8Array ? bytesToBigInt(statusBytes) : 1n
+    const cumulativeGas = cumGasBytes instanceof Uint8Array ? bytesToBigInt(cumGasBytes) : 0n
+    return { status, cumulativeGas, logsRaw }
   } catch {
     return undefined
   }
 }
 
 function effectiveGasPriceWei(
-  common: Common,
   headerBaseFee: bigint | undefined,
   tx: ReturnType<typeof createTxFromBlockBodyData>,
 ): bigint {
@@ -78,31 +89,18 @@ export function formatRpcReceipt(
   if (stored.receiptsEth69Rlp === undefined) return null
   const common = new Common({ chain, hardfork })
   try {
-    const header = createBlockHeaderFromBytesArray(RLP.decode(stored.headerRlp) as never, {
-      common,
-      skipConsensusFormatValidation: true,
-    })
+    const header = decodeRpcHeader(stored.headerRlp, chain, hardfork, stored.blockNumber)
     const tx = createTxFromBlockBodyData(rawTx, { common })
     const decoded = RLP.decode(stored.receiptsEth69Rlp) as unknown
     if (!Array.isArray(decoded) || txIndex >= decoded.length) return null
-    const row = decoded[txIndex]
-    const parts = receiptPayload(row)
-    if (parts === undefined) return null
-    const statusPart = parts[0]
-    const cumGas = parts[1]
-    const logsRaw = parts[parts.length - 1]
-    const status =
-      statusPart instanceof Uint8Array && statusPart.length > 0
-        ? BigInt(statusPart[statusPart.length - 1]!)
-        : 1n
-    const cumulative =
-      cumGas instanceof Uint8Array ? BigInt(`0x${bytesToUnprefixedHex(cumGas)}`) : 0n
+    const parsed = receiptFields(decoded[txIndex])
+    if (parsed === undefined) return null
+    const { status, cumulativeGas: cumulative, logsRaw } = parsed
     let prevCum = 0n
     if (txIndex > 0) {
-      const prev = receiptPayload(decoded[txIndex - 1])
-      const prevGas = prev?.[1]
-      if (prevGas instanceof Uint8Array) {
-        prevCum = BigInt(`0x${bytesToUnprefixedHex(prevGas)}`)
+      const prev = receiptFields(decoded[txIndex - 1])
+      if (prev !== undefined) {
+        prevCum = prev.cumulativeGas
       }
     }
     const gasUsed = cumulative > prevCum ? cumulative - prevCum : cumulative
@@ -141,7 +139,7 @@ export function formatRpcReceipt(
         logIndex += 1
       }
     }
-    const eff = effectiveGasPriceWei(common, header.baseFeePerGas, tx)
+    const eff = effectiveGasPriceWei(header.baseFeePerGas, tx)
     return {
       transactionHash: dataHex(tx.hash()),
       transactionIndex: quantityHex(BigInt(txIndex)),
@@ -169,24 +167,12 @@ export function collectLogsFromBlock(
   hardfork: string,
 ): RpcLog[] {
   const logs: RpcLog[] = []
-  if (stored.bodyRlp === undefined || stored.receiptsEth69Rlp === undefined) return logs
-  const common = new Common({ chain, hardfork })
-  try {
-    const body = RLP.decode(stored.bodyRlp) as unknown
-    if (!Array.isArray(body) || !Array.isArray(body[0])) return logs
-    let idx = 0
-    for (const raw of body[0]) {
-      const rawTx = raw instanceof Uint8Array ? raw : (raw as Uint8Array[])[0]
-      if (!(rawTx instanceof Uint8Array)) {
-        idx += 1
-        continue
-      }
-      const receipt = formatRpcReceipt(stored, idx, rawTx, chain, hardfork)
-      if (receipt !== null) logs.push(...receipt.logs)
-      idx += 1
-    }
-  } catch {
-    return logs
+  if (stored.receiptsEth69Rlp === undefined || stored.rawTxs.length === 0) return logs
+  for (let idx = 0; idx < stored.rawTxs.length; idx++) {
+    const rawTx = stored.rawTxs[idx]
+    if (rawTx === undefined) continue
+    const receipt = formatRpcReceipt(stored, idx, rawTx, chain, hardfork)
+    if (receipt !== null) logs.push(...receipt.logs)
   }
   return logs
 }
