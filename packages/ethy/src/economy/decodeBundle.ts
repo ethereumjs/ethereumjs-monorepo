@@ -14,6 +14,7 @@ import {
 } from '@ethereumjs/util'
 
 import { EIP1967_IMPLEMENTATION_SLOT, TOPIC } from '../contracts/signatureCatalog.ts'
+import { ethyKeccak256 } from '../crypto/keccak.ts'
 import type {
   BlockContractObservations,
   BlockEconomyRecord,
@@ -95,21 +96,59 @@ function receiptStatus(receipt: unknown): bigint | undefined {
 function countReceipts(
   receiptsRlp: Uint8Array,
   txCount: number,
-): { success?: number; reverts?: number } {
+  txSlices?: TxObservationSlice[],
+): { success?: number; reverts?: number; firstRevertTo?: string } {
   try {
     const decoded = RLP.decode(receiptsRlp) as unknown
     if (!Array.isArray(decoded) || decoded.length !== txCount) return {}
     let success = 0
     let reverts = 0
-    for (const row of decoded) {
+    let firstRevertTo: string | undefined
+    for (let i = 0; i < decoded.length; i++) {
+      const row = decoded[i]
       const status = receiptStatus(row)
       if (status === 1n) success += 1
-      else if (status === 0n) reverts += 1
+      else if (status === 0n) {
+        reverts += 1
+        if (firstRevertTo === undefined && txSlices !== undefined) {
+          const to = txSlices[i]?.to
+          if (to !== undefined) firstRevertTo = to
+        }
+      }
     }
-    return { success, reverts }
+    return { success, reverts, firstRevertTo }
   } catch {
     return {}
   }
+}
+
+function decodeExtraDataAscii(extra: Uint8Array): string | undefined {
+  if (extra.length < 3) return undefined
+  let printable = 0
+  let out = ''
+  for (const b of extra) {
+    if (b >= 0x20 && b <= 0x7e) {
+      printable += 1
+      out += String.fromCharCode(b)
+    }
+  }
+  if (printable < 3) return undefined
+  return out.trim().replace(/\s+/g, ' ')
+}
+
+function nibbleTouchesFromBal(bal: BALJSONBlockAccessList): number[] {
+  const counts = new Array<number>(16).fill(0)
+  for (const acct of bal) {
+    try {
+      const addr = hexToBytes(acct.address)
+      const hash = ethyKeccak256(addr)
+      const nibble = hash[0]! >> 4
+      counts[nibble]! += 1
+    } catch {
+      // skip malformed address
+    }
+  }
+  return counts
 }
 
 function topicToHex(topic: unknown): string | undefined {
@@ -182,7 +221,9 @@ function parseBodyTxs(
   largestTransferWei: bigint
   largestTransferTo?: string
   txSlices: TxObservationSlice[]
+  contractCreationCount: number
 } {
+  let contractCreations = 0
   const out = {
     txCount: 0,
     ethTransferredWei: 0n,
@@ -190,6 +231,7 @@ function parseBodyTxs(
     largestTransferWei: 0n,
     largestTransferTo: undefined as string | undefined,
     txSlices: [] as TxObservationSlice[],
+    contractCreationCount: 0,
   }
   try {
     const common = new Common({ chain, hardfork })
@@ -199,6 +241,7 @@ function parseBodyTxs(
       try {
         const tx = createTxFromBlockBodyData(raw as Uint8Array | Uint8Array[], { common })
         out.txCount += 1
+        if (!('to' in tx) || tx.to === undefined) contractCreations += 1
         bumpTxType(out.txTypeSplit, tx.type)
         const value = tx.value
         out.ethTransferredWei += value
@@ -224,6 +267,7 @@ function parseBodyTxs(
   } catch {
     // header-only path may omit body
   }
+  out.contractCreationCount = contractCreations
   return out
 }
 
@@ -422,6 +466,15 @@ export function decodeBundle(input: DecodeBundleInput): BlockEconomyRecord {
     if (header.blobGasUsed !== undefined) {
       base.blobGasUsed = header.blobGasUsed
     }
+    if (header.timestamp !== undefined) {
+      base.timestamp = Number(header.timestamp)
+    }
+    const extra = header.extraData
+    if (extra.length > 0) {
+      base.extraDataHex = `0x${bytesToHex(extra)}`
+      const ascii = decodeExtraDataAscii(extra)
+      if (ascii !== undefined) base.extraDataAscii = ascii
+    }
   } catch {
     return base
   }
@@ -436,10 +489,12 @@ export function decodeBundle(input: DecodeBundleInput): BlockEconomyRecord {
     base.txTypeSplit = bodyParse.txTypeSplit
     base.largestTransferWei = bodyParse.largestTransferWei
     base.largestTransferTo = bodyParse.largestTransferTo
+    base.contractCreationCount = bodyParse.contractCreationCount
     if (input.receiptsEth69Rlp !== undefined && bodyParse.txCount > 0) {
-      const rc = countReceipts(input.receiptsEth69Rlp, bodyParse.txCount)
+      const rc = countReceipts(input.receiptsEth69Rlp, bodyParse.txCount, bodyParse.txSlices)
       base.receiptSuccess = rc.success
       base.receiptReverts = rc.reverts
+      base.firstRevertTo = rc.firstRevertTo
     }
   }
 
@@ -475,6 +530,7 @@ export function decodeBundle(input: DecodeBundleInput): BlockEconomyRecord {
       }
     }
     if (snaps.length > 0) base.balSnapshots = snaps
+    base.nibbleTouches = nibbleTouchesFromBal(bal)
   }
 
   if (bodyParse !== undefined) {

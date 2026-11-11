@@ -17,6 +17,7 @@ import {
 } from './components/DomainHelpUIComponent.ts'
 import { renderHeaderPageSwitchUIComponent } from './components/HeaderPageSwitchUIComponent.ts'
 import { renderKeyValueUIComponent } from './components/KeyValueUIComponent.ts'
+import { renderLiveHeadPlazaUIComponent } from './components/LiveHeadPlazaUIComponent.ts'
 import { renderStartPageUIComponent } from './components/StartPageUIComponent.ts'
 import { renderTableUIComponent } from './components/TableUIComponent.ts'
 import { composeFixedRow, fixedLine } from './layout.ts'
@@ -131,6 +132,11 @@ export function renderInteractionWidgetBody(
         pushLines(renderStartPageUIComponent(spine, w, budget, tick))
       }
       break
+    case 'live_plaza':
+      if (spine !== undefined) {
+        pushLines(renderLiveHeadPlazaUIComponent(spine, w, budget, tick, colMetrics))
+      }
+      break
   }
 
   return lines
@@ -166,6 +172,10 @@ export function interactionViewTitle(
     base = `${BOLD}${widget.title}${RESET}`
   } else if (widget.kind === 'key_value' && widget.title) {
     base = `${BOLD}${widget.title}${RESET}`
+  } else if (widget.kind === 'live_plaza') {
+    const n = spine?.economy?.latestBlockNumber
+    const suffix = n !== undefined ? ` · #${Number(n).toLocaleString('en-US')}` : ''
+    base = `${BOLD}/live · Ethereum Plaza${suffix}${RESET}`
   } else {
     base = `${BOLD}Interaction${RESET}`
   }
@@ -177,6 +187,7 @@ export function interactionViewTitle(
   const switchSuffix = renderHeaderPageSwitchUIComponent({
     page,
     hasDebugPage,
+    mainLabel: widget?.kind === 'live_plaza' ? 'Live' : 'Commands',
   })
   return `${base}${switchSuffix}`
 }

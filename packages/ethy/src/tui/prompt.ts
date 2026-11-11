@@ -107,6 +107,8 @@ export interface PromptReduceResult {
   domainCycle?: 1 | -1
   viewHistoryNav?: 'left' | 'right'
   toggleDebug?: true
+  /** Empty Enter: return to plaza or Welcome. */
+  openPlaza?: true
 }
 
 export function reducePromptKey(view: TuiViewState, action: KeyAction): PromptReduceResult {
@@ -150,7 +152,7 @@ export function reducePromptKey(view: TuiViewState, action: KeyAction): PromptRe
       break
     case 'enter': {
       if (next.promptDraft.trim().length === 0) {
-        break
+        return { view: next, openPlaza: true }
       }
       const line = next.promptDraft.trim()
       submittedLine = line

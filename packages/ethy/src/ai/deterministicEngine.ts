@@ -19,6 +19,7 @@ import {
 import { economyDeepViewWidget } from '../tools/economyTools.ts'
 import { inspectAccount, inspectLatestBAL } from '../tools/headTools.ts'
 import { buildDomainHelpWidget, buildHelpWidget, parseHelpDomainArg } from '../tools/help.ts'
+import { livePlazaWidget } from '../tools/livePlaza.ts'
 import { inspectRawAccountRange, sampleSyncedAccounts } from '../tools/range.ts'
 import { renderCommandUnavailableWidget } from '../tui/components/CommandUnavailableUIComponent.ts'
 import type { IntentEngine, IntentRequest, IntentResult } from './intentEngine.ts'
@@ -131,6 +132,13 @@ export function dispatchSlashWidget(line: string, ctx: SlashDispatchCtx): Widget
     }
     case '/cl':
       return clMicroscopeWidget(spine)
+    case '/live':
+    case '/plaza':
+    case '/head': {
+      const locked = slashIfLocked('/live', spine)
+      if (locked !== undefined) return locked
+      return livePlazaWidget(spine)
+    }
     case '/economy': {
       const locked = slashIfLocked('/economy', spine)
       if (locked !== undefined) return locked

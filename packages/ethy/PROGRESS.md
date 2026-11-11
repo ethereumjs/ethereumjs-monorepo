@@ -8,7 +8,7 @@ This file is the **single source of truth** for project progress, architectural 
 
 ## 1. Current Project Snapshot
 
-- **Current Stage:** **WP-07g** is **`DONE`** (**D-107**). **WP-07h** (*The Ethereum Plaza (`LiveHeadPlazaUIComponent`), Block Moment Detector, 16-District State Lights & Empty-`Enter` Plaza Return*, **`READY_FOR_PLANNING`**) is next, followed by **WP-08** (*On-Demand EVM `/simulate` & Headless SDK*).
+- **Current Stage:** **WP-07h** is **`DONE`** (**D-108**). **WP-08** (*On-Demand EVM `/simulate` & Headless SDK*, **`READY_FOR_PLANNING`**) is next.
 - **Active Target Network:** `sepolia` (Amsterdam hardfork live; generic `@ethereumjs/common` chain support).
 - **Package Identity:** `@ethereumjs/ethy` (CLI binary: `ethy`, zero-config invocation `ethy` or `ethy sepolia`; unscoped `ethy` npm name transfer inquired).
 
@@ -51,7 +51,7 @@ This file is the **single source of truth** for project progress, architectural 
 | **WP-07e** | **20×–50× BAL Catch-Up & Bridge Engine — Multi-Block `eth/71` Batching (`32` Blocks/RTT), `Header + BAL` Fast Path & `@ethereumjs/statemanager` `consumeBALBatch`** | `DONE` | WP-04k, WP-06d, WP-07d (`DONE`) | [`work-packages/WP-07e-bal-catchup-batch-pipeline-and-compaction.md`](./work-packages/WP-07e-bal-catchup-batch-pipeline-and-compaction.md) | Shipped: `mergeBALs` / `consumeBALBatch`, `balBatch.ts`, batch wire helpers, `BalChainStreamer` integration, cockpit `blocksPerSec`. SNAP parallel stream stays 1-block (**WP §7**). Gates: tsc + 255 ethy / 1080 statemanager tests. |
 | **WP-07f** | **3-Domain Cockpit Streamline (`State · Economy · P2P`), Full-Height 3-Part `AI` Overview, `Tab` Domain Help & `←`/`→` Interaction View History** | `DONE` | WP-07a..WP-07e (`DONE`) | [`work-packages/WP-07f-three-domain-cockpit-streamline-and-multi-domain-ai.md`](./work-packages/WP-07f-three-domain-cockpit-streamline-and-multi-domain-ai.md) | Shipped (**D-105**): 3-domain spine + static cockpit; `domain_help` + `viewHistory`; `AiOverviewSections` ≤600; gates **258** tests + tsc + spellcheck. |
 | **WP-07g** | **Holistic Head Stability, Synchronized Chain-Head Clock, Dual-Protocol Serving (`eth/69–71` + `ETHY/0`) & System-Wide Capability UX** | `DONE` | WP-03c, WP-04k, WP-05b, WP-06c, WP-07e, WP-07f (`DONE`) | [`work-packages/WP-07g-head-stability-dual-serving-and-capability-ux.md`](./work-packages/WP-07g-head-stability-dual-serving-and-capability-ux.md) | Shipped (**D-107**): chain-head clock, stable `HEAD_FOLLOWING`, `coldCodeLookup`, devp2p advertise fix, dual `Served` row, `getCommandAvailability` + grey help; **266** ethy tests + tsc + spellcheck. |
-| **WP-07h** | **The Ethereum Plaza (`LiveHeadPlazaUIComponent`), Block Moment Detector ("Street Encounters"), 16-District State Lights & Empty-`Enter` Plaza Return** | `READY_FOR_PLANNING` | WP-07a..WP-07g (`DONE`) | [`work-packages/WP-07h-ethereum-plaza-live-observatory-and-moment-detector.md`](./work-packages/WP-07h-ethereum-plaza-live-observatory-and-moment-detector.md) | Living chain-head observatory (`/live` / `/plaza` / `/head` + auto-arrival at `HEAD_FOLLOWING`), 36-block Gas/BAL Skyline + Proposer Graffiti + 12s Slot Pulse, 10-archetype `BlockMomentDetector`, 16-District State Lights (`0x0..0xf`), and Empty-`Enter` to return to the Plaza. |
+| **WP-07h** | **The Ethereum Plaza (`LiveHeadPlazaUIComponent`), Block Moment Detector ("Street Encounters"), 16-District State Lights & Empty-`Enter` Plaza Return** | `DONE` | WP-07a..WP-07g (`DONE`) | [`work-packages/WP-07h-ethereum-plaza-live-observatory-and-moment-detector.md`](./work-packages/WP-07h-ethereum-plaza-live-observatory-and-moment-detector.md) | Shipped (**D-108**): `/live` Plaza, `momentDetector`, skyline + district heat, empty-`Enter`, head-flip; **272** tests + tsc + spellcheck. |
 | **WP-08** | **On-Demand `@ethereumjs/evm` Sandbox, P2P Transaction Broadcast & Headless SDK** | `READY_FOR_PLANNING` | WP-06c, WP-07h (`DONE`) | [`work-packages/WP-08-on-demand-evm-and-headless-sdk.md`](./work-packages/WP-08-on-demand-evm-and-headless-sdk.md) | On-demand EVM call/trace against `FlatStateManager` (with cold-account fallback), direct P2P transaction broadcast (`/send`), and `createEthyNode({ headless: true })` SDK for FYP/MCP. |
 | **WP-09** | **(Optional) Dedicated `ETHY/0` Discovery Infrastructure — Stateless `--rendezvous` Seed & Signed EIP-1459 DNS Tree** | `OPTIONAL_POST_MVP` | WP-06b..WP-08 | [`work-packages/WP-09-optional-ethy0-rendezvous-and-dns-infra.md`](./work-packages/WP-09-optional-ethy0-rendezvous-and-dns-infra.md) | Optional post-MVP stateless `--rendezvous` seed mode (`<30 MB` RAM) + EIP-1459 DNS ENR tree generator for public internet bootstrap. |
 
@@ -219,6 +219,12 @@ Track every modification or planned modification to sibling monorepo packages he
 ## 5. Chronological Progress Log
 
 *Agents: Append a new dated subsection at the top of this list after each Planning (Grok 4.7) or Implementation (Composer 2.5) pass.*
+
+### 2026-11-11 — `WP-07h` implementation complete (`DONE`) (Implementer — Composer 2.5)
+- Shipped **D-108**: `LiveHeadPlazaUIComponent`, `momentDetector.ts`, economy skyline/heat/moments, `/live` + aliases, empty-`Enter` plaza return, head-flip `live_plaza`, demo plaza seed (**272** tests, tsc, spellcheck).
+
+### 2026-11-11 — `WP-07h` concrete implementation plan & `PLANNED` handoff (Planner — Grok 4.7)
+- Filled [`work-packages/WP-07h-ethereum-plaza-live-observatory-and-moment-detector.md`](./work-packages/WP-07h-ethereum-plaza-live-observatory-and-moment-detector.md) §2 (D-108 locks, file map, implementer order).
 
 ### 2026-11-11 — Specified `WP-07h`: The Ethereum Plaza (`LiveHeadPlazaUIComponent`), Block Moment Detector ("Street Encounters"), 16-District State Lights & Empty-`Enter` Plaza Return (Coordinator — Gemini 4 Argon)
 - Created [`work-packages/WP-07h-ethereum-plaza-live-observatory-and-moment-detector.md`](./work-packages/WP-07h-ethereum-plaza-live-observatory-and-moment-detector.md) (`READY_FOR_PLANNING`, Decision **D-108**):

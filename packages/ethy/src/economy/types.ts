@@ -19,10 +19,43 @@ export type ContractBlockContribution = {
   postBalance?: bigint
 }
 
+export type BlockMomentKind =
+  | 'birth'
+  | 'choreography'
+  | 'whale'
+  | 'first_step'
+  | 'veteran'
+  | 'eip7702'
+  | 'graffiti_note'
+  | 'blob_anchor'
+  | 'revert'
+  | 'heartbeat'
+
+export type BlockMoment = {
+  id: string
+  blockNumber: string
+  timestampSec: number
+  kind: BlockMomentKind
+  /** Fixed 6-char ASCII badge (color applied in TUI). */
+  badge: string
+  headline: string
+  address?: string
+}
+
+export type EconomySkylinePoint = {
+  gasFullPct: number
+  mutation: number
+}
+
 export type BlockEconomyRecord = {
   blockNumber: bigint
   /** When false, block had header (+ optional BAL) only (no body txs). */
   hasTxBody: boolean
+  timestamp?: number
+  extraDataAscii?: string
+  extraDataHex?: string
+  /** Per-bucket account touches in this block (`keccak(address)[0] >> 4`). */
+  nibbleTouches?: number[]
   baseFeeWei?: bigint
   gasFullPct: number
   blobGasUsed?: bigint
@@ -33,6 +66,9 @@ export type BlockEconomyRecord = {
   largestTransferTo?: string
   receiptSuccess?: number
   receiptReverts?: number
+  /** First reverted tx `to` from receipt walk (when available). */
+  firstRevertTo?: string
+  contractCreationCount?: number
   activeAccounts?: number
   storageWrites?: number
   storageReads?: number
@@ -118,7 +154,16 @@ export type EconomySnapshot = {
   largestTransferTo?: string
   receiptSuccess?: number
   receiptReverts?: number
+  moments?: BlockMoment[]
+  nibbleHeat?: number[]
+  skyline?: EconomySkylinePoint[]
+  latestProposerGraffiti?: string
+  latestBlockTimestamp?: number
+  latestExtraDataHex?: string
 }
+
+export const ECONOMY_MOMENTS_RING = 24
+export const ECONOMY_SKYLINE_BLOCKS = 36
 
 export const ECONOMY_WINDOW_BLOCKS = 64
 export const ECONOMY_FEE_AVG_BLOCKS = 15

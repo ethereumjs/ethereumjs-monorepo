@@ -12,6 +12,9 @@ function cloneEconomySnapshot(s: EconomySnapshot): EconomySnapshot {
     topContracts: s.topContracts.map((r) => ({ ...r })),
     recentBlocks: s.recentBlocks.map((r) => ({ ...r })),
     txTypeSplit: s.txTypeSplit === undefined ? undefined : { ...s.txTypeSplit },
+    moments: s.moments === undefined ? undefined : s.moments.map((m) => ({ ...m })),
+    nibbleHeat: s.nibbleHeat === undefined ? undefined : [...s.nibbleHeat],
+    skyline: s.skyline === undefined ? undefined : s.skyline.map((p) => ({ ...p })),
   }
 }
 

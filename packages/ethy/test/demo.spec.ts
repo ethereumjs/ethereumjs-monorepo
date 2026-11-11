@@ -33,5 +33,8 @@ describe('[Ethy/Demo]: advanceDemo', () => {
     advanceDemo(spine, 11_000)
     assert.equal(spine.phase, 'HEAD_FOLLOWING')
     assert.isDefined(spine.headBlockNumber)
+    assert.equal(spine.economy?.hasBlocks, true)
+    assert.isAbove(spine.economy?.moments?.length ?? 0, 0)
+    assert.equal(spine.economy?.nibbleHeat?.length, 16)
   })
 })

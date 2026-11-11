@@ -1,9 +1,75 @@
+import type { BlockMoment, EconomySnapshot } from '../economy/types.ts'
+import { ECONOMY_SKYLINE_BLOCKS } from '../economy/types.ts'
 import { deriveCapabilities, setPhase } from '../spine/createSpine.ts'
 import { recordDiagnostic } from '../spine/diagnostics.ts'
 import type { EthySpine } from '../spine/types.ts'
 
 const SYNTH_PIVOT = 7_812_400n
 const SYNTH_HEAD = 7_812_550n
+
+function seedDemoPlazaEconomy(spine: EthySpine): void {
+  if (spine.economy?.hasBlocks === true) return
+  const skyline: NonNullable<EconomySnapshot['skyline']> = []
+  for (let i = 0; i < ECONOMY_SKYLINE_BLOCKS; i++) {
+    skyline.push({ gasFullPct: 15 + (i % 80), mutation: ((i * 3) % 40) + 1 })
+  }
+  const nibbleHeat = Array.from({ length: 16 }, (_, i) => (i + 2) * 95)
+  const now = Math.floor(Date.now() / 1000)
+  const head = SYNTH_HEAD.toString()
+  const moments: BlockMoment[] = [
+    {
+      id: 'demo:graffiti:0',
+      blockNumber: head,
+      timestampSec: now - 24,
+      kind: 'graffiti_note',
+      badge: '[NOTE]',
+      headline: '0x4b12…99a1 wrote on-chain: "gm from demo plaza!"',
+    },
+    {
+      id: 'demo:birth:0',
+      blockNumber: head,
+      timestampSec: now - 12,
+      kind: 'birth',
+      badge: '[NEW] ',
+      headline: 'New 4.2 KB contract deployed at 0x7a25…488D (12 slot writes)',
+    },
+    {
+      id: 'demo:heartbeat:0',
+      blockNumber: head,
+      timestampSec: now,
+      kind: 'heartbeat',
+      badge: '[BEAT]',
+      headline: `Block #${head}: 28 accounts touched across 201 storage writes (52% full)`,
+    },
+  ]
+  spine.economy = {
+    hasBlocks: true,
+    hasTxBody: true,
+    latestBlockNumber: head,
+    baseFeeGwei: '1.2',
+    trend: 'flat',
+    gasFullPct: 52,
+    txCount: 42,
+    activeAccounts: 28,
+    storageWrites: 201,
+    topContracts: [],
+    recentBlocks: [],
+    moments,
+    nibbleHeat,
+    skyline,
+    latestProposerGraffiti: 'Titan Builder',
+    latestBlockTimestamp: now - 4,
+    txTypeSplit: {
+      legacy: 0,
+      accessList: 0,
+      feeMarket: 38,
+      blob: 2,
+      setCode: 1,
+      other: 1,
+    },
+  }
+  if (spine.clParticipationPct === undefined) spine.clParticipationPct = 99.2
+}
 
 function synthRoot(seed: number): Uint8Array {
   const h = new Uint8Array(32)
@@ -163,5 +229,6 @@ export function advanceDemo(spine: EthySpine, elapsedMs: number): void {
   spine.headBlockNumber = SYNTH_HEAD
   spine.headStateRoot = synthRoot(0x02)
   spine.balCatchUp = undefined
+  seedDemoPlazaEconomy(spine)
   deriveCapabilities(spine)
 }

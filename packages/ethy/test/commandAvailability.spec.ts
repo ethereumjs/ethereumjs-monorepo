@@ -7,6 +7,14 @@ import { DIM } from '../src/tui/ansi.ts'
 import { renderDomainHelpUIComponent } from '../src/tui/components/DomainHelpUIComponent.ts'
 
 describe('[Ethy/Domains]: command availability', () => {
+  it('/live is locked before blocks and ready at head', () => {
+    const spine = createSpine('sepolia', 11155111n)
+    assert.equal(getCommandAvailability('/live', spine).status, 'locked')
+    assert.equal(getCommandAvailability('/live', spine).shortTag, 'awaiting blocks')
+    setPhase(spine, 'HEAD_FOLLOWING')
+    assert.equal(getCommandAvailability('/live', spine).status, 'ready')
+  })
+
   it('/pause is locked after snap completes (HEAD_FOLLOWING)', () => {
     const spine = createSpine('sepolia', 11155111n)
     setPhase(spine, 'HEAD_FOLLOWING')

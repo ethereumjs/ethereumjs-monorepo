@@ -312,6 +312,10 @@ export type WidgetSpec =
       kind: 'start_page'
       debugPage?: DebugSectionSpec[]
     }
+  | {
+      kind: 'live_plaza'
+      debugPage?: DebugSectionSpec[]
+    }
 
 export interface TuiViewState {
   activeDomain: CapabilityId

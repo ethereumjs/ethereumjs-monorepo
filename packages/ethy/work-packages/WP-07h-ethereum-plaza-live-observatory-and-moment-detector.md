@@ -1,6 +1,6 @@
 # WP-07h: The Ethereum Plaza (`LiveHeadPlazaUIComponent`), Block Moment Detector ("Street Encounters"), 16-District State Lights & Empty-`Enter` Plaza Return
 
-- **Status:** `READY_FOR_PLANNING`
+- **Status:** `DONE`
 - **Dependencies:** `WP-07a`..`WP-07g` (`DONE`)
 - **Primary Goal:** Transform reaching the Ethereum chain head from a static 5-line counter card into **"stepping out of the subway into a living, breathing plaza"** (`LiveHeadPlazaUIComponent`), powered by a zero-EVM **Block Moment Detector (`momentDetector.ts`)**, a **36-block Dual Skyline + Proposer Graffiti + 12s Slot Pulse**, **16-District State Neighborhood Lights (`0x0..0xf`)**, and **Empty-Draft `Enter` to "Go Back to the Plaza"** from any view.
 
@@ -70,7 +70,7 @@ Inside the Interaction View box (`╭─ ● /live · Ethereum Plaza #12,111,702
    export type BlockMomentKind =
      | 'birth'        // New contract deployed (BAL codeChanges > 0 or contract-creation tx)
      | 'choreography' // Single tx / BAL access index mutating >= 8 accounts or >= 4 logs
-     | 'whale'        // Large ETH transfer (>= 1 ETH on testnet/mainnet or top block transfer >= 0.5 ETH)
+     | 'whale'        // Large ETH transfer (>= 1 ETH on testnet/mainnet)
      | 'first_step'   // Brand-new account signing its 1st tx (BAL postNonce === 1)
      | 'veteran'      // High-nonce power actor (BAL postNonce >= 50,000)
      | 'eip7702'      // EIP-7702 setCode tx or 0xef0100 delegation code change
@@ -84,19 +84,19 @@ Inside the Interaction View box (`╭─ ● /live · Ethereum Plaza #12,111,702
      blockNumber: string
      timestampSec: number
      kind: BlockMomentKind
-     badge: string            // Fixed 6-char badge, e.g. '✦ NEW ', '◈ FLOW', '◆ 1ST ', '★ VET ', '✉ NOTE', '⚡ 7702', '◉ WHAL', '▲ L2  ', '✕ REV ', '• BEAT'
+     badge: string            // Fixed 6-char badge, e.g. '[NEW] ', '[FLOW]', '[1ETH ]', '[BEAT]'
      headline: string         // 1–2 line human story (<= 96 chars)
      address?: string
    }
    ```
 
 3. **Pure `detectBlockMoments(input)` (`src/economy/momentDetector.ts`):**
-   - Inspects the decoded `BlockEconomyRecord`, `BALJSONBlockAccessList`, `bodyRlp` transactions, and `receiptsEth69Rlp` logs for a single block and returns up to **`3` highest-priority moments** (ranked by rarity/interest: `graffiti_note` > `birth` > `eip7702` > `choreography` > `whale` > `first_step` > `revert` > `veteran` > `blob_anchor` > `heartbeat`):
+   - Inspects the decoded `BlockEconomyRecord`, block access list JSON, `bodyRlp` transactions, and `receiptsEth69Rlp` logs for a single block and returns up to **`3` highest-priority moments** (ranked by rarity/interest: `graffiti_note` > `birth` > `eip7702` > `choreography` > `whale` > `first_step` > `revert` > `veteran` > `blob_anchor` > `heartbeat`):
      - **`graffiti_note` (`✉ NOTE`):** Scans transactions where `data.length >= 5 && data.length <= 160`, the first 4 bytes are **not** in `signatureCatalog`, and `>= 90%` of bytes are printable ASCII (`0x20..0x7e`). Sanitizes control characters and quotes the message: `0x4b12…99a1 wrote on-chain: "gm from sepolia!"`.
      - **`birth` (`✦ NEW `):** Detects accounts in `balJson` with `codeChanges.length > 0` (or txs with `to === undefined`). Formats bytecode size and archetype/proxy hint if available: `New 4.2 KB contract deployed at 0x7a25…488D (12 slot writes)`.
      - **`eip7702` (`⚡ 7702`):** Detects `txTypeSplit.setCode > 0` or `codeChanges` starting with `0xef0100`: `Account 0x55a1…c091 activated EIP-7702 smart-account delegation`.
      - **`choreography` (`◈ FLOW`):** Groups BAL changes by `blockAccessIndex` (`> 0`) or `txSlices` by log count. When one transaction touches `>= 6` accounts or emits `>= 4` events, names the top decoded call/event (e.g. `Swap`, `Transfer`, `execute`): `Tx #2 orchestrated 11 accounts · execute() emitted 5 events`.
-     - **`whale` (`◉ WHAL`):** When `largestTransferWei >= 10n ** 18n` (`>= 1 ETH`): `14.5 ETH transferred to 0xd8dA…6045 in a single move`.
+     - **`whale` (`[1ETH ]`):** When `largestTransferWei >= 10n ** 18n` (`>= 1 ETH`): `14.5 ETH transferred to 0xd8dA…6045 in a single move`.
      - **`first_step` (`◆ 1ST `):** Detects any account in `balJson` whose `nonceChanges` transitions to `postNonce === '0x1'` or `'0x01'` (`1n`): `New wallet 0x91c0…3b2a signed its very first transaction on Ethereum`.
      - **`veteran` (`★ VET `):** Detects any account in `balJson` whose `nonceChanges` reaches `>= 50_000n`: `Veteran actor 0xbe22…e054 signed its #142,810th lifetime transaction`.
      - **`revert` (`✕ REV `):** When `receiptReverts > 0`: `Transaction to 0x3fC9…72A1 reverted on-chain (${receiptReverts} revert in block)`.
@@ -167,10 +167,16 @@ Inside the Interaction View box (`╭─ ● /live · Ethereum Plaza #12,111,702
 
 ## 2. Concrete Implementation Plan (Planner — Grok 4.7)
 
-*(To be filled by Grok 4.7 during planning phase.)*
+**Ethy only.** Decision **D-108** design locks: pure `detectBlockMoments`, optional snapshot fields, `live_plaza` widget with live `spine.economy` reads, `/live` registry + `/plaza` `/head` alias expand, empty-`Enter` via `openPlaza`, head-flip slash history, 1 Hz plaza `carouselTick`, demo `seedDemoPlazaEconomy` in `advanceDemo.ts`.
+
+**Files:** `momentDetector.ts`, `decodeBundle.ts` (timestamp, extraData, nibbleTouches, firstRevertTo), `economyDataManager.ts` (24-moment feed, skyline, heat), `LiveHeadPlazaUIComponent.ts`, `livePlaza.ts`, TUI session/prompt/renderFrame, `peerCoordinator` head flip.
+
+**Order:** types → detector tests → manager publish → plaza UI → slash wiring → demo seed → gates.
 
 ---
 
 ## 3. Implementation Notes & Deviations (Implementer — Composer 2.5)
 
-*(To be filled by Composer 2.5 during implementation phase.)*
+- Shipped **D-108**: `live_plaza`, `BlockMomentDetector`, 36-block skyline, 16-district heat, `/live` + aliases, empty-`Enter` plaza return, head-flip opens Plaza on Welcome only.
+- Whale moment badge is `[1ETH ]` (6 visible cols) per spellcheck-friendly ASCII badges.
+- Gates: `npm run tsc`, **272** tests, `npm run spellcheck` in `@ethereumjs/ethy`.

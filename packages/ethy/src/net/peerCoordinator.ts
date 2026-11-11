@@ -82,6 +82,7 @@ import {
   pickUsableEthySeeder,
   shouldLockSnapAfterGrace,
 } from '../sync/syncSourceSelector.ts'
+import { livePlazaWidget } from '../tools/livePlaza.ts'
 import { activeHardfork, advertisedForkHash, chainConfigForNetwork } from './chainHardfork.ts'
 import {
   VIP_SNAP_PEER_TARGET,
@@ -305,23 +306,7 @@ export async function startPeerCoordinator(
   const populateHeadFlipSummary = (head: bigint) => {
     if (headFlipSummaryPosted) return
     headFlipSummaryPosted = true
-    spine.headFlipSummary = {
-      kind: 'key_value',
-      title: `★ Synced to Live Head #${head.toLocaleString('en-US')}`,
-      entries: [
-        { key: 'Accounts', value: spine.totalAccountsSynced.toLocaleString('en-US') },
-        { key: 'Code', value: spine.codesSynced.toLocaleString('en-US') },
-        { key: 'Storage slots', value: spine.storageSlotsSynced.toLocaleString('en-US') },
-        {
-          key: 'Pivot steps',
-          value: String(spine.pivotStepsCompleted ?? 0),
-        },
-        {
-          key: 'BALs applied',
-          value: String(spine.appliedBalCount ?? spine.streamedBalCount ?? 0),
-        },
-      ],
-    }
+    spine.headFlipSummary = livePlazaWidget(spine)
   }
   const savedSnapPeek = opts.fresh === true ? undefined : snapStore?.peekActive()
   if (opts.fresh === true) {

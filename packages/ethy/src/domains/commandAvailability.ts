@@ -59,6 +59,18 @@ export function getCommandAvailability(
 ): CommandAvailability {
   const cmd = normalizeSlash(command)
   switch (cmd) {
+    case '/live':
+    case '/plaza':
+    case '/head':
+      if (spine.economy?.hasBlocks === true || spine.phase === 'HEAD_FOLLOWING') {
+        return { status: 'ready' }
+      }
+      return {
+        status: 'locked',
+        shortTag: 'awaiting blocks',
+        reason: 'Ethereum Plaza needs at least one verified block or head following.',
+        suggestion: 'Wait for BAL streaming or snap catch-up.',
+      }
     case '/economy':
     case '/e':
       return economyReady(spine)

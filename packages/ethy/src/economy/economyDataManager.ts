@@ -15,11 +15,14 @@ import type { TwoColumnPair } from '../tui/layout.ts'
 import { economyCockpitPairs } from './cockpitPairs.ts'
 import { decodeBundle } from './decodeBundle.ts'
 import { formatEthFromWei, formatGwei, shortAddress, trendArrow } from './format.ts'
-import type { BlockEconomyRecord, EconomySnapshot, TopContractRow } from './types.ts'
+import { detectBlockMoments } from './momentDetector.ts'
+import type { BlockEconomyRecord, BlockMoment, EconomySnapshot, TopContractRow } from './types.ts'
 import {
   ECONOMY_ADDRESS_MAP_CAP,
   ECONOMY_FEE_AVG_BLOCKS,
   ECONOMY_LEADERBOARD_SIZE,
+  ECONOMY_MOMENTS_RING,
+  ECONOMY_SKYLINE_BLOCKS,
   ECONOMY_TPS_BLOCKS,
   ECONOMY_WINDOW_BLOCKS,
   SLOT_SECONDS,
@@ -75,6 +78,7 @@ export class ETHEconomyDataManager {
   private readonly contractAgg = new Map<string, ContractAddressAgg>()
   private readonly fingerprintCache = createFingerprintCache()
   private newestIngested: bigint | undefined
+  private readonly momentFeed: BlockMoment[] = []
 
   constructor(opts: ETHEconomyDataManagerOpts) {
     this.spine = opts.spine
@@ -103,6 +107,10 @@ export class ETHEconomyDataManager {
       if (existingIdx >= 0) {
         this.revertBlock(this.ring[existingIdx]!)
         this.ring.splice(existingIdx, 1)
+        const blockKey = input.blockNumber.toString()
+        for (let i = this.momentFeed.length - 1; i >= 0; i--) {
+          if (this.momentFeed[i]!.blockNumber === blockKey) this.momentFeed.splice(i, 1)
+        }
       }
       this.ring.unshift(record)
       while (this.ring.length > ECONOMY_WINDOW_BLOCKS) {
@@ -111,6 +119,7 @@ export class ETHEconomyDataManager {
       }
       this.applyBlock(record)
       this.applyContractSignals(record)
+      this.ingestMoments(record, input.balJson)
       this.enforceAddressCap()
       if (this.newestIngested === undefined || input.blockNumber >= this.newestIngested) {
         this.newestIngested = input.blockNumber
@@ -374,6 +383,38 @@ export class ETHEconomyDataManager {
     return rows.slice(0, ECONOMY_LEADERBOARD_SIZE)
   }
 
+  private ingestMoments(record: BlockEconomyRecord, balJson?: BALJSONBlockAccessList): void {
+    const fresh = detectBlockMoments({ record, balJson })
+    for (const m of fresh) {
+      const dup = this.momentFeed.findIndex((x) => x.id === m.id)
+      if (dup >= 0) this.momentFeed.splice(dup, 1)
+      this.momentFeed.unshift(m)
+    }
+    while (this.momentFeed.length > ECONOMY_MOMENTS_RING) {
+      this.momentFeed.pop()
+    }
+  }
+
+  private buildSkyline(): EconomySnapshot['skyline'] {
+    const slice = this.ring.slice(0, ECONOMY_SKYLINE_BLOCKS).reverse()
+    return slice.map((b) => ({
+      gasFullPct: b.gasFullPct,
+      mutation: (b.storageWrites ?? 0) + (b.activeAccounts ?? 0),
+    }))
+  }
+
+  private buildNibbleHeat(): number[] {
+    const heat = new Array<number>(16).fill(0)
+    for (const block of this.ring) {
+      const touches = block.nibbleTouches
+      if (touches === undefined) continue
+      for (let i = 0; i < 16; i++) {
+        heat[i]! += touches[i] ?? 0
+      }
+    }
+    return heat
+  }
+
   private enrichedTopContracts(): TopContractRow[] {
     const rows = this.buildTopContracts()
     if (this.stateManager === undefined) return rows
@@ -428,6 +469,12 @@ export class ETHEconomyDataManager {
       largestTransferTo: latest.largestTransferTo,
       receiptSuccess: latest.receiptSuccess,
       receiptReverts: latest.receiptReverts,
+      moments: [...this.momentFeed],
+      nibbleHeat: this.buildNibbleHeat(),
+      skyline: this.buildSkyline(),
+      latestProposerGraffiti: latest.extraDataAscii,
+      latestBlockTimestamp: latest.timestamp,
+      latestExtraDataHex: latest.extraDataHex,
     }
     this.spine.economy = snap
   }

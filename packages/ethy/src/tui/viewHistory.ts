@@ -10,6 +10,58 @@ import type {
 import { MAX_VIEW_HISTORY } from '../spine/types.ts'
 import { buildDomainHelpWidget } from '../tools/help.ts'
 
+export function openPlazaView(
+  view: TuiViewState,
+  spine: EthySpine,
+  slashCtx: SlashDispatchCtx,
+): TuiViewState {
+  const hasBlocks = spine.economy?.hasBlocks === true
+  if (!hasBlocks && spine.phase !== 'HEAD_FOLLOWING') {
+    return {
+      ...view,
+      activeWidget: { kind: 'start_page' },
+      showingHelp: false,
+      interactionPage: 'main',
+      interactionLabel: undefined,
+      interactionTitle: undefined,
+    }
+  }
+  const widget = dispatchSlashWidget('/live', slashCtx)
+  const entry: InteractionHistoryEntry = {
+    kind: 'slash',
+    command: '/live',
+    label: '/live',
+    page: 'main',
+  }
+  const next = pushViewHistory(view, entry)
+  return {
+    ...next,
+    activeWidget: widget,
+    showingHelp: false,
+    interactionPage: 'main',
+    interactionLabel: '/live',
+    interactionTitle: undefined,
+  }
+}
+
+export function activateLivePlazaFlip(view: TuiViewState, widget: WidgetSpec): TuiViewState {
+  const entry: InteractionHistoryEntry = {
+    kind: 'slash',
+    command: '/live',
+    label: '/live',
+    page: 'main',
+  }
+  const next = pushViewHistory(view, entry)
+  return {
+    ...next,
+    activeWidget: widget,
+    showingHelp: false,
+    interactionLabel: '/live',
+    interactionTitle: undefined,
+    interactionPage: 'main',
+  }
+}
+
 export function pushViewHistory(view: TuiViewState, entry: InteractionHistoryEntry): TuiViewState {
   let history = [...view.viewHistory]
   let index = view.viewHistoryIndex
@@ -93,7 +145,15 @@ export function inferDomainForCommandOrPrompt(
 ): TuiViewState['activeDomain'] {
   const lower = text.trim().toLowerCase()
   const cmd = lower.split(/\s+/)[0] ?? ''
-  if (cmd === '/economy' || cmd === '/e' || cmd === '/contract' || cmd === '/co') {
+  if (
+    cmd === '/live' ||
+    cmd === '/plaza' ||
+    cmd === '/head' ||
+    cmd === '/economy' ||
+    cmd === '/e' ||
+    cmd === '/contract' ||
+    cmd === '/co'
+  ) {
     return 'economy'
   }
   if (

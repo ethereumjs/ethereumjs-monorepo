@@ -38,6 +38,7 @@ function hintSegment(key: string, prose: string): string {
 function renderFooterHint(): string {
   return [
     hintSegment('Tab', 'show domain help'),
+    hintSegment('Enter', 'plaza'),
     hintSegment('←/→', 'view history'),
     hintSegment('/', 'command'),
     hintSegment('Esc', 'exit'),

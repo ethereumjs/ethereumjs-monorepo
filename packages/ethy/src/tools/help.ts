@@ -18,6 +18,7 @@ function economySections(): { sections: DomainHelpSection[]; aiExamples: string[
       {
         title: 'Economy Commands',
         rows: [
+          { command: '/live · /plaza · /head', detail: 'Ethereum Plaza live observatory' },
           { command: '/economy', detail: '64-block gas, TPS & volume' },
           { command: '/contract', detail: 'Hot contract #1 microscope' },
           { command: '/contract <N>', detail: 'Inspect leaderboard #1..10' },

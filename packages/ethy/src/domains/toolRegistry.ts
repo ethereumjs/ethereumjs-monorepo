@@ -7,6 +7,7 @@ export type SlashToolDescriptor = {
 }
 
 const READ_COMMANDS = [
+  '/live',
   '/peers',
   '/ethy',
   '/buckets',

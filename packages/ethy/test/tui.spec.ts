@@ -440,10 +440,10 @@ describe('[Ethy/TUI]: prompt reducer', () => {
     assert.equal(r.view.promptDraft, '/peers')
   })
 
-  it('Enter on empty draft is a no-op', () => {
+  it('Enter on empty draft opens plaza return', () => {
     const r = reducePromptKey(createInitialViewState(), { type: 'enter' })
     assert.isUndefined(r.submittedLine)
-    assert.isUndefined(r.domainCycle)
+    assert.equal(r.openPlaza, true)
   })
 
   it('cycleDomain() walks economy → state → p2p', () => {
