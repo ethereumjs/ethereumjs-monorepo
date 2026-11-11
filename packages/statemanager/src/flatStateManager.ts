@@ -48,6 +48,8 @@ export const SNAP_BINARY_ACCOUNT_SLAB_RECORD_SIZE = 32 + BINARY_ACCOUNT_SIZE
 const ACCOUNT_SHARD_COUNT = 256
 /** Max in-memory code blobs retained after cold disk hydrate (Ethy restart path). */
 const MAX_COLD_CODE_CACHE = 256
+/** Max cold-hydrated storage keys retained after disk lookup (Ethy restart path). */
+const MAX_COLD_STORAGE_CACHE = 4096
 
 function accountShardIndex(key: string): number {
   return Number.parseInt(key.slice(0, 2), 16)
@@ -77,6 +79,10 @@ export class FlatStateManager implements StateManagerInterface {
   private readonly _maxResidentAccounts?: number
   private readonly _coldAccountLookup?: (accountHash: Uint8Array) => Uint8Array | undefined
   private readonly _coldCodeLookup?: (codeHash: Uint8Array) => Uint8Array | undefined
+  private readonly _coldStorageLookup?: (
+    accountHash: Uint8Array,
+    slotHash: Uint8Array,
+  ) => Uint8Array | undefined
   /** Overlay keys written on a shallow copy (including tombstones). */
   private readonly _localAccountKeys = new Set<string>()
   private _logicalAccountCount = 0
@@ -87,6 +93,7 @@ export class FlatStateManager implements StateManagerInterface {
   private readonly _storage = new Map<string, Uint8Array>()
   private readonly _code = new Map<string, Uint8Array>()
   private readonly _coldHydratedCodeKeys = new Set<string>()
+  private readonly _coldHydratedStorageKeys = new Set<string>()
   private readonly _hashToAddress = new Map<string, Address>()
   private readonly _deltaStack: DeltaFrame[] = []
   private readonly _overlayFrames: DeltaFrame[] = []
@@ -103,6 +110,7 @@ export class FlatStateManager implements StateManagerInterface {
       this._maxResidentAccounts = opts.maxResidentAccounts
       this._coldAccountLookup = opts.coldAccountLookup
       this._coldCodeLookup = opts.coldCodeLookup
+      this._coldStorageLookup = opts.coldStorageLookup
     }
     this._overlayAccountShards = createOverlayAccountShards()
   }
@@ -294,6 +302,34 @@ export class FlatStateManager implements StateManagerInterface {
     return binaryAccountToAccount(binary)
   }
 
+  private trimColdStorageCacheIfNeeded(): void {
+    while (this._coldHydratedStorageKeys.size > MAX_COLD_STORAGE_CACHE) {
+      const oldest = this._coldHydratedStorageKeys.keys().next().value as string | undefined
+      if (oldest === undefined) break
+      this._coldHydratedStorageKeys.delete(oldest)
+      this._storage.delete(oldest)
+    }
+  }
+
+  private hydrateStorageFromCold(key: string): Uint8Array | undefined {
+    if (this._parent !== undefined || this._coldStorageLookup === undefined) return undefined
+    const sep = key.indexOf(':')
+    if (sep !== 64) return undefined
+    const accountHashHex = key.slice(0, sep)
+    const slotHashHex = key.slice(sep + 1)
+    if (accountHashHex.length !== 64 || slotHashHex.length !== 64) return undefined
+    const accountHash = unprefixedHexToBytes(accountHashHex)
+    const slotHash = unprefixedHexToBytes(slotHashHex)
+    const cold = this._coldStorageLookup(accountHash, slotHash)
+    if (cold === undefined) return undefined
+    const owned = new Uint8Array(cold)
+    if (owned.length === 0) return owned
+    this._storage.set(key, owned)
+    this._coldHydratedStorageKeys.add(key)
+    this.trimColdStorageCacheIfNeeded()
+    return owned
+  }
+
   private readStorageKey(key: string): Uint8Array | undefined {
     if (this._storage.has(key)) {
       return this._storage.get(key)
@@ -301,7 +337,7 @@ export class FlatStateManager implements StateManagerInterface {
     if (this._parent !== undefined) {
       return this._parent.readStorageKey(key)
     }
-    return undefined
+    return this.hydrateStorageFromCold(key)
   }
 
   private writeStorageKey(key: string, value: Uint8Array | undefined): void {
@@ -311,8 +347,10 @@ export class FlatStateManager implements StateManagerInterface {
     }
     if (value === undefined || value.length === 0) {
       this._storage.delete(key)
+      this._coldHydratedStorageKeys.delete(key)
     } else {
       this._storage.set(key, value)
+      this._coldHydratedStorageKeys.delete(key)
     }
   }
 
