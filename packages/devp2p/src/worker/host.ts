@@ -151,6 +151,8 @@ export class Devp2pWorkerHost {
   /** When false, outbound ETH STATUS stays on boot fields until head following (WP-04f). */
   private _advertiseBlockRangeInStatus = false
   private _rollingStore = new RollingBlockStore()
+  private readonly _pooledTx = new Map<string, Uint8Array>()
+  private readonly _pooledOrder: string[] = []
   private _serveGovernor = new ServeGovernor()
   private _serving = emptyServingSnapshot()
   private _lastBroadcastEarliest: bigint | null = null
@@ -227,6 +229,25 @@ export class Devp2pWorkerHost {
             this._syncBlockRangeFromStore(true)
           }
           break
+        case 'notePooledTx': {
+          const key = cmd.hashHex.replace(/^0x/i, '').toLowerCase()
+          if (!this._pooledTx.has(key)) {
+            this._pooledOrder.push(key)
+            while (this._pooledOrder.length > 256) {
+              const old = this._pooledOrder.shift()
+              if (old !== undefined) this._pooledTx.delete(old)
+            }
+          }
+          this._pooledTx.set(key, cmd.raw)
+          break
+        }
+        case 'dropPooledTx': {
+          const key = cmd.hashHex.replace(/^0x/i, '').toLowerCase()
+          this._pooledTx.delete(key)
+          const idx = this._pooledOrder.indexOf(key)
+          if (idx >= 0) this._pooledOrder.splice(idx, 1)
+          break
+        }
         case 'disconnectPeer':
           this._rlpx?.disconnect(cmd.peerId)
           break
@@ -591,6 +612,39 @@ export class Devp2pWorkerHost {
     const name =
       layer === 'eth' ? ETH_CODE_NAMES[msgCode] : SnapMessageCodeNames[msgCode as SnapMessageCodes]
     if (name === undefined || !name.startsWith('GET_')) return false
+
+    if (layer === 'eth' && name === 'GET_POOLED_TRANSACTIONS') {
+      const version = negotiatedEthVersion(peer) ?? 68
+      const decoded = RLP.decode(payload)
+      const hashes =
+        version >= 66 && Array.isArray(decoded) && decoded.length >= 2
+          ? (decoded[1] as Uint8Array[])
+          : Array.isArray(decoded)
+            ? (decoded as Uint8Array[])
+            : []
+      const txs: Uint8Array[] = []
+      for (const h of hashes) {
+        if (!(h instanceof Uint8Array)) continue
+        const key = bytesToUnprefixedHex(h)
+        const raw = this._pooledTx.get(key)
+        if (raw !== undefined) txs.push(raw)
+      }
+      for (const protocol of peer.getProtocols()) {
+        if (protocol.constructor.name !== 'ETH') continue
+        try {
+          const reqId =
+            version >= 66 && Array.isArray(decoded) && decoded.length > 0
+              ? decoded[0]
+              : new Uint8Array()
+          const rlp = version >= 66 ? [reqId, txs] : txs
+          ;(protocol as ETH).sendMessage(EthMessageCodes.POOLED_TRANSACTIONS as never, rlp)
+          return true
+        } catch {
+          return false
+        }
+      }
+      return false
+    }
 
     for (const protocol of peer.getProtocols()) {
       if (protocol.constructor.name !== protocolName) continue
