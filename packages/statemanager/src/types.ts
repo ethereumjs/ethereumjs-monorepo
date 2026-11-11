@@ -33,6 +33,11 @@ export interface FlatStateManagerOpts extends BaseStateManagerOpts {
    * Must return a 104-byte binary account or `undefined`.
    */
   coldAccountLookup?: (accountHash: Uint8Array) => Uint8Array | undefined
+  /**
+   * Synchronous fallback when bytecode is not in the in-memory code map (Ethy disk code shards).
+   * Must return contract bytecode or `undefined`.
+   */
+  coldCodeLookup?: (codeHash: Uint8Array) => Uint8Array | undefined
 }
 
 /** Options for constructing a {@link RPCStateManager}. */

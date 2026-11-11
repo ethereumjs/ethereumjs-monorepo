@@ -46,6 +46,8 @@ type DeltaFrame = {
 export const SNAP_BINARY_ACCOUNT_SLAB_RECORD_SIZE = 32 + BINARY_ACCOUNT_SIZE
 
 const ACCOUNT_SHARD_COUNT = 256
+/** Max in-memory code blobs retained after cold disk hydrate (Ethy restart path). */
+const MAX_COLD_CODE_CACHE = 256
 
 function accountShardIndex(key: string): number {
   return Number.parseInt(key.slice(0, 2), 16)
@@ -74,6 +76,7 @@ export class FlatStateManager implements StateManagerInterface {
   private readonly _arena?: BinaryAccountArena
   private readonly _maxResidentAccounts?: number
   private readonly _coldAccountLookup?: (accountHash: Uint8Array) => Uint8Array | undefined
+  private readonly _coldCodeLookup?: (codeHash: Uint8Array) => Uint8Array | undefined
   /** Overlay keys written on a shallow copy (including tombstones). */
   private readonly _localAccountKeys = new Set<string>()
   private _logicalAccountCount = 0
@@ -98,6 +101,7 @@ export class FlatStateManager implements StateManagerInterface {
       this._arena = new BinaryAccountArena()
       this._maxResidentAccounts = opts.maxResidentAccounts
       this._coldAccountLookup = opts.coldAccountLookup
+      this._coldCodeLookup = opts.coldCodeLookup
     }
     this._overlayAccountShards = createOverlayAccountShards()
   }
@@ -311,6 +315,24 @@ export class FlatStateManager implements StateManagerInterface {
     }
   }
 
+  private trimColdCodeCacheIfNeeded(): void {
+    while (this._code.size > MAX_COLD_CODE_CACHE) {
+      const oldest = this._code.keys().next().value as string | undefined
+      if (oldest === undefined) break
+      this._code.delete(oldest)
+    }
+  }
+
+  private hydrateCodeFromCold(hashBytes: Uint8Array, key: string): Uint8Array | undefined {
+    if (this._parent !== undefined || this._coldCodeLookup === undefined) return undefined
+    const cold = this._coldCodeLookup(hashBytes)
+    if (cold === undefined) return undefined
+    const owned = new Uint8Array(cold)
+    this._code.set(key, owned)
+    this.trimColdCodeCacheIfNeeded()
+    return owned
+  }
+
   private readCodeKey(key: string): Uint8Array | undefined {
     if (this._code.has(key)) {
       return this._code.get(key)
@@ -318,7 +340,8 @@ export class FlatStateManager implements StateManagerInterface {
     if (this._parent !== undefined) {
       return this._parent.readCodeKey(key)
     }
-    return undefined
+    const hashBytes = unprefixedHexToBytes(key)
+    return this.hydrateCodeFromCold(hashBytes, key)
   }
 
   private writeCodeKey(key: string, value: Uint8Array | undefined): void {

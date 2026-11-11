@@ -6,6 +6,7 @@ import {
   bytesToHex,
   createAccount,
   createAddressFromString,
+  equalsBytes,
   hexToBytes,
   setLengthLeft,
   unprefixedHexToBytes,
@@ -59,6 +60,26 @@ describe('[StateManager/FlatStateManager]', () => {
     sm.putCodeByHash(codeHash, code)
     assert.deepEqual(sm.getCodeByHash(codeHash), code)
     assert.isUndefined(sm.getCodeByHash(new Uint8Array(32)))
+  })
+
+  it('coldCodeLookup hydrates getCodeByHash() and caches without second lookup', async () => {
+    const code = new Uint8Array([0x60, 0x01, 0x60, 0x01, 0xfd])
+    const codeHash = keccak_256(code)
+    let calls = 0
+    const sm = new FlatStateManager({
+      coldCodeLookup: (h) => {
+        calls++
+        if (!equalsBytes(h, codeHash)) return undefined
+        return code
+      },
+    })
+    assert.deepEqual(sm.getCodeByHash(codeHash), code)
+    assert.strictEqual(calls, 1)
+    assert.deepEqual(sm.getCodeByHash(codeHash), code)
+    assert.strictEqual(calls, 1)
+    const addr = new Address(hexToBytes(`0x${'77'.repeat(20)}`))
+    await sm.putAccount(addr, createAccount({ codeHash }))
+    assert.deepEqual(await sm.getCode(addr), code)
   })
 
   it('putSnapBinaryAccountsBatch() and getBinaryAccountByHash()', async () => {
