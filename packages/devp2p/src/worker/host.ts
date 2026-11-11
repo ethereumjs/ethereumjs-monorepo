@@ -7,7 +7,7 @@ import {
   Mainnet,
   Sepolia,
 } from '@ethereumjs/common'
-import { RLP } from '@ethereumjs/rlp'
+import { type Input, RLP } from '@ethereumjs/rlp'
 import {
   bigIntToUnpaddedBytes,
   bytesToBigInt,
@@ -622,12 +622,14 @@ export class Devp2pWorkerHost {
           : Array.isArray(decoded)
             ? (decoded as Uint8Array[])
             : []
-      const txs: Uint8Array[] = []
+      const txs: Input[] = []
       for (const h of hashes) {
         if (!(h instanceof Uint8Array)) continue
         const key = bytesToUnprefixedHex(h)
         const raw = this._pooledTx.get(key)
-        if (raw !== undefined) txs.push(raw)
+        if (raw !== undefined) {
+          txs.push(raw.length > 0 && raw[0]! <= 0x7f ? raw : RLP.decode(raw))
+        }
       }
       for (const protocol of peer.getProtocols()) {
         if (protocol.constructor.name !== 'ETH') continue
@@ -922,7 +924,13 @@ export class Devp2pWorkerHost {
 
   private _sendEth(peerId: Uint8Array, code: number, payload: Uint8Array): void {
     const eth = this._findEth(peerId)
-    if (!eth) throw new Error('No ETH session for peer')
+    if (!eth) {
+      this._pushDiagnostic(
+        'warn',
+        `No ETH session for peer ${bytesToUnprefixedHex(peerId).slice(0, 8)}`,
+      )
+      return
+    }
     eth.sendMessage(code as never, RLP.decode(payload))
   }
 
