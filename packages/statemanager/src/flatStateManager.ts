@@ -91,6 +91,7 @@ export class FlatStateManager implements StateManagerInterface {
   private readonly _tombstones = new Set<string>()
   private readonly _pinnedKeys = new Set<string>()
   private readonly _storage = new Map<string, Uint8Array>()
+  private readonly _storageTombstones = new Set<string>()
   private readonly _code = new Map<string, Uint8Array>()
   private readonly _coldHydratedCodeKeys = new Set<string>()
   private readonly _coldHydratedStorageKeys = new Set<string>()
@@ -331,6 +332,9 @@ export class FlatStateManager implements StateManagerInterface {
   }
 
   private readStorageKey(key: string): Uint8Array | undefined {
+    if (this._storageTombstones.has(key)) {
+      return undefined
+    }
     if (this._storage.has(key)) {
       return this._storage.get(key)
     }
@@ -348,9 +352,13 @@ export class FlatStateManager implements StateManagerInterface {
     if (value === undefined || value.length === 0) {
       this._storage.delete(key)
       this._coldHydratedStorageKeys.delete(key)
+      if (this._parent !== undefined || this._coldStorageLookup !== undefined) {
+        this._storageTombstones.add(key)
+      }
     } else {
       this._storage.set(key, value)
       this._coldHydratedStorageKeys.delete(key)
+      this._storageTombstones.delete(key)
     }
   }
 
@@ -511,8 +519,12 @@ export class FlatStateManager implements StateManagerInterface {
       for (const [k, v] of frame.storage) {
         if (v === undefined) {
           this._storage.delete(k)
+          if (this._parent !== undefined || this._coldStorageLookup !== undefined) {
+            this._storageTombstones.add(k)
+          }
         } else {
           this._storage.set(k, v)
+          this._storageTombstones.delete(k)
         }
       }
       for (const [k, v] of frame.code) {
@@ -532,8 +544,12 @@ export class FlatStateManager implements StateManagerInterface {
     for (const [k, v] of frame.storage) {
       if (v === undefined) {
         this._storage.delete(k)
+        if (this._parent !== undefined || this._coldStorageLookup !== undefined) {
+          this._storageTombstones.add(k)
+        }
       } else {
         this._storage.set(k, v)
+        this._storageTombstones.delete(k)
       }
     }
     for (const [k, v] of frame.code) {
@@ -772,7 +788,10 @@ export class FlatStateManager implements StateManagerInterface {
     this._pinnedKeys.clear()
     this._hashToAddress.clear()
     this._storage.clear()
+    this._storageTombstones.clear()
     this._code.clear()
+    this._coldHydratedCodeKeys.clear()
+    this._coldHydratedStorageKeys.clear()
     this._deltaStack.length = 0
     this._overlayFrames.length = 0
     this.originalStorageCache.clear()

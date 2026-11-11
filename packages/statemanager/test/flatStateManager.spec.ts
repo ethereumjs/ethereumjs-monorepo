@@ -348,4 +348,37 @@ describe('[StateManager/FlatStateManager]', () => {
     }
     assert.deepEqual(await sm.getStorage(address, slot), live)
   })
+
+  it('zeroing a cold-hydrated or parent storage slot records a tombstone and does not resurrect', async () => {
+    const address = new Address(setLengthLeft(hexToBytes('0x99'), 20))
+    const accountHash = keccak_256(address.bytes)
+    const slot = setLengthLeft(hexToBytes('0x07'), 32)
+    const slotHash = keccak_256(slot)
+    const coldVal = setLengthLeft(hexToBytes('0xdeadbeef'), 32)
+    let coldLookups = 0
+    const sm = new FlatStateManager({
+      coldAccountLookup: (h) =>
+        equalsBytes(h, accountHash) ? accountToBinaryAccount(createAccount({})) : undefined,
+      coldStorageLookup: (a, s) => {
+        if (equalsBytes(a, accountHash) && equalsBytes(s, slotHash)) {
+          coldLookups++
+          return coldVal
+        }
+        return undefined
+      },
+    })
+    assert.deepEqual(await sm.getStorage(address, slot), coldVal)
+    assert.strictEqual(coldLookups, 1)
+
+    // Zeroing on a shallowCopy overlay does not read parent's non-zero value
+    const overlay = sm.shallowCopy()
+    await overlay.putStorage(address, slot, new Uint8Array(0))
+    assert.deepEqual(await overlay.getStorage(address, slot), new Uint8Array(0))
+    assert.deepEqual(await sm.getStorage(address, slot), coldVal)
+
+    // Zeroing on root manager does not resurrect from coldStorageLookup
+    await sm.putStorage(address, slot, new Uint8Array(0))
+    assert.deepEqual(await sm.getStorage(address, slot), new Uint8Array(0))
+    assert.strictEqual(coldLookups, 1)
+  })
 })
