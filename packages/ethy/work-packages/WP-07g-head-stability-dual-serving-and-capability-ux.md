@@ -1,6 +1,6 @@
 # WP-07g: Holistic Head Stability, Synchronized Chain-Head Clock, Dual-Protocol Serving (`eth/69–71` + `ETHY/0`) & System-Wide Capability UX
 
-- **Status:** `READY_FOR_PLANNING`
+- **Status:** `DONE`
 - **Dependencies:** `WP-03c`, `WP-04k`, `WP-05b`, `WP-06c`, `WP-07e`, `WP-07f` (`DONE`)
 - **Primary Goal:** Close the "Head & Serving" chapter of Ethy by ensuring:
   1. **Synchronized Chain-Head Clock & Honest `State` Telemetry:** The top header bar (`Block <N>        Slot <S>`) always represents a **synchronized view of the canonical chain head**, visually dimmed (`DIM`) while Ethy is still syncing toward it and bright once Ethy is live on the head; the `State` cockpit box and post-restart contract/bytecode lookups (`coldCodeLookup`) stay 100% accurate.
@@ -192,10 +192,128 @@
 
 ## 2. Concrete Implementation Plan (Planner — Grok 4.7)
 
-*(To be filled by Grok 4.7 during planning phase.)*
+**Zero new npm dependencies.** Upstream changes ship in **three separate commits**: `@ethereumjs/statemanager`, then `@ethereumjs/devp2p`, then `@ethereumjs/ethy`.
+
+### 2.1 Baseline (from forensic audit #12,111,702)
+
+| Area | Current code | Symptom |
+| --- | --- | --- |
+| Header clock | [`headerClock.ts`](../src/tui/headerClock.ts) reads `bestPeerHead`; Slot reads `clOptimisticSlot` only | Block **8** blocks behind `State -> Target`; no dim/bright sync state |
+| `bestPeerHead` | [`peerCoordinator.ts`](../src/net/peerCoordinator.ts) telemetry (~1545) assigns `BigInt(bestPeer.latestBlock)` each 150ms tick | Slow `BLOCK_RANGE_UPDATE` **rewinds** chain head below verified blocks |
+| Head peer pick | `pickEthPeer` clamps to `min(snap peers)` (`safeSnapHead`) in **all** phases | Lagging snap peer freezes `HEAD_FOLLOWING` |
+| Tip probe | [`balSync.ts`](../src/sync/balSync.ts) `tip + 1n` every 4s; empty headers → `restBalCatchUpPeer` + tight re-`tick` loop | **15s** rest on best peer for a not-yet-mined tip block |
+| Wake hysteresis | `LAPTOP_WAKE_BLOCK_GAP = 2n` | **3-block** jitter flips `HEAD_FOLLOWING` → `BAL_CATCHUP` |
+| Code after restart | No `coldCodeLookup`; `finishDiskHydrate` skips `takeContractProgress()` when `baseSyncComplete` | `codesSynced = 0`, `/contract` fingerprints missing |
+| `eth/69–71` advertise | [`host.ts`](../../devp2p/src/worker/host.ts) `setAdvertiseBlockRange` no broadcast; `_lastBroadcastLatest` updated while advertise off | `Served` stays `0 replies (ready)` |
+| ETHY STATUS | [`ethyAdvertise.ts`](../src/net/ethyAdvertise.ts) `balEarliestBlock = pivot` only | Peers see stale BAL tail range at head |
+| Commands | [`DomainHelpUIComponent.ts`](../src/tui/components/DomainHelpUIComponent.ts) all rows bold; [`gated.ts`](../src/tools/gated.ts) internal tool names | Opaque availability; `/pause` after snap done still mutates spine |
+| `/range` `/sample` | [`range.ts`](../src/tools/range.ts) resident `sampleAccounts` only | Sparse rows after disk resume |
+
+```mermaid
+flowchart LR
+  cl[beacon-light optimistic head]
+  peers[eth peer latestBlock]
+  local[verified headBlockNumber]
+  resolver[resolveChainHeadClock]
+  cl --> resolver
+  peers --> resolver
+  local --> resolver
+  resolver --> bar[Top bar Block and Slot]
+  resolver --> target[State Target lag]
+  bar --> dim{HEAD_FOLLOWING and lag at most 2}
+  dim -->|yes| bright[Bright Block and Slot]
+  dim -->|no| faded[Dim Block and Slot]
+```
+
+### 2.2 Design refinements (Decision **D-107**)
+
+1. **Unified chain-head resolver** — `resolveChainHeadClock(spine)` exports `chainHeadBlock` and `chainHeadSlot`. Cockpit **Target** lag uses the same numbers as the top bar (`isNodeAtChainHead`: `HEAD_FOLLOWING` and local verified block within `<= 2n` of `chainHeadBlock`).
+2. **`chainHeadBlock`** — `max(clOptimisticBlockNumber, bestPeerHead, headBlockNumber, lastVerifiedBlockNumber)` ignoring `0n`/missing; fallback `pivotBlockNumber` only before any head is known.
+3. **`chainHeadSlot`** — use `clOptimisticSlot` when set; if `chainHeadBlock > clOptimisticBlockNumber` by `delta` in `1..32`, add `delta` slots (lockstep); if `delta > 32`, do not extrapolate slots; `demoClock` uses `currentSlot`.
+4. **Monotonic `bestPeerHead`** — telemetry, verified headers, and CL only **raise** `bestPeerHead` (never assign a lower peer `latestBlock`).
+5. **`safeSnapHead` clamp** — only when `phase === 'SNAP_SYNCING' && pivotBridging === undefined`. `BAL_CATCHUP` / `HEAD_FOLLOWING` use highest non-resting peer head (`pickBalCatchUpPeer` for `BalChainStreamer`).
+6. **Speculative tip probe** — `HeadCatchUp.probingNextTip`; empty headers at `stage === 'headers'` while probing: clear `catchUp`, **no** `restBalCatchUpPeer`, **no** immediate re-`tick` spin; real failures still rest and rotate peers.
+7. **CL head callback** — `ConsensusTrackerOpts.onOptimisticHead(blockNumber, slot)`; slot on coordinator handle filled after `startPeerCoordinator` resolves; `BalChainStreamer.noteChainHead` → monotonic `bestPeerHead` + `tick()`.
+8. **`LAPTOP_WAKE_BLOCK_GAP = 16n`** — gaps `1..16` stay in `HEAD_FOLLOWING` (existing batch/bundle paths); only `> 16` calls `seedBalCatchUp`.
+9. **Head-flip widget** — [`session.ts`](../src/tui/session.ts) auto-open only when `activeWidget === null || kind === 'start_page'`.
+10. **`coldCodeLookup`** — invoked from `readCodeKey` on root miss (covers `getCode` / `getCodeByHash`); FIFO cap **256** cached blobs; miss → `undefined` / empty `getCode`.
+11. **`lookupCodeByHash`** — lazy per-shard index (`36`-byte header stride) + single `readSync` body slice; rebuild index when file grows; **never** on ingest hot path.
+12. **Disk resume totals** — `finishDiskHydrate`: always apply `takeContractProgress()` to spine when present, including `baseSyncComplete` (no `codeSync` start required).
+13. **devp2p broadcast** — if `!_advertiseBlockRangeInStatus`, update `_blockRange` then **return before** touching `_lastBroadcast*`. `setAdvertiseBlockRange(true)` → `_syncBlockRangeFromStore(true)`. On new peer `eth` `status`, unicast `BLOCK_RANGE_UPDATE` when advertise on and store populated.
+14. **ETHY STATUS refresh** — `balEarliest` / `balLatest` from `spine.serving` with pivot/head fallbacks; on `HEAD_FOLLOWING` entry and when `serving.latestBlock` advances (not every telemetry tick).
+15. **CommandAvailability** — pure domain oracle; help rows dim `locked`/`partial`; invocation checks availability before `devActions` / head tools; friendly `CommandUnavailableUIComponent` replaces `headLockedWidget` titles; `/contract 0x…` may be `ready` while list row stays `locked`.
+16. **Disk `/range` `/sample`** — after resident sample under `limit`, fill from sorted `accounts/<nibble>.bin` via existing binary search; balance sort caps **256** candidates; skip hashes already in resident rows.
+
+### 2.3 `@ethereumjs/statemanager` (backwards compatible)
+
+| File | Responsibility |
+| --- | --- |
+| [`types.ts`](../../statemanager/src/types.ts) | `coldCodeLookup?: (codeHash: Uint8Array) => Uint8Array \| undefined` on `FlatStateManagerOpts` |
+| [`flatStateManager.ts`](../../statemanager/src/flatStateManager.ts) | Hook in `readCodeKey`; bounded FIFO code cache |
+| [`test/flatStateManager.spec.ts`](../../statemanager/test/flatStateManager.spec.ts) | Hit/miss/cache/`getCode` after cold hydrate |
+
+### 2.4 `@ethereumjs/devp2p`
+
+| File | Responsibility |
+| --- | --- |
+| [`worker/host.ts`](../../devp2p/src/worker/host.ts) | Advertise race fix; `setAdvertiseBlockRange(true)` force broadcast; per-peer `BLOCK_RANGE_UPDATE` after `STATUS` |
+| `test/worker/` (new or extend) | In-process: store populated while advertise off → no broadcast; enable → one broadcast; late peer `status` → unicast range |
+
+### 2.5 `@ethereumjs/ethy`
+
+| File | Responsibility |
+| --- | --- |
+| [`headerClock.ts`](../src/tui/headerClock.ts) | `resolveChainHeadClock`, `isNodeAtChainHead`, `capabilityBarClockLabel` dim/bright |
+| [`balSync.ts`](../src/sync/balSync.ts) | `probingNextTip`, probe failure path, `noteChainHead`, `LAPTOP_WAKE_BLOCK_GAP = 16n` |
+| [`peerCoordinator.ts`](../src/net/peerCoordinator.ts) | Phase-gated `safeSnapHead`; monotonic telemetry; ETHY refresh on head + serving; contract totals on hydrate; `noteChainHead` on return handle |
+| [`consensusTracker.ts`](../src/cl/consensusTracker.ts) + [`main.ts`](../src/cli/main.ts) | `onOptimisticHead` wiring |
+| [`snapStore.ts`](../src/persist/snapStore.ts) | `lookupCodeByHash`, `sampleAccountsFromDisk` |
+| [`createEthyNode.ts`](../src/core/createEthyNode.ts) | `coldCodeLookup` → `snapStore.lookupCodeByHash` |
+| [`cockpit.ts`](../src/tui/cockpit.ts) | Head-follow Target lag; State row `acc · code · BALs`; `servedMetric` `eth Nb · ethy M/16` |
+| [`session.ts`](../src/tui/session.ts) | Head-flip guard |
+| [`ethyAdvertise.ts`](../src/net/ethyAdvertise.ts) | Serving window fields |
+| [`diagnose.ts`](../src/tools/diagnose.ts) | `/ethy` eth window + serve counters |
+| **New** [`commandAvailability.ts`](../src/domains/commandAvailability.ts) | Rules per WP §1.2 Part E |
+| **New** [`CommandUnavailableUIComponent.ts`](../src/tui/components/CommandUnavailableUIComponent.ts) | Friendly locked card |
+| [`DomainHelpUIComponent.ts`](../src/tui/components/DomainHelpUIComponent.ts) | Availability styling on command rows |
+| [`deterministicEngine.ts`](../src/ai/deterministicEngine.ts) | Availability gate before handlers |
+| [`devActions.ts`](../src/tools/devActions.ts) | Phase checks or defer to availability layer |
+| [`range.ts`](../src/tools/range.ts) | Optional disk sampler from `snapStore` |
+
+### 2.6 Tests
+
+| File | Coverage |
+| --- | --- |
+| [`tui.spec.ts`](../test/tui.spec.ts) | Resolver max head; dim vs bright; cockpit lag + Served parenthetical |
+| [`balCatchUp.spec.ts`](../test/balCatchUp.spec.ts) | Probe no-rest; real failure rests; hysteresis 3 vs 17; `noteChainHead` wakes fetch |
+| [`snapPersist.spec.ts`](../test/snapPersist.spec.ts) | `lookupCodeByHash`; disk sample limit/prefix |
+| **New** `commandAvailability.spec.ts` | `/pause` locked after head; help grey; `/contract` arg override |
+| devp2p worker | Advertise enable + late peer range (see §2.4) |
+
+### 2.7 Out of scope
+
+WP-08 `/simulate` execution, changing the 32-block throttle on forced `putServableBlock` sync, loading all bytecode into RAM, full-bucket balance ranking, new dependencies.
+
+### 2.8 Gates (implementer)
+
+`npm run tsc`, `npm test`, `npm run spellcheck` in `statemanager`, `devp2p`, and `ethy` (build `statemanager` before ethy typecheck when types change).
+
+### 2.9 Suggested implementation order
+
+1. `coldCodeLookup` + unit tests (`statemanager`)  
+2. devp2p `BLOCK_RANGE_UPDATE` fixes + worker test  
+3. `resolveChainHeadClock` + cockpit Target + `bestPeerHead` monotonic  
+4. `BalChainStreamer` probe + hysteresis + `noteChainHead` + CL callback  
+5. `lookupCodeByHash` + disk sample + hydrate contract totals + `createEthyNode` wire  
+6. ETHY advertise + `servedMetric` + `/ethy`  
+7. `CommandAvailability` + help + unavailable widget + slash gates  
+8. Full gates + PROGRESS implementer notes  
 
 ---
 
 ## 3. Implementation Notes & Deviations (Implementer — Composer 2.5)
 
-*(To be filled by Composer 2.5 during implementation phase.)*
+- Shipped in three logical commits: `@ethereumjs/statemanager` (`coldCodeLookup`), `@ethereumjs/devp2p` (advertise race), `@ethereumjs/ethy` (head clock, sync, serving, `CommandAvailability`).
+- devp2p worker IT covers telemetry servable window after `setAdvertiseBlockRange(true)`; peer mesh `BLOCK_RANGE_UPDATE` unicast left to existing eth/71 serving specs.
+- `/account` still requires `headInspectUnlocked` at dispatch even when availability is `partial` (microscope semantics unchanged).
+- No deviations from **D-107** design locks.

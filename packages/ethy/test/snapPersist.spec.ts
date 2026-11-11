@@ -334,6 +334,43 @@ describe('[Ethy/Persist]: snap pivot store', () => {
     assert.isDefined(lookupStore.lookupBinaryAccountByHash(hashC))
   })
 
+  it('lookupCodeByHash reads bytecode from on-disk code shards', async () => {
+    const dir = tempDir()
+    const store = openStore(dir)
+    const root = new Uint8Array(32)
+    root[31] = 0xcc
+    store.activatePivot({ blockNumber: 1n, blockHash: new Uint8Array(32), stateRoot: root })
+    const codeHash = new Uint8Array(32)
+    codeHash[0] = 0x0a
+    codeHash[31] = 0x01
+    const code = new Uint8Array([0x60, 0x00, 0x60, 0x00, 0xfd])
+    store.appendCode(codeHash, code)
+    await store.drainPendingFlushes()
+    const lookup = openStore(dir)
+    assert.deepEqual(lookup.lookupCodeByHash(codeHash), code)
+  })
+
+  it('sampleAccountsFromDisk fills rows when RAM sample is sparse', async () => {
+    const dir = tempDir()
+    const root = new Uint8Array(32)
+    root[31] = 0xdd
+    const store = openStore(dir)
+    store.activatePivot({ blockNumber: 2n, blockHash: new Uint8Array(32), stateRoot: root })
+    const hash = new Uint8Array(32)
+    hash[0] = 0x05
+    const binary = accountToBinaryAccount(
+      createAccount({ nonce: 2n, balance: 3_000_000_000_000_000_000n }),
+    )
+    const buckets = createSnapBuckets()
+    buckets[5]!.accountsLoaded = 1
+    store.appendVerifiedRange(5, [{ accountHash: hash, binaryAccount: binary }], buckets)
+    await store.drainPendingFlushes()
+    const lookup = openStore(dir)
+    const rows = lookup.sampleAccountsFromDisk({ limit: 5, sortByBalanceDesc: true })
+    assert.isAtLeast(rows.length, 1)
+    assert.equal(bytesToHex(rows[0]!.accountHash), bytesToHex(hash))
+  })
+
   it('demo store does not touch disk', () => {
     const dir = tempDir()
     const store = SnapPivotStore.open({

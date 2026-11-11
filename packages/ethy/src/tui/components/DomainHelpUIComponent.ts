@@ -1,5 +1,6 @@
+import { getCommandAvailability } from '../../domains/commandAvailability.ts'
 import type { EthySpine, WidgetSpec } from '../../spine/types.ts'
-import { BOLD, DIM, RESET } from '../ansi.ts'
+import { BOLD, DIM, FG, RESET } from '../ansi.ts'
 import { CAPABILITY_FG, capabilityMark } from '../capabilityMark.ts'
 import { COCKPIT_COLUMN_GAP } from '../cockpit.ts'
 import {
@@ -45,12 +46,35 @@ function buildLeftColumnLines(
     out.push(fixedField(header, colWidth))
     out.push('')
     for (const row of section.rows) {
-      const formatted = formatTwoColumnRow(
-        `${BOLD}${row.command}${RESET}`,
-        `${DIM}${row.detail}${RESET}`,
-        labelW,
-        colWidth,
-      )
+      const avail =
+        spine !== undefined
+          ? getCommandAvailability(row.command, spine)
+          : { status: 'ready' as const }
+      const tag =
+        avail.shortTag !== undefined && avail.shortTag.length > 0 ? ` (${avail.shortTag})` : ''
+      let formatted: string
+      if (avail.status === 'locked') {
+        formatted = formatTwoColumnRow(
+          `${DIM}${row.command}${RESET}`,
+          `${DIM}${row.detail}${tag}${RESET}`,
+          labelW,
+          colWidth,
+        )
+      } else if (avail.status === 'partial') {
+        formatted = formatTwoColumnRow(
+          `${BOLD}${FG.cyan}${row.command}${RESET}`,
+          `${DIM}${row.detail}${tag}${RESET}`,
+          labelW,
+          colWidth,
+        )
+      } else {
+        formatted = formatTwoColumnRow(
+          `${BOLD}${FG.cyan}${row.command}${RESET}`,
+          `${DIM}${row.detail}${RESET}`,
+          labelW,
+          colWidth,
+        )
+      }
       out.push(fixedField(formatted, colWidth))
     }
   })

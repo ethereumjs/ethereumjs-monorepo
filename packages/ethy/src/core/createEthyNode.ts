@@ -81,6 +81,7 @@ export function createEthyNode(opts: CreateEthyNodeOptions): EthyNode {
           common,
           maxResidentAccounts: 500_000,
           coldAccountLookup: (accountHash) => snapStore.lookupBinaryAccountByHash(accountHash),
+          coldCodeLookup: (codeHash) => snapStore.lookupCodeByHash(codeHash),
         },
   )
   const peerBook = PeerBookStore.open({
@@ -123,6 +124,7 @@ export function createEthyNode(opts: CreateEthyNodeOptions): EthyNode {
     llm = { base, transport }
     hybridEngine = new HybridIntentEngineClass({
       stateManager,
+      snapStore,
       transport,
       llmBase: base,
       memoryMode: opts.aiMemory ?? 'ephemeral',
@@ -133,6 +135,7 @@ export function createEthyNode(opts: CreateEthyNodeOptions): EthyNode {
   } else {
     hybridEngine = new HybridIntentEngineClass({
       stateManager,
+      snapStore,
       memoryMode: opts.aiMemory ?? 'ephemeral',
       economy,
       chain,

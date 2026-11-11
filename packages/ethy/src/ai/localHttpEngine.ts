@@ -1,6 +1,7 @@
 import type { ChainConfig } from '@ethereumjs/common'
 import type { FlatStateManager } from '@ethereumjs/statemanager'
 import type { ETHEconomyDataManager } from '../economy/economyDataManager.ts'
+import type { SnapPivotStore } from '../persist/snapStore.ts'
 
 import { buildCompactDomainContext } from './compactContext.ts'
 import { composeViewFromRequest, parseComposeAction } from './composeView.ts'
@@ -34,6 +35,7 @@ Use tool ids from the catalog. Prefer tool or compose over literal.`
 export type LocalHttpIntentEngineOpts = {
   transport: LlmTransport
   stateManager: FlatStateManager
+  snapStore?: SnapPivotStore
   disconnectPeer?: (peerId: string) => void
   fallback: IntentEngine
   getTurns: () => readonly TurnRecord[]
@@ -44,6 +46,7 @@ export type LocalHttpIntentEngineOpts = {
 export class LocalHttpIntentEngine implements IntentEngine {
   private readonly transport: LlmTransport
   private readonly stateManager: FlatStateManager
+  private readonly snapStore?: SnapPivotStore
   private disconnectPeer?: (peerId: string) => void
   private readonly fallback: IntentEngine
   private readonly getTurns: () => readonly TurnRecord[]
@@ -53,6 +56,7 @@ export class LocalHttpIntentEngine implements IntentEngine {
   constructor(opts: LocalHttpIntentEngineOpts) {
     this.transport = opts.transport
     this.stateManager = opts.stateManager
+    this.snapStore = opts.snapStore
     this.disconnectPeer = opts.disconnectPeer
     this.fallback = opts.fallback
     this.getTurns = opts.getTurns
@@ -116,6 +120,7 @@ export class LocalHttpIntentEngine implements IntentEngine {
           const widget = dispatchSlashWidget(line, {
             spine,
             stateManager: this.stateManager,
+            snapStore: this.snapStore,
             disconnectPeer: this.disconnectPeer,
             economy: this.economy,
             chain: this.chain,

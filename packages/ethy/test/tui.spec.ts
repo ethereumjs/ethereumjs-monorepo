@@ -41,14 +41,16 @@ describe('[Ethy/TUI]: renderFrame', () => {
     const spineA = createSpine('sepolia', 11155111n)
     spineA.demoClock = true
     spineA.currentSlot = 1
+    spineA.bestPeerHead = 1n
     const spineB = createSpine('sepolia', 11155111n)
     spineB.demoClock = true
     spineB.currentSlot = 123456
+    spineB.bestPeerHead = 123456n
     const topA = stripAnsi(renderFrame(spineA, view, 100, 30)[0] ?? '')
     const topB = stripAnsi(renderFrame(spineB, view, 100, 30)[0] ?? '')
     assert.equal(topA.indexOf('P2P'), topB.indexOf('P2P'))
-    assert.match(topA, /Slot 1 {8}\S Economy/)
-    assert.match(topB, /Slot 123,456 {8}\S Economy/)
+    assert.match(topA, /Slot 1\b/)
+    assert.match(topB, /Slot 123,456\b/)
     assert.isAbove(topA.indexOf('Slot'), topA.indexOf('SEPOLIA'))
   })
 
@@ -101,9 +103,11 @@ describe('[Ethy/TUI]: renderFrame', () => {
 
     setPhase(spine, 'HEAD_FOLLOWING')
     spine.headBlockNumber = 125n
+    spine.bestPeerHead = 125n
     const head = stripAnsi(renderFrame(spine, view, 160, 30).join('\n'))
     assert.include(head, '★ Head Following · Live')
-    assert.include(head, '#125 (live · +0 blk)')
+    assert.include(head, '#125')
+    assert.include(head, '(live)')
     assert.include(head, '100%')
   })
 
@@ -143,6 +147,20 @@ describe('[Ethy/TUI]: renderFrame', () => {
     assert.notInclude(top, 'Synced')
     assert.notInclude(top, 'Slash/Rule')
     assert.notInclude(top, '[')
+  })
+
+  it('capabilityBarClockLabel dims Block when lagging canonical head', () => {
+    const spine = createSpine('sepolia', 11155111n)
+    setPhase(spine, 'HEAD_FOLLOWING')
+    spine.headBlockNumber = 12_071_440n
+    spine.bestPeerHead = 12_071_450n
+    const lagging = capabilityBarClockLabel(spine)
+    assert.include(lagging, '\x1b[2m')
+
+    spine.headBlockNumber = 12_071_449n
+    const atHead = capabilityBarClockLabel(spine)
+    assert.include(atHead, '\x1b[1m')
+    assert.include(atHead, 'Block')
   })
 
   it('capabilityBarClockLabel prefers CL slot over EL block number', () => {
@@ -240,8 +258,11 @@ describe('[Ethy/TUI]: renderFrame', () => {
       latestBlock: '100',
     }
     const view = { ...createInitialViewState(), activeDomain: 'p2p' as const }
+    spine.ethyBucketsBitmask = 0xffff
     const frame = stripAnsi(renderFrame(spine, view, 100, 30).join('\n'))
     assert.include(frame, 'Served')
+    assert.include(frame, 'eth')
+    assert.include(frame, 'ethy')
     assert.include(frame, 'replies')
     assert.notInclude(frame, 'Caps')
     for (const line of renderFrame(spine, view, 100, 30)) {

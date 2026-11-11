@@ -41,6 +41,7 @@ import {
 } from '../src/sync/balBatch.ts'
 import {
   BalChainStreamer,
+  LAPTOP_WAKE_BLOCK_GAP,
   applyBlockBal,
   applySyncedBalDiff,
   seedBalCatchUp,
@@ -474,5 +475,9 @@ describe('[Ethy/Sync]: BAL catch-up oracle', () => {
     assert.equal(parsedLists!.length, 2)
     assert.deepEqual(parsedLists![0], nestedBal.serialize())
     assert.deepEqual(parsedLists![1], new Uint8Array([0xc0]))
+  })
+
+  it('LAPTOP_WAKE_BLOCK_GAP stays at 16 blocks for laptop resume hysteresis', () => {
+    assert.equal(LAPTOP_WAKE_BLOCK_GAP, 16n)
   })
 })

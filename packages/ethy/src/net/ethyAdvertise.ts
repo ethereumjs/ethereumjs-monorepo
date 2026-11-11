@@ -10,8 +10,8 @@ export function refreshEthyWorkerAdvertisement(client: Devp2pWorkerClient, spine
     basePivotBlock: spine.pivotBlockNumber.toString(),
     basePivotStateRoot: bytesToUnprefixedHex(spine.pivotStateRoot),
     bucketsBitmask: mask === 0 ? '0' : `0x${mask.toString(16)}`,
-    balEarliestBlock: spine.pivotBlockNumber.toString(),
-    balLatestBlock: spine.headBlockNumber?.toString(),
+    balEarliestBlock: spine.serving?.earliestBlock ?? spine.pivotBlockNumber.toString(),
+    balLatestBlock: spine.serving?.latestBlock ?? spine.headBlockNumber?.toString(),
   })
 }
 

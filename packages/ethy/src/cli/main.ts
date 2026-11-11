@@ -51,6 +51,7 @@ async function main(): Promise<void> {
   let coordinatorStop: (() => void) | undefined
   let consensusStop: (() => void) | undefined
   let witnessExecutionHeader: ((blockNumber: bigint, blockHash: Uint8Array) => void) | undefined
+  let noteChainHead: ((blockNumber: bigint) => void) | undefined
   let p2pError: string | undefined
   const bindPeerCoordinator = (handle: Awaited<ReturnType<typeof startPeerCoordinator>>) => {
     node.disconnectPeer = handle.disconnectPeer
@@ -81,6 +82,9 @@ async function main(): Promise<void> {
       network,
       dataDir: cli.dataDir,
       notices: node.notices,
+      onOptimisticHead: (blockNumber) => {
+        noteChainHead?.(blockNumber)
+      },
     })
     consensusStop = consensus.stop
     witnessExecutionHeader = consensus.notePeerHeader
@@ -100,6 +104,7 @@ async function main(): Promise<void> {
     })
       .then((handle) => {
         bindPeerCoordinator(handle)
+        noteChainHead = handle.noteChainHead
       })
       .catch((e: unknown) => {
         reportP2pStartError(e)

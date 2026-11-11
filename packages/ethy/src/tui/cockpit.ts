@@ -5,6 +5,7 @@ import {
   formatProgressBar,
   snapBucketsDoneCount,
 } from '../spine/buckets.ts'
+import { localVerifiedBlock, resolveChainHeadClock } from '../spine/chainHead.ts'
 import type { CapabilityId, EthySpine, TuiViewState } from '../spine/types.ts'
 import { BOLD, RESET } from './ansi.ts'
 import { CAPABILITY_FG, capabilityMark } from './capabilityMark.ts'
@@ -187,18 +188,34 @@ function nodePulsePairs(spine: EthySpine): TwoColumnPair[] {
   }
 
   if (phase === 'HEAD_FOLLOWING') {
-    const head = spine.headBlockNumber ?? spine.lastVerifiedBlockNumber
+    const head = localVerifiedBlock(spine)
+    const chainHead = resolveChainHeadClock(spine)?.chainHeadBlock
+    const lag =
+      head !== undefined && chainHead !== undefined && chainHead > head ? chainHead - head : 0n
+    let targetSuffix = '(live)'
+    if (lag >= 2n) targetSuffix = `(live · -${lag.toString()} blk)`
+    else if (lag === 1n) targetSuffix = '(live · -1 blk)'
     const balCount = spine.appliedBalCount ?? spine.balWindow.length
     const acc = formatCompactCount(spine.totalAccountsSynced)
-    const pivSteps = spine.pivotStepsCompleted ?? 0
+    const codeCount = spine.codesSynced ?? 0
+    const clLabel =
+      spine.clStatus === 'verified'
+        ? 'verified'
+        : spine.clStatus === 'p2p_only'
+          ? 'p2p only'
+          : (spine.clStatus ?? '—')
+    const stateValue =
+      codeCount > 0
+        ? `${acc} acc · ${formatCompactCount(codeCount)} code · ${balCount.toLocaleString('en-US')} BALs`
+        : `${acc} acc · ${balCount.toLocaleString('en-US')} BALs · CL ${clLabel}`
     return [
       { label: 'Stage', value: '★ Head Following · Live' },
       {
         label: 'Target',
-        value: head !== undefined ? `${formatBlockNum(head)} (live · +0 blk)` : '—',
+        value: head !== undefined ? `${formatBlockNum(head)} ${targetSuffix}` : '—',
       },
       { label: 'Progress', value: `${formatProgressBar(100)} (synced)` },
-      { label: 'State', value: `${acc} acc · ${balCount} BALs · pivot #${pivSteps}` },
+      { label: 'State', value: stateValue },
     ]
   }
 
@@ -253,20 +270,26 @@ function formatServeBytes(bytes: number): string {
   return `${bytes} B`
 }
 
+function countBits16(mask: number): number {
+  let n = 0
+  for (let i = 0; i < 16; i++) {
+    if ((mask >> i) & 1) n++
+  }
+  return n
+}
+
 function servedMetric(spine: EthySpine): string {
   const s = spine.serving
-  if (s === undefined) return '0 replies'
-  const ethyParts: string[] = []
-  if ((s.ethyChunksServed ?? 0) > 0) ethyParts.push(`${s.ethyChunksServed} chunks`)
-  if ((s.ethyBalBlocksServed ?? 0) > 0) ethyParts.push(`${s.ethyBalBlocksServed} BALs`)
-  const ethySuffix = ethyParts.length > 0 ? ` · ${ethyParts.join(' · ')}` : ''
+  const ethBlocks = s?.blocksStored ?? 0
+  const ethyBuckets = countBits16(spine.ethyBucketsBitmask ?? 0)
+  const engineTag = `(eth ${ethBlocks}b · ethy ${ethyBuckets}/16)`
+  if (s === undefined) return `0 replies ${engineTag}`
   if (s.totalRequestsServed > 0) {
-    return `${s.totalRequestsServed} replies · ${formatServeBytes(s.totalBytesServed)}${ethySuffix}`
+    return `${s.totalRequestsServed} replies · ${formatServeBytes(s.totalBytesServed)} ${engineTag}`
   }
-  if (ethyParts.length > 0) {
-    return `${ethyParts.join(' · ')} · ${formatServeBytes(s.ethyBytesServed ?? 0)}`
+  if (ethBlocks > 0 || ethyBuckets > 0) {
+    return `0 replies ${engineTag}`
   }
-  if (s.blocksStored > 0) return '0 replies (ready)'
   return '0 replies'
 }
 

@@ -61,6 +61,7 @@ export async function runEthySession(node: EthyNode): Promise<void> {
   const slashCtx = (): SlashDispatchCtx => ({
     spine: node.spine,
     stateManager: node.stateManager,
+    snapStore: node.snapStore,
     disconnectPeer: node.disconnectPeer,
     economy: node.economy,
     chain: chainConfigForNetwork(node.spine.network),
@@ -163,11 +164,14 @@ export async function runEthySession(node: EthyNode): Promise<void> {
     view = applyLiveSlashRefresh(view, node.spine, slashCtx())
     const flip = node.spine.headFlipSummary
     if (flip !== undefined) {
-      const title =
-        flip.kind === 'key_value' || flip.kind === 'table'
-          ? (flip.title ?? 'Head flip')
-          : 'Head flip'
-      view = snapshotFlipWidget(view, flip, title)
+      const w = view.activeWidget
+      if (w === null || w.kind === 'start_page') {
+        const title =
+          flip.kind === 'key_value' || flip.kind === 'table'
+            ? (flip.title ?? 'Head flip')
+            : 'Head flip'
+        view = snapshotFlipWidget(view, flip, title)
+      }
       node.spine.headFlipSummary = undefined
     }
     const cols = output.columns ?? 100

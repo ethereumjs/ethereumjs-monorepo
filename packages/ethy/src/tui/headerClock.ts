@@ -1,31 +1,34 @@
+import { isNodeAtChainHead, raiseBestPeerHead, resolveChainHeadClock } from '../spine/chainHead.ts'
 import type { EthySpine } from '../spine/types.ts'
+import { BOLD, DIM, RESET } from './ansi.ts'
 
 const CLOCK_INNER_GAP = 8
 
-function executionBlockLabel(spine: EthySpine): string | undefined {
-  const block = spine.bestPeerHead ?? spine.headBlockNumber ?? spine.pivotBlockNumber
-  if (block === undefined || block === 0n) return undefined
-  return `Block ${block.toLocaleString('en-US')}`
+export { isNodeAtChainHead, raiseBestPeerHead, resolveChainHeadClock }
+export type { ChainHeadClock } from '../spine/chainHead.ts'
+
+function formatBlockLabel(block: bigint, atHead: boolean): string {
+  const num = block.toLocaleString('en-US')
+  if (atHead) return `${BOLD}Block${RESET} ${num}`
+  return `${DIM}Block ${num}${RESET}`
 }
 
-function consensusSlotLabel(spine: EthySpine): string | undefined {
-  if (spine.clOptimisticSlot !== undefined && spine.clOptimisticSlot > 0) {
-    return `Slot ${spine.clOptimisticSlot.toLocaleString('en-US')}`
-  }
-  if (spine.demoClock === true) {
-    return `Slot ${spine.currentSlot.toLocaleString('en-US')}`
-  }
-  return undefined
+function formatSlotLabel(slot: number, brightSlot: boolean, atHead: boolean): string {
+  const num = slot.toLocaleString('en-US')
+  if (atHead && brightSlot) return `${BOLD}Slot${RESET} ${num}`
+  return `${DIM}Slot ${num}${RESET}`
 }
 
-/** Top capability bar: EL block (when known) left of CL/demo slot, else block-only fallback. */
+/** Top capability bar: synchronized canonical chain head; dimmed while catching up. */
 export function capabilityBarClockLabel(spine: EthySpine): string {
-  const block = executionBlockLabel(spine)
-  const slot = consensusSlotLabel(spine)
-  if (block !== undefined && slot !== undefined) {
+  const clock = resolveChainHeadClock(spine)
+  if (clock === undefined) return ''
+  const atHead = isNodeAtChainHead(spine)
+  const brightSlot = spine.clStatus === 'verified' || spine.demoClock === true
+  const block = formatBlockLabel(clock.chainHeadBlock, atHead)
+  if (clock.chainHeadSlot !== undefined) {
+    const slot = formatSlotLabel(clock.chainHeadSlot, brightSlot, atHead)
     return `${block}${' '.repeat(CLOCK_INNER_GAP)}${slot}`
   }
-  if (slot !== undefined) return slot
-  if (block !== undefined) return block
-  return ''
+  return block
 }

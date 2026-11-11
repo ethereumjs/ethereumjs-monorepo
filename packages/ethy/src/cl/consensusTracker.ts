@@ -10,6 +10,7 @@ import { bytesToHex, equalsBytes } from '@ethereumjs/util'
 
 import { chainConfigForNetwork } from '../net/chainHardfork.ts'
 import type { NoticeBoard } from '../notify/board.ts'
+import { raiseBestPeerHead } from '../spine/chainHead.ts'
 import { recordDiagnostic } from '../spine/diagnostics.ts'
 import type { EthySpine } from '../spine/types.ts'
 
@@ -21,6 +22,7 @@ export type ConsensusTrackerOpts = {
   fetchImpl?: typeof fetch
   disabled?: boolean
   pollIntervalMs?: number
+  onOptimisticHead?: (blockNumber: bigint, slot: number) => void
 }
 
 export type ConsensusTrackerHandle = {
@@ -33,6 +35,7 @@ export function syncSpineFromClient(
   common: Common,
   client: ReturnType<typeof createBeaconLightClient>,
   endpoint?: string,
+  onOptimisticHead?: (blockNumber: bigint, slot: number) => void,
 ): void {
   const head = client.getHeadExecution()
   const fin = client.getFinalizedExecution()
@@ -44,7 +47,13 @@ export function syncSpineFromClient(
   spine.clOptimisticSlot = head.slot
   spine.currentSlot = head.slot
   if (head.blockNumber > 0) {
-    spine.clOptimisticBlockNumber = BigInt(head.blockNumber)
+    const bn = BigInt(head.blockNumber)
+    const prevBest = spine.bestPeerHead ?? 0n
+    spine.clOptimisticBlockNumber = bn
+    if (bn > prevBest) {
+      raiseBestPeerHead(spine, bn)
+      onOptimisticHead?.(bn, head.slot)
+    }
   }
   if (fin !== undefined) {
     spine.clFinalizedSlot = fin.slot
@@ -149,7 +158,13 @@ export function startConsensusTracker(opts: ConsensusTrackerOpts): ConsensusTrac
     try {
       await runner.ensureBootstrapped()
       if (transport.activeEndpoint !== undefined) {
-        syncSpineFromClient(opts.spine, common, client, transport.activeEndpoint)
+        syncSpineFromClient(
+          opts.spine,
+          common,
+          client,
+          transport.activeEndpoint,
+          opts.onOptimisticHead,
+        )
         liveVerified = true
         opts.notices?.post(
           {
@@ -175,7 +190,13 @@ export function startConsensusTracker(opts: ConsensusTrackerOpts): ConsensusTrac
       try {
         const res = await runner.pollOnce()
         if (res.error === undefined && transport.activeEndpoint !== undefined) {
-          syncSpineFromClient(opts.spine, common, client, transport.activeEndpoint)
+          syncSpineFromClient(
+            opts.spine,
+            common,
+            client,
+            transport.activeEndpoint,
+            opts.onOptimisticHead,
+          )
           if (!liveVerified) {
             liveVerified = true
             opts.notices?.post(

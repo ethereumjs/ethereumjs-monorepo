@@ -1,6 +1,7 @@
 import type { ChainConfig } from '@ethereumjs/common'
 import type { FlatStateManager } from '@ethereumjs/statemanager'
 import type { ETHEconomyDataManager } from '../economy/economyDataManager.ts'
+import type { SnapPivotStore } from '../persist/snapStore.ts'
 
 import { DeterministicIntentEngine } from './deterministicEngine.ts'
 import type { LlmTransport } from './fixtureEngine.ts'
@@ -14,6 +15,7 @@ export type AiMemoryMode = 'ephemeral' | 'off'
 
 export type HybridIntentEngineOpts = {
   stateManager: FlatStateManager
+  snapStore?: SnapPivotStore
   transport?: LlmTransport
   llmBase?: string
   memoryMode?: AiMemoryMode
@@ -36,6 +38,7 @@ export class HybridIntentEngine implements IntentEngine {
     this.memory = new TurnMemoryRing()
     this.deterministic = new DeterministicIntentEngine({
       stateManager: opts.stateManager,
+      snapStore: opts.snapStore,
       economy: opts.economy,
       chain: opts.chain,
     })
@@ -44,6 +47,7 @@ export class HybridIntentEngine implements IntentEngine {
       this.local = new LocalHttpIntentEngine({
         transport: opts.transport,
         stateManager: opts.stateManager,
+        snapStore: opts.snapStore,
         fallback: this.deterministic,
         getTurns: () => (this.memoryMode === 'ephemeral' ? this.memory.snapshot() : []),
         economy: opts.economy,

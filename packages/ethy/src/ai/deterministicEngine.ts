@@ -1,7 +1,9 @@
 import type { ChainConfig } from '@ethereumjs/common'
 import type { FlatStateManager } from '@ethereumjs/statemanager'
 
+import { getCommandAvailability } from '../domains/commandAvailability.ts'
 import type { ETHEconomyDataManager } from '../economy/economyDataManager.ts'
+import type { SnapPivotStore } from '../persist/snapStore.ts'
 import { headInspectUnlocked } from '../spine/headInspect.ts'
 import type { WidgetSpec } from '../spine/types.ts'
 import type { EthySpine } from '../spine/types.ts'
@@ -15,10 +17,10 @@ import {
   peersTableWidget,
 } from '../tools/diagnose.ts'
 import { economyDeepViewWidget } from '../tools/economyTools.ts'
-import { headLockedWidget, inspectLatestBALStub, simulateTxOnHeadStub } from '../tools/gated.ts'
 import { inspectAccount, inspectLatestBAL } from '../tools/headTools.ts'
 import { buildDomainHelpWidget, buildHelpWidget, parseHelpDomainArg } from '../tools/help.ts'
 import { inspectRawAccountRange, sampleSyncedAccounts } from '../tools/range.ts'
+import { renderCommandUnavailableWidget } from '../tui/components/CommandUnavailableUIComponent.ts'
 import type { IntentEngine, IntentRequest, IntentResult } from './intentEngine.ts'
 import { expandSlashCommand } from './slashComplete.ts'
 import { formatEthyStateHeader } from './stateHeader.ts'
@@ -34,6 +36,7 @@ function matchKeywords(text: string, words: string[]): boolean {
 
 export type DeterministicIntentEngineOpts = {
   stateManager: FlatStateManager
+  snapStore?: SnapPivotStore
   disconnectPeer?: (peerId: string) => void
   economy?: ETHEconomyDataManager
   chain?: ChainConfig
@@ -43,13 +46,26 @@ export type DeterministicIntentEngineOpts = {
 export type SlashDispatchCtx = {
   spine: EthySpine
   stateManager: FlatStateManager
+  snapStore?: SnapPivotStore
   disconnectPeer?: (peerId: string) => void
   economy?: ETHEconomyDataManager
   chain?: ChainConfig
 }
 
+function slashIfLocked(
+  command: string,
+  spine: EthySpine,
+  opts?: { args?: string },
+): WidgetSpec | undefined {
+  const avail = getCommandAvailability(command, spine, opts)
+  if (avail.status === 'locked') {
+    return renderCommandUnavailableWidget(command, avail, spine)
+  }
+  return undefined
+}
+
 export function dispatchSlashWidget(line: string, ctx: SlashDispatchCtx): WidgetSpec {
-  const { spine, stateManager, disconnectPeer, economy, chain } = ctx
+  const { spine, stateManager, snapStore, disconnectPeer, economy, chain } = ctx
   const parts = line.split(/\s+/)
   const cmd = parts[0]?.toLowerCase() ?? ''
 
@@ -68,51 +84,77 @@ export function dispatchSlashWidget(line: string, ctx: SlashDispatchCtx): Widget
       const domain = parseHelpDomainArg(parts) ?? 'economy'
       return buildDomainHelpWidget(spine, domain)
     }
-    case '/drop':
+    case '/drop': {
+      const locked = slashIfLocked('/drop', spine)
+      if (locked !== undefined) return locked
       return dropPeer(spine, parts[1] ?? '', disconnectPeer)
-    case '/reassign':
+    }
+    case '/reassign': {
+      const locked = slashIfLocked('/reassign', spine)
+      if (locked !== undefined) return locked
       return reassignBucket(spine, parts[1] ?? '')
-    case '/range':
-      return inspectRawAccountRange(stateManager, parts[1])
-    case '/sample':
-      return sampleSyncedAccounts(stateManager)
-    case '/pause':
+    }
+    case '/range': {
+      const locked = slashIfLocked('/range', spine)
+      if (locked !== undefined) return locked
+      return inspectRawAccountRange(stateManager, parts[1], snapStore)
+    }
+    case '/sample': {
+      const locked = slashIfLocked('/sample', spine)
+      if (locked !== undefined) return locked
+      return sampleSyncedAccounts(stateManager, snapStore)
+    }
+    case '/pause': {
+      const locked = slashIfLocked('/pause', spine)
+      if (locked !== undefined) return locked
       return pauseSnapSync(spine)
-    case '/resume':
+    }
+    case '/resume': {
+      const locked = slashIfLocked('/resume', spine)
+      if (locked !== undefined) return locked
       return resumeSnapSync(spine)
+    }
     case '/account': {
       const addr = parts.slice(1).join(' ')
+      const locked = slashIfLocked('/account', spine)
+      if (locked !== undefined) return locked
       if (!headInspectUnlocked(spine)) {
-        return headLockedWidget('inspectAccount', spine)
+        const avail = getCommandAvailability('/account', spine)
+        return renderCommandUnavailableWidget('/account', avail, spine)
       }
       return inspectAccount(spine, stateManager, addr)
     }
-    case '/bal':
-      if (!headInspectUnlocked(spine)) {
-        return inspectLatestBALStub(spine)
-      }
+    case '/bal': {
+      const locked = slashIfLocked('/bal', spine)
+      if (locked !== undefined) return locked
       return inspectLatestBAL(spine)
+    }
     case '/cl':
       return clMicroscopeWidget(spine)
-    case '/economy':
+    case '/economy': {
+      const locked = slashIfLocked('/economy', spine)
+      if (locked !== undefined) return locked
       return economyDeepViewWidget(spine)
+    }
     case '/contract':
     case '/co': {
       const arg = parts.slice(1).join(' ')
+      const locked = slashIfLocked('/contract', spine, { args: arg })
+      if (locked !== undefined) return locked
       if (economy === undefined || chain === undefined) {
         return economyDeepViewWidget(spine)
       }
       return contractMicroscopeWidget(spine, stateManager, chain, economy, arg)
     }
-    case '/simulate':
-      if (!headInspectUnlocked(spine)) {
-        return simulateTxOnHeadStub(spine)
-      }
+    case '/simulate': {
+      const locked = slashIfLocked('/simulate', spine)
+      if (locked !== undefined) return locked
       return {
         kind: 'key_value',
         title: 'simulateTxOnHead (stub)',
         entries: [{ key: 'Note', value: 'EVM sandbox ships in WP-08' }],
       }
+    }
     case '/clear':
       return {
         kind: 'key_value',
@@ -139,12 +181,14 @@ export function dispatchSlashWidget(line: string, ctx: SlashDispatchCtx): Widget
 
 export class DeterministicIntentEngine implements IntentEngine {
   private readonly stateManager: FlatStateManager
+  private readonly snapStore?: SnapPivotStore
   private readonly economy?: ETHEconomyDataManager
   private readonly chain?: ChainConfig
   private disconnectPeer?: (peerId: string) => void
 
   constructor(opts: DeterministicIntentEngineOpts) {
     this.stateManager = opts.stateManager
+    this.snapStore = opts.snapStore
     this.economy = opts.economy
     this.chain = opts.chain
     this.disconnectPeer = opts.disconnectPeer
@@ -166,6 +210,7 @@ export class DeterministicIntentEngine implements IntentEngine {
       widget = dispatchSlashWidget(trimmed, {
         spine,
         stateManager: this.stateManager,
+        snapStore: this.snapStore,
         disconnectPeer: this.disconnectPeer,
         economy: this.economy,
         chain: this.chain,
