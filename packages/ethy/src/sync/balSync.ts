@@ -435,6 +435,7 @@ export class BalChainStreamer {
     const materialized = materializeBalBatch(batch)
     if (!materialized.ok) {
       restBalCatchUpPeer(this.peerRestUntil, batch.peerId)
+      this.verifiedTipHash = undefined
       seq.batchInFlight = undefined
       queueMicrotask(() => this.tick())
       return
@@ -798,12 +799,23 @@ export class BalChainStreamer {
         : spine.bestPeerHead
     if (peer === undefined || bestKnownHead === undefined) return
     const peerHead = bestKnownHead
-    const catchUpPeer = pickBalCatchUpPeer(spine, this.peerRestUntil, tip + 1n) ??
-      pickBalCatchUpPeer(spine, this.peerRestUntil) ?? {
-        id: peer.id,
-        ethVersion: peer.ethVersion,
-        latestBlock: peerHead,
-      }
+    const peerRow = spine.peers.get(peer.id)
+    const fallbackAllowed =
+      spine.peers.size === 0 ||
+      (peerRow !== undefined &&
+        (this.peerRestUntil.get(peer.id) ?? 0) <= now &&
+        peerRow.ethySession !== true)
+    const catchUpPeer =
+      pickBalCatchUpPeer(spine, this.peerRestUntil, tip + 1n) ??
+      pickBalCatchUpPeer(spine, this.peerRestUntil) ??
+      (fallbackAllowed
+        ? {
+            id: peer.id,
+            ethVersion: peer.ethVersion,
+            latestBlock: peerHead,
+          }
+        : undefined)
+    if (catchUpPeer === undefined) return
     if (this.catchUp === undefined || this.catchUp.targetHead < peerHead) {
       this.catchUp = {
         peerId: catchUpPeer.id,

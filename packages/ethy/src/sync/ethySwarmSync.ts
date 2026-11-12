@@ -455,9 +455,6 @@ export class EthySwarmSynchronizer {
         (s) => s.balEarliestBlock <= fromBlock && s.balLatestBlock >= fromBlock,
       )
     }
-    if (candidates.length === 0) {
-      candidates = all
-    }
     if (candidates.length === 0) return undefined
     const peer = candidates[this.balPeerRoundRobin % candidates.length]!
     this.balPeerRoundRobin = (this.balPeerRoundRobin + 1) % candidates.length

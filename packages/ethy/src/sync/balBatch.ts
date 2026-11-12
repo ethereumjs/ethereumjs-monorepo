@@ -77,12 +77,26 @@ export function pickBalCatchUpPeer(
       if (highestEthVersion(p.caps) < minEthVersion) continue
       if (minBlock !== undefined && p.latestBlock < minBlock) continue
       if (
-        !allowRollingEthy &&
         p.ethySession === true &&
         minBlock !== undefined &&
         minBlock + SERVING_TAIL_BLOCKS < p.latestBlock
       ) {
-        continue
+        const st = p.ethyStatus
+        const earliest =
+          st?.balEarliestBlock !== undefined && st.balEarliestBlock.length > 0
+            ? BigInt(st.balEarliestBlock)
+            : undefined
+        const latest =
+          st?.balLatestBlock !== undefined && st.balLatestBlock.length > 0
+            ? BigInt(st.balLatestBlock)
+            : undefined
+        const coversOnDisk =
+          earliest !== undefined &&
+          latest !== undefined &&
+          earliest <= minBlock &&
+          latest >= minBlock
+        if (!coversOnDisk) continue
+        if (!allowRollingEthy) continue
       }
       const rest = peerRestUntil.get(p.id)
       if (rest !== undefined && now < rest) continue

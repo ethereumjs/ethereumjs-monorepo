@@ -780,16 +780,54 @@ export class Devp2pWorkerHost {
       return Number.parseInt(s, 10)
     }
     const rootHex = this._ethyLocal.basePivotStateRoot
+    const basePivotBlock = parseNum(this._ethyLocal.basePivotBlock)
+    let balEarliestBlock = parseNum(this._ethyLocal.balEarliestBlock)
+    let balLatestBlock = parseNum(this._ethyLocal.balLatestBlock)
+
+    const rolling = this._rollingStore.contiguousRange()
+    const diskHeal = this._ethyChunks.getDiskHealWindow()
+    if (rolling !== null || diskHeal !== undefined) {
+      let actualEarliest: bigint | undefined
+      let actualLatest: bigint | undefined
+      if (rolling !== null && diskHeal !== undefined) {
+        if (
+          diskHeal.latest + 1n >= rolling.earliestBlock &&
+          rolling.latestBlock + 1n >= diskHeal.earliest
+        ) {
+          actualEarliest =
+            diskHeal.earliest < rolling.earliestBlock ? diskHeal.earliest : rolling.earliestBlock
+          actualLatest =
+            diskHeal.latest > rolling.latestBlock ? diskHeal.latest : rolling.latestBlock
+        } else {
+          actualEarliest = rolling.earliestBlock
+          actualLatest = rolling.latestBlock
+        }
+      } else if (rolling !== null) {
+        actualEarliest = rolling.earliestBlock
+        actualLatest = rolling.latestBlock
+      } else if (diskHeal !== undefined) {
+        actualEarliest = diskHeal.earliest
+        actualLatest = diskHeal.latest
+      }
+      if (actualEarliest !== undefined && actualLatest !== undefined) {
+        balEarliestBlock = actualEarliest
+        balLatestBlock = actualLatest
+      }
+    } else if (this._ethyChunks.hasPivotAccountsDir() && basePivotBlock !== undefined) {
+      balEarliestBlock = basePivotBlock
+      balLatestBlock = basePivotBlock
+    }
+
     return {
       genesisHash,
-      basePivotBlock: parseNum(this._ethyLocal.basePivotBlock),
+      basePivotBlock,
       basePivotStateRoot:
         rootHex !== undefined
           ? hexToBytes((rootHex.startsWith('0x') ? rootHex : `0x${rootHex}`) as `0x${string}`)
           : undefined,
       bucketsBitmask: parseMask(this._ethyLocal.bucketsBitmask),
-      balEarliestBlock: parseNum(this._ethyLocal.balEarliestBlock),
-      balLatestBlock: parseNum(this._ethyLocal.balLatestBlock),
+      balEarliestBlock,
+      balLatestBlock,
       latestBlockHash:
         this._ethyLocal.latestBlockHash !== undefined
           ? hexToBytes(
