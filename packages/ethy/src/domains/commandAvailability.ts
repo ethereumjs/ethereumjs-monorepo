@@ -62,14 +62,17 @@ export function getCommandAvailability(
     case '/live':
     case '/plaza':
     case '/head':
-      if (spine.economy?.hasBlocks === true || spine.phase === 'HEAD_FOLLOWING') {
+      if (
+        spine.phase === 'HEAD_FOLLOWING' ||
+        (spine.demoClock === true && spine.economy?.hasBlocks === true)
+      ) {
         return { status: 'ready' }
       }
       return {
         status: 'locked',
         shortTag: 'awaiting blocks',
-        reason: 'Ethereum Plaza needs at least one verified block or head following.',
-        suggestion: 'Wait for BAL streaming or snap catch-up.',
+        reason: 'Ethereum Plaza activates once sync reaches live chain head.',
+        suggestion: 'Wait for base sync and BAL catch-up to reach head.',
       }
     case '/economy':
     case '/e':
@@ -82,6 +85,9 @@ export function getCommandAvailability(
     case '/cl':
     case '/peers':
     case '/ethy':
+      return { status: 'ready' }
+    case '/rpc':
+      return { status: 'ready' }
     case '/diag':
     case '/help':
     case '/h':
@@ -178,13 +184,12 @@ export function getCommandAvailability(
         return {
           status: 'locked',
           shortTag: 'awaiting state',
-          reason: 'Simulation needs head-verified state (WP-08 will run the EVM here).',
+          reason: 'Simulation needs head-verified flat state.',
         }
       }
-      return {
-        status: 'ready',
-        reason: 'On-demand EVM sandbox ships in WP-08; command is reserved.',
-      }
+      return { status: 'ready', reason: 'On-demand EVM call at head (overlay sandbox).' }
+    case '/send':
+      return { status: 'ready', reason: 'Broadcast a signed raw transaction to eth peers.' }
     default:
       return { status: 'ready' }
   }

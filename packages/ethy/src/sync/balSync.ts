@@ -123,6 +123,25 @@ export function pushBalWindow(
   }
 }
 
+export function extractBlockAccessListHashFromHeaderRlp(
+  headerRlp: Uint8Array,
+  chain: ChainConfig,
+  hardfork: string,
+): Uint8Array | null {
+  const common = new Common({ chain, hardfork })
+  try {
+    const raw = RLP.decode(headerRlp)
+    const header = createBlockHeaderFromBytesArray(raw as never, {
+      common,
+      skipConsensusFormatValidation: true,
+    })
+    const balHash = header.blockAccessListHash
+    return balHash !== undefined && balHash.length > 0 ? balHash : null
+  } catch {
+    return null
+  }
+}
+
 export async function applyBlockBal(
   stateManager: FlatStateManager,
   headerRlp: Uint8Array,
@@ -167,7 +186,8 @@ function snapSyncStagesDone(
   codeSync: SnapCodeAndStorageSynchronizer | undefined,
 ): boolean {
   const bucketsDone = spine.snapBuckets.every((b) => b.status === 'done')
-  const codeDone = codeSync === undefined || codeSync.pendingDone()
+  const codeDone =
+    spine.syncTransport === 'ethy' || codeSync === undefined || codeSync.pendingDone()
   return bucketsDone && codeDone
 }
 
@@ -178,7 +198,7 @@ export function tryEnterBalCatchUp(
   codeSync: SnapCodeAndStorageSynchronizer | undefined,
   bestPeerHead: bigint,
 ): boolean {
-  if (spine.phase !== 'SNAP_SYNCING') return false
+  if (spine.phase !== 'SNAP_SYNCING' && spine.phase !== 'BAL_CATCHUP') return false
   if (accountSync !== undefined && !spine.snapBuckets.every((b) => b.status === 'done')) {
     return false
   }
@@ -186,11 +206,15 @@ export function tryEnterBalCatchUp(
   const pivot = spine.pivotBlockNumber
   if (pivot === undefined) return false
 
-  spine.lastVerifiedBlockNumber = spine.lastVerifiedBlockNumber ?? pivot
-  spine.headBlockNumber = spine.lastVerifiedBlockNumber
+  const startAfter =
+    spine.lastVerifiedBlockNumber !== undefined && spine.lastVerifiedBlockNumber > pivot
+      ? spine.lastVerifiedBlockNumber
+      : pivot
+  spine.lastVerifiedBlockNumber = startAfter
+  spine.headBlockNumber = startAfter
   spine.headStateRoot = spine.pivotStateRoot
 
-  const gap = bestPeerHead > pivot ? bestPeerHead - pivot : 0n
+  const gap = bestPeerHead > startAfter ? bestPeerHead - startAfter : 0n
   const total = Number(gap)
   if (total <= 0) {
     setPhase(spine, 'HEAD_FOLLOWING')
@@ -202,7 +226,7 @@ export function tryEnterBalCatchUp(
 
   setPhase(spine, 'BAL_CATCHUP')
   spine.balCatchUp = {
-    fromBlock: pivot + 1n,
+    fromBlock: startAfter + 1n,
     applied: 0,
     total,
   }
@@ -245,6 +269,7 @@ export type HeadFollowerOpts = {
   /** WP-05b: cross-check EL block hash against consensus light client. */
   onVerifiedExecutionHeader?: (blockNumber: bigint, blockHash: Uint8Array) => void
   economy?: ETHEconomyDataManager
+  onRpcBundle?: (note: import('../rpc/types.ts').RpcBundleNote) => void
 }
 
 type HeadCatchUp = {
@@ -280,6 +305,9 @@ export class BalChainStreamer {
       void this.tick()
     }, pollMs)
     this.timer.unref?.()
+    queueMicrotask(() => {
+      void this.tick()
+    })
   }
 
   stop(): void {
@@ -459,14 +487,28 @@ export class BalChainStreamer {
           persistHeal,
           economy: this.opts.economy,
           preDecodedBalJson: row.balJson,
+          onRpcBundle: this.opts.onRpcBundle,
         })
       } else {
-        this.opts.economy?.noteBundle({
+        const note = {
           blockNumber: row.header.number,
           headerRlp: row.header.headerRlp,
           balJson: row.balJson,
-          balRlp: row.balRlp,
-        })
+        }
+        if (row.balRlp !== undefined && row.balRlp.length > 0) {
+          this.opts.appendHealBundle?.({
+            blockNumber: row.header.number,
+            blockHash: row.header.hash,
+            stateRoot: row.header.stateRoot,
+            headerRlp: row.header.headerRlp,
+            balRlp: row.balRlp,
+          })
+        }
+        const nearHead = seq.targetHead <= row.header.number + 64n
+        if (nearHead) {
+          this.opts.economy?.noteBundle({ ...note, balRlp: row.balRlp })
+          this.opts.onRpcBundle?.(note)
+        }
       }
       this.opts.onVerifiedExecutionHeader?.(row.header.number, row.header.hash)
       if (snapStreaming) {
@@ -568,6 +610,7 @@ export class BalChainStreamer {
       deferStateApply: snapStreaming,
       persistHeal: snapStreaming,
       economy: this.opts.economy,
+      onRpcBundle: this.opts.onRpcBundle,
     })
     const fields =
       bundle.headerRlp !== undefined
@@ -724,13 +767,17 @@ export class BalChainStreamer {
     }
     const now = Date.now()
     const batch = this.catchUp?.batchInFlight
-    if (batch !== undefined && now - batch.startedAt >= BUNDLE_IN_FLIGHT_TIMEOUT_MS) {
+    if (
+      batch !== undefined &&
+      (!spine.peers.has(batch.peerId) || now - batch.startedAt >= BUNDLE_IN_FLIGHT_TIMEOUT_MS)
+    ) {
       restBalCatchUpPeer(this.peerRestUntil, batch.peerId)
       this.catchUp!.batchInFlight = undefined
     }
     if (
       this.catchUp?.inFlight !== undefined &&
-      now - this.catchUp.inFlight.startedAt >= BUNDLE_IN_FLIGHT_TIMEOUT_MS
+      (!spine.peers.has(this.catchUp.inFlight.peerId) ||
+        now - this.catchUp.inFlight.startedAt >= BUNDLE_IN_FLIGHT_TIMEOUT_MS)
     ) {
       restBalCatchUpPeer(this.peerRestUntil, this.catchUp.peerId)
       this.catchUp.inFlight = undefined

@@ -112,6 +112,8 @@ export type WorkerCommand =
     }
   | { type: 'setDiscoveryPaused'; paused: boolean }
   | { type: 'setAdvertiseBlockRange'; enabled: boolean }
+  | { type: 'notePooledTx'; hashHex: string; raw: Uint8Array }
+  | { type: 'dropPooledTx'; hashHex: string }
 
 export interface WorkerServingSnapshot {
   earliestBlock?: string

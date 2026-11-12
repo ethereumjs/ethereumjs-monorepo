@@ -65,7 +65,7 @@ export function buildDeterministicOverviewSections(
     } else {
       sections.p2p = `${peers} peer${peers === 1 ? '' : 's'} connected.`
     }
-    sections.state = `${sections.state ?? 'Booting.'} Tab shows domain help.`
+    sections.state = `${sections.state ?? 'Booting.'} Tab opens command help.`
     return clampOverviewSections(sections)
   }
 
@@ -74,6 +74,7 @@ export function buildDeterministicOverviewSections(
       snapshots.pulse.snapEtaMinutes !== undefined && snapshots.pulse.snapEtaMinutes > 0
         ? ` ETA ~${Math.round(snapshots.pulse.snapEtaMinutes)}m.`
         : ''
+    const isEthy = snapshots.pulse.syncTransport === 'ethy'
     if (snapshots.snap.bucketsDone === 16) {
       const codeDone = snapshots.snap.codesSynced
       const codeTot = snapshots.snap.codesTotal ?? codeDone
@@ -81,12 +82,14 @@ export function buildDeterministicOverviewSections(
       const storTot = snapshots.snap.storageAccountsTotal ?? storDone
       sections.state = `Accounts 16/16 complete; bytecode ${codeDone.toLocaleString('en-US')}/${codeTot.toLocaleString('en-US')}, storage ${storDone.toLocaleString('en-US')}/${storTot.toLocaleString('en-US')} — ${pct}% overall.${eta}`
     } else {
-      sections.state = `Snap sync ${pct}% complete.${eta}`
+      sections.state = `${isEthy ? 'Ethy' : 'Snap'} sync ${pct}% complete.${eta}`
     }
     if (snapshots.economy.hasBlocks && snapshots.economy.tps !== undefined) {
       sections.economy = `Live blocks ~${snapshots.economy.tps.toFixed(1)} TPS on recent traffic.`
     }
-    if (peers <= 1) {
+    if (isEthy && snapshots.p2p.ethySession > 0) {
+      sections.p2p = `${snapshots.p2p.ethySession} ETHY/0 peer${snapshots.p2p.ethySession === 1 ? '' : 's'} streaming proven chunks.`
+    } else if (peers <= 1) {
       sections.p2p = `Only ${peers} peer — try /peers or Ctrl+D for discovery.`
     } else {
       sections.p2p = `${peers} peers active for snap ranges.`
@@ -119,15 +122,27 @@ export function buildDeterministicOverviewSections(
     sections.economy = `Base fee ${econ.baseFeeGwei} Gwei (${trend}), ${tps}, ${vol} (64 blk).`
     const hotRow = econ.topContracts[0]
     if (hotRow !== undefined) {
-      const hotArch =
-        hotRow.knownName ??
-        (hotRow.archetype !== undefined && hotRow.archetype !== 'Contract'
-          ? hotRow.archetype
-          : 'contract')
-      sections.economy += ` Hottest: ${hotArch} ${hotRow.address.slice(0, 6)}…${hotRow.address.slice(-4)}.`
+      const addr = `${hotRow.address.slice(0, 6)}…${hotRow.address.slice(-4)}`
+      let badge: string | undefined
+      if (hotRow.knownName !== undefined) badge = hotRow.knownName
+      else if (hotRow.archetype !== undefined && hotRow.archetype !== 'Contract') {
+        badge = hotRow.archetype
+      } else if (hotRow.proxyKind !== undefined) badge = hotRow.proxyKind
+      const badgeClause = badge !== undefined ? ` [${badge}]` : ''
+      sections.economy += ` Hottest: ${addr}${badgeClause}.`
     }
   }
-  sections.state = `Head following live — ${pct}% sync complete.`
+  const headN = econ.latestBlockNumber ?? snapshots.pulse.pivotBlockNumber ?? '—'
+  if (snapshots.snap.bucketsDone === 16) {
+    let stateLine = `Head following live at #${headN} (16/16 buckets synced).`
+    const codeDone = snapshots.snap.codesSynced
+    if (codeDone > 0) {
+      stateLine += ` ${codeDone.toLocaleString('en-US')} contract bytecodes indexed.`
+    }
+    sections.state = stateLine
+  } else {
+    sections.state = `Head following live at #${headN} — accounts ${snapshots.snap.bucketsDone}/16.`
+  }
   sections.p2p = `${peers} peers connected.`
   return clampOverviewSections(sections)
 }

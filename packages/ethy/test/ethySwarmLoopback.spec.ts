@@ -134,7 +134,6 @@ describe('[Ethy/Net]: ETHY/0 swarm loopback', () => {
         network: 'mainnet',
         inProcess: true,
         fresh: true,
-        syncMode: 'ethy',
         snapStore,
         shouldFindNeighbours: false,
         goodCitizen: true,
@@ -174,6 +173,13 @@ describe('[Ethy/Net]: ETHY/0 swarm loopback', () => {
       assert.equal(spine.syncTransport, 'ethy')
       assert.isAtLeast(spine.totalAccountsSynced, seed.accountCount)
       assert.isTrue(spine.snapBuckets.every((b) => b.status === 'done'))
+      const ethyDiagMessages = spine.diagnosticRingBuffer
+        .filter((d) => d.subsystem === 'ethy')
+        .map((d) => d.message)
+      assert.isTrue(ethyDiagMessages.some((m) => m.includes('ETHY STATUS in:')))
+      assert.isTrue(ethyDiagMessages.some((m) => m.includes('ETHY swarm sync started')))
+      assert.isTrue(ethyDiagMessages.some((m) => m.includes('ETHY manifests received:')))
+      assert.isTrue(ethyDiagMessages.some((m) => m.includes('ETHY accounts pass complete')))
     } finally {
       handle?.stop()
       seeder.stop()

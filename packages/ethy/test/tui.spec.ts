@@ -4,7 +4,7 @@ import { getEthyClientVersion } from '../src/clientMeta.ts'
 import { P2P_REACHABILITY_HINT } from '../src/notify/p2pLink.ts'
 import { createSpine, deriveCapabilities, setPhase } from '../src/spine/createSpine.ts'
 import type { WidgetSpec } from '../src/spine/types.ts'
-import { diagnosticsTableWidget } from '../src/tools/diagnose.ts'
+import { diagnosticsTableWidget, peersTableWidget } from '../src/tools/diagnose.ts'
 import { stripAnsi, visibleWidth } from '../src/tui/ansi.ts'
 import { CAPABILITY_FG, capabilityMark } from '../src/tui/capabilityMark.ts'
 import { cockpitColumnWidths } from '../src/tui/cockpit.ts'
@@ -18,6 +18,7 @@ import {
   reducePromptKey,
 } from '../src/tui/prompt.ts'
 import { promptCaretPosition, renderFrame } from '../src/tui/renderFrame.ts'
+import { boxBottom } from '../src/tui/roundedBox.ts'
 import {
   clearOverviewFocus,
   historyEntryTitle,
@@ -149,6 +150,27 @@ describe('[Ethy/TUI]: renderFrame', () => {
     assert.notInclude(top, '[')
   })
 
+  it('capabilityBarClockLabel includes JSON-RPC between slot and pills', () => {
+    const spine = createSpine('sepolia', 11155111n)
+    spine.clOptimisticBlockNumber = 12_071_450n
+    spine.clOptimisticSlot = 11_500_000
+    spine.phase = 'HEAD_FOLLOWING'
+    spine.lastVerifiedBlockNumber = 12_071_450n
+    spine.rpc = {
+      enabled: true,
+      listening: true,
+      host: '127.0.0.1',
+      port: 8545,
+      url: 'http://127.0.0.1:8545',
+      totalRequests: 0,
+      totalErrors: 0,
+      methodStats: {},
+      recentCalls: [],
+    }
+    const label = stripAnsi(capabilityBarClockLabel(spine))
+    assert.include(label, 'JSON-RPC')
+  })
+
   it('capabilityBarClockLabel dims Block when lagging canonical head', () => {
     const spine = createSpine('sepolia', 11155111n)
     setPhase(spine, 'HEAD_FOLLOWING')
@@ -222,8 +244,8 @@ describe('[Ethy/TUI]: renderFrame', () => {
     assert.include(joined, '╭')
     assert.notInclude(joined, 'Which peers are connected')
     const hint = plain[plain.length - 1] ?? ''
-    assert.match(hint, /Tab show domain help/)
-    assert.match(hint, /view history/)
+    assert.match(hint, /Tab help/)
+    assert.notMatch(hint, /view history/)
     assert.notInclude(hint, 'Why is bucket')
     assert.match(plain[plain.length - 3] ?? '', /ethy >/)
     const raw = renderFrame(spine, view, 100, 30, {
@@ -275,7 +297,10 @@ describe('[Ethy/TUI]: renderFrame', () => {
     const startView = createInitialViewState(spine)
     assert.equal(startView.activeWidget?.kind, 'start_page')
     assert.equal(startView.showingHelp, false)
-    assert.equal(startView.viewHistory.length, 0)
+    assert.equal(startView.viewHistory.length, 1)
+    const seed = startView.viewHistory[0]
+    assert.equal(seed?.kind, 'slash')
+    if (seed?.kind === 'slash') assert.equal(seed.command, '/welcome')
 
     const startFrame = stripAnsi(renderFrame(spine, startView, 120, 36).join('\n'))
     assert.include(startFrame, 'Welcome')
@@ -284,25 +309,29 @@ describe('[Ethy/TUI]: renderFrame', () => {
     assert.notInclude(startFrame, 'Ctrl+D')
     assert.notInclude(startFrame, '← →')
 
-    const helpView = openDomainHelp(startView, spine, 'economy')
-    assert.equal(helpView.viewHistory.length, 0)
+    const helpView = openDomainHelp(startView, spine)
+    assert.equal(helpView.viewHistory.length, 2)
+    assert.equal(helpView.viewHistoryIndex, 1)
     const helpLines = renderFrame(spine, helpView, 120, 36).map((l) => stripAnsi(l))
     const frame = helpLines.join('\n')
     assert.include(frame, '/economy')
     assert.include(frame, '/contract')
-    assert.include(frame, '/help · Economy · Commands | Debug (Ctrl+D)')
+    assert.include(frame, '/buckets')
+    assert.include(frame, '/peers')
+    assert.include(frame, 'Commands & AI')
+    assert.include(frame, 'Ctrl+D debug')
+    assert.notInclude(frame, 'Commands | Debug')
     assert.include(frame, 'AI Examples')
-    assert.include(frame, 'Peers')
     assert.equal(capabilityMark('p2p', 'locked').startsWith(CAPABILITY_FG.p2p), true)
     assert.equal(capabilityMark('ai', 'partial').startsWith(CAPABILITY_FG.ai), true)
 
-    // Verify right column ("AI Examples") aligns horizontally with upper State box inner text ("Target")
-    const stateContentRow = helpLines.find((l) => l.includes('Target')) ?? ''
-    const helpHeaderRow = helpLines.find((l) => l.includes('AI Examples')) ?? ''
-    assert.isAbove(stateContentRow.indexOf('Target'), 0)
-    assert.equal(
-      helpHeaderRow.indexOf('AI Examples') - 2, // subtract 2 for "[DOT] " before "AI Examples"
-      stateContentRow.indexOf('Target'),
+    assert.isAbove(
+      helpLines.findIndex((l) => l.includes('Target')),
+      0,
+    )
+    assert.isAbove(
+      helpLines.findIndex((l) => l.includes('/peers')),
+      0,
     )
   })
 
@@ -383,7 +412,7 @@ describe('[Ethy/TUI]: renderFrame', () => {
     const spine = createSpine('sepolia', 11155111n)
     const joined = stripAnsi(renderFrame(spine, createInitialViewState(), 100, 40).join('\n'))
     assert.include(joined, 'Economy')
-    assert.include(joined, 'Gas / Base')
+    assert.include(joined, 'Fee (64b)')
   })
 
   it('renderFrame() at 100x60 respects column width', () => {
@@ -416,21 +445,32 @@ describe('[Ethy/TUI]: renderFrame', () => {
       label: '/peers',
       page: 'main',
     })
-    view = openDomainHelp(view, spine, 'p2p')
+    view = openDomainHelp(view, spine)
     assert.isUndefined(view.aiOverviewSections?.focusNote)
     const helpFrame = stripAnsi(renderFrame(spine, view, 120, 36).join('\n'))
     assert.include(helpFrame, 'Base fee 1.2 Gwei.')
-    assert.include(helpFrame, 'Commands')
+    assert.include(helpFrame, 'Commands & AI')
     assert.include(helpFrame, '←')
-    assert.equal(historyEntryTitle(view.viewHistory[0]!), '/peers')
+    assert.equal(historyEntryTitle(view.viewHistory[1]!), '/peers')
+    assert.equal(view.viewHistoryIndex, 2)
     assert.isUndefined(clearOverviewFocus(view.aiOverviewSections)?.focusNote)
   })
 })
 
+describe('[Ethy/TUI]: rounded box bottom hint', () => {
+  it('boxBottom() keeps full line width with optional right hint', () => {
+    const plain = stripAnsi(boxBottom(80))
+    assert.equal(visibleWidth(boxBottom(80)), 80)
+    const hinted = boxBottom(80, 'Ctrl+D debug')
+    assert.equal(visibleWidth(hinted), 80)
+    assert.include(stripAnsi(hinted), 'Ctrl+D debug')
+  })
+})
+
 describe('[Ethy/TUI]: prompt reducer', () => {
-  it('Tab on empty draft requests domain cycle', () => {
+  it('Tab on empty draft requests help toggle', () => {
     const r = reducePromptKey(createInitialViewState(), { type: 'tab' })
-    assert.equal(r.domainCycle, 1)
+    assert.equal(r.helpToggle, true)
     assert.equal(r.view.promptDraft, '')
   })
 
@@ -527,5 +567,33 @@ describe('[Ethy/TUI]: prompt reducer', () => {
     assert.equal(r.actions.length, 0)
     r = decodeKey(buf, '[A')
     assert.deepEqual(r.actions, [{ type: 'up' }])
+  })
+
+  it('peersTableWidget surfaces full untruncated local enode on main page and wraps in KeyValueUIComponent', () => {
+    const spine = createSpine('sepolia', 11155111n)
+    const fullEnode = `enode://${'f1e12475'.repeat(16)}@127.0.0.1:30303`
+    spine.discovery = {
+      boundAddress: '127.0.0.1',
+      boundUdpPort: 30303,
+      boundTcpPort: 30303,
+      tablePeers: 10,
+      localEnode: fullEnode,
+      advertisedFork: { hardfork: 'amsterdam', hash: '0x6c1d9423', next: '0' },
+      bootstrap: { attempts: 1, ok: 1, fail: 0 },
+      dns: { attempts: 1, peersAdded: 1, resolver: 'system' },
+      rlpx: { dials: 1, connected: 1, statusOk: 1, statusSent: 1, disconnects: {} },
+      dpt: { banSkips: 0, bansIssued: 0 },
+    }
+    let view = createInitialViewState(spine)
+    view = {
+      ...view,
+      activeWidget: peersTableWidget(spine),
+      interactionLabel: '/peers',
+    }
+    const frame = renderFrame(spine, view, 100, 30).map(stripAnsi).join('\n')
+    // At 100 cols, innerWidth is ~60 cols so a 153-char enode wraps onto 3 aligned rows without ellipsis
+    assert.include(frame, 'enode://f1e12475')
+    assert.include(frame, '30303')
+    assert.notInclude(frame, 'f1e12475…')
   })
 })

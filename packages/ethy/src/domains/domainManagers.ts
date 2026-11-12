@@ -53,6 +53,7 @@ export function readDomainSnapshots(spine: EthySpine): EthyDomainSnapshots {
   const bucketsDone = snapBucketsDoneCount(spine.snapBuckets)
   const pulse: NodePulseSnapshot = {
     phase: spine.phase,
+    syncTransport: spine.syncTransport,
     pivotBlockNumber: spine.pivotBlockNumber?.toString(),
     headBlockNumber: spine.headBlockNumber?.toString(),
     progressPct: computeSnapProgressPct(spine),

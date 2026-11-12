@@ -17,8 +17,15 @@ export function boxRow(boxW: number, text: string): string {
   return fixedLine(`${DIM}│${RESET} ${body} ${DIM}│${RESET}`, boxW)
 }
 
-export function boxBottom(boxW: number): string {
-  return fixedLine(`${DIM}╰${'─'.repeat(Math.max(0, boxW - 2))}╯${RESET}`, boxW)
+export function boxBottom(boxW: number, rightPlain?: string): string {
+  const hasRight = rightPlain !== undefined && rightPlain.length > 0
+  if (!hasRight) {
+    return fixedLine(`${DIM}╰${'─'.repeat(Math.max(0, boxW - 2))}╯${RESET}`, boxW)
+  }
+  const rightSuffix = ` ${RESET}${rightPlain}${DIM} ─╯${RESET}`
+  const rightVis = visibleWidth(rightSuffix)
+  const dashes = Math.max(1, boxW - 1 - rightVis)
+  return fixedLine(`${DIM}╰${'─'.repeat(dashes)}${rightSuffix}`, boxW)
 }
 
 /** Rounded box: top, pad, `contentLines`, pad, bottom (8 lines when 4 content rows). */
@@ -27,6 +34,7 @@ export function renderBox(
   titlePlain: string,
   contentLines: string[],
   titleRightPlain?: string,
+  bottomRightPlain?: string,
 ): string[] {
   const pad = boxRow(boxW, '')
   return [
@@ -34,7 +42,7 @@ export function renderBox(
     pad,
     ...contentLines.map((r) => boxRow(boxW, r)),
     pad,
-    boxBottom(boxW),
+    boxBottom(boxW, bottomRightPlain),
   ]
 }
 

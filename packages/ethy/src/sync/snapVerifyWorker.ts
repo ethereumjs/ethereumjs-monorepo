@@ -7,8 +7,10 @@ import { Worker } from 'node:worker_threads'
 
 import {
   type AccountRangeVerifyResult,
+  type ProvenChunkVerifyResult,
   type StorageRangeVerifyResult,
   verifyAccountRangeJob,
+  verifyProvenAccountChunkJob,
   verifyStorageRangeJob,
 } from './snapVerifyJob.ts'
 
@@ -42,7 +44,9 @@ function workerExecArgv(entryPath: string, fromModuleUrl: string): string[] {
 }
 
 type Pending = {
-  resolve: (value: AccountRangeVerifyResult | StorageRangeVerifyResult) => void
+  resolve: (
+    value: AccountRangeVerifyResult | StorageRangeVerifyResult | ProvenChunkVerifyResult,
+  ) => void
   reject: (err: Error) => void
 }
 
@@ -61,6 +65,15 @@ type WorkerRequest =
       payload: Uint8Array
       accounts?: Array<{ accountHash: Uint8Array; storageRoot: Uint8Array }>
       storageRoot?: Uint8Array
+    }
+  | {
+      id: number
+      kind: 'provenChunk'
+      chunkStateRoot: Uint8Array
+      originHash: Uint8Array
+      payload: Uint8Array
+      proofNodes: Uint8Array[]
+      hasRightHint: boolean
     }
 
 export function defaultSnapVerifyPoolSize(parallelism?: number): number {
@@ -150,6 +163,28 @@ export class SnapVerifyPool {
     }) as Promise<StorageRangeVerifyResult>
   }
 
+  verifyProvenAccountChunk(opts: {
+    chunkStateRoot: Uint8Array
+    originHash: Uint8Array
+    binaryAccountsSlab: Uint8Array
+    proofNodes: Uint8Array[]
+    hasRightHint: boolean
+  }): Promise<ProvenChunkVerifyResult> {
+    if (this.inProcess) {
+      return verifyProvenAccountChunkJob(opts)
+    }
+    const payload = this.payloadForWorkerTransfer(opts.binaryAccountsSlab)
+    return this.runWorker({
+      id: this.nextId++,
+      kind: 'provenChunk',
+      chunkStateRoot: opts.chunkStateRoot,
+      originHash: opts.originHash,
+      payload,
+      proofNodes: opts.proofNodes,
+      hasRightHint: opts.hasRightHint,
+    }) as Promise<ProvenChunkVerifyResult>
+  }
+
   async close(): Promise<void> {
     for (const slot of this.slots) {
       await slot.worker.terminate()
@@ -212,12 +247,12 @@ export class SnapVerifyPool {
 
   private runWorker(
     req: WorkerRequest,
-  ): Promise<AccountRangeVerifyResult | StorageRangeVerifyResult> {
-    const promise = new Promise<AccountRangeVerifyResult | StorageRangeVerifyResult>(
-      (resolve, reject) => {
-        this.pending.set(req.id, { resolve, reject })
-      },
-    )
+  ): Promise<AccountRangeVerifyResult | StorageRangeVerifyResult | ProvenChunkVerifyResult> {
+    const promise = new Promise<
+      AccountRangeVerifyResult | StorageRangeVerifyResult | ProvenChunkVerifyResult
+    >((resolve, reject) => {
+      this.pending.set(req.id, { resolve, reject })
+    })
     const slot = this.pickSlot()
     slot.pendingIds.add(req.id)
     slot.inFlight = slot.pendingIds.size

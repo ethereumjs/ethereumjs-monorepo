@@ -1,12 +1,49 @@
 const GWEI = 1_000_000_000n
 
-export function formatGwei(wei: bigint | undefined): string {
+function trimTrailingFracDigits(s: string): string {
+  return s.replace(/0+$/, '').replace(/\.$/, '')
+}
+
+function fracString(fracPart: bigint, maxDigits: number): string {
+  const s = fracPart.toString().padStart(maxDigits, '0')
+  return trimTrailingFracDigits(s)
+}
+
+/** Numeric base-fee string without the ` Gwei` suffix (for cockpit + AI). */
+export function formatBaseFeeNumber(wei: bigint | undefined): string {
   if (wei === undefined) return '—'
+  if (wei === 0n) return '0'
+  if (wei < 1_000_000n) return '<0.001'
+
+  if (wei >= 10_000_000_000n) {
+    const whole = wei / GWEI
+    const frac = wei % GWEI
+    const tenths = (frac * 10n) / GWEI
+    if (tenths === 0n) return whole.toString()
+    return `${whole}.${tenths}`
+  }
+  if (wei >= 100_000_000n) {
+    const whole = wei / GWEI
+    const frac = wei % GWEI
+    const hundredths = (frac * 100n) / GWEI
+    if (hundredths === 0n) return whole.toString()
+    const f = fracString(hundredths, 2)
+    if (whole === 0n) return `0.${f}`
+    return f.length > 0 ? `${whole}.${f}` : whole.toString()
+  }
   const whole = wei / GWEI
   const frac = wei % GWEI
-  const tenths = Number((frac * 10n) / GWEI)
-  if (tenths === 0) return `${whole.toString()} Gwei`
-  return `${whole.toString()}.${tenths.toString()} Gwei`
+  const thousandths = (frac * 1000n) / GWEI
+  if (thousandths === 0n) return whole.toString()
+  const f = fracString(thousandths, 3)
+  if (whole === 0n) return `0.${f}`
+  return f.length > 0 ? `${whole}.${f}` : whole.toString()
+}
+
+export function formatGwei(wei: bigint | undefined): string {
+  const num = formatBaseFeeNumber(wei)
+  if (num === '—') return '—'
+  return `${num} Gwei`
 }
 
 export function formatEthFromWei(wei: bigint): string {
@@ -41,6 +78,6 @@ export function formatTrendSuffix(
   percent: number | undefined,
 ): string {
   if (trend === undefined || trend === 'flat' || percent === undefined) return ''
-  const sign = trend === 'up' ? '+' : ''
-  return ` ${sign}${percent}%`
+  const sign = trend === 'up' ? '+' : '-'
+  return ` (${sign}${percent}%)`
 }

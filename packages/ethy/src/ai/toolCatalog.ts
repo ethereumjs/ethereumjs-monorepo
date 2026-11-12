@@ -12,6 +12,7 @@ const READ_TOOLS: Omit<ToolCatalogEntry, 'permission'>[] = [
   { id: 'live', slash: '/live', description: 'Ethereum Plaza live head observatory' },
   { id: 'peers', slash: '/peers', description: 'Peer health table' },
   { id: 'ethy', slash: '/ethy', description: 'ETHY/0 swarm overview' },
+  { id: 'rpc', slash: '/rpc', description: 'JSON-RPC endpoint telemetry' },
   { id: 'buckets', slash: '/buckets', description: '16 snap bucket progress' },
   { id: 'diag', slash: '/diag', description: 'Diagnostic ring buffer' },
   { id: 'economy', slash: '/economy', description: 'Live economy deep view' },
@@ -25,7 +26,8 @@ const READ_TOOLS: Omit<ToolCatalogEntry, 'permission'>[] = [
 const HEAD_TOOLS: Omit<ToolCatalogEntry, 'permission'>[] = [
   { id: 'bal', slash: '/bal', description: 'Latest BAL window' },
   { id: 'account', slash: '/account', description: 'Inspect account by address' },
-  { id: 'simulate', slash: '/simulate', description: 'EVM sandbox stub' },
+  { id: 'simulate', slash: '/simulate', description: 'EVM microscope at head' },
+  { id: 'send', slash: '/send', description: 'Broadcast signed raw transaction' },
 ]
 
 const WRITE_TOOLS: Omit<ToolCatalogEntry, 'permission'>[] = [

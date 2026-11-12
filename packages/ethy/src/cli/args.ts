@@ -9,6 +9,10 @@ export interface EthyCliArgs {
   fresh: boolean
   dataDir?: string
   listenPort?: number
+  rpcEnabled: boolean
+  rpcHost: string
+  rpcPort?: number
+  rpcPortExplicit: boolean
   syncMode: EthySyncMode
   /** `enode://` URLs for direct dial after P2P start. */
   connectEnodeUrls: string[]
@@ -27,6 +31,11 @@ export function parseEthyArgs(argv: string[]): EthyCliArgs {
   let dataDir: string | undefined
   let listenPort: number | undefined
   let syncMode: EthySyncMode = 'auto'
+  let rpcEnabled = true
+  let rpcHost = '127.0.0.1'
+  let rpcPort: number | undefined
+  let rpcPortExplicit = false
+  let rpcForced = false
   const connectEnodeUrls: string[] = []
   let llmUrl: string | undefined
   let llmAllowRemote = false
@@ -59,6 +68,30 @@ export function parseEthyArgs(argv: string[]): EthyCliArgs {
     }
     if (a === '--demo') {
       demo = true
+      continue
+    }
+    if (a === '--no-rpc') {
+      rpcEnabled = false
+      continue
+    }
+    if (a === '--rpc') {
+      rpcEnabled = true
+      rpcForced = true
+      continue
+    }
+    if (a === '--rpc-host') {
+      const next = args[++i]
+      if (next === undefined) throw new Error('--rpc-host requires a host')
+      rpcHost = next
+      continue
+    }
+    if (a === '--rpc-port') {
+      const next = args[++i]
+      if (next === undefined) throw new Error('--rpc-port requires a number')
+      rpcPort = Number.parseInt(next, 10)
+      if (rpcPort < 0 || rpcPort > 65535) throw new Error('--rpc-port out of range')
+      rpcPortExplicit = true
+      rpcForced = true
       continue
     }
     if (a === '--headless') {
@@ -114,6 +147,10 @@ export function parseEthyArgs(argv: string[]): EthyCliArgs {
     network = a
   }
 
+  if (demo && !rpcForced) {
+    rpcEnabled = false
+  }
+
   return {
     network,
     demo,
@@ -121,6 +158,10 @@ export function parseEthyArgs(argv: string[]): EthyCliArgs {
     fresh,
     dataDir,
     listenPort,
+    rpcEnabled,
+    rpcHost,
+    rpcPort,
+    rpcPortExplicit,
     syncMode,
     connectEnodeUrls,
     llmUrl,
@@ -135,6 +176,7 @@ export function printEthyUsage(): string {
 
 Usage:
   ethy [network] [--demo] [--headless] [--fresh] [--sync-mode auto|ethy|snap]
+        [--no-rpc] [--rpc] [--rpc-host HOST] [--rpc-port N]
         [--datadir PATH] [--port N] [--connect enode://...]
         [--llm-url URL] [--llm-allow-remote] [--ai-memory ephemeral|off] [--no-ai-history]
         [--record-fixture PATH]

@@ -164,6 +164,12 @@ export type EconomySnapshot = {
   latestProposerGraffiti?: string
   latestBlockTimestamp?: number
   latestExtraDataHex?: string
+  windowBlockCount?: number
+  avgGasFullPct?: number
+  windowTxCount?: number
+  windowRevertPct?: number
+  windowPeakTransferEth?: string
+  archetypeMix?: Array<{ archetype: string; count: number; sharePct: number }>
 }
 
 export const ECONOMY_MOMENTS_RING = 24
@@ -173,5 +179,6 @@ export const ECONOMY_WINDOW_BLOCKS = 64
 export const ECONOMY_FEE_AVG_BLOCKS = 15
 export const ECONOMY_TPS_BLOCKS = 10
 export const ECONOMY_LEADERBOARD_SIZE = 10
+export const ECONOMY_CLASSIFY_POOL = 24
 export const ECONOMY_ADDRESS_MAP_CAP = 4096
 export const SLOT_SECONDS = 12

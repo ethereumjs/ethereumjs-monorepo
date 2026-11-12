@@ -186,7 +186,7 @@ export class RLPx {
     for (const peerKey of this._peers.keys()) this.disconnect(unprefixedHexToBytes(peerKey))
   }
 
-  async connect(peer: PeerInfo) {
+  async connect(peer: PeerInfo, opts?: { priority?: boolean }) {
     if (peer.tcpPort === undefined || peer.tcpPort === null || peer.address === undefined) return
     this._isAliveCheck()
     this._discoveryMetrics?.recordRlpxDial()
@@ -194,12 +194,16 @@ export class RLPx {
     if (!(peer.id instanceof Uint8Array)) throw new TypeError('Expected peer.id as Uint8Array')
     // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for peer lookups.
     const peerKey = bytesToUnprefixedHex(peer.id)
+    if (opts?.priority === true) {
+      this._peerDialHoldUntil.delete(peerKey)
+      this._peersLRU.delete(peerKey)
+    }
 
     const existing = this._peers.get(peerKey)
     if (existing instanceof Peer) throw EthereumJSErrorWithoutCode('Already connected')
     if (this._pendingDials.has(peerKey)) return
 
-    if (!this._canStartOutboundDial()) {
+    if (opts?.priority !== true && !this._canStartOutboundDial()) {
       if (this._getOpenQueueSlots() > 0) {
         this._peersQueue.unshift({ peer, ts: 0 })
         return
@@ -421,7 +425,10 @@ export class RLPx {
     }
 
     const inbound = peerId === null
-    if (inbound && this._maxInboundPeers !== undefined) {
+    const remoteAddr = socket.remoteAddress ?? ''
+    const isLoopback =
+      remoteAddr === '127.0.0.1' || remoteAddr === '::1' || remoteAddr === '::ffff:127.0.0.1'
+    if (inbound && !isLoopback && this._maxInboundPeers !== undefined) {
       if (this._countInboundPeers() >= this._maxInboundPeers) {
         socket.destroy()
         return
@@ -445,7 +452,7 @@ export class RLPx {
     peer.events.on('error', (err) => this.events.emit('peer:error', peer, err))
 
     // handle incoming connection
-    if (inbound && this._getOpenSlots() === 0) {
+    if (inbound && !isLoopback && this._getOpenSlots() === 0) {
       peer.events.once('connect', () => peer.disconnect(DISCONNECT_REASON.TOO_MANY_PEERS))
       socket.once('error', () => {})
       return

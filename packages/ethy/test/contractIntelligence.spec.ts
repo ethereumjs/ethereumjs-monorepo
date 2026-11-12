@@ -1,4 +1,4 @@
-import { bytesToHex } from '@ethereumjs/util'
+import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 import { ethyKeccak256 } from '../src/crypto/keccak.ts'
 
@@ -7,6 +7,7 @@ import { createFlatStateManager } from '@ethereumjs/statemanager'
 import { DeterministicIntentEngine } from '../src/ai/deterministicEngine.ts'
 import { fingerprintBytecode } from '../src/contracts/bytecodeFingerprint.ts'
 import {
+  type CodeLookup,
   type ContractAddressAgg,
   classifyAddress,
   createFingerprintCache,
@@ -181,6 +182,125 @@ describe('[Ethy/Contracts]: classification', () => {
       cache,
     )
     assert.equal(extra.archetype, 'ERC-20')
+  })
+
+  it('classifies busy ERC-20 from Transfer logs without write-rate cliff', () => {
+    const row = {
+      address: '0x000000000000000000000000000000000000c2',
+      blocksActive: 10,
+      storageWrites: 80,
+      storageReads: 0,
+      netEthDeltaWei: 0n,
+    }
+    const agg = erc20Agg()
+    const extra = classifyAddress(row.address, row, agg, lookup, cache)
+    assert.equal(extra.archetype, 'ERC-20')
+  })
+
+  it('classifies DEX Pool on Swap without Sync', () => {
+    const topics = new Map<string, number>()
+    topics.set(TOPIC.swapV3, 3)
+    const agg: ContractAddressAgg = {
+      selectorCounts: new Map(),
+      topicCounts: topics,
+      coTouched: new Set(),
+      maxTransferLogsInTx: 0,
+      soleCalleeBlocks: 0,
+      inboundCalls: 0,
+      swapEmittersInTx: new Set(),
+      callPreviews: [],
+      eventPreviews: [],
+    }
+    const row = {
+      address: '0x000000000000000000000000000000000000d00d',
+      blocksActive: 2,
+      storageWrites: 4,
+      storageReads: 0,
+      netEthDeltaWei: 0n,
+    }
+    const extra = classifyAddress(row.address, row, agg, lookup, cache)
+    assert.equal(extra.archetype, 'DEX Pool')
+  })
+
+  it('keeps proxy kind when implementation code is cold', () => {
+    const impl = '0x000000000000000000000000abcdef00000001'
+    const agg: ContractAddressAgg = {
+      selectorCounts: new Map(),
+      topicCounts: new Map(),
+      coTouched: new Set(),
+      maxTransferLogsInTx: 0,
+      soleCalleeBlocks: 0,
+      inboundCalls: 0,
+      swapEmittersInTx: new Set(),
+      callPreviews: [],
+      eventPreviews: [],
+      implSlotValue: '0x00000000000000000000000000000000000000000000000000000000abcdef00000001',
+    }
+    const row = {
+      address: '0x000000000000000000000000000000000000beef',
+      blocksActive: 41,
+      storageWrites: 41,
+      storageReads: 0,
+      netEthDeltaWei: 0n,
+    }
+    const extra = classifyAddress(row.address, row, agg, lookup, cache)
+    assert.equal(extra.archetype, 'EIP-1967 Proxy')
+    assert.include(extra.proxyTarget?.toLowerCase(), 'abcdef00000001')
+  })
+
+  it('resolves EIP-1967 proxy via getStorageSlotForAddress and selector-only ERC-20', () => {
+    const implHex = '0x0000000000000000000000000000000000009999'
+    const proxyLookup: CodeLookup = {
+      chainId: 11155111n,
+      getCodeForAddress: (addr) => {
+        if (addr.toLowerCase() === implHex) {
+          // ERC-20 bytecode selectors followed by EQ (0x14): transfer, approve, balanceOf, transferFrom
+          return hexToBytes(
+            `0x63${SELECTOR.transfer.slice(2)}1463${SELECTOR.approve.slice(2)}1463${SELECTOR.balanceOf.slice(2)}1463${SELECTOR.transferFrom.slice(2)}14`,
+          )
+        }
+        return undefined
+      },
+      getStorageSlotForAddress: () =>
+        '0x0000000000000000000000000000000000000000000000000000000000009999',
+    }
+    const agg: ContractAddressAgg = {
+      selectorCounts: new Map(),
+      topicCounts: new Map(),
+      coTouched: new Set(),
+      maxTransferLogsInTx: 0,
+      soleCalleeBlocks: 0,
+      inboundCalls: 0,
+      swapEmittersInTx: new Set(),
+      callPreviews: [],
+      eventPreviews: [],
+    }
+    const row = {
+      address: '0x0000000000000000000000000000000000007777',
+      blocksActive: 5,
+      storageWrites: 10,
+      storageReads: 0,
+      netEthDeltaWei: 0n,
+    }
+    const extra = classifyAddress(row.address, row, agg, proxyLookup, cache)
+    assert.equal(extra.archetype, 'ERC-20')
+    assert.equal(extra.proxyKind, 'EIP-1967')
+    assert.equal(extra.proxyTarget?.toLowerCase(), implHex)
+
+    // Selector-only ERC-20 without Transfer log
+    const selAgg: ContractAddressAgg = {
+      selectorCounts: new Map([[SELECTOR.approve.toLowerCase(), 3]]),
+      topicCounts: new Map(),
+      coTouched: new Set(),
+      maxTransferLogsInTx: 0,
+      soleCalleeBlocks: 0,
+      inboundCalls: 3,
+      swapEmittersInTx: new Set(),
+      callPreviews: [],
+      eventPreviews: [],
+    }
+    const selExtra = classifyAddress(row.address, row, selAgg, lookup, cache)
+    assert.equal(selExtra.archetype, 'ERC-20')
   })
 })
 

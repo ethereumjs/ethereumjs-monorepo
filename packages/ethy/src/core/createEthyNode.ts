@@ -8,9 +8,10 @@ import * as fs from 'node:fs'
 import { FetchLlmTransport, type LlmTransport, RecordingTransport } from '../ai/fixtureEngine.ts'
 import type { AiMemoryMode, HybridIntentEngine } from '../ai/hybridEngine.ts'
 import { HybridIntentEngine as HybridIntentEngineClass } from '../ai/hybridEngine.ts'
-import type { IntentEngine } from '../ai/intentEngine.ts'
+import type { IntentEngine, IntentResult } from '../ai/intentEngine.ts'
 import { assertLlmBaseUrl, normalizeLlmBase } from '../ai/llmClient.ts'
 import { ETHEconomyDataManager } from '../economy/economyDataManager.ts'
+import { createEthySandbox } from '../evm/sandbox.ts'
 import { activeHardfork, advertisedForkHash, chainConfigForNetwork } from '../net/chainHardfork.ts'
 import { networkGenesisHash } from '../net/genesisStatus.ts'
 import { NoticeBoard } from '../notify/board.ts'
@@ -18,8 +19,12 @@ import { resolveEthyDataDir } from '../persist/ethyDataRoot.ts'
 import { EthyFlightRecorder } from '../persist/flightRecorder.ts'
 import { PeerBookStore } from '../persist/peerBook.ts'
 import { SnapPivotStore } from '../persist/snapStore.ts'
+import { RpcBlockWindowStore } from '../rpc/blockWindowStore.ts'
+import { dispatchRpcMethod } from '../rpc/methods.ts'
+import type { JsonRpcError } from '../rpc/types.ts'
 import { createSpine } from '../spine/createSpine.ts'
 import type { EthySpine } from '../spine/types.ts'
+import { type EthyTxPool, createEthyTxPool } from '../txpool/pool.ts'
 
 export interface CreateEthyNodeOptions {
   network: string
@@ -53,6 +58,18 @@ export interface EthyNode {
   peerBook?: PeerBookStore
   flightRecorder?: EthyFlightRecorder
   economy: ETHEconomyDataManager
+  blockWindow: RpcBlockWindowStore
+  createSandboxOverlay: () => FlatStateManager
+  executeTool: (line: string) => Promise<IntentResult>
+  rpc: {
+    dispatch: (
+      method: string,
+      params: unknown[],
+    ) => Promise<{ result?: unknown; error?: JsonRpcError }>
+  }
+  /** Wired when P2P coordinator or demo pool is attached (`main.ts`). */
+  txPool?: EthyTxPool
+  submitRawTransaction?: (hex: string) => Promise<{ result: string } | { error: JsonRpcError }>
 }
 
 export function createEthyNode(opts: CreateEthyNodeOptions): EthyNode {
@@ -82,6 +99,8 @@ export function createEthyNode(opts: CreateEthyNodeOptions): EthyNode {
           maxResidentAccounts: 500_000,
           coldAccountLookup: (accountHash) => snapStore.lookupBinaryAccountByHash(accountHash),
           coldCodeLookup: (codeHash) => snapStore.lookupCodeByHash(codeHash),
+          coldStorageLookup: (accountHash, slotHash) =>
+            snapStore.lookupStorageByHash(accountHash, slotHash),
         },
   )
   const peerBook = PeerBookStore.open({
@@ -106,6 +125,14 @@ export function createEthyNode(opts: CreateEthyNodeOptions): EthyNode {
     flightRecorder.start()
   }
   const economy = new ETHEconomyDataManager({ spine, chain, hardfork, stateManager })
+  const blockWindow = new RpcBlockWindowStore(chain, hardfork)
+  const sandbox = createEthySandbox({
+    spine,
+    stateManager,
+    chain,
+    hardfork,
+    blockWindow,
+  })
 
   let llm: EthyNode['llm']
   let hybridEngine: HybridIntentEngine | undefined
@@ -130,6 +157,7 @@ export function createEthyNode(opts: CreateEthyNodeOptions): EthyNode {
       memoryMode: opts.aiMemory ?? 'ephemeral',
       economy,
       chain,
+      sandbox,
     })
     intentEngine = hybridEngine
   } else {
@@ -139,11 +167,31 @@ export function createEthyNode(opts: CreateEthyNodeOptions): EthyNode {
       memoryMode: opts.aiMemory ?? 'ephemeral',
       economy,
       chain,
+      sandbox,
     })
     intentEngine = hybridEngine
   }
 
   // Disk restore and resume policy run in `startPeerCoordinator` once a peer head is known.
+  let submitRawTransaction: EthyNode['submitRawTransaction']
+  let txPool: EthyTxPool | undefined
+  if (demo) {
+    txPool = createEthyTxPool({
+      stateManager,
+      chain,
+      hardfork,
+      chainId: opts.chainId,
+      getEthPeerIds: () => [],
+      sendEth: () => {},
+    })
+    submitRawTransaction = (hex) => txPool!.submitRawTransactionHex(hex)
+    hybridEngine?.setSubmitRawTransaction((hex) =>
+      txPool!
+        .submitRawTransactionHex(hex)
+        .then((out) => ('error' in out ? { error: { message: out.error.message } } : out)),
+    )
+  }
+
   const node: EthyNode = {
     spine,
     stateManager,
@@ -157,6 +205,39 @@ export function createEthyNode(opts: CreateEthyNodeOptions): EthyNode {
     peerBook,
     flightRecorder,
     economy,
+    blockWindow,
+    txPool,
+    submitRawTransaction,
+    createSandboxOverlay: () => stateManager.shallowCopy() as FlatStateManager,
+    executeTool: (line) =>
+      intentEngine.handle({
+        text: line,
+        spine,
+        lastQuerySlot: spine.currentSlot,
+      }),
+    rpc: {
+      dispatch: (method, params) =>
+        dispatchRpcMethod(
+          {
+            spine,
+            stateManager,
+            chain,
+            hardfork,
+            demo,
+            blockWindow,
+            economy,
+            sandbox,
+            submitRawTransaction: (hex) =>
+              node.submitRawTransaction !== undefined
+                ? node.submitRawTransaction(hex)
+                : Promise.resolve({
+                    error: { code: -32000, message: 'Transaction pool unavailable' },
+                  }),
+          },
+          method,
+          params,
+        ),
+    },
   }
   return node
 }

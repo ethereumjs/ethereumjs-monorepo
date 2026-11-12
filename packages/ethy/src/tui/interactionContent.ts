@@ -15,7 +15,6 @@ import {
   type DomainHelpColumnMetrics,
   renderDomainHelpUIComponent,
 } from './components/DomainHelpUIComponent.ts'
-import { renderHeaderPageSwitchUIComponent } from './components/HeaderPageSwitchUIComponent.ts'
 import { renderKeyValueUIComponent } from './components/KeyValueUIComponent.ts'
 import { renderLiveHeadPlazaUIComponent } from './components/LiveHeadPlazaUIComponent.ts'
 import { renderStartPageUIComponent } from './components/StartPageUIComponent.ts'
@@ -142,16 +141,15 @@ export function renderInteractionWidgetBody(
   return lines
 }
 
-/** Build Interaction View title including inline Commands | Debug (Ctrl+D) switch when debugPage exists. */
+/** Build Interaction View title (debug hint lives on box bottom border). */
 export function interactionViewTitle(
   widget: WidgetSpec | null,
-  page: InteractionPage,
+  _page: InteractionPage,
   lastSubmitted?: string,
   nlTitle?: string,
-  view?: TuiViewState,
+  _view?: TuiViewState,
   spine?: EthySpine,
 ): string {
-  void view
   if (widget === null || widget.kind === 'start_page') return `${BOLD}Welcome${RESET}`
   let base = ''
   if (widget.kind === 'live_plaza') {
@@ -183,17 +181,15 @@ export function interactionViewTitle(
   } else {
     base = `${BOLD}Interaction${RESET}`
   }
-  if (widget?.kind === 'domain_help' && spine !== undefined) {
-    const mark = capabilityMark(widget.domain, spine.capabilities[widget.domain].status)
-    base = `${mark} ${BOLD}/help · ${helpDomainLabel(widget.domain)}${RESET}`
+  if (widget?.kind === 'domain_help') {
+    if (widget.unified === true) {
+      base = `${BOLD}/help · Commands & AI${RESET}`
+    } else if (spine !== undefined && widget.domain !== undefined) {
+      const mark = capabilityMark(widget.domain, spine.capabilities[widget.domain].status)
+      base = `${mark} ${BOLD}/help · ${helpDomainLabel(widget.domain)}${RESET}`
+    }
   }
-  const hasDebugPage = (widget.debugPage?.length ?? 0) > 0
-  const switchSuffix = renderHeaderPageSwitchUIComponent({
-    page,
-    hasDebugPage,
-    mainLabel: widget?.kind === 'live_plaza' ? 'Live' : 'Commands',
-  })
-  return `${base}${switchSuffix}`
+  return base
 }
 
 function wrapSectionText(text: string, wrapW: number): string[] {

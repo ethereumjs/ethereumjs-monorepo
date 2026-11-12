@@ -176,6 +176,13 @@ Every Work Package delivers a **runnable, observable, and live-testable incremen
                       │         16-Acc Batching & Progress UI   │                 │
                       └───────────────────┬─────────────────────┘                 │
                                           │                                       │
+                                          ▼                                       │
+                      ┌─────────────────────────────────────────┐                 │
+                      │ WP-06g: Canonical Pivot Grid (K = 32),  │                 │
+                      │         Multi-Peer & Cross-Snapshot     │                 │
+                      │         ETHY/0 Bucket Striping & Cap    │                 │
+                      └───────────────────┬─────────────────────┘                 │
+                                          │                                       │
                                           └───────────────────┬───────────────────┘
                                                               ▼
                                           ┌─────────────────────────────────────────┐
@@ -234,6 +241,20 @@ Every Work Package delivers a **runnable, observable, and live-testable incremen
                                           │ WP-07h: Ethereum Plaza (/live), Block   │
                                           │         Moment Detector, 16-District    │
                                           │         State Lights & Enter-to-Plaza   │
+                                          └───────────────────┬─────────────────────┘
+                                                              │
+                                                              ▼
+                                          ┌─────────────────────────────────────────┐
+                                          │ WP-07i: Adaptive Sub-Gwei Fees, 64-Blk  │
+                                          │         Macro Economy Cockpit & Plaza   │
+                                          │         Contract Pulse (64B)            │
+                                          └───────────────────┬─────────────────────┘
+                                                              │
+                                                              ▼
+                                          ┌─────────────────────────────────────────┐
+                                          │ WP-07j: Unified Tab Help, Universal     │
+                                          │         View History, Frame Chrome &    │
+                                          │         /rpc Method Status Matrix       │
                                           └───────────────────┬─────────────────────┘
                                                               │
                                                               ▼

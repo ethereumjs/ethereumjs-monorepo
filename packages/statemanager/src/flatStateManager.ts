@@ -4,13 +4,16 @@ import {
   BINARY_ACCOUNT_SIZE,
   EthereumJSErrorWithoutCode,
   KECCAK256_NULL,
+  KECCAK256_RLP,
   accountToBinaryAccount,
   binaryAccountToAccount,
   bytesToHex,
   bytesToUnprefixedHex,
   createAddressFromString,
   equalsBytes,
+  hexToBigInt,
   hexToBytes,
+  setLengthLeft,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
 import type { BinaryAccount } from '@ethereumjs/util'
@@ -48,6 +51,8 @@ export const SNAP_BINARY_ACCOUNT_SLAB_RECORD_SIZE = 32 + BINARY_ACCOUNT_SIZE
 const ACCOUNT_SHARD_COUNT = 256
 /** Max in-memory code blobs retained after cold disk hydrate (Ethy restart path). */
 const MAX_COLD_CODE_CACHE = 256
+/** Max cold-hydrated storage keys retained after disk lookup (Ethy restart path). */
+const MAX_COLD_STORAGE_CACHE = 4096
 
 function accountShardIndex(key: string): number {
   return Number.parseInt(key.slice(0, 2), 16)
@@ -77,16 +82,22 @@ export class FlatStateManager implements StateManagerInterface {
   private readonly _maxResidentAccounts?: number
   private readonly _coldAccountLookup?: (accountHash: Uint8Array) => Uint8Array | undefined
   private readonly _coldCodeLookup?: (codeHash: Uint8Array) => Uint8Array | undefined
+  private readonly _coldStorageLookup?: (
+    accountHash: Uint8Array,
+    slotHash: Uint8Array,
+  ) => Uint8Array | undefined
   /** Overlay keys written on a shallow copy (including tombstones). */
   private readonly _localAccountKeys = new Set<string>()
   private _logicalAccountCount = 0
   private _residentCount = 0
-  private _evictShardCursor = 0
   private readonly _tombstones = new Set<string>()
   private readonly _pinnedKeys = new Set<string>()
+  private readonly _unpinnedKeys = new Set<string>()
   private readonly _storage = new Map<string, Uint8Array>()
+  private readonly _storageTombstones = new Set<string>()
   private readonly _code = new Map<string, Uint8Array>()
   private readonly _coldHydratedCodeKeys = new Set<string>()
+  private readonly _coldHydratedStorageKeys = new Set<string>()
   private readonly _hashToAddress = new Map<string, Address>()
   private readonly _deltaStack: DeltaFrame[] = []
   private readonly _overlayFrames: DeltaFrame[] = []
@@ -103,6 +114,7 @@ export class FlatStateManager implements StateManagerInterface {
       this._maxResidentAccounts = opts.maxResidentAccounts
       this._coldAccountLookup = opts.coldAccountLookup
       this._coldCodeLookup = opts.coldCodeLookup
+      this._coldStorageLookup = opts.coldStorageLookup
     }
     this._overlayAccountShards = createOverlayAccountShards()
   }
@@ -140,7 +152,23 @@ export class FlatStateManager implements StateManagerInterface {
 
   private pinKey(key: string): void {
     if (this._parent !== undefined) return
+    this._pinnedKeys.delete(key)
     this._pinnedKeys.add(key)
+    this._unpinnedKeys.delete(key)
+    if (
+      this._coldAccountLookup !== undefined &&
+      this._maxResidentAccounts !== undefined &&
+      this._maxResidentAccounts >= 64 &&
+      this._pinnedKeys.size > Math.floor(this._maxResidentAccounts * 0.85)
+    ) {
+      const oldest = this._pinnedKeys.keys().next().value as string | undefined
+      if (oldest !== undefined && oldest !== key) {
+        this._pinnedKeys.delete(oldest)
+        if (this._slotShards !== undefined && this.slotShard(oldest).has(oldest)) {
+          this._unpinnedKeys.add(oldest)
+        }
+      }
+    }
   }
 
   private readBinaryAccountKey(key: string): Uint8Array | undefined {
@@ -176,6 +204,9 @@ export class FlatStateManager implements StateManagerInterface {
     this._arena!.write(slot, binary)
     shard.set(key, slot)
     this._residentCount++
+    if (!this._pinnedKeys.has(key)) {
+      this._unpinnedKeys.add(key)
+    }
     this.maybeEvictResidents(key)
   }
 
@@ -204,6 +235,7 @@ export class FlatStateManager implements StateManagerInterface {
         this._residentCount--
         this._logicalAccountCount--
       }
+      this._unpinnedKeys.delete(key)
       this._tombstones.add(key)
       return
     }
@@ -213,6 +245,9 @@ export class FlatStateManager implements StateManagerInterface {
       slot = this._arena!.alloc()
       shard.set(key, slot)
       this._residentCount++
+      if (!this._pinnedKeys.has(key)) {
+        this._unpinnedKeys.add(key)
+      }
       if (snapIngest) {
         this._logicalAccountCount++
       }
@@ -227,28 +262,31 @@ export class FlatStateManager implements StateManagerInterface {
     if (
       this._maxResidentAccounts === undefined ||
       this._deltaStack.length > 0 ||
-      this._slotShards === undefined
+      this._slotShards === undefined ||
+      this._unpinnedKeys.size === 0
     ) {
       return
     }
-    while (this._residentCount > this._maxResidentAccounts) {
+    while (this._residentCount > this._maxResidentAccounts && this._unpinnedKeys.size > 0) {
       if (!this.evictOneUnpinned(exemptKey)) break
     }
   }
 
   private evictOneUnpinned(exemptKey?: string): boolean {
     if (this._slotShards === undefined || this._residentCount === 0) return false
-    for (let i = 0; i < ACCOUNT_SHARD_COUNT; i++) {
-      const idx = (this._evictShardCursor + i) & 0xff
-      const shard = this._slotShards[idx]!
-      if (shard.size === 0) continue
-      for (const [key, slot] of shard) {
-        if (this._pinnedKeys.has(key)) continue
-        if (exemptKey !== undefined && key === exemptKey) continue
+    for (const key of this._unpinnedKeys) {
+      if (this._pinnedKeys.has(key)) {
+        this._unpinnedKeys.delete(key)
+        continue
+      }
+      if (exemptKey !== undefined && key === exemptKey) continue
+      this._unpinnedKeys.delete(key)
+      const shard = this.slotShard(key)
+      const slot = shard.get(key)
+      if (slot !== undefined) {
         shard.delete(key)
         this._arena!.release(slot)
         this._residentCount--
-        this._evictShardCursor = (idx + 1) & 0xff
         return true
       }
     }
@@ -294,14 +332,45 @@ export class FlatStateManager implements StateManagerInterface {
     return binaryAccountToAccount(binary)
   }
 
+  private trimColdStorageCacheIfNeeded(): void {
+    while (this._coldHydratedStorageKeys.size > MAX_COLD_STORAGE_CACHE) {
+      const oldest = this._coldHydratedStorageKeys.keys().next().value as string | undefined
+      if (oldest === undefined) break
+      this._coldHydratedStorageKeys.delete(oldest)
+      this._storage.delete(oldest)
+    }
+  }
+
+  private hydrateStorageFromCold(key: string): Uint8Array | undefined {
+    if (this._parent !== undefined || this._coldStorageLookup === undefined) return undefined
+    const sep = key.indexOf(':')
+    if (sep !== 64) return undefined
+    const accountHashHex = key.slice(0, sep)
+    const slotHashHex = key.slice(sep + 1)
+    if (accountHashHex.length !== 64 || slotHashHex.length !== 64) return undefined
+    const accountHash = unprefixedHexToBytes(accountHashHex)
+    const slotHash = unprefixedHexToBytes(slotHashHex)
+    const cold = this._coldStorageLookup(accountHash, slotHash)
+    if (cold === undefined) return undefined
+    const owned = new Uint8Array(cold)
+    if (owned.length === 0) return owned
+    this._storage.set(key, owned)
+    this._coldHydratedStorageKeys.add(key)
+    this.trimColdStorageCacheIfNeeded()
+    return owned
+  }
+
   private readStorageKey(key: string): Uint8Array | undefined {
+    if (this._storageTombstones.has(key)) {
+      return undefined
+    }
     if (this._storage.has(key)) {
       return this._storage.get(key)
     }
     if (this._parent !== undefined) {
       return this._parent.readStorageKey(key)
     }
-    return undefined
+    return this.hydrateStorageFromCold(key)
   }
 
   private writeStorageKey(key: string, value: Uint8Array | undefined): void {
@@ -311,8 +380,14 @@ export class FlatStateManager implements StateManagerInterface {
     }
     if (value === undefined || value.length === 0) {
       this._storage.delete(key)
+      this._coldHydratedStorageKeys.delete(key)
+      if (this._parent !== undefined || this._coldStorageLookup !== undefined) {
+        this._storageTombstones.add(key)
+      }
     } else {
       this._storage.set(key, value)
+      this._coldHydratedStorageKeys.delete(key)
+      this._storageTombstones.delete(key)
     }
   }
 
@@ -473,8 +548,12 @@ export class FlatStateManager implements StateManagerInterface {
       for (const [k, v] of frame.storage) {
         if (v === undefined) {
           this._storage.delete(k)
+          if (this._parent !== undefined || this._coldStorageLookup !== undefined) {
+            this._storageTombstones.add(k)
+          }
         } else {
           this._storage.set(k, v)
+          this._storageTombstones.delete(k)
         }
       }
       for (const [k, v] of frame.code) {
@@ -494,8 +573,12 @@ export class FlatStateManager implements StateManagerInterface {
     for (const [k, v] of frame.storage) {
       if (v === undefined) {
         this._storage.delete(k)
+        if (this._parent !== undefined || this._coldStorageLookup !== undefined) {
+          this._storageTombstones.add(k)
+        }
       } else {
         this._storage.set(k, v)
+        this._storageTombstones.delete(k)
       }
     }
     for (const [k, v] of frame.code) {
@@ -517,6 +600,39 @@ export class FlatStateManager implements StateManagerInterface {
     return new FlatStateManager({ common: this.common }, this)
   }
 
+  /**
+   * Overlay-only write set for sandbox microscopes ({@link FlatStateManager.shallowCopy} children).
+   * Root managers return empty lists — no parent or disk scan.
+   */
+  overlayMutations(): {
+    storage: { key: string; value?: Uint8Array }[]
+    accounts: { key: string }[]
+  } {
+    if (this._parent === undefined) {
+      return { storage: [], accounts: [] }
+    }
+    const storage: { key: string; value?: Uint8Array }[] = []
+    for (const [key, value] of this._storage) {
+      storage.push({ key, value })
+    }
+    for (const key of this._storageTombstones) {
+      if (!this._storage.has(key)) {
+        storage.push({ key, value: undefined })
+      }
+    }
+    const accountKeys = new Set<string>()
+    for (const shard of this._overlayAccountShards) {
+      for (const key of shard.keys()) {
+        accountKeys.add(key)
+      }
+    }
+    for (const key of this._localAccountKeys) {
+      accountKeys.add(key)
+    }
+    const accounts = [...accountKeys].map((key) => ({ key }))
+    return { storage, accounts }
+  }
+
   async consumeBAL(
     bal: BALJSONBlockAccessList,
     optsOrExpectedStateRoot?: Uint8Array | ConsumeBALOptions,
@@ -525,27 +641,87 @@ export class FlatStateManager implements StateManagerInterface {
       optsOrExpectedStateRoot instanceof Uint8Array
         ? { expectedStateRoot: optsOrExpectedStateRoot }
         : (optsOrExpectedStateRoot ?? {})
+    if (opts.expectedStateRoot !== undefined || this._parent !== undefined) {
+      return consumeBALUtil(this, bal, optsOrExpectedStateRoot)
+    }
     const shouldApply = opts.shouldApplyAccount
-    for (const row of bal) {
+    for (const acc of bal) {
       if (
-        row.balanceChanges.length === 0 &&
-        row.nonceChanges.length === 0 &&
-        row.codeChanges.length === 0 &&
-        row.storageChanges.length === 0
+        acc.balanceChanges.length === 0 &&
+        acc.nonceChanges.length === 0 &&
+        acc.codeChanges.length === 0 &&
+        acc.storageChanges.length === 0
       ) {
         continue
       }
-      try {
-        const address = createAddressFromString(row.address)
-        if (shouldApply !== undefined && !shouldApply(address)) {
+      const address = createAddressFromString(acc.address)
+      if (shouldApply !== undefined && !shouldApply(address)) {
+        continue
+      }
+      const ah = this.accountHashHex(address)
+      this._hashToAddress.set(ah, address)
+
+      const lastBalanceChange = acc.balanceChanges.at(-1)
+      const balance =
+        lastBalanceChange?.postBalance !== undefined
+          ? hexToBigInt(lastBalanceChange.postBalance)
+          : undefined
+      const lastNonceChange = acc.nonceChanges.at(-1)
+      const nonce =
+        lastNonceChange?.postNonce !== undefined
+          ? hexToBigInt(lastNonceChange.postNonce)
+          : undefined
+      const codeHex = acc.codeChanges.at(-1)?.newCode
+      let newCodeHash: Uint8Array | undefined
+      if (codeHex !== undefined) {
+        const codeBytes = hexToBytes(codeHex)
+        newCodeHash = this._keccak(codeBytes)
+        this.writeCodeKey(bytesToUnprefixedHex(newCodeHash), codeBytes)
+      }
+
+      if (
+        balance !== undefined ||
+        nonce !== undefined ||
+        newCodeHash !== undefined ||
+        acc.storageChanges.length === 0
+      ) {
+        this.pinKey(ah)
+        const existingAccount = this.readAccountKey(ah)
+        const finalBalance = balance ?? existingAccount?.balance ?? 0n
+        const finalNonce = nonce ?? existingAccount?.nonce ?? 0n
+        const finalCodeHash = newCodeHash ?? existingAccount?.codeHash ?? KECCAK256_NULL
+        const finalStorageRoot = existingAccount?.storageRoot ?? KECCAK256_RLP
+        if (
+          finalBalance === 0n &&
+          finalNonce === 0n &&
+          equalsBytes(finalCodeHash, KECCAK256_NULL) &&
+          acc.storageChanges.length === 0
+        ) {
+          this._pinnedKeys.delete(ah)
+          this.writeBinaryAccountKey(ah, undefined, false)
           continue
         }
-        this.pinKey(this.accountHashHex(address))
-      } catch {
-        // skip malformed rows; consumeBALUtil validates further
+        this.writeBinaryAccountKey(
+          ah,
+          accountToBinaryAccount(
+            new Account(finalNonce, finalBalance, finalStorageRoot, finalCodeHash),
+          ),
+          false,
+        )
+      } else if (this._coldAccountLookup === undefined && !this.slotShard(ah).has(ah)) {
+        this.pinKey(ah)
+        this.writeBinaryAccountKey(ah, accountToBinaryAccount(new Account()), false)
+      }
+
+      for (const storage of acc.storageChanges) {
+        const lastSlot = storage.slotChanges.at(-1)
+        if (lastSlot === undefined) continue
+        const slotKey = setLengthLeft(hexToBytes(storage.slot), 32)
+        const slotVal = setLengthLeft(hexToBytes(lastSlot.postValue), 32)
+        const sk = this.storageKey(ah, this.slotHashHex(slotKey))
+        this.writeStorageKey(sk, slotVal.length === 0 ? undefined : slotVal)
       }
     }
-    return consumeBALUtil(this, bal, optsOrExpectedStateRoot)
   }
 
   async consumeBALBatch(
@@ -652,6 +828,9 @@ export class FlatStateManager implements StateManagerInterface {
       slot = this._arena!.alloc()
       shard.set(key, slot)
       this._residentCount++
+      if (!this._pinnedKeys.has(key)) {
+        this._unpinnedKeys.add(key)
+      }
     }
     this._arena!.write(slot, binary)
   }
@@ -679,6 +858,12 @@ export class FlatStateManager implements StateManagerInterface {
   /** Bytecode blob keyed by snap `codeHash` (32 bytes). */
   getCodeByHash(codeHash: Uint8Array): Uint8Array | undefined {
     return this.readCodeKey(bytesToUnprefixedHex(codeHash))
+  }
+
+  /** Storage slot value keyed by `accountHash` (32B) and `slotHash` (32B), including cold disk hydrate. */
+  getStorageByHash(accountHash: Uint8Array, slotHash: Uint8Array): Uint8Array | undefined {
+    const sk = this.storageKey(this.accountHashKey(accountHash), bytesToUnprefixedHex(slotHash))
+    return this.readStorageKey(sk)
   }
 
   /** Logical account total (includes cold-only snap rows). */
@@ -732,9 +917,13 @@ export class FlatStateManager implements StateManagerInterface {
     this._logicalAccountCount = 0
     this._tombstones.clear()
     this._pinnedKeys.clear()
+    this._unpinnedKeys.clear()
     this._hashToAddress.clear()
     this._storage.clear()
+    this._storageTombstones.clear()
     this._code.clear()
+    this._coldHydratedCodeKeys.clear()
+    this._coldHydratedStorageKeys.clear()
     this._deltaStack.length = 0
     this._overlayFrames.length = 0
     this.originalStorageCache.clear()

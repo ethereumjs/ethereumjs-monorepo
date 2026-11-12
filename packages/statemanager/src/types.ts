@@ -38,6 +38,11 @@ export interface FlatStateManagerOpts extends BaseStateManagerOpts {
    * Must return contract bytecode or `undefined`.
    */
   coldCodeLookup?: (codeHash: Uint8Array) => Uint8Array | undefined
+  /**
+   * Synchronous fallback when a storage slot is not in the in-memory map (Ethy disk storage shards).
+   * `slotHash` is keccak256 of the 32-byte slot key. Must return slot value bytes (≤32) or `undefined`.
+   */
+  coldStorageLookup?: (accountHash: Uint8Array, slotHash: Uint8Array) => Uint8Array | undefined
 }
 
 /** Options for constructing a {@link RPCStateManager}. */

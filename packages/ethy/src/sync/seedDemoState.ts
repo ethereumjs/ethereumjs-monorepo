@@ -51,8 +51,13 @@ export async function seedDemoEthyPivot(opts: {
       slab.set(rows[i]!.accountHash, off)
       accountToBinaryAccount(rows[i]!.account, slab, off + 32)
     }
-    const origin = rows[0]!.accountHash
-    const last = rows[rows.length - 1]!.accountHash
+    const origin = nibble === 0 ? new Uint8Array(buckets[0]!.startHash) : rows[0]!.accountHash
+    const nextNibbleFirst =
+      nibble === 0 ? peer.accounts.find((a) => a.accountHash[0]! >> 4 === 1) : undefined
+    const last =
+      nextNibbleFirst !== undefined
+        ? nextNibbleFirst.accountHash
+        : rows[rows.length - 1]!.accountHash
     const proofNodes = [
       ...(await createMerkleProof(trie, origin)),
       ...(await createMerkleProof(trie, last)),

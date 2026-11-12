@@ -399,6 +399,30 @@ describe('[Ethy/Persist]: snap pivot store', () => {
     assert.equal(bytesToHex(prefixRows[0]!.accountHash), bytesToHex(hashEarly))
   })
 
+  it('lookupStorageByHash reads ETY1-framed storage shards', async () => {
+    const dir = tempDir()
+    const root = new Uint8Array(32)
+    root[0] = 0x01
+    const store = openStore(dir)
+    store.activatePivot({
+      blockNumber: 1n,
+      blockHash: new Uint8Array(32),
+      stateRoot: root,
+    })
+    const accountHash = new Uint8Array(32)
+    accountHash[0] = 0x0a
+    const slotHash = new Uint8Array(32)
+    slotHash[31] = 0x01
+    const value = new Uint8Array([0xab, 0xcd])
+    await store.appendStorageSlots(accountHash, [{ slotHash, value }])
+    await store.flushStorageWrites()
+    const got = openStore(dir).lookupStorageByHash(accountHash, slotHash)
+    assert.isDefined(got)
+    assert.deepEqual(got, value)
+    const miss = openStore(dir).lookupStorageByHash(accountHash, new Uint8Array(32))
+    assert.isUndefined(miss)
+  })
+
   it('demo store does not touch disk', () => {
     const dir = tempDir()
     const store = SnapPivotStore.open({

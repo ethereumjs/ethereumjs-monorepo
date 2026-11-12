@@ -42,9 +42,11 @@ export function ethyOverviewWidget(spine: EthySpine): WidgetSpec {
     s?.earliestBlock !== undefined && s?.latestBlock !== undefined
       ? `#${BigInt(s.earliestBlock).toLocaleString('en-US')}..#${BigInt(s.latestBlock).toLocaleString('en-US')} (${servableCount} block${servableCount === 1 ? '' : 's'})`
       : '—'
+  const localEnode = spine.discovery?.localEnode ?? '—'
   return {
     kind: 'table',
     title: 'ETHY/0 swarm',
+    preface: [{ key: 'Local enode', value: localEnode }],
     headers: ['Field', 'Value'],
     rows: [
       ['Transport', transport],
@@ -83,9 +85,11 @@ export function peersTableWidget(spine: EthySpine): WidgetSpec {
   if (rows.length === 0) {
     rows.push(['—', '—', '—', '—', '—', 'No peers yet'])
   }
+  const localEnode = spine.discovery?.localEnode
   return {
     kind: 'table',
     title: 'Peer health',
+    preface: localEnode !== undefined ? [{ key: 'Local enode', value: localEnode }] : undefined,
     headers: ['Peer', 'Client', 'Caps', 'Ethy', 'Avg ms', 'Last issue'],
     rows,
     debugPage: peersDebugSections(spine),
@@ -207,10 +211,18 @@ export function bucketsTableWidget(spine: EthySpine): WidgetSpec {
   }
 }
 
+function formatLocalClock(timestampMs: number): string {
+  const d = new Date(timestampMs)
+  const hh = String(d.getHours()).padStart(2, '0')
+  const mm = String(d.getMinutes()).padStart(2, '0')
+  const ss = String(d.getSeconds()).padStart(2, '0')
+  return `${hh}:${mm}:${ss}`
+}
+
 export function diagnosticsTableWidget(spine: EthySpine): WidgetSpec {
   const recent = spine.diagnosticRingBuffer.slice(-20).reverse()
   const rows = recent.map((e) => [
-    new Date(e.timestamp).toISOString().slice(11, 19),
+    formatLocalClock(e.timestamp),
     e.subsystem,
     e.severity,
     e.peerId ?? '—',

@@ -2,7 +2,10 @@ import { startConsensusTracker } from '../cl/consensusTracker.ts'
 import { createEthyNode } from '../core/createEthyNode.ts'
 import { initEthyKeccak } from '../crypto/keccak.ts'
 import { advanceDemo } from '../demo/advanceDemo.ts'
+import { activeHardfork, chainConfigForNetwork } from '../net/chainHardfork.ts'
 import { startPeerCoordinator } from '../net/peerCoordinator.ts'
+import { initRpcTelemetry } from '../rpc/methods.ts'
+import { type JsonRpcHandle, startJsonRpcServer } from '../rpc/server.ts'
 import { recordDiagnostic } from '../spine/diagnostics.ts'
 import { runEthySession } from '../tui/session.ts'
 import { parseEthyArgs, printEthyUsage } from './args.ts'
@@ -50,6 +53,7 @@ async function main(): Promise<void> {
 
   let coordinatorStop: (() => void) | undefined
   let consensusStop: (() => void) | undefined
+  let rpcHandle: JsonRpcHandle | undefined
   let witnessExecutionHeader: ((blockNumber: bigint, blockHash: Uint8Array) => void) | undefined
   let noteChainHead: ((blockNumber: bigint) => void) | undefined
   let p2pError: string | undefined
@@ -75,6 +79,42 @@ async function main(): Promise<void> {
       Date.now(),
     )
   }
+  const chain = chainConfigForNetwork(network)
+  const hardfork = activeHardfork(chain)
+  if (cli.rpcEnabled) {
+    initRpcTelemetry(node.spine, true)
+    rpcHandle = await startJsonRpcServer({
+      spine: node.spine,
+      stateManager: node.stateManager,
+      chain,
+      hardfork,
+      demo: cli.demo,
+      host: cli.rpcHost,
+      port: cli.rpcPort,
+      portExplicit: cli.rpcPortExplicit,
+      economy: node.economy,
+      blockWindow: node.blockWindow,
+      submitRawTransaction: (hex) => {
+        if (node.submitRawTransaction !== undefined) {
+          return node.submitRawTransaction(hex)
+        }
+        return Promise.resolve({ error: { code: -32000, message: 'Transaction pool unavailable' } })
+      },
+    })
+  } else {
+    node.spine.rpc = {
+      enabled: false,
+      listening: false,
+      host: cli.rpcHost,
+      port: 0,
+      url: '',
+      totalRequests: 0,
+      totalErrors: 0,
+      methodStats: {},
+      recentCalls: [],
+    }
+  }
+
   let coordinatorReady: Promise<void> = Promise.resolve()
   if (!cli.demo) {
     const consensus = startConsensusTracker({
@@ -92,6 +132,7 @@ async function main(): Promise<void> {
       spine: node.spine,
       stateManager: node.stateManager,
       network,
+      dataDir: cli.dataDir,
       notices: node.notices,
       snapStore: node.snapStore,
       peerBook: node.peerBook,
@@ -101,10 +142,17 @@ async function main(): Promise<void> {
       syncMode: cli.syncMode,
       witnessExecutionHeader,
       economy: node.economy,
+      onRpcBundle: (note) => rpcHandle?.noteBundle(note),
     })
       .then((handle) => {
         bindPeerCoordinator(handle)
         noteChainHead = handle.noteChainHead
+        node.submitRawTransaction = handle.submitRawTransaction
+        node.hybridEngine?.setSubmitRawTransaction((hex) =>
+          handle
+            .submitRawTransaction(hex)
+            .then((out) => ('error' in out ? { error: { message: out.error.message } } : out)),
+        )
       })
       .catch((e: unknown) => {
         reportP2pStartError(e)
@@ -112,6 +160,7 @@ async function main(): Promise<void> {
   }
 
   const shutdown = () => {
+    void rpcHandle?.stop()
     coordinatorStop?.()
     consensusStop?.()
     node.flightRecorder?.stop()

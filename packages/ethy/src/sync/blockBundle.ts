@@ -27,6 +27,7 @@ import type { EthySpine, SnapBucket } from '../spine/types.ts'
 import type { VerifiedBalBlock } from './balSync.ts'
 
 import type { ETHEconomyDataManager } from '../economy/economyDataManager.ts'
+import type { RpcBundleNote } from '../rpc/types.ts'
 import { applyBlockBal, pushBalWindow } from './balSync.ts'
 
 export type BlockBundleStage = 'headers' | 'bodies' | 'receipts' | 'bal'
@@ -79,6 +80,7 @@ export type FinalizeBlockBundleOpts = {
   economy?: ETHEconomyDataManager
   /** Pre-decoded BAL JSON when caller already verified and applied the batch (WP-07e). */
   preDecodedBalJson?: BALJSONBlockAccessList
+  onRpcBundle?: (note: RpcBundleNote) => void
 }
 
 /** Register servable bundle and apply BAL when present. */
@@ -103,12 +105,7 @@ export async function finalizeBlockBundle(opts: FinalizeBlockBundleOpts): Promis
   if (bundle.balRlp !== undefined && bundle.balRlp.length > 0 && opts.persistHeal !== false) {
     opts.appendHealBal?.(bundle.blockNumber, bundle.balRlp)
   }
-  if (
-    opts.deferStateApply === true &&
-    opts.persistHeal !== false &&
-    bundle.balRlp !== undefined &&
-    bundle.balRlp.length > 0
-  ) {
+  if (opts.persistHeal !== false && bundle.balRlp !== undefined && bundle.balRlp.length > 0) {
     const fields = headFieldsFromHeaderRlp(bundle.headerRlp, opts.chain, opts.hardfork)
     if (fields !== null && bundle.hash !== undefined) {
       opts.appendHealBundle?.({
@@ -136,14 +133,21 @@ export async function finalizeBlockBundle(opts: FinalizeBlockBundleOpts): Promis
       opts.onBalApplied?.(applied.balJson)
     }
   }
-  opts.economy?.noteBundle({
+  const rpcNote: RpcBundleNote = {
     blockNumber: bundle.blockNumber,
     headerRlp: bundle.headerRlp,
     bodyRlp: bundle.bodyRlp,
     receiptsEth69Rlp: bundle.receiptsEth69Rlp,
     balJson: economyBalJson,
-    balRlp: bundle.balRlp,
-  })
+  }
+  if (
+    opts.spine.phase === 'HEAD_FOLLOWING' ||
+    opts.spine.phase === 'BAL_CATCHUP' ||
+    opts.spine.demoClock === true
+  ) {
+    opts.economy?.noteBundle({ ...rpcNote, balRlp: bundle.balRlp })
+    opts.onRpcBundle?.(rpcNote)
+  }
 }
 
 export function headFieldsFromHeaderRlp(

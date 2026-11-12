@@ -50,6 +50,15 @@ describe('[Ethy/CLI]: args', () => {
     assert.equal(a.dataDir, '/tmp/x')
   })
 
+  it('parseEthyArgs() disables rpc on demo unless forced', () => {
+    const demoOnly = parseEthyArgs(['node', 'ethy', '--demo'])
+    assert.equal(demoOnly.rpcEnabled, false)
+    const demoRpc = parseEthyArgs(['node', 'ethy', '--demo', '--rpc'])
+    assert.equal(demoRpc.rpcEnabled, true)
+    const noRpc = parseEthyArgs(['node', 'ethy', '--no-rpc'])
+    assert.equal(noRpc.rpcEnabled, false)
+  })
+
   it('parseEthyArgs() reads llm and ai-memory flags', () => {
     const a = parseEthyArgs([
       'node',

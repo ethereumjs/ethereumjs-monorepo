@@ -8,7 +8,7 @@ import {
 import { localVerifiedBlock, resolveChainHeadClock } from '../spine/chainHead.ts'
 import type { CapabilityId, EthySpine, TuiViewState } from '../spine/types.ts'
 import { BOLD, RESET } from './ansi.ts'
-import { CAPABILITY_FG, capabilityMark } from './capabilityMark.ts'
+import { capabilityMark } from './capabilityMark.ts'
 import { economyForCockpitDisplay } from './economyCockpitBuffer.ts'
 import {
   type TwoColumnPair,
@@ -74,6 +74,9 @@ function snapTargetRow(spine: EthySpine): string {
   }
   const rawTip = spine.bestPeerHead ?? spine.headBlockNumber ?? pivot
   const tip = rawTip > pivot ? rawTip : pivot
+  if (spine.syncTransport === 'ethy') {
+    return `${formatBlockNum(pivot)} → ${formatBlockNum(tip)} · ETHY/0 swarm`
+  }
   const buffered = spine.bufferedBalCount ?? 0
   const steps = spine.pivotStepsCompleted ?? 0
   return `${formatBlockNum(pivot)} → ${formatBlockNum(tip)} · +${buffered} BALs · step ${steps}`
@@ -306,10 +309,10 @@ function p2pMetricsPairs(spine: EthySpine): TwoColumnPair[] {
 }
 
 export function cockpitBoxTitle(spine: EthySpine, view: TuiViewState, id: CapabilityId): string {
+  void view
   const mark = capabilityMark(id, spine.capabilities[id].status)
   const label = BOX_LABEL[id]
-  const focus = view.activeDomain === id ? `${CAPABILITY_FG[id]} •${RESET}` : ''
-  return `${mark} ${BOLD}${label}${RESET}${focus}`
+  return `${mark} ${BOLD}${label}${RESET}`
 }
 
 /** Gap between the three cockpit columns, also used under the metrics box. */

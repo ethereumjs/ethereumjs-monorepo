@@ -147,7 +147,7 @@ renderFrame(spine: EthySpine, viewState: TuiViewState, cols: number, rows: numbe
 
 ──────────────────────────────────────────────────────────────────────────────────────────────────
  ● ethy > █
- Tab show domain help · ←/→ view history · / command · Esc exit
+ Tab help · Enter plaza · / command · Esc exit
 ```
 
 ### Key UX & Keyboard Mechanics

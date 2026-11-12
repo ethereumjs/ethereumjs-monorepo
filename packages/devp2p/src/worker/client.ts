@@ -214,6 +214,15 @@ export class Devp2pWorkerClient {
     this._send({ type: 'setAdvertiseBlockRange', enabled })
   }
 
+  notePooledTx(hashHex: string, raw: Uint8Array): void {
+    const copy = copyForSend(raw)
+    this._send({ type: 'notePooledTx', hashHex, raw: copy }, [copy.buffer as ArrayBuffer])
+  }
+
+  dropPooledTx(hashHex: string): void {
+    this._send({ type: 'dropPooledTx', hashHex })
+  }
+
   /** Register a complete block bundle for rolling-window eth serving in the worker. */
   putServableBlock(block: {
     number: bigint

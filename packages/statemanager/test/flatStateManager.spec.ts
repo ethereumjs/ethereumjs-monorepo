@@ -41,6 +41,21 @@ describe('[StateManager/FlatStateManager]', () => {
     assert.strictEqual((await sm.getAccount(a2))?.nonce, 2n)
   })
 
+  it('overlayMutations() lists overlay storage writes only on child', async () => {
+    const base = new FlatStateManager()
+    assert.deepEqual(base.overlayMutations(), { storage: [], accounts: [] })
+    const overlay = base.shallowCopy() as FlatStateManager
+    const addr = new Address(hexToBytes(`0x${'44'.repeat(20)}`))
+    await overlay.putAccount(addr, createAccount({ nonce: 1n }))
+    const slot = setLengthLeft(hexToBytes('0x01'), 32)
+    const val = setLengthLeft(hexToBytes('0x02'), 32)
+    await overlay.putStorage(addr, slot, val)
+    const mut = overlay.overlayMutations()
+    assert.isAtLeast(mut.accounts.length, 1)
+    assert.isAtLeast(mut.storage.length, 1)
+    assert.deepEqual(base.overlayMutations(), { storage: [], accounts: [] })
+  })
+
   it('shallowCopy() isolates writes and reads parent updates', async () => {
     const base = new FlatStateManager()
     const addr = new Address(hexToBytes(`0x${'33'.repeat(20)}`))
@@ -272,5 +287,113 @@ describe('[StateManager/FlatStateManager]', () => {
     sm.putSnapStorageBatch(accountHash, [{ slotHash, value }])
     const read = await sm.getStorage(address, slot)
     assert.deepEqual(read, value)
+  })
+
+  it('coldStorageLookup hydrates getStorage() and caches without second lookup', async () => {
+    const address = new Address(hexToBytes(`0x${'88'.repeat(20)}`))
+    const accountHash = keccak_256(address.bytes)
+    const slot = setLengthLeft(hexToBytes('0x02'), 32)
+    const slotHash = keccak_256(slot)
+    const value = setLengthLeft(hexToBytes('0xcd'), 32)
+    let calls = 0
+    const sm = new FlatStateManager({
+      coldAccountLookup: (h) => {
+        if (equalsBytes(h, accountHash)) {
+          return accountToBinaryAccount(createAccount({ nonce: 1n }))
+        }
+        return undefined
+      },
+      coldStorageLookup: (acc, sl) => {
+        calls++
+        if (equalsBytes(acc, accountHash) && equalsBytes(sl, slotHash)) return value
+        return undefined
+      },
+    })
+    const read = await sm.getStorage(address, slot)
+    assert.deepEqual(read, value)
+    assert.strictEqual(calls, 1)
+    const read2 = await sm.getStorage(address, slot)
+    assert.deepEqual(read2, value)
+    assert.strictEqual(calls, 1)
+  })
+
+  it('coldStorageLookup miss leaves getStorage() empty', async () => {
+    const address = new Address(hexToBytes(`0x${'89'.repeat(20)}`))
+    const accountHash = keccak_256(address.bytes)
+    const sm = new FlatStateManager({
+      coldAccountLookup: (h) => {
+        if (equalsBytes(h, accountHash)) {
+          return accountToBinaryAccount(createAccount({}))
+        }
+        return undefined
+      },
+      coldStorageLookup: () => undefined,
+    })
+    const slot = setLengthLeft(hexToBytes('0x03'), 32)
+    const read = await sm.getStorage(address, slot)
+    assert.deepEqual(read, new Uint8Array(0))
+  })
+
+  it('putStorage() after cold hydrate is not evicted by cold cache trim', async () => {
+    const address = new Address(hexToBytes(`0x${'8a'.repeat(20)}`))
+    const accountHash = keccak_256(address.bytes)
+    const written = setLengthLeft(hexToBytes('0xfe'), 32)
+    const slot = setLengthLeft(hexToBytes('0x04'), 32)
+    const slotHash = keccak_256(slot)
+    const filler = setLengthLeft(hexToBytes('0x01'), 32)
+    const sm = new FlatStateManager({
+      maxResidentAccounts: 1,
+      coldAccountLookup: () => accountToBinaryAccount(createAccount({})),
+      coldStorageLookup: (a, s) => {
+        if (equalsBytes(a, accountHash) && equalsBytes(s, slotHash)) {
+          return written
+        }
+        return filler
+      },
+    })
+    await sm.getStorage(address, slot)
+    const live = setLengthLeft(hexToBytes('0xaa'), 32)
+    await sm.putStorage(address, slot, live)
+    for (let i = 0; i < 4104; i++) {
+      const other = new Address(
+        setLengthLeft(hexToBytes(`0x${(0xb0 + (i % 16)).toString(16)}`), 20),
+      )
+      const s = setLengthLeft(hexToBytes(`0x${i.toString(16).padStart(2, '0')}`), 32)
+      await sm.getStorage(other, s)
+    }
+    assert.deepEqual(await sm.getStorage(address, slot), live)
+  })
+
+  it('zeroing a cold-hydrated or parent storage slot records a tombstone and does not resurrect', async () => {
+    const address = new Address(setLengthLeft(hexToBytes('0x99'), 20))
+    const accountHash = keccak_256(address.bytes)
+    const slot = setLengthLeft(hexToBytes('0x07'), 32)
+    const slotHash = keccak_256(slot)
+    const coldVal = setLengthLeft(hexToBytes('0xdeadbeef'), 32)
+    let coldLookups = 0
+    const sm = new FlatStateManager({
+      coldAccountLookup: (h) =>
+        equalsBytes(h, accountHash) ? accountToBinaryAccount(createAccount({})) : undefined,
+      coldStorageLookup: (a, s) => {
+        if (equalsBytes(a, accountHash) && equalsBytes(s, slotHash)) {
+          coldLookups++
+          return coldVal
+        }
+        return undefined
+      },
+    })
+    assert.deepEqual(await sm.getStorage(address, slot), coldVal)
+    assert.strictEqual(coldLookups, 1)
+
+    // Zeroing on a shallowCopy overlay does not read parent's non-zero value
+    const overlay = sm.shallowCopy()
+    await overlay.putStorage(address, slot, new Uint8Array(0))
+    assert.deepEqual(await overlay.getStorage(address, slot), new Uint8Array(0))
+    assert.deepEqual(await sm.getStorage(address, slot), coldVal)
+
+    // Zeroing on root manager does not resurrect from coldStorageLookup
+    await sm.putStorage(address, slot, new Uint8Array(0))
+    assert.deepEqual(await sm.getStorage(address, slot), new Uint8Array(0))
+    assert.strictEqual(coldLookups, 1)
   })
 })

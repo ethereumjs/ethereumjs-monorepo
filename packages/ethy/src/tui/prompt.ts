@@ -1,8 +1,6 @@
 import { completeSlashDraft } from '../ai/slashComplete.ts'
 import type { CapabilityId, EthySpine, TuiViewState } from '../spine/types.ts'
 import { DOMAIN_ORDER } from '../spine/types.ts'
-import { buildDomainHelpWidget } from '../tools/help.ts'
-
 export type KeyAction =
   | { type: 'char'; ch: string }
   | { type: 'backspace' }
@@ -104,7 +102,7 @@ export function decodeKey(buffer: string, chunk: string): { buffer: string; acti
 export interface PromptReduceResult {
   view: TuiViewState
   submittedLine?: string
-  domainCycle?: 1 | -1
+  helpToggle?: true
   viewHistoryNav?: 'left' | 'right'
   toggleDebug?: true
   /** Empty Enter: return to plaza or Welcome. */
@@ -114,7 +112,7 @@ export interface PromptReduceResult {
 export function reducePromptKey(view: TuiViewState, action: KeyAction): PromptReduceResult {
   const next: TuiViewState = { ...view, history: [...view.history] }
   let submittedLine: string | undefined
-  let domainCycle: 1 | -1 | undefined
+  let helpToggle: true | undefined
   let viewHistoryNav: 'left' | 'right' | undefined
   let toggleDebug: true | undefined
   switch (action.type) {
@@ -126,7 +124,7 @@ export function reducePromptKey(view: TuiViewState, action: KeyAction): PromptRe
       break
     case 'tab':
       if (next.promptDraft.length === 0) {
-        domainCycle = 1
+        helpToggle = true
       } else if (next.promptDraft.startsWith('/')) {
         const completed = completeSlashDraft(next.promptDraft)
         if (completed !== null) next.promptDraft = completed
@@ -134,7 +132,7 @@ export function reducePromptKey(view: TuiViewState, action: KeyAction): PromptRe
       break
     case 'shiftTab':
       if (next.promptDraft.length === 0) {
-        domainCycle = -1
+        helpToggle = true
       }
       break
     case 'left':
@@ -184,7 +182,7 @@ export function reducePromptKey(view: TuiViewState, action: KeyAction): PromptRe
       break
   }
 
-  return { view: next, submittedLine, domainCycle, viewHistoryNav, toggleDebug }
+  return { view: next, submittedLine, helpToggle, viewHistoryNav, toggleDebug }
 }
 
 export function createInitialViewState(spine?: EthySpine): TuiViewState {
@@ -194,8 +192,8 @@ export function createInitialViewState(spine?: EthySpine): TuiViewState {
     activeWidget: { kind: 'start_page' },
     interactionPage: 'main',
     showingHelp: false,
-    viewHistory: [],
-    viewHistoryIndex: -1,
+    viewHistory: [{ kind: 'slash', command: '/welcome', label: 'Welcome', page: 'main' }],
+    viewHistoryIndex: 0,
     promptDraft: '',
     carouselTick: 0,
     history: [],

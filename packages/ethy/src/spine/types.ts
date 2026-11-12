@@ -80,7 +80,7 @@ export interface SnapBucket {
   subRanges?: SnapRangeCursor[]
 }
 
-export type DiagnosticSubsystem = 'devp2p' | 'snap' | 'bal' | 'mpt' | 'cl' | 'ai'
+export type DiagnosticSubsystem = 'devp2p' | 'snap' | 'ethy' | 'bal' | 'mpt' | 'cl' | 'ai'
 
 export interface DiagnosticEvent {
   timestamp: number
@@ -233,6 +233,35 @@ export interface EthySpine {
   onDiagnosticRecorded?: (entry: DiagnosticEvent) => void
   /** Active logs directory path (`~/.ethy/networks/<net>/logs`). */
   logsDirPath?: string
+  /** Loopback JSON-RPC 2.0 telemetry (WP-08a). */
+  rpc?: RpcTelemetry
+}
+
+export type RpcMethodStat = {
+  calls: number
+  errors: number
+  lastLatencyMs: number
+}
+
+export type RpcRecentCall = {
+  timestamp: number
+  method: string
+  status: 'ok' | 'err'
+  durationMs: number
+}
+
+export type RpcTelemetry = {
+  enabled: boolean
+  listening: boolean
+  host: string
+  port: number
+  url: string
+  totalRequests: number
+  totalErrors: number
+  lastMethod?: string
+  lastRequestAt?: number
+  methodStats: Record<string, RpcMethodStat>
+  recentCalls: RpcRecentCall[]
 }
 
 export type DebugSectionSpec = {
@@ -246,6 +275,8 @@ export type DomainHelpSection = {
   title: string
   rows?: Array<{ command: string; detail: string }>
   prompts?: string[]
+  column?: 'left' | 'right'
+  domain?: CapabilityId
 }
 
 export type InteractionHistoryEntry =
@@ -254,6 +285,8 @@ export type InteractionHistoryEntry =
       command: string
       label: string
       page: InteractionPage
+      /** Frozen EVM snapshot for `/simulate` and `/send` (WP-08b). */
+      frozenWidget?: WidgetSpec
     }
   | {
       kind: 'ai'
@@ -303,7 +336,8 @@ export type WidgetSpec =
     }
   | {
       kind: 'domain_help'
-      domain: CapabilityId
+      domain?: CapabilityId
+      unified?: boolean
       sections: DomainHelpSection[]
       aiExamples?: string[]
       debugPage?: DebugSectionSpec[]
