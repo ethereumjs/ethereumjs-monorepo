@@ -6,12 +6,10 @@ import { fixedField } from '../layout.ts'
 export const INTERACTION_RIGHT_CHROME_WIDTH = visibleWidth('← →')
 
 function historyCanGoLeft(view: TuiViewState): boolean {
-  if (view.showingHelp && view.viewHistory.length > 0) return true
   return view.viewHistoryIndex > 0
 }
 
 function historyCanGoRight(view: TuiViewState): boolean {
-  if (view.showingHelp) return false
   return view.viewHistoryIndex < view.viewHistory.length - 1
 }
 

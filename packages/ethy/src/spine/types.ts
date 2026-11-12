@@ -275,6 +275,8 @@ export type DomainHelpSection = {
   title: string
   rows?: Array<{ command: string; detail: string }>
   prompts?: string[]
+  column?: 'left' | 'right'
+  domain?: CapabilityId
 }
 
 export type InteractionHistoryEntry =
@@ -334,7 +336,8 @@ export type WidgetSpec =
     }
   | {
       kind: 'domain_help'
-      domain: CapabilityId
+      domain?: CapabilityId
+      unified?: boolean
       sections: DomainHelpSection[]
       aiExamples?: string[]
       debugPage?: DebugSectionSpec[]

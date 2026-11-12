@@ -34,6 +34,13 @@ describe('[Ethy/Domains]: command availability', () => {
     )
   })
 
+  it('/rpc is always ready for the status microscope', () => {
+    const spine = createSpine('sepolia', 11155111n)
+    assert.equal(getCommandAvailability('/rpc', spine).status, 'ready')
+    spine.rpc = { enabled: false, listening: false } as typeof spine.rpc
+    assert.equal(getCommandAvailability('/rpc', spine).status, 'ready')
+  })
+
   it('domain help greys locked economy rows when no blocks', () => {
     const spine = createSpine('sepolia', 11155111n)
     setPhase(spine, 'P2P_WARMUP')

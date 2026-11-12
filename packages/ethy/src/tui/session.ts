@@ -23,7 +23,7 @@ import {
   syncOutputBegin,
   syncOutputEnd,
 } from './ansi.ts'
-import { createInitialViewState, cycleDomain, pushKeyChar, reducePromptKey } from './prompt.ts'
+import { createInitialViewState, pushKeyChar, reducePromptKey } from './prompt.ts'
 import { promptCaretPosition, renderFrame } from './renderFrame.ts'
 import {
   activateHistoryEntry,
@@ -106,16 +106,11 @@ export async function runEthySession(node: EthyNode): Promise<void> {
       }
     }
     if (direction === 'left') {
-      if (view.showingHelp && view.viewHistory.length > 0) {
-        activateAtIndex(view.viewHistoryIndex)
-        return
-      }
       if (view.viewHistoryIndex > 0) {
         activateAtIndex(view.viewHistoryIndex - 1)
       }
       return
     }
-    if (view.showingHelp) return
     if (view.viewHistoryIndex < view.viewHistory.length - 1) {
       activateAtIndex(view.viewHistoryIndex + 1)
     }
@@ -255,7 +250,7 @@ export async function runEthySession(node: EthyNode): Promise<void> {
   const runIntent = (text: string, gen: number, isNl: boolean) => {
     if (isHelpCommand(text)) {
       const parts = text.split(/\s+/)
-      const domain = parseHelpDomainArg(parts) ?? view.activeDomain
+      const domain = parseHelpDomainArg(parts)
       view = openDomainHelp(view, node.spine, domain)
       draw()
       return
@@ -344,7 +339,7 @@ export async function runEthySession(node: EthyNode): Promise<void> {
         const {
           view: nextView,
           submittedLine,
-          domainCycle,
+          helpToggle,
           viewHistoryNav,
           toggleDebug,
           openPlaza,
@@ -361,14 +356,11 @@ export async function runEthySession(node: EthyNode): Promise<void> {
               ...view,
               interactionPage: nextPage,
             }
-            if (!view.showingHelp && view.viewHistory.length > 0) {
+            if (view.viewHistory.length > 0) {
               const idx = view.viewHistoryIndex
               const entry = view.viewHistory[idx]
               if (entry !== undefined) {
-                const updated: InteractionHistoryEntry =
-                  entry.kind === 'slash'
-                    ? { ...entry, page: nextPage }
-                    : { ...entry, page: nextPage }
+                const updated: InteractionHistoryEntry = { ...entry, page: nextPage }
                 const hist = [...view.viewHistory]
                 hist[idx] = updated
                 view = { ...view, viewHistory: hist }
@@ -376,13 +368,19 @@ export async function runEthySession(node: EthyNode): Promise<void> {
             }
           }
         }
-        if (domainCycle !== undefined) {
-          const onStartPage = view.activeWidget === null || view.activeWidget.kind === 'start_page'
-          const domain =
-            onStartPage && domainCycle === 1
-              ? view.activeDomain
-              : cycleDomain(view.activeDomain, domainCycle)
-          view = openDomainHelp(view, node.spine, domain)
+        if (helpToggle === true) {
+          const onHelp = view.activeWidget?.kind === 'domain_help'
+          if (!onHelp) {
+            view = openDomainHelp(view, node.spine)
+          } else if (view.viewHistoryIndex > 0) {
+            navigateHistory('left')
+          } else {
+            const canPlaza =
+              node.spine.economy?.hasBlocks === true || node.spine.phase === 'HEAD_FOLLOWING'
+            if (canPlaza) {
+              view = openPlazaView(view, node.spine, slashCtx())
+            }
+          }
         }
         if (viewHistoryNav !== undefined) {
           navigateHistory(viewHistoryNav)

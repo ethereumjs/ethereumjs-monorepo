@@ -69,7 +69,7 @@ function buildRightRows(spine: EthySpine): string[] {
     '',
     `${econMark} ${BOLD}Economy${RESET}   ${stateMark} ${BOLD}State${RESET}   ${p2pMark} ${BOLD}P2P${RESET}`,
     '',
-    `${DIM}Press ${RESET}${BOLD}Tab${RESET}${DIM} for domain help · ${RESET}${BOLD}/${RESET}${DIM} command · ask AI${RESET}`,
+    `${DIM}Press ${RESET}${BOLD}Tab${RESET}${DIM} for help · ${RESET}${BOLD}/${RESET}${DIM} command · ask AI${RESET}`,
   ]
 }
 
@@ -102,13 +102,13 @@ export function renderStartPageUIComponent(
       '',
       `  ${BOLD}Execution-Free Ethereum Intelligence Node${RESET}`,
       `  ${capabilityMark('economy', spine.capabilities.economy.status)} Economy   ${capabilityMark('state', spine.capabilities.state.status)} State   ${capabilityMark('p2p', spine.capabilities.p2p.status)} P2P`,
-      `  ${DIM}Tab domain help · /command · ask AI${RESET}`,
+      `  ${DIM}Tab help · /command · ask AI${RESET}`,
     ]
   } else {
     blockWidth = Math.min(w, 40)
     composition = [
       `${BOLD}ETHY v${spine.clientVersion}${RESET} · ${spine.network.toUpperCase()}`,
-      `${DIM}Tab domain help · /command · ask AI${RESET}`,
+      `${DIM}Tab help · /command · ask AI${RESET}`,
     ].slice(0, maxBodyLines)
   }
 

@@ -8,7 +8,7 @@ import type {
   WidgetSpec,
 } from '../spine/types.ts'
 import { MAX_VIEW_HISTORY } from '../spine/types.ts'
-import { buildDomainHelpWidget } from '../tools/help.ts'
+import { buildDomainHelpWidget, buildHelpWidget } from '../tools/help.ts'
 
 export function openPlazaView(
   view: TuiViewState,
@@ -109,7 +109,7 @@ export function activateHistoryEntry(
       interactionPage: entry.page,
       interactionLabel: entry.command,
       interactionTitle: undefined,
-      showingHelp: false,
+      showingHelp: widget.kind === 'domain_help',
       overviewNote,
     }
   }
@@ -118,7 +118,7 @@ export function activateHistoryEntry(
     interactionPage: entry.page,
     interactionLabel: entry.prompt,
     interactionTitle: entry.viewTitle,
-    showingHelp: false,
+    showingHelp: entry.widget.kind === 'domain_help',
     overviewNote: entry.overviewNote,
   }
 }
@@ -126,15 +126,26 @@ export function activateHistoryEntry(
 export function openDomainHelp(
   view: TuiViewState,
   spine: EthySpine,
-  domain: typeof view.activeDomain,
-) {
+  domain?: TuiViewState['activeDomain'],
+): TuiViewState {
+  const widget =
+    domain !== undefined ? buildDomainHelpWidget(spine, domain) : buildHelpWidget(spine)
+  const command = domain !== undefined ? `/help ${domain}` : '/help'
+  const label = domain !== undefined ? `/help · ${domain}` : '/help'
+  const entry: InteractionHistoryEntry = {
+    kind: 'slash',
+    command,
+    label,
+    page: 'main',
+  }
+  const next = pushViewHistory(view, entry)
   return {
-    ...view,
-    activeDomain: domain,
-    activeWidget: buildDomainHelpWidget(spine, domain),
+    ...next,
+    ...(domain !== undefined ? { activeDomain: domain } : {}),
+    activeWidget: widget,
     showingHelp: true,
     interactionPage: 'main' as InteractionPage,
-    interactionLabel: `/help · ${domain}`,
+    interactionLabel: label,
     interactionTitle: undefined,
     aiOverviewSections: clearOverviewFocus(view.aiOverviewSections),
   }
@@ -220,7 +231,7 @@ export function applyLiveSlashRefresh(
   spine: EthySpine,
   slashCtx: SlashDispatchCtx,
 ): TuiViewState {
-  if (view.showingHelp || view.viewHistory.length === 0) return view
+  if (view.viewHistory.length === 0) return view
   const entry = view.viewHistory[view.viewHistoryIndex]
   if (entry === undefined || entry.kind !== 'slash') return view
   if (entry.frozenWidget !== undefined) return view

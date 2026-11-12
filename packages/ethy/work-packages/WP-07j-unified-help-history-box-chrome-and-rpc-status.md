@@ -1,6 +1,6 @@
 # WP-07j: Unified One-Page `Tab` Help, Universal `←`/`→` View History, Bottom-Right `Ctrl+D` Frame Hint, Clean Box Chrome & `/rpc` Method Status Matrix
 
-- **Status:** `READY_FOR_PLANNING`
+- **Status:** `DONE`
 - **Dependencies:** `WP-07f`, `WP-07h`, `WP-07i`, `WP-08a`, `WP-08b` (`DONE`)
 - **Primary Goal:** Streamline TUI navigation and visual calm based on live operator testing by (1) putting **every** view (including `/help` and `/live` Plaza) into the `←`/`→` `viewHistory`, (2) replacing the annoying 3-step `Tab` domain-help rotation with a **single unified 1-key `Tab` Command & AI Overview page** (where pressing `Tab` toggles `/help` on and back to the previous view!), (3) removing the cluttered `· Commands | Debug (Ctrl+D)` suffix from the top title bar and placing a subtle **`Ctrl+D debug` hint in the bottom-right corner of the box frame**, (4) removing the trailing `•` dot from `● Economy` / `● State` / `● P2P` and removing `←/→ view history` from the footer hint line, and (5) upgrading `/rpc` into a full **JSON-RPC Method Status & Capability Matrix** with aligned activation indicators (`● active` / `◐ warming` / `○ off`).
 
@@ -146,21 +146,27 @@ Hands-on operation of the live TUI surfaced five concrete UX friction points:
 
 ### 1.3 Acceptance Criteria
 
-- [ ] Every view (`/welcome`, `/live`, `/help`, slash commands, AI queries) is recorded in `viewHistory`, and `←`/`→` navigates seamlessly back and forth across `/help`, `/live`, and slash commands.
-- [ ] Pressing `Tab` on an empty prompt opens a single unified `/help · Commands & AI` page showing all 3 domains (`Economy`, `State`, `P2P`) + `AI Examples` at once; pressing `Tab` while already on `/help` toggles back to the previous view.
-- [ ] Top Interaction box titles no longer include `· Commands | Debug (Ctrl+D)`; instead, widgets with a `debugPage` render `Ctrl+D debug` (or `● Debug · Ctrl+D`) in the bottom-right corner of the box border (`boxBottom`).
-- [ ] The trailing `•` dot on `● Economy` / `● State` / `● P2P` cockpit box titles is removed, and the bottom-left footer hint reads `Tab help · Enter plaza · / command · Esc exit` (without `←/→ view history`).
-- [ ] `/rpc` renders the 7-group JSON-RPC Method Status & Capability Matrix with aligned `● active` / `◐ warming` / `○ off` indicators, method lists, and call counters (plus per-method latency and `curl`/`cast` examples on `Ctrl+D`).
-- [ ] Unit tests in `test/tui.spec.ts`, `test/rpc.spec.ts`, and `test/intent.spec.ts` are updated and green; `npm run tsc`, `npm test`, and `npm run spellcheck` pass with 0 errors.
+- [x] Every view (`/welcome`, `/live`, `/help`, slash commands, AI queries) is recorded in `viewHistory`, and `←`/`→` navigates seamlessly back and forth across `/help`, `/live`, and slash commands.
+- [x] Pressing `Tab` on an empty prompt opens a single unified `/help · Commands & AI` page showing all 3 domains (`Economy`, `State`, `P2P`) + `AI Examples` at once; pressing `Tab` while already on `/help` toggles back to the previous view.
+- [x] Top Interaction box titles no longer include `· Commands | Debug (Ctrl+D)`; instead, widgets with a `debugPage` render `Ctrl+D debug` (or `● Debug · Ctrl+D`) in the bottom-right corner of the box border (`boxBottom`).
+- [x] The trailing `•` dot on `● Economy` / `● State` / `● P2P` cockpit box titles is removed, and the bottom-left footer hint reads `Tab help · Enter plaza · / command · Esc exit` (without `←/→ view history`).
+- [x] `/rpc` renders the 7-group JSON-RPC Method Status & Capability Matrix with aligned `● active` / `◐ warming` / `○ off` indicators, method lists, and call counters (plus per-method latency and `curl`/`cast` examples on `Ctrl+D`).
+- [x] Unit tests in `test/tui.spec.ts`, `test/rpc.spec.ts`, and `test/intent.spec.ts` are updated and green; `npm run tsc`, `npm test`, and `npm run spellcheck` pass with 0 errors.
 
 ---
 
 ## 2. Concrete Implementation Plan (Planner — Grok 4.7)
 
-*(To be filled by Grok 4.7 during the Planning pass.)*
+**Ethy only.** Decision **D-114** (planner locks on **D-113**). Order: view history + Tab toggle → unified help → box chrome → `/rpc` matrix → tests.
+
+**Design locks:** empty `Tab`/`Shift+Tab` → `helpToggle` (no domain cycle); bare `/help` unified, scoped `/help <domain>` kept; keep `←`/`→` top-right, drop title `Commands | Debug`; `showingHelp` syncs with `domain_help`; help live-refresh; `/welcome` seeds history and refreshes to plaza; `/rpc` always ready + 7-group matrix.
+
+**Files:** `viewHistory.ts`, `prompt.ts`, `session.ts`, `interactionChrome.ts`, `deterministicEngine.ts`, `help.ts`, `DomainHelpUIComponent.ts`, `interactionContent.ts`, `roundedBox.ts`, `lowerArea.ts`, `cockpit.ts`, `renderFrame.ts`, `commandAvailability.ts`, `rpcTools.ts`, `spine/types.ts`, copy in `usagePlaybook.ts`, `overviewNarrator.ts`, `StartPageUIComponent.ts`, `ethy-tui.mdc`, root `ethy-architecture.mdc`, tests `tui.spec.ts`, `intent.spec.ts`, `rpc.spec.ts`, `commandAvailability.spec.ts`.
 
 ---
 
 ## 3. Implementation Notes & Deviations (Implementer — Composer 2.5)
 
-*(To be filled by Composer 2.5 during the Implementation pass.)*
+- Shipped **D-113** / planner **D-114**: `/welcome` seeds `viewHistory`; `Tab` toggles unified `/help`; bottom `Ctrl+D debug` border hint; cockpit titles without focus dot; footer `Tab help · Enter plaza · / command · Esc exit`; `/rpc` always ready with 7-group matrix + called-methods table.
+- `Shift+Tab` on empty draft also toggles help (same as `Tab`).
+- Gates: `npm run tsc`, **304** tests, `spellcheck:ts` green (`spellcheck:md` still flags historical `PROGRESS.md` terms unrelated to this WP).

@@ -22,6 +22,7 @@ import { RpcBlockWindowStore } from '../src/rpc/blockWindowStore.ts'
 import { type RpcHandlerContext, dispatchRpcMethod } from '../src/rpc/methods.ts'
 import { startJsonRpcServer } from '../src/rpc/server.ts'
 import { createSpine } from '../src/spine/createSpine.ts'
+import { rpcGroupRows, rpcMicroscopeWidget } from '../src/tools/rpcTools.ts'
 
 function buildCtx(sm: ReturnType<typeof createFlatStateManager>): RpcHandlerContext {
   const spine = createSpine('sepolia', 11155111n)
@@ -260,7 +261,7 @@ describe('[Ethy/JSON-RPC]: WP-08a server', () => {
     // Command availability: /peers stays ready even when RPC is not listening
     assert.equal(getCommandAvailability('/peers', ctx.spine).status, 'ready')
     assert.equal(getCommandAvailability('/buckets', ctx.spine).status, 'ready')
-    assert.equal(getCommandAvailability('/rpc', ctx.spine).status, 'locked')
+    assert.equal(getCommandAvailability('/rpc', ctx.spine).status, 'ready')
 
     // HTTP batch and empty batch
     const handle = await startJsonRpcServer({
@@ -285,5 +286,66 @@ describe('[Ethy/JSON-RPC]: WP-08a server', () => {
     const emptyBatch = (await postJSON(port, [])) as { error: { code: number } }
     assert.equal(emptyBatch.error.code, -32600)
     await handle!.stop()
+  })
+})
+
+describe('[Ethy/RPC]: method matrix widget', () => {
+  it('rpcGroupRows() lists seven groups with off status when not listening', () => {
+    const spine = createSpine('sepolia', 11155111n)
+    spine.rpc = {
+      enabled: true,
+      listening: false,
+      host: '127.0.0.1',
+      port: 8545,
+      url: '(not listening)',
+      totalRequests: 0,
+      totalErrors: 0,
+      methodStats: {},
+      recentCalls: [],
+    }
+    const rows = rpcGroupRows(spine)
+    assert.lengthOf(rows, 7)
+    assert.include(
+      rows.map((r) => r.label),
+      'Chain & Net',
+    )
+    assert.include(
+      rows.map((r) => r.label),
+      'Tx Broadcast',
+    )
+    for (const row of rows) {
+      assert.include(row.statusDisplay, 'off')
+      assert.equal(row.calls, 0)
+    }
+  })
+
+  it('rpcMicroscopeWidget() warms head state and tx broadcast when listening without peers', () => {
+    const spine = createSpine('sepolia', 11155111n)
+    spine.rpc = {
+      enabled: true,
+      listening: true,
+      host: '127.0.0.1',
+      port: 8545,
+      url: 'http://127.0.0.1:8545',
+      totalRequests: 0,
+      totalErrors: 0,
+      methodStats: {},
+      recentCalls: [],
+    }
+    const groups = rpcGroupRows(spine)
+    const chain = groups.find((g) => g.label === 'Chain & Net')!
+    const head = groups.find((g) => g.label === 'Head State')!
+    const fee = groups.find((g) => g.label === 'Fee Oracle')!
+    const tx = groups.find((g) => g.label === 'Tx Broadcast')!
+    assert.include(chain.statusDisplay, 'active')
+    assert.include(head.statusDisplay, 'warming')
+    assert.include(fee.statusDisplay, 'awaiting')
+    assert.include(tx.statusDisplay, 'no peers')
+
+    const w = rpcMicroscopeWidget(spine)
+    assert.equal(w.kind, 'table')
+    if (w.kind === 'table') {
+      assert.lengthOf(w.rows, 7)
+    }
   })
 })

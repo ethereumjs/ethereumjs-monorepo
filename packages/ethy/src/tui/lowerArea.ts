@@ -1,5 +1,5 @@
 import type { EthySpine, TuiViewState } from '../spine/types.ts'
-import { BOLD, RESET } from './ansi.ts'
+import { BOLD, DIM, RESET } from './ansi.ts'
 import { capabilityMark } from './capabilityMark.ts'
 import { COCKPIT_COLUMN_GAP, cockpitColumnWidths } from './cockpit.ts'
 import { interactionBoxRightChrome } from './components/interactionChrome.ts'
@@ -18,13 +18,14 @@ function buildVariableBox(
   title: string,
   titleRight: string,
   contentLines: string[],
+  bottomRight?: string,
 ): string[] {
   const innerLines = Math.max(0, totalHeight - 4)
   const body: string[] = []
   for (let i = 0; i < innerLines; i++) {
     body.push(contentLines[i] ?? '')
   }
-  return renderBox(boxW, title, body, titleRight)
+  return renderBox(boxW, title, body, titleRight, bottomRight)
 }
 
 export function renderLowerArea(
@@ -65,7 +66,13 @@ export function renderLowerArea(
   )
   const hasDebugPage = (widget.debugPage?.length ?? 0) > 0
   const titleRight = interactionBoxRightChrome(view, view.interactionPage, hasDebugPage)
-  const leftBox = buildVariableBox(leftW, fillRows, title, titleRight, bodyLines)
+  const bottomRight =
+    hasDebugPage && view.interactionPage === 'debug'
+      ? `${BOLD}● Debug${RESET}${DIM} · Ctrl+D${RESET}`
+      : hasDebugPage
+        ? `${DIM}Ctrl+D debug${RESET}`
+        : undefined
+  const leftBox = buildVariableBox(leftW, fillRows, title, titleRight, bodyLines, bottomRight)
 
   const aiMark = capabilityMark('ai', spine.capabilities.ai.status)
   const aiTitle = `${aiMark} ${BOLD}AI${RESET}`

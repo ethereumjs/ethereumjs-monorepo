@@ -30,7 +30,7 @@ Ethy (`@ethereumjs/ethy`) is an **Execution-Free State & Intelligence Node** for
        - **Middle Box (`Economy`):** Four-row live economic telemetry from `spine.economy` (`economyCockpitPairs`).
        - **Right Box (`<Mark> <Domain> Metrics`):** Key stats for the selected `activeDomain`.
     3. **Band 3 — Lower fill band (`renderLowerArea`):** Left **2/3** **Interaction View** (domain help, slash tools, NL widgets, optional `DebugPageUIComponent`); right **1/3** full-height **`AI`** box (`view.aiOverviewSections`, ≤600 chars, `AiPulseNarrator` when `--llm-url`). `viewHistory` (max 12): slash entries refresh live; AI entries are snapshots. **`Ctrl+D`** toggles main ↔ debug when `debugPage` is present.
-    4. **Band 4 — Domain-Lens Sticky Prompt:** `● ethy > ` where the leading mark reflects `activeDomain` (`state` / `economy` / `p2p`). Empty-draft **`Tab`** opens domain help; **`←`/`→`** walks interaction history; `/p` + `Enter` or natural language runs via `IntentEngine`.
+    4. **Band 4 — Domain-Lens Sticky Prompt:** `● ethy > ` where the leading mark reflects `activeDomain` (`state` / `economy` / `p2p`). Empty-draft **`Tab`** toggles unified `/help`; **`←`/`→`** walks interaction history; `/p` + `Enter` or natural language runs via `IntentEngine`.
 - **LLMs never draw raw ASCII boxes:**
   - Tools return typed data + a `WidgetSpec`. The TypeScript TUI renderer computes column widths, truncation, and box borders deterministically.
 - **Stable fixed layout (no horizontal jump):**

@@ -84,19 +84,7 @@ export function getCommandAvailability(
     case '/ethy':
       return { status: 'ready' }
     case '/rpc':
-      if (spine.rpc?.listening === true) return { status: 'ready' }
-      if (spine.rpc?.enabled === false) {
-        return {
-          status: 'locked',
-          shortTag: 'disabled',
-          reason: 'JSON-RPC is off (--no-rpc).',
-        }
-      }
-      return {
-        status: 'locked',
-        shortTag: 'not listening',
-        reason: 'JSON-RPC server has not bound a loopback port yet.',
-      }
+      return { status: 'ready' }
     case '/diag':
     case '/help':
     case '/h':

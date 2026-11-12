@@ -65,7 +65,7 @@ export function buildDeterministicOverviewSections(
     } else {
       sections.p2p = `${peers} peer${peers === 1 ? '' : 's'} connected.`
     }
-    sections.state = `${sections.state ?? 'Booting.'} Tab shows domain help.`
+    sections.state = `${sections.state ?? 'Booting.'} Tab opens command help.`
     return clampOverviewSections(sections)
   }
 

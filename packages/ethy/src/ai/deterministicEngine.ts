@@ -81,11 +81,8 @@ export function dispatchSlashWidget(line: string, ctx: SlashDispatchCtx): Widget
       return peersTableWidget(spine)
     case '/ethy':
       return ethyOverviewWidget(spine)
-    case '/rpc': {
-      const locked = slashIfLocked('/rpc', spine)
-      if (locked !== undefined) return locked
+    case '/rpc':
       return rpcMicroscopeWidget(spine)
-    }
     case '/buckets':
     case '/snap':
       return bucketsTableWidget(spine)
@@ -93,8 +90,18 @@ export function dispatchSlashWidget(line: string, ctx: SlashDispatchCtx): Widget
       return diagnosticsTableWidget(spine)
     case '/help':
     case '/h': {
-      const domain = parseHelpDomainArg(parts) ?? 'economy'
-      return buildDomainHelpWidget(spine, domain)
+      const domain = parseHelpDomainArg(parts)
+      if (domain !== undefined) return buildDomainHelpWidget(spine, domain)
+      return buildHelpWidget(spine)
+    }
+    case '/welcome': {
+      const hasBlocks = spine.economy?.hasBlocks === true
+      if (!hasBlocks && spine.phase !== 'HEAD_FOLLOWING') {
+        return { kind: 'start_page' }
+      }
+      const locked = slashIfLocked('/live', spine)
+      if (locked !== undefined) return locked
+      return livePlazaWidget(spine)
     }
     case '/drop': {
       const locked = slashIfLocked('/drop', spine)

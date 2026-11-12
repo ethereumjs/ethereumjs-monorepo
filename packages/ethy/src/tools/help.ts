@@ -18,7 +18,7 @@ function economySections(): { sections: DomainHelpSection[]; aiExamples: string[
       {
         title: 'Economy Commands',
         rows: [
-          { command: '/live · /plaza · /head', detail: 'Ethereum Plaza live observatory' },
+          { command: '/live · /plaza', detail: 'Ethereum Plaza observatory' },
           { command: '/economy', detail: '64-block gas, TPS & volume' },
           { command: '/contract', detail: 'Hot contract #1 microscope' },
           { command: '/contract <N>', detail: 'Inspect leaderboard #1..10' },
@@ -77,7 +77,7 @@ function p2pSections(): { sections: DomainHelpSection[]; aiExamples: string[] } 
         rows: [
           { command: '/peers', detail: 'Client table, caps & RTT' },
           { command: '/ethy', detail: 'ETHY/0 swarm & serve stats' },
-          { command: '/rpc', detail: 'JSON-RPC endpoint & method stats' },
+          { command: '/rpc', detail: 'JSON-RPC status & methods' },
           { command: '/diag', detail: 'Diagnostic ring buffer' },
           { command: '/drop <peerId>', detail: 'Disconnect peer session' },
           { command: '/send <signedTxHex>', detail: 'Submit raw tx to the pool' },
@@ -85,7 +85,7 @@ function p2pSections(): { sections: DomainHelpSection[]; aiExamples: string[] } 
       },
     ],
     aiExamples: [
-      'Compare Nethermind vs Geth peers',
+      'Compare Nethermind vs Reth peers',
       'Who is the fastest peer?',
       'Any handshake anomalies?',
       'How many peers serve snap?',
@@ -93,6 +93,15 @@ function p2pSections(): { sections: DomainHelpSection[]; aiExamples: string[] } 
     ],
   }
 }
+
+const UNIFIED_AI_EXAMPLES = [
+  'How is base fee trending?',
+  'Explain the hottest contract',
+  'What changed in the latest BAL?',
+  'Show top ETH holders',
+  'Compare Nethermind vs Reth peers',
+  'Any handshake or sync anomalies?',
+]
 
 export function parseHelpDomainArg(parts: string[]): CapabilityId | undefined {
   const arg = parts[1]?.toLowerCase()
@@ -179,6 +188,22 @@ function domainHelpDebugPage(spine: EthySpine, domain: CapabilityId): DebugSecti
   ]
 }
 
+function unifiedHelpDebugPage(spine: EthySpine): DebugSectionSpec[] {
+  const { economy, state, p2p } = spine.capabilities
+  const rpcListen = spine.rpc?.listening === true ? 'listening' : 'off'
+  return [
+    {
+      title: 'Capabilities',
+      entries: [
+        { key: 'Economy', value: `${economy.status} (${economy.label})` },
+        { key: 'State', value: `${state.status} (${state.label})` },
+        { key: 'P2P', value: `${p2p.status} (${p2p.label})` },
+        { key: 'JSON-RPC', value: rpcListen },
+      ],
+    },
+  ]
+}
+
 export function buildDomainHelpWidget(spine: EthySpine, domain: CapabilityId): WidgetSpec {
   const spec =
     domain === 'state' ? stateSections() : domain === 'economy' ? economySections() : p2pSections()
@@ -191,9 +216,52 @@ export function buildDomainHelpWidget(spine: EthySpine, domain: CapabilityId): W
   }
 }
 
-/** Legacy flat command table (tests / carousel). */
 export function buildHelpWidget(spine: EthySpine): WidgetSpec {
-  return buildDomainHelpWidget(spine, 'economy')
+  const sections: DomainHelpSection[] = [
+    {
+      column: 'left',
+      domain: 'economy',
+      title: 'Economy',
+      rows: [
+        { command: '/live · /plaza', detail: 'Ethereum Plaza observatory' },
+        { command: '/economy', detail: '64-block gas, TPS & volume' },
+        { command: '/contract [N|0x]', detail: 'Contract & ABI microscope' },
+      ],
+    },
+    {
+      column: 'left',
+      domain: 'state',
+      title: 'State',
+      rows: [
+        { command: '/buckets', detail: '16-bucket sync & cursors' },
+        { command: '/account <0x>', detail: 'Balance, nonce & code' },
+        { command: '/bal', detail: 'Latest BAL state diffs' },
+        { command: '/cl', detail: 'Beacon finality & BLS %' },
+        { command: '/simulate <to> <data>', detail: 'EVM call microscope at head' },
+        { command: '/range [hex] · /sample', detail: 'Browse or sample accounts' },
+        { command: '/pause · /resume · /reassign', detail: 'Control range sync' },
+      ],
+    },
+    {
+      column: 'right',
+      domain: 'p2p',
+      title: 'P2P',
+      rows: [
+        { command: '/peers', detail: 'Client table, caps & RTT' },
+        { command: '/ethy', detail: 'ETHY/0 swarm & serve stats' },
+        { command: '/rpc', detail: 'JSON-RPC status & methods' },
+        { command: '/diag', detail: 'Diagnostic ring buffer' },
+        { command: '/send <txHex> · /drop <id>', detail: 'Broadcast tx or drop peer' },
+      ],
+    },
+  ]
+  return {
+    kind: 'domain_help',
+    unified: true,
+    sections,
+    aiExamples: UNIFIED_AI_EXAMPLES,
+    debugPage: unifiedHelpDebugPage(spine),
+  }
 }
 
 export function helpDomainLabel(domain: CapabilityId): string {

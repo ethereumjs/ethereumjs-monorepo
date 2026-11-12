@@ -23,7 +23,7 @@ Ethy’s terminal UI is a **pure function** of `EthySpine`, `TuiViewState`, and 
    - **Vertical breathing room:** Every cockpit box includes **1 blank padded inner row** (`│ ... │`) below the top border and **1 blank padded inner row** above the bottom border (8 visible rows total for 4 content rows). Similarly, keep a **1-row blank spacer** between the prompt input line and the footer hint line.
    - **Shared cross-box two-column rhythm:** Use `formatTwoColumnRows` with a shared `maxLabelWidth` and `TWO_COLUMN_MIN_GAP = 2` so label/value columns align consistently across all three cockpit boxes.
 4. **Typography Hierarchy (Bold Anchors vs. Dim Chrome/Prose):**
-   - **Bold (`BOLD`)** is reserved strictly for structural anchors and actionable keys: `Ethy v<ver>`, top-bar capability names (`Economy`, `State`, `P2P`), box titles (`State`, `Economy`, `P2P`, `AI`, `/help · <Domain>`), the interaction title chrome (`Commands | Debug (Ctrl+D)` and `←`/`→`), and the prompt `ethy >`, plus footer chords (`Tab`, `←/→`, `/`, `Esc`). **No** live notice line in the prompt band (`NoticeBoard` data may still update off-screen).
+   - **Bold (`BOLD`)** is reserved strictly for structural anchors and actionable keys: `Ethy v<ver>`, top-bar capability names (`Economy`, `State`, `P2P`), box titles (`State`, `Economy`, `P2P`, `AI`, `/help · Commands & AI`), the interaction top-right `←`/`→`, bottom-border `Ctrl+D debug`, and the prompt `ethy >`, plus footer chords (`Tab`, `/`, `Esc`). **No** live notice line in the prompt band (`NoticeBoard` data may still update off-screen).
    - **Dim (`DIM`)** is used for box borders, horizontal rules (`─`), and explanatory prose next to key chords (`open P2P view`, `switch domain`, `command`, `exit`) so key chords and prose never visually run together as a single sentence.
    - Never put hotkey hints like `[Enter]` inside box header titles; keep key hints in the footer line.
 5. **Canonical Capability Colors (`CAPABILITY_FG`):**
@@ -41,19 +41,19 @@ Ethy’s terminal UI is a **pure function** of `EthySpine`, `TuiViewState`, and 
 ```text
  Ethy v10.1.3 | SEPOLIA      Block 12,123,234        Slot 11,482,910        ◐ Economy  ● State  ● P2P
 ──────────────────────────────────────────────────────────────────────────────────────────────────
- ╭─ ● Economy • ──────────────╮  ╭─ ● State ──────────────────╮  ╭─ ● P2P ──────────────────────╮
+ ╭─ ● Economy ────────────────╮  ╭─ ● State ──────────────────╮  ╭─ ● P2P ──────────────────────╮
  │ Stage / Target / Progress  │  │ Gas / Activity / State / Hot │  │ Peers / Served / Latency / …   │
  ╰────────────────────────────╯  ╰────────────────────────────╯  ╰────────────────────────────────╯
 
- ╭─ /help · Economy · Commands | Debug (Ctrl+D)  ← →╮     ╭─ AI ─────────╮
- │  State & Sync Inspection   │     │  ● State prose block         │
- │  /buckets /range …         │     │  ● Economy prose block       │
- ╰────────────────────────────╯     │  ● P2P prose block           │
+ ╭─ /help · Commands & AI                    ← →╮     ╭─ AI ─────────╮
+ │  Economy / State cmds    │     │  ● State prose block         │
+ │  P2P / AI examples       │     │  ● Economy prose block       │
+ ╰────────────────── Ctrl+D debug ─╯     │  ● P2P prose block           │
                                     ╰──────────────────────────────╯
 
 ──────────────────────────────────────────────────────────────────────────────────────────────────
  ● ethy > █
- Tab show domain help · ←/→ view history · / command · Esc exit
+ Tab help · Enter plaza · / command · Esc exit
 ```
 
 ### Band 1 — Minimal Top Header Bar (1 row + full-bleed `─` rule)
@@ -71,18 +71,18 @@ Sits below the top header rule and displays three side-by-side rounded boxes (`�
      - **Row 4 (`State`):** Concise stage throughput/summary (`3.48M acc · 5,950/s`, `4.1k code · 82k slots`, `46 / 62 BALs applied`, or `34.2M acc · 64 BALs`). Never display cryptic internal persistence flags like `kept` or `previous`.
 3. **Right Box (`P2P` — swarm telemetry):**
    - Permanently shows peers, ETHY served chunks, latency, and client mix (`p2pCockpitPairs`). Never rotates with `Tab`.
-   - Box titles use **bold** `State` / `Economy` / `P2P` plus the domain mark. Active domain appends a colored ` •` on the title border without changing box width.
+   - Box titles use **bold** `State` / `Economy` / `P2P` plus the domain mark (no active-domain dot suffix).
 
 ### Band 3 — Lower fill band (`renderLowerArea`)
 - Occupies remaining rows between the cockpit row and the prompt rule (`fillRows = rows - 16` overhead). Short terminals clip the full-height **AI** box; do not bring back a Commands column.
-- **Left (2/3 width):** Rounded **Interaction View** — domain help (`DomainHelpUIComponent`), slash tables, NL `WidgetSpec`, optional `DebugPageUIComponent` when `interactionPage === 'debug'`. Top border right cluster (`interactionBoxRightChrome`): `Commands | Debug (Ctrl+D)` plus dimmed inactive `←`/`→` when history cannot move that direction.
+- **Left (2/3 width):** Rounded **Interaction View** — unified help (`DomainHelpUIComponent`), slash tables, NL `WidgetSpec`, optional `DebugPageUIComponent` when `interactionPage === 'debug'`. Top border right cluster (`interactionBoxRightChrome`): dimmed inactive `←`/`→` when history cannot move. Bottom border right: `Ctrl+D debug` when `debugPage` exists.
 - **Right (1/3 width):** Single full-height **AI** box (`view.aiOverviewSections`, `<= 600` chars total, three optional domain-marked blocks via `renderAiOverviewSections`).
-- **`Tab` on empty draft:** cycles `activeDomain` (`DOMAIN_ORDER`) and opens structured domain help (`showingHelp`); help never pushes `viewHistory`. **`←`/`→`** on empty draft walk `viewHistory` (max 12); slash entries refresh live on each draw, AI entries keep snapshots.
+- **`Tab` on empty draft:** toggles unified `/help` on and off (pushes `viewHistory`). **`←`/`→`** on empty draft walk `viewHistory` (max 12); slash entries refresh live on each draw, AI entries keep snapshots.
 - **Progressive disclosure:** Dense telemetry (discovery funnel, enode, flight-recorder paths) lives on `debugPage`, toggled with **`Ctrl+D`** (`\u0004`), not inline `assistantComment` or `footer: 'discovery'`.
 
 ### Band 4 — Domain-Lens Prompt & Hint (full-bleed `─` rule + **3** content rows)
 - **Prompt Line:** Starts with the **active domain circle** (`capabilityMark(view.activeDomain, status)`) directly to the left of `ethy > `:
-  - Example: `● ethy > ` where the leading mark tracks `activeDomain` (`economy` magenta → `state` yellow → `p2p` green) as the user presses `Tab`.
+  - Example: `● ethy > ` where the leading mark tracks `activeDomain` (set by last slash or NL command).
   - Terminal cursor is placed on the prompt line (`promptCaretPosition`, one row above the blank spacer).
 - **Blank spacer row** between prompt and footer (breathing room).
 - **Footer Hint Line:** Key hints on the left; slash-prefix autocomplete (`/p → /peers`) on that same left side while typing a command.
@@ -96,8 +96,8 @@ The keyboard interface is optimized so common actions take **1 or 2 keys**:
 
 | User Intent | Keystroke | Behavior |
 | --- | --- | --- |
-| **Domain help** (`economy` → `state` → `p2p`) | **`Tab`** / **`Shift+Tab`** (empty draft) | Cycles `activeDomain`, updates cockpit `•` focus and opens `domain_help` for that domain (boot on **Economy**). Does not push `viewHistory`. Empty **`Enter`** is a no-op. |
-| **Interaction history** | **`←`** / **`→`** (empty draft) | Navigates `viewHistory` (max 12). From help, **`←`** restores the current history entry without decrementing index. Slash entries re-run on draw; AI entries are frozen snapshots. |
+| **Command help** (unified) | **`Tab`** / **`Shift+Tab`** (empty draft) | Opens `/help · Commands & AI` or steps back to the prior view when already on help. Pushes `viewHistory`. |
+| **Interaction history** | **`←`** / **`→`** (empty draft) | Navigates `viewHistory` (max 12). Slash entries re-run on draw; AI entries are frozen snapshots. |
 | **Toggle debug page** | **`Ctrl+D`** | Flips `interactionPage` `main` ↔ `debug` when the active widget has `debugPage`. Does not insert a character into the draft. Exit remains **`Esc`** / **`Ctrl+C`** only. |
 | **Autocomplete Slash Command** | **`Tab`** or **`Right Arrow`** (when draft starts with `/`) | If the user typed a prefix like `/p` or `/b`, completes it to the matching command (`/peers`, `/buckets`). Even better: submitting an unambiguous prefix like `/p` + `Enter` resolves directly! |
 | **Run Command or AI Query** | Type text + **`Enter`** | Routes `promptDraft` through `IntentEngine` and mounts the resulting `WidgetSpec` in the Main Interaction Area. |
@@ -111,6 +111,6 @@ The keyboard interface is optimized so common actions take **1 or 2 keys**:
 - `renderFrame` and widget/box renderers must stay 100% free of `node:*`, `process.stdout`, `stdin`, and spine mutation.
 - Virtual framebuffer tests (`test/tui.spec.ts`) must verify:
   - `lines.length === rows` and every line `visibleWidth(line) === cols`.
-  - Cycling `activeDomain` via `Tab` changes the prompt circle color and updates the Metrics and Commands boxes while keeping column coordinates stable; Economy + Node Pulse borders unchanged.
+  - `Tab` help toggle and `viewHistory` navigation keep column coordinates stable.
   - `Ctrl+D` toggles debug sections for widgets with `debugPage` without changing `cols`/`rows` line count.
   - Pressing `Enter` on an empty draft triggers the active domain's deep view in the Main Interaction Area, whereas pressing `Tab` alone preserves any existing `activeWidget` in the Main Area.
