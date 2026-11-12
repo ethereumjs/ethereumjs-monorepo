@@ -180,7 +180,7 @@ export async function verifyProvenAccountChunkJob(
     keys.push(new Uint8Array(accountHash))
     values.push(binaryAccountToRLP(slab, off + 32))
   }
-  if (!equalsBytes(keys[0]!, opts.originHash)) {
+  if (compareBytes32(opts.originHash, keys[0]!) > 0) {
     return { ok: false, hasRight: false, count: 0, reason: 'chunk origin mismatch' }
   }
   const lastKey = keys[keys.length - 1]!

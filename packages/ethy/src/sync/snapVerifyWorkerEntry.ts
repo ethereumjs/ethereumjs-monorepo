@@ -1,7 +1,11 @@
 import { parentPort } from 'node:worker_threads'
 
 import { initEthyKeccak } from '../crypto/keccak.ts'
-import { verifyAccountRangeJob, verifyStorageRangeJob } from './snapVerifyJob.ts'
+import {
+  verifyAccountRangeJob,
+  verifyProvenAccountChunkJob,
+  verifyStorageRangeJob,
+} from './snapVerifyJob.ts'
 
 type WorkerRequest =
   | {
@@ -19,12 +23,22 @@ type WorkerRequest =
       accounts?: Array<{ accountHash: Uint8Array; storageRoot: Uint8Array }>
       storageRoot?: Uint8Array
     }
+  | {
+      id: number
+      kind: 'provenChunk'
+      chunkStateRoot: Uint8Array
+      originHash: Uint8Array
+      payload: Uint8Array
+      proofNodes: Uint8Array[]
+      hasRightHint: boolean
+    }
 
 type WorkerResponse = {
   id: number
   result:
     | Awaited<ReturnType<typeof verifyAccountRangeJob>>
     | Awaited<ReturnType<typeof verifyStorageRangeJob>>
+    | Awaited<ReturnType<typeof verifyProvenAccountChunkJob>>
 }
 
 if (parentPort === null) {
@@ -42,6 +56,24 @@ port.on('message', async (msg: WorkerRequest) => {
         stateRoot: msg.stateRoot,
         origin: msg.origin,
         payload: msg.payload,
+      })
+      const transfer =
+        result.slab !== undefined &&
+        result.slab.byteOffset === 0 &&
+        result.slab.byteLength === result.slab.buffer.byteLength
+          ? ([result.slab.buffer] as ArrayBuffer[])
+          : []
+      const out: WorkerResponse = { id: msg.id, result }
+      port.postMessage(out, transfer)
+      return
+    }
+    if (msg.kind === 'provenChunk') {
+      const result = await verifyProvenAccountChunkJob({
+        chunkStateRoot: msg.chunkStateRoot,
+        originHash: msg.originHash,
+        binaryAccountsSlab: msg.payload,
+        proofNodes: msg.proofNodes,
+        hasRightHint: msg.hasRightHint,
       })
       const transfer =
         result.slab !== undefined &&
