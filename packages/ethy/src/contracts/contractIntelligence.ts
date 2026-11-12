@@ -38,6 +38,7 @@ export type ContractAddressAgg = {
 
 export type CodeLookup = {
   getCodeForAddress: (address: string) => Uint8Array | undefined
+  getStorageSlotForAddress?: (address: string, slotHex: string) => string | undefined
   chainId: bigint
 }
 
@@ -165,12 +166,19 @@ export function archetypeLabelFromCode(
   return proxyLabel
 }
 
-export function macroArchetypeBucket(archetype: string | undefined): string {
+export function macroArchetypeBucket(archetype: string | undefined, proxyKind?: string): string {
   const a = archetype ?? 'Contract'
   if (a === 'ERC-20' || a === 'WETH') return 'ERC-20'
-  if (a === 'DEX Pool' || a === 'DEX Router') return 'DEX'
-  if (a.includes('Proxy') || a === 'EIP-1967 Beacon' || a.includes('Beacon')) return 'Proxy'
-  if (a === 'AA' || a === 'EIP-7702') return 'AA/7702'
+  if (a === 'DEX Pool' || a === 'DEX Router' || a === 'MEV Bot') return 'DEX'
+  if (
+    a.includes('Proxy') ||
+    a === 'EIP-1967 Beacon' ||
+    a.includes('Beacon') ||
+    proxyKind !== undefined
+  ) {
+    return 'Proxy'
+  }
+  if (a === 'AA' || a === 'EIP-7702' || a === 'Batch Dispatcher') return 'AA/7702'
   return 'Custom'
 }
 
@@ -242,11 +250,18 @@ function pass2Behavior(
     return { archetype: 'ERC-721', confidence: 'medium' }
   }
 
+  if (transferErc20 && !transfer721) {
+    return {
+      archetype: 'ERC-20',
+      confidence: 'medium',
+      proxyKind: pass1?.proxyKind ?? shellProxy?.proxyKind,
+      proxyTarget: pass1?.proxyTarget ?? shellProxy?.proxyTarget,
+    }
+  }
+
   if (
-    transferErc20 &&
     !transfer721 &&
-    (transferErc20 ||
-      hasSelector(agg, SELECTOR.transfer) ||
+    (hasSelector(agg, SELECTOR.transfer) ||
       hasSelector(agg, SELECTOR.transferFrom) ||
       hasSelector(agg, SELECTOR.approve))
   ) {
@@ -308,6 +323,13 @@ export function classifyAddress(
   TopContractRow,
   'address' | 'blocksActive' | 'storageWrites' | 'storageReads' | 'netEthDeltaWei'
 > {
+  let implSlotHex = agg.implSlotValue
+  if (implSlotHex === undefined && lookup.getStorageSlotForAddress !== undefined) {
+    implSlotHex = lookup.getStorageSlotForAddress(address, EIP1967_IMPLEMENTATION_SLOT)
+    if (implSlotHex !== undefined) {
+      agg.implSlotValue = implSlotHex
+    }
+  }
   const code = resolveCodeForAddress(address, lookup, agg)
   let pass1: Pass1 | undefined
   let proxyKind: ProxyKind | undefined
@@ -316,12 +338,12 @@ export function classifyAddress(
   if (code !== undefined && code.length > 0) {
     const fp = fingerprintWithCache(code, cache)
     pass1 = pass1FromFingerprint(fp)
-    proxyKind = fp.proxyKind
-    proxyTarget = fp.proxyTarget ?? extractImplFromBal(agg.implSlotValue)
+    proxyKind = fp.proxyKind ?? (implSlotHex !== undefined ? 'EIP-1967' : undefined)
+    proxyTarget = fp.proxyTarget ?? extractImplFromBal(implSlotHex)
     if (proxyKind !== undefined || proxyTarget !== undefined) {
       shellProxy = { proxyKind, proxyTarget }
     }
-    const implAddr = fp.proxyTarget ?? extractImplFromBal(agg.implSlotValue)
+    const implAddr = fp.proxyTarget ?? extractImplFromBal(implSlotHex)
     if (implAddr !== undefined) {
       const implCode = lookup.getCodeForAddress(implAddr)
       if (implCode !== undefined && implCode.length > 0) {
@@ -345,10 +367,24 @@ export function classifyAddress(
     if (pass1?.proxyTarget === undefined && proxyTarget !== undefined) {
       pass1 = pass1 ? { ...pass1, proxyTarget } : pass1
     }
-  } else if (agg.implSlotValue !== undefined) {
-    proxyTarget = extractImplFromBal(agg.implSlotValue)
+  } else if (implSlotHex !== undefined) {
+    proxyTarget = extractImplFromBal(implSlotHex)
     proxyKind = 'EIP-1967'
     shellProxy = { proxyKind, proxyTarget }
+    if (proxyTarget !== undefined) {
+      const implCode = lookup.getCodeForAddress(proxyTarget)
+      if (implCode !== undefined && implCode.length > 0) {
+        const implFp = fingerprintWithCache(implCode, cache)
+        const implP1 = pass1FromFingerprint(implFp)
+        if (implP1 !== undefined && !implP1.archetype.includes('Proxy')) {
+          pass1 = {
+            ...implP1,
+            proxyKind: 'EIP-1967',
+            proxyTarget,
+          }
+        }
+      }
+    }
   }
 
   const final = pass2Behavior(address, row, agg, pass1, peerArchetypes, shellProxy)
@@ -409,6 +445,19 @@ export function buildCodeLookup(stateManager: FlatStateManager, chain: ChainConf
         const ch = bytesToHex(acc.codeHash)
         if (ch.toLowerCase() === emptyCodeHash) return new Uint8Array(0)
         return stateManager.getCodeByHash(acc.codeHash)
+      } catch {
+        return undefined
+      }
+    },
+    getStorageSlotForAddress: (address: string, slotHex: string) => {
+      try {
+        const addrHex = (address.startsWith('0x') ? address : `0x${address}`) as `0x${string}`
+        const slotNorm = (slotHex.startsWith('0x') ? slotHex : `0x${slotHex}`) as `0x${string}`
+        const accHash = ethyKeccak256(hexToBytes(addrHex))
+        const slotHash = ethyKeccak256(hexToBytes(slotNorm))
+        const val = stateManager.getStorageByHash(accHash, slotHash)
+        if (val === undefined || val.length < 20) return undefined
+        return `0x${bytesToHex(val)}`
       } catch {
         return undefined
       }

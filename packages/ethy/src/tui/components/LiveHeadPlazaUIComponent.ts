@@ -311,12 +311,25 @@ function venuePulseBadge(row: TopContractRow): string {
   return 'Contract'
 }
 
+function venueBadgeColor(badge: string): string {
+  if (badge === 'ERC-20' || badge === 'WETH') return FG.cyan
+  if (badge.includes('DEX') || badge === 'MEV Bot') return FG.magenta
+  if (badge.includes('Proxy') || badge.includes('Beacon') || badge.includes('EIP-1967')) {
+    return FG.yellow
+  }
+  if (badge === 'AA' || badge === 'EIP-7702' || badge === 'Batch Dispatcher') return FG.green
+  return DIM
+}
+
 function contractPulseVenueLine(row: TopContractRow, _colW: number): string {
   const w = row.storageWrites + row.storageReads
   const slots = Math.round(w / Math.max(1, row.blocksActive))
+  const badge = venuePulseBadge(row)
+  const color = venueBadgeColor(badge)
+  const paddedBadge = fixedField(`${color}[${badge}]${RESET}`, 12)
   const sel = row.topSelectors?.[0]?.split(' (')[0]
-  const selClause = sel !== undefined ? ` · ${sel}()` : ''
-  return `${shortAddress(row.address)}  [${venuePulseBadge(row)}]   ${slots}w/blk${selClause}`
+  const selClause = sel !== undefined ? `${DIM} · ${sel}()${RESET}` : ''
+  return `${shortAddress(row.address)}  ${paddedBadge} ${slots}w/blk${selClause}`
 }
 
 function buildRightColumn(econ: EconomySnapshot, colW: number, budget: number): string[] {

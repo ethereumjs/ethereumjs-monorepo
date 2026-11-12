@@ -443,6 +443,7 @@ export const TOPIC = {
   transferSingle: catalogTopic0ForSignature(
     'TransferSingle(address,address,address,uint256,uint256)',
   ),
+  upgradedEip1967: catalogTopic0ForSignature('Upgraded(address)'),
 }
 
 export const EIP1967_IMPLEMENTATION_SLOT =

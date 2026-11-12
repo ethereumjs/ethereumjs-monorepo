@@ -266,6 +266,17 @@ export class ETHEconomyDataManager {
         if (snap.implSlot !== undefined) agg.implSlotValue = snap.implSlot
       }
     }
+    if (record.observations !== undefined) {
+      for (const log of record.observations.logs) {
+        if (log.topic0.toLowerCase() === TOPIC.upgradedEip1967.toLowerCase()) {
+          const rawImpl = log.topics[1]
+          if (rawImpl !== undefined && rawImpl.length >= 42) {
+            const agg = this.ensureContractAgg(log.emitter)
+            agg.implSlotValue = `0x${rawImpl.slice(-40).toLowerCase()}`
+          }
+        }
+      }
+    }
   }
 
   private rebuildContractAgg(): void {
@@ -393,7 +404,7 @@ export class ETHEconomyDataManager {
     if (classified.length === 0) return undefined
     const counts = new Map<string, number>()
     for (const row of classified) {
-      const bucket = macroArchetypeBucket(row.archetype)
+      const bucket = macroArchetypeBucket(row.archetype, row.proxyKind)
       counts.set(bucket, (counts.get(bucket) ?? 0) + 1)
     }
     const total = classified.length
@@ -417,6 +428,22 @@ export class ETHEconomyDataManager {
     if (this.stateManager !== undefined) {
       const lookup = buildCodeLookup(this.stateManager, this.chain)
       const enriched = enrichTopContracts(pool, this.contractAgg, lookup, this.fingerprintCache)
+      for (const row of enriched) {
+        if (row.archetype !== undefined) {
+          addressArchetypes.set(row.address.toLowerCase(), row.archetype)
+        }
+      }
+    } else {
+      const fallbackLookup = {
+        chainId: BigInt(this.chain.chainId),
+        getCodeForAddress: () => undefined,
+      }
+      const enriched = enrichTopContracts(
+        pool,
+        this.contractAgg,
+        fallbackLookup,
+        this.fingerprintCache,
+      )
       for (const row of enriched) {
         if (row.archetype !== undefined) {
           addressArchetypes.set(row.address.toLowerCase(), row.archetype)
@@ -501,10 +528,10 @@ export class ETHEconomyDataManager {
     archetypeMix?: EconomySnapshot['archetypeMix']
   } {
     const pool = this.buildTopContracts(ECONOMY_CLASSIFY_POOL)
-    if (this.stateManager === undefined) {
-      return { top: pool.slice(0, ECONOMY_LEADERBOARD_SIZE) }
-    }
-    const lookup = buildCodeLookup(this.stateManager, this.chain)
+    const lookup =
+      this.stateManager !== undefined
+        ? buildCodeLookup(this.stateManager, this.chain)
+        : { chainId: BigInt(this.chain.chainId), getCodeForAddress: () => undefined }
     const classified = enrichTopContracts(pool, this.contractAgg, lookup, this.fingerprintCache)
     return {
       top: classified.slice(0, ECONOMY_LEADERBOARD_SIZE),
