@@ -34,11 +34,12 @@ import {
   headFieldsFromHeaderRlp,
   startBlockBundleByNumber,
 } from './blockBundle.ts'
+import { nextCanonicalPivotBlock } from './canonicalPivotGrid.ts'
 import type { SnapCodeAndStorageSynchronizer } from './codeAndStorageSync.ts'
 import { accountHashFromAddress, isAccountHashSynced } from './syncedAccountHash.ts'
 
 export const PIVOT_HEAL_BLOCK_GAP = 64n
-export const PIVOT_STEP_BLOCKS = 16n
+export const PIVOT_STEP_BLOCKS = 32n
 export const SAFE_HEAD_MARGIN = 2n
 export const HEAD_FOLLOW_POLL_MS = 5_000
 export const TIP_POLL_MS = 4_000
@@ -718,19 +719,22 @@ export class BalChainStreamer {
   private async maybePivotStep(): Promise<void> {
     const { spine } = this.opts
     if (spine.phase !== 'SNAP_SYNCING') return
-    while (this.buffered.length >= Number(PIVOT_STEP_BLOCKS)) {
+    while (this.buffered.length > 0) {
       const pivot = spine.pivotBlockNumber
       if (pivot === undefined || spine.pivotStateRoot === undefined) return
       const first = this.buffered[0]?.blockNumber
       const last = this.buffered[this.buffered.length - 1]?.blockNumber
       if (first === undefined || last === undefined) return
-      const targetBlock = pivot + PIVOT_STEP_BLOCKS
+      const targetBlock = nextCanonicalPivotBlock(pivot, last)
+      if (targetBlock === undefined) return
       const best =
         spine.bestPeerHead !== undefined && spine.bestPeerHead > last ? spine.bestPeerHead : last
       if (first !== pivot + 1n || last < targetBlock) return
       if (targetBlock > best - SAFE_HEAD_MARGIN) return
 
-      const window = this.buffered.splice(0, Number(PIVOT_STEP_BLOCKS))
+      const stepCount = Number(targetBlock - pivot)
+      if (this.buffered.length < stepCount) return
+      const window = this.buffered.splice(0, stepCount)
       spine.pivotStepsCompleted = (spine.pivotStepsCompleted ?? 0) + 1
       await this.applyBufferedWindow(window, spine.snapBuckets)
       // Advance Connected Peers' known latestBlock to at least targetBlock once we have verified

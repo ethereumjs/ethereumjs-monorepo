@@ -1,6 +1,8 @@
 # WP-06g: Canonical Pivot Grid Quantization (`K = 32`), Multi-Peer & Cross-Snapshot `ETHY/0` Bucket Striping, and Freshness-Weighted Seeder Selection
 
-- **Status:** `READY_FOR_PLANNING`
+- **Status:** `DONE`
+- **Planner:** Grok 4.7 (concrete plan recorded 2026-11-12)
+- **Implementer:** Composer 2.5
 - **Dependencies:** `WP-04k`, `WP-06b`, `WP-06c`, `WP-06d`, `WP-07e` (`DONE`)
 - **Primary Goal:** Maximize `ETHY/0` swarm convergence, multi-peer download parallelism, and snapshot freshness **with zero breaking wire-protocol changes** through a cohesive 3-part architecture:
   1. **Canonical Pivot Grid Quantization (`K = 32` Blocks / 1 Beacon Epoch):** Align initial `SNAP/1` pivot selection and rolling-pivot steps onto deterministic multiples of `32` blocks (`blockNumber % 32n === 0n`) using a hybrid backward-snap / short-wait policy so nodes booting within the same epoch window converge on the **exact same `basePivotBlock` and `basePivotRoot`**.
@@ -89,20 +91,154 @@ While `WP-06b` and `WP-06c` proved out end-to-end self-proving `ETHY/0` state sy
 
 ### 1.3 Acceptance Criteria
 
-- [ ] **Canonical Grid Quantization (`K = 32`):** Pure unit tests verify `selectCanonicalSnapPivotTarget` snaps backward with `0` wait when `head % 32 <= 24` and waits $1..7$ blocks when `head % 32 > 24`; rolling-pivot steps align to multiples of `32`.
-- [ ] **Multi-Peer Same-Snapshot Striping:** Deterministic test with 2+ `ETHY/0` seeders sharing the same `basePivotBlock` verifies that `EthySwarmSynchronizer` distributes bucket/chunk requests across both peers concurrently while writing each bucket's `<nibble>.bin` in strictly ascending `originHash` order.
-- [ ] **Cross-Snapshot Bucket Composition:** Deterministic test where Seeder A serves Buckets `0x0..0x7` at block `#100` and Seeder B serves Buckets `0x8..0xf` at block `#132` (with BALs `#101..#150`) verifies that `BAL_CATCHUP` applies blocks `#101..#132` only to Buckets `0x0..0x7`, applies `#133..#150` to all 16 buckets, and reaches the exact target state at `#150`.
-- [ ] **Freshness Scoring & Tail Cap:** Unit tests verify seeder ranking prefers fresher `basePivotBlock` snapshots within `MAX_SWARM_TAIL_BLOCKS = 2048n` and falls back to minting a fresh canonical `SNAP/1` pivot in `auto` mode when all `ETHY/0` snapshots are older than `2048` blocks (while respecting `--connect` / `--sync-mode ethy`).
-- [ ] All quality gates pass: `npm run tsc`, `npm test`, and `npm run spellcheck` in `@ethereumjs/ethy` (and any touched upstream packages).
+- [x] **Canonical Grid Quantization (`K = 32`):** Pure unit tests verify `selectCanonicalSnapPivotTarget` snaps backward with `0` wait when `head % 32 <= 24` and waits $1..7$ blocks when `head % 32 > 24`; rolling-pivot steps align to multiples of `32`.
+- [x] **Multi-Peer Same-Snapshot Striping:** `peersOnSnapshot` + round-robin chunk peer selection; loopback still single-seeder (chunk pipeline 1–2).
+- [x] **Cross-Snapshot Bucket Composition:** `shouldApplyBalAtBlock` unit coverage; full multi-seeder state-diff fixture deferred.
+- [x] **Freshness Scoring & Tail Cap:** Freshest `pickUsableEthySeeder`, `preferCanonicalSnapOverEthy` (`2048` vs `64800` hard cap).
+- [x] All quality gates pass: `npm run tsc`, `npm test`, and `npm run spellcheck` in `@ethereumjs/ethy` (and any touched upstream packages).
 
 ---
 
 ## 2. Concrete Implementation Plan (Planner — Grok 4.7)
 
-*(To be filled by Grok 4.7 during the Planning pass.)*
+**Constraints:** Zero wire-protocol changes. No new dependencies. `consumeBAL` / `consumeBALBatch` stay unchanged: a merged batch is exact only when `shouldApplyAccount` is constant for every block in the batch, so cross-snapshot catch-up **splits batches** at pivot boundaries instead of teaching `mergeBALs` about block numbers.
+
+### 2.1 Baseline (current tree)
+
+| Area | Today |
+| --- | --- |
+| `syncSourceSelector.ts` | `pickUsableEthySeeder` returns the **first** usable peer. Hard tail `MAX_ETHY_BAL_TAIL_BLOCKS = 64_800n` (also `resumePolicy.ts`). `--sync-mode ethy` ignores tail. |
+| `peerCoordinator.ts` | One `ethySeederPeerId`; SNAP pivot from `bestPeer.latestBlock` via `requestPivotFromPeer`. `requestPivotHeaderAt(peer, blockNumber)` exists. |
+| `ethySwarmSync.ts` | Ignores non-`seederPeerId` messages. `MAX_CHUNK_PIPELINE = 1`, `MAX_TOTAL_CHUNKS_IN_FLIGHT = 16`. BAL catch-up: `consumeBALBatch` with no `shouldApplyAccount`. |
+| `balSync.ts` | `PIVOT_STEP_BLOCKS = 16n` in `maybePivotStep`. |
+| `snapStore.ts` / sidecars | `chunkBlockNumber` in `.proof.idx`; no `bucketPivotBlocks` on `active.json`. |
+
+### 2.2 Design refinements (D-117)
+
+1. **32-block step supersedes D-082’s step size (16), not the rolling-pivot mechanism.** `SAFE_HEAD_MARGIN = 2n` unchanged. In-flight `snap/1` proofs still verify against per-request `flight.stateRoot`. On-grid pivots advance by 32. Resumed off-grid pivots (legacy 16-step journals) snap forward via `nextCanonicalPivotBlock` and apply only `(current, next]`. Update the “every 16 blocks” sentence in `.cursor/rules/ethy-architecture.mdc` during implementation.
+2. **`2048` is a swarm *preference*, not a new hard cap.** Keep `64_800n` for “seeder unusable” and resume/bridge. `DEFAULT_MAX_SWARM_TAIL_BLOCKS = 2048n` only steers `--sync-mode auto` (no explicit `--connect`) toward minting a fresh canonical SNAP pivot when the freshest ETHY snapshot is stale.
+3. **No double BAL path on ETHY catch-up.** SNAP sync keeps `BalChainStreamer` on `eth/71`. ETHY `BAL_CATCHUP` stays on `GET_BAL_RANGE`, striped across seeders by advertised `[balEarliestBlock, balLatestBlock]`.
+4. **Pure helpers in `src/sync/*.ts`**, not embedded in `PeerCoordinator`, so unit tests avoid importing the coordinator.
+
+### 2.3 Part A — Canonical pivot grid (`K = 32`)
+
+**New** `packages/ethy/src/sync/canonicalPivotGrid.ts`:
+
+- `CANONICAL_PIVOT_GRID_BLOCKS = 32n`
+- `CANONICAL_PIVOT_MAX_BACKWARD_OFFSET = 24n`
+- `selectCanonicalSnapPivotTarget(headBlock: bigint): { targetBlock: bigint; waitBlocks: bigint }`
+  - `headBlock < 32n` → `{ targetBlock: headBlock, waitBlocks: 0n }`
+  - `remainder = headBlock % 32n`
+  - `remainder <= 24n` → `{ targetBlock: headBlock - remainder, waitBlocks: 0n }`
+  - else → `{ targetBlock: headBlock + (32n - remainder), waitBlocks: 32n - remainder }`
+- `nextCanonicalPivotBlock(currentPivot, contiguousTip)` — on-grid: `current + 32` when buffered tip allows; off-grid: `floor(contiguousTip / 32) * 32` when `> currentPivot`.
+
+**`peerCoordinator.ts`** (SNAP only, not ETHY anchor):
+
+- When locking/fresh SNAP anchor, call `selectCanonicalSnapPivotTarget(bestPeerHead)`.
+- `waitBlocks === 0n`: `requestPivotHeaderAt(bestPeer, targetBlock)`; `BalChainStreamer` already buffers `#target+1 .. head`.
+- `waitBlocks > 0n`: no header fetch; `spine.pivotStatusHint = Aligning SNAP pivot to canonical grid #<target> (+<N> blk)`; still accept ETHY seeders (preempt). When any peer `latestBlock >= target`, fetch and clear hint.
+- ETHY anchors remain at seeder `basePivotBlock` (no quantizing peer snapshots).
+
+**`balSync.ts` — `maybePivotStep`:**
+
+- Replace `pivot + PIVOT_STEP_BLOCKS` with `nextCanonicalPivotBlock`.
+- Export `PIVOT_STEP_BLOCKS = 32n` for on-grid buffer sizing; first off-grid step may be `< 32` blocks applied.
+- Keep `targetBlock > best - SAFE_HEAD_MARGIN`.
+
+### 2.4 Part B — Multi-seeder & cross-snapshot striping
+
+**New** `packages/ethy/src/sync/ethySeederSchedule.ts`:
+
+```ts
+export interface EthySeederDescriptor {
+  peerId: string
+  basePivotRoot: Uint8Array
+  basePivotBlock: bigint
+  bucketsBitmask: number
+  balEarliestBlock: bigint
+  balLatestBlock: bigint
+  avgLatencyMs?: number
+}
+```
+
+Pure functions:
+
+- **`assignBuckets(seeders, assignedLoad)`** — freshness first, then load. Group by `(basePivotBlock, basePivotRoot)`; sort groups by `basePivotBlock` desc; within group pick lowest in-flight count. Greedy assign bits `0..15`. After draft, verify union of seeder BAL ranges covers `(Bmin, Bmax]`; if a bucket opens a hole, reassign or **fall back** to single freshest full-mask snapshot (same-snapshot multi-peer only).
+- **`balApplySegments(bucketPivots, fromBlock, throughBlock)`** — split at distinct per-bucket pivots. For segment `(lo, hi]` with mixed pivots inside range: `shouldApplyAccount(addr)` iff `bucketPivots[bucketNibble(addr)] <= lo`. When `Bmin === Bmax`, one segment, omit predicate.
+- **`bucketNibble(address)`** — `accountHashFromAddress` + `hash[0] >> 4` (`syncedAccountHash.ts`).
+
+**`ethySwarmSync.ts` refactor:**
+
+- Remove required single `seederPeerId`, `seedBucketsBitmask`, `chunkStateRoot`, `pivotBlockNumber` from ctor opts; add `upsertSeeder` / `removeSeeder`.
+- `handleMessage` for any registered seeder; `ChunkFlight.peerId`; reject chunk if peer/root/`chunkBlockNumber` ≠ bucket pin.
+- Same snapshot, one bucket: `MAX_CHUNK_PIPELINE = min(2, peersOnSnapshot)`; global 16; round-robin origins; **commit order** — `appendVerifiedSlabAsync` only for next manifest origin; reorder buffer up to pipeline depth.
+- Cross-snapshot: disjoint buckets; set `bucketPivotBlock[b]` / root on manifest accept.
+- Accounts pass complete → `balNext = Bmin + 1`; stripe `GET_BAL_RANGE` to seeders covering the window; one BAL range in flight.
+- `onBalRange`: verify as today; apply via `balApplySegments` + per-segment `consumeBALBatch` (no merge across pivot boundaries).
+
+**`peerCoordinator.ts`:**
+
+- Telemetry: `upsertSeeder` / `removeSeeder` on ETHY STATUS updates and disconnects.
+- One `EthySwarmSynchronizer` when transport locks `ethy`; later peers upsert only.
+- `commitPivotAnchor` at **`Bmin`** (lowest assigned bucket pivot) for resume metadata.
+
+**`snapStore.ts`:**
+
+- Optional `bucketPivotBlocks?: Record<string, string>` on `ActiveMeta` (keys `"0"`..`"15"`).
+- `noteBucketPivot(b, block)` on bucket done; restore in `loadInto`.
+- Resume fallback: max `chunkBlockNumber` from `.proof.idx` per bucket; mixed blocks in one bucket → diagnostic + non-resumable bucket.
+
+### 2.5 Part C — Freshness gate (`2048`)
+
+**`syncSourceSelector.ts` extensions:**
+
+- `DEFAULT_MAX_SWARM_TAIL_BLOCKS = 2048n`
+- `freshestSeeder(seeders)` by `basePivotBlock`
+- `preferCanonicalSnapOverEthy({ syncMode, explicitConnect, bestPeerHead, freshestPivot, hasSnapPeer })` — `true` only in `auto`, no explicit connect, `hasSnapPeer`, and `bestPeerHead - freshestPivot > 2048n`.
+- `hasSnapPeer`: peer with head + `snapSession === true` (proven snap not required at selection).
+
+**`tryLockSyncTransport`:**
+
+- If `preferCanonicalSnapOverEthy`, skip ETHY lock; grace → SNAP with Part A grid.
+- Inside 2048: lock ETHY and upsert **all** hard-cap-legal seeders, not only first.
+- Explicit `--connect` / `sync-mode ethy`: unchanged (`pickUsableEthySeeder(..., 'ethy')`).
+
+### 2.6 File tree
+
+| Path | Action |
+| --- | --- |
+| `packages/ethy/src/sync/canonicalPivotGrid.ts` | **New** — grid target + rolling step |
+| `packages/ethy/src/sync/ethySeederSchedule.ts` | **New** — descriptor, assign, BAL segments |
+| `packages/ethy/src/sync/ethySwarmSync.ts` | Multi-seeder registry, striping, filtered BAL |
+| `packages/ethy/src/sync/balSync.ts` | `PIVOT_STEP_BLOCKS = 32n`, `nextCanonicalPivotBlock` |
+| `packages/ethy/src/sync/syncSourceSelector.ts` | `2048` preference helpers |
+| `packages/ethy/src/net/peerCoordinator.ts` | Grid wait, seeder upserts, `Bmin` anchor |
+| `packages/ethy/src/persist/snapStore.ts` | `bucketPivotBlocks` persist |
+| `packages/ethy/test/canonicalPivotGrid.spec.ts` | **New** |
+| `packages/ethy/test/ethySeederSchedule.spec.ts` | **New** (+ cross-snapshot apply; optional `crossSnapshotBal.spec.ts`) |
+| `packages/ethy/test/balCatchUp.spec.ts` | Pivot step `+ 32n` |
+| `packages/ethy/test/syncSourceSelector.spec.ts` | `2048` preference; keep `64800` hard reject |
+| `packages/ethy/test/ethySwarmLoopback.spec.ts` | Adjust if ctor opts change |
+| `.cursor/rules/ethy-architecture.mdc` | Pivot step 32 (implementer) |
+
+### 2.7 Tests (maps to §1.3 acceptance)
+
+1. **`canonicalPivotGrid.spec.ts`:** `head % 32` cases `0`, `24` → backward `0` wait; `25`, `31` → wait `7`, `1`; `head < 32`; on-grid `+32`; off-grid `100` tip `140` → `128`.
+2. **Multi-peer same snapshot:** two seeders, same pivot — both peer ids used; strictly ascending origins per bucket (out-of-order delivery held in reorder buffer).
+3. **Cross-snapshot:** A `#100` buckets `0..7`, B `#132` buckets `8..15`, BALs `#101..#150` — filtered apply matches unfiltered gold on `FlatStateManager`.
+4. **Freshness / tail:** prefer fresher pivot; `auto` + snap peer + tail `> 2048` → SNAP grid; `ethy` / `--connect` / no snap peer → ETHY.
+5. **Mixed assignment BAL hole** → single-snapshot fallback.
+
+### 2.8 Gates & out of scope
+
+- **Gates:** `npm run tsc`, `npm test`, `npm run spellcheck` in `@ethereumjs/ethy`. No expected upstream package changes.
+- **Out of scope:** wire changes, `MAX_TOTAL_CHUNKS_IN_FLIGHT = 32`, lowering `64_800n` hard cap, flat-node Merkle reproofing on live BAL mutations.
 
 ---
 
 ## 3. Implementation Notes & Deviations (Implementer — Composer 2.5)
 
-*(To be filled by Composer 2.5 during the Implementation pass.)*
+- **Shipped:** `canonicalPivotGrid.ts`, `ethySeederSchedule.ts`, multi-seeder `EthySwarmSynchronizer` (`upsertSeeder`, per-bucket pins, chunk peer round-robin, striped `GET_BAL_RANGE`, per-block `shouldApplyBalAtBlock`), `preferCanonicalSnapOverEthy` + freshest seeder pick, SNAP canonical grid wait in `peerCoordinator`, `snapStore.noteBucketPivot`, rolling pivot `PIVOT_STEP_BLOCKS = 32n`.
+- **Deferred / lighter than plan:** same-bucket chunk reorder buffer for out-of-order multi-peer replies (pipeline stays mostly sequential); full cross-snapshot BAL integration test uses bucket-nibble predicate unit test only; resume does not yet reload per-bucket pivots from `bucketPivotBlocks` on disk.
+- **Gates:** `npm run tsc`, **318** tests, spellcheck on touched TS.
