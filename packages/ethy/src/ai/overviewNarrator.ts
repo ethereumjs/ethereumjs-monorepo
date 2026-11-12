@@ -119,15 +119,28 @@ export function buildDeterministicOverviewSections(
     sections.economy = `Base fee ${econ.baseFeeGwei} Gwei (${trend}), ${tps}, ${vol} (64 blk).`
     const hotRow = econ.topContracts[0]
     if (hotRow !== undefined) {
-      const hotArch =
-        hotRow.knownName ??
-        (hotRow.archetype !== undefined && hotRow.archetype !== 'Contract'
-          ? hotRow.archetype
-          : 'contract')
-      sections.economy += ` Hottest: ${hotArch} ${hotRow.address.slice(0, 6)}…${hotRow.address.slice(-4)}.`
+      const addr = `${hotRow.address.slice(0, 6)}…${hotRow.address.slice(-4)}`
+      let badge: string | undefined
+      if (hotRow.knownName !== undefined) badge = hotRow.knownName
+      else if (hotRow.archetype !== undefined && hotRow.archetype !== 'Contract') {
+        badge = hotRow.archetype
+      } else if (hotRow.proxyKind !== undefined) badge = hotRow.proxyKind
+      const badgeClause = badge !== undefined ? ` [${badge}]` : ''
+      sections.economy += ` Hottest: ${addr}${badgeClause}.`
     }
   }
-  sections.state = `Head following live — ${pct}% sync complete.`
+  const headN = econ.latestBlockNumber ?? snapshots.pulse.pivotBlockNumber ?? '—'
+  if (snapshots.snap.bucketsDone === 16) {
+    let stateLine = `Head following live at #${headN} (16/16 buckets synced).`
+    const codeDone = snapshots.snap.codesSynced
+    const codeTot = snapshots.snap.codesTotal
+    if (codeTot !== undefined && codeTot > codeDone) {
+      stateLine += ` Background code index ${codeDone.toLocaleString('en-US')}/${codeTot.toLocaleString('en-US')}.`
+    }
+    sections.state = stateLine
+  } else {
+    sections.state = `Head following live at #${headN} — accounts ${snapshots.snap.bucketsDone}/16.`
+  }
   sections.p2p = `${peers} peers connected.`
   return clampOverviewSections(sections)
 }

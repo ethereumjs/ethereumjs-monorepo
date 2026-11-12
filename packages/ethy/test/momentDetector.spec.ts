@@ -120,4 +120,35 @@ describe('[Ethy/Economy]: momentDetector', () => {
     assert.isAtMost(moments.length, 3)
     assert.equal(moments[0]!.kind, 'graffiti_note')
   })
+
+  it('enriches birth headline when classifyCode is provided', () => {
+    const moments = detectBlockMoments({
+      record: baseRecord(),
+      classifyCode: () => 'ERC-20',
+      balJson: [
+        {
+          address: '0x00000000000000000000000000000000000000c1',
+          balanceChanges: [],
+          nonceChanges: [],
+          codeChanges: [{ blockAccessIndex: '0x01', newCode: '0x6001600101' }],
+          storageChanges: [],
+          storageReads: [],
+        },
+      ],
+    })
+    const birth = moments.find((m) => m.kind === 'birth')
+    assert.isDefined(birth)
+    assert.include(birth!.headline, '[ERC-20]')
+  })
+
+  it('enriches revert headline with archetype badge', () => {
+    const archetypes = new Map([['0xdead', 'DEX Router']])
+    const moments = detectBlockMoments({
+      record: baseRecord({ receiptReverts: 1, firstRevertTo: '0xdead' }),
+      addressArchetypes: archetypes,
+    })
+    const rev = moments.find((m) => m.kind === 'revert')
+    assert.isDefined(rev)
+    assert.include(rev!.headline, '[DEX Router]')
+  })
 })

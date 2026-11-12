@@ -153,12 +153,34 @@ function hasSelector(agg: ContractAddressAgg, selector: string): boolean {
   return (agg.selectorCounts.get(selector.toLowerCase()) ?? 0) > 0
 }
 
+export function archetypeLabelFromCode(
+  code: Uint8Array,
+  cache: Map<string, BytecodeFingerprint>,
+): string | undefined {
+  if (code.length === 0) return undefined
+  const fp = fingerprintWithCache(code, cache)
+  const p1 = pass1FromFingerprint(fp)
+  if (p1 !== undefined) return p1.archetype
+  const proxyLabel = proxyOnlyLabel(fp)
+  return proxyLabel
+}
+
+export function macroArchetypeBucket(archetype: string | undefined): string {
+  const a = archetype ?? 'Contract'
+  if (a === 'ERC-20' || a === 'WETH') return 'ERC-20'
+  if (a === 'DEX Pool' || a === 'DEX Router') return 'DEX'
+  if (a.includes('Proxy') || a === 'EIP-1967 Beacon' || a.includes('Beacon')) return 'Proxy'
+  if (a === 'AA' || a === 'EIP-7702') return 'AA/7702'
+  return 'Custom'
+}
+
 function pass2Behavior(
   address: string,
   row: TopContractRow,
   agg: ContractAddressAgg,
   pass1?: Pass1,
   peerArchetypes?: Map<string, string>,
+  shellProxy?: Pick<Pass1, 'proxyKind' | 'proxyTarget'>,
 ): Pass1 {
   if (pass1 !== undefined && pass1.confidence === 'high') return pass1
 
@@ -207,14 +229,32 @@ function pass2Behavior(
     return { archetype: 'DEX Pool', confidence: 'medium' }
   }
 
+  if ((swapV2 || swapV3) && !sync) {
+    return {
+      archetype: 'DEX Pool',
+      confidence: 'medium',
+      proxyKind: pass1?.proxyKind ?? shellProxy?.proxyKind,
+      proxyTarget: pass1?.proxyTarget ?? shellProxy?.proxyTarget,
+    }
+  }
+
   if (transfer721 || hasTopic(agg, TOPIC.transferSingle)) {
     return { archetype: 'ERC-721', confidence: 'medium' }
   }
 
-  if (transferErc20) {
-    const writesPerBlock = row.storageWrites / Math.max(1, row.blocksActive)
-    if (writesPerBlock >= 1 && writesPerBlock <= 4) {
-      return { archetype: 'ERC-20', confidence: 'medium' }
+  if (
+    transferErc20 &&
+    !transfer721 &&
+    (transferErc20 ||
+      hasSelector(agg, SELECTOR.transfer) ||
+      hasSelector(agg, SELECTOR.transferFrom) ||
+      hasSelector(agg, SELECTOR.approve))
+  ) {
+    return {
+      archetype: 'ERC-20',
+      confidence: 'medium',
+      proxyKind: pass1?.proxyKind ?? shellProxy?.proxyKind,
+      proxyTarget: pass1?.proxyTarget ?? shellProxy?.proxyTarget,
     }
   }
 
@@ -234,6 +274,26 @@ function pass2Behavior(
     return { archetype: 'WETH', confidence: 'medium' }
   }
 
+  const pk = shellProxy?.proxyKind
+  if (pk !== undefined) {
+    const proxyLabel =
+      pk === 'EIP-1167'
+        ? 'EIP-1167 Proxy'
+        : pk === 'EIP-1967'
+          ? 'EIP-1967 Proxy'
+          : pk === 'EIP-1967-Beacon'
+            ? 'EIP-1967 Beacon'
+            : pk === 'EIP-7702'
+              ? 'EIP-7702'
+              : 'Proxy'
+    return {
+      archetype: proxyLabel,
+      confidence: 'medium',
+      proxyKind: pk,
+      proxyTarget: shellProxy?.proxyTarget,
+    }
+  }
+
   return { archetype: 'Contract', confidence: 'low' }
 }
 
@@ -250,22 +310,48 @@ export function classifyAddress(
 > {
   const code = resolveCodeForAddress(address, lookup, agg)
   let pass1: Pass1 | undefined
-  let proxyKind: ProxyKind
+  let proxyKind: ProxyKind | undefined
   let proxyTarget: string | undefined
+  let shellProxy: Pick<Pass1, 'proxyKind' | 'proxyTarget'> | undefined
   if (code !== undefined && code.length > 0) {
     const fp = fingerprintWithCache(code, cache)
     pass1 = pass1FromFingerprint(fp)
     proxyKind = fp.proxyKind
     proxyTarget = fp.proxyTarget ?? extractImplFromBal(agg.implSlotValue)
+    if (proxyKind !== undefined || proxyTarget !== undefined) {
+      shellProxy = { proxyKind, proxyTarget }
+    }
+    const implAddr = fp.proxyTarget ?? extractImplFromBal(agg.implSlotValue)
+    if (implAddr !== undefined) {
+      const implCode = lookup.getCodeForAddress(implAddr)
+      if (implCode !== undefined && implCode.length > 0) {
+        const implFp = fingerprintWithCache(implCode, cache)
+        const implP1 = pass1FromFingerprint(implFp)
+        if (implP1 !== undefined) {
+          const proxyOnly =
+            implP1.archetype.includes('Proxy') ||
+            implP1.archetype === 'EIP-7702' ||
+            implP1.archetype === 'EIP-1967 Beacon'
+          if (!proxyOnly) {
+            pass1 = {
+              ...implP1,
+              proxyKind: fp.proxyKind ?? proxyKind,
+              proxyTarget: implAddr,
+            }
+          }
+        }
+      }
+    }
     if (pass1?.proxyTarget === undefined && proxyTarget !== undefined) {
       pass1 = pass1 ? { ...pass1, proxyTarget } : pass1
     }
   } else if (agg.implSlotValue !== undefined) {
     proxyTarget = extractImplFromBal(agg.implSlotValue)
     proxyKind = 'EIP-1967'
+    shellProxy = { proxyKind, proxyTarget }
   }
 
-  const final = pass2Behavior(address, row, agg, pass1, peerArchetypes)
+  const final = pass2Behavior(address, row, agg, pass1, peerArchetypes, shellProxy)
   const knownName = knownContractName(lookup.chainId, address)
   return {
     archetype: final.archetype,

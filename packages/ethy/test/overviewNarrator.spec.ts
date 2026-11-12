@@ -26,6 +26,9 @@ describe('[Ethy/AI]: overviewNarrator', () => {
   it('head-following overview mentions base fee when economy has blocks', () => {
     const spine = createSpine('sepolia', 11155111n)
     setPhase(spine, 'HEAD_FOLLOWING')
+    for (const b of spine.snapBuckets) b.status = 'done'
+    spine.codesSynced = 713_700
+    spine.codesTotal = 751_500
     spine.economy = {
       hasBlocks: true,
       hasTxBody: true,
@@ -35,13 +38,16 @@ describe('[Ethy/AI]: overviewNarrator', () => {
       tps: 9.8,
       txCount: 118,
       ethTransferredWindowEth: '42.1 ETH',
+      latestBlockNumber: '12117924',
       topContracts: [
         {
-          address: '0xabc',
+          address: '0xbe2212345678901234567890abcdefe054',
           blocksActive: 3,
           storageWrites: 1,
           storageReads: 2,
           netEthDeltaWei: 0n,
+          archetype: 'EIP-1967 Proxy',
+          proxyKind: 'EIP-1967',
         },
       ],
       recentBlocks: [
@@ -52,6 +58,9 @@ describe('[Ethy/AI]: overviewNarrator', () => {
     assert.isAtMost(sectionCharTotal(sections), MAX_AI_TOTAL_CHARS)
     assert.match(sections.economy ?? '', /base fee|Gwei/i)
     assert.notInclude(sections.economy ?? '', 'ETH ETH')
+    assert.notInclude(sections.state ?? '', 'sync complete')
+    assert.include(sections.state ?? '', '12117924')
+    assert.include(sections.economy ?? '', '[EIP-1967 Proxy]')
   })
 
   it('snap-syncing overview narrates bytecode and storage when 16/16 buckets are done', () => {

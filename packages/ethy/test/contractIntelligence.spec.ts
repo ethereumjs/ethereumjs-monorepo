@@ -182,6 +182,70 @@ describe('[Ethy/Contracts]: classification', () => {
     )
     assert.equal(extra.archetype, 'ERC-20')
   })
+
+  it('classifies busy ERC-20 from Transfer logs without write-rate cliff', () => {
+    const row = {
+      address: '0x000000000000000000000000000000000000c2',
+      blocksActive: 10,
+      storageWrites: 80,
+      storageReads: 0,
+      netEthDeltaWei: 0n,
+    }
+    const agg = erc20Agg()
+    const extra = classifyAddress(row.address, row, agg, lookup, cache)
+    assert.equal(extra.archetype, 'ERC-20')
+  })
+
+  it('classifies DEX Pool on Swap without Sync', () => {
+    const topics = new Map<string, number>()
+    topics.set(TOPIC.swapV3, 3)
+    const agg: ContractAddressAgg = {
+      selectorCounts: new Map(),
+      topicCounts: topics,
+      coTouched: new Set(),
+      maxTransferLogsInTx: 0,
+      soleCalleeBlocks: 0,
+      inboundCalls: 0,
+      swapEmittersInTx: new Set(),
+      callPreviews: [],
+      eventPreviews: [],
+    }
+    const row = {
+      address: '0x000000000000000000000000000000000000d00d',
+      blocksActive: 2,
+      storageWrites: 4,
+      storageReads: 0,
+      netEthDeltaWei: 0n,
+    }
+    const extra = classifyAddress(row.address, row, agg, lookup, cache)
+    assert.equal(extra.archetype, 'DEX Pool')
+  })
+
+  it('keeps proxy kind when implementation code is cold', () => {
+    const impl = '0x000000000000000000000000abcdef00000001'
+    const agg: ContractAddressAgg = {
+      selectorCounts: new Map(),
+      topicCounts: new Map(),
+      coTouched: new Set(),
+      maxTransferLogsInTx: 0,
+      soleCalleeBlocks: 0,
+      inboundCalls: 0,
+      swapEmittersInTx: new Set(),
+      callPreviews: [],
+      eventPreviews: [],
+      implSlotValue: '0x00000000000000000000000000000000000000000000000000000000abcdef00000001',
+    }
+    const row = {
+      address: '0x000000000000000000000000000000000000beef',
+      blocksActive: 41,
+      storageWrites: 41,
+      storageReads: 0,
+      netEthDeltaWei: 0n,
+    }
+    const extra = classifyAddress(row.address, row, agg, lookup, cache)
+    assert.equal(extra.archetype, 'EIP-1967 Proxy')
+    assert.include(extra.proxyTarget?.toLowerCase(), 'abcdef00000001')
+  })
 })
 
 describe('[Ethy/Contracts]: /contract widget', () => {

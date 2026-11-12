@@ -1,6 +1,6 @@
 # WP-07i: Adaptive Sub-Gwei Fee Formatting, 64-Block Macro Statistical `Economy` Cockpit & Plaza Contract Introspection (`● CONTRACT PULSE`)
 
-- **Status:** `READY_FOR_PLANNING`
+- **Status:** `DONE`
 - **Dependencies:** `WP-07d`, `WP-07h`, `WP-08a`, `WP-08b` (`DONE`)
 - **Primary Goal:** Polish the live economic and contract intelligence experience at the chain head by (1) introducing **adaptive sub-Gwei base-fee formatting** + a trend noise floor so Sepolia/quiet-Mainnet blocks never render `0 Gwei ↑`, (2) redesigning the top-left **`Economy` cockpit box** into a **64-block macro statistical lens** (complementing the Plaza's per-block view without duplication), and (3) fixing contract archetype classification on live traffic while surfacing **contract introspection directly inside the Ethereum Plaza** (inline in `STREET ENCOUNTERS` and in a new lower-left **`● CONTRACT PULSE (64B)`** ecosystem section).
 
@@ -107,21 +107,27 @@ Live testing of the Ethereum Plaza (`WP-07h`) on Sepolia at `#12,117,924` reveal
 
 ### 1.5 Acceptance Criteria
 
-- [ ] `formatGwei` formats sub-Gwei base fees with adaptive precision (`0.42 Gwei`, `0.004 Gwei`, `<0.001 Gwei`) and `computeTrend` applies a minimum wei noise floor so `0 Gwei ↑` / `0 Gwei ↓` never appears.
-- [ ] `EconomySnapshot` computes 64-block statistical aggregates (`windowBlockCount`, `avgGasFullPct`, `windowTxCount`, `windowRevertPct`, `windowPeakTransferEth`, `archetypeMix`) and `economyCockpitPairs` renders the 4 macro rows (`Fee (64b)`, `Throughput`, `Volume`, `Top Venue`).
-- [ ] `contractIntelligence.ts` resolves proxy implementation bytecode when available, classifies Uniswap V3 `Swap` pools (`DEX Pool`), classifies `Transfer`-emitting tokens (`ERC-20`) without the `1..4` writes/block cliff, and preserves `[EIP-1967 Proxy]` / `[EIP-1167 Proxy]` badges when implementation code is cold.
-- [ ] `momentDetector.ts` enriches `[NEW]`, `[FLOW]`, and `[REV]` Street Encounters with bytecode/contract archetypes, and `LiveHeadPlazaUIComponent.ts` renders `● CONTRACT PULSE (64B)` (ecosystem tag cloud + top 3 classified venues) in the lower-left column below `● NEIGHBORHOOD LIGHTS`.
-- [ ] `overviewNarrator.ts` reports `Head following live at #<block>` without confusing background code-crawl % with primary sync completion, and includes contract archetype badges.
-- [ ] Unit tests in `test/economyDataManager.spec.ts`, `test/contractIntelligence.spec.ts`, `test/momentDetector.spec.ts`, and `test/tui.spec.ts` lock all new behaviors; `npm run tsc`, `npm test`, and `npm run spellcheck` pass with 0 errors.
+- [x] `formatGwei` formats sub-Gwei base fees with adaptive precision (`0.42 Gwei`, `0.004 Gwei`, `<0.001 Gwei`) and `computeTrend` applies a minimum wei noise floor so `0 Gwei ↑` / `0 Gwei ↓` never appears.
+- [x] `EconomySnapshot` computes 64-block statistical aggregates (`windowBlockCount`, `avgGasFullPct`, `windowTxCount`, `windowRevertPct`, `windowPeakTransferEth`, `archetypeMix`) and `economyCockpitPairs` renders the 4 macro rows (`Fee (64b)`, `Throughput`, `Volume`, `Top Venue`).
+- [x] `contractIntelligence.ts` resolves proxy implementation bytecode when available, classifies Uniswap V3 `Swap` pools (`DEX Pool`), classifies `Transfer`-emitting tokens (`ERC-20`) without the `1..4` writes/block cliff, and preserves `[EIP-1967 Proxy]` / `[EIP-1167 Proxy]` badges when implementation code is cold.
+- [x] `momentDetector.ts` enriches `[NEW]`, `[FLOW]`, and `[REV]` Street Encounters with bytecode/contract archetypes, and `LiveHeadPlazaUIComponent.ts` renders `● CONTRACT PULSE (64B)` (ecosystem tag cloud + top 3 classified venues) in the lower-left column below `● NEIGHBORHOOD LIGHTS`.
+- [x] `overviewNarrator.ts` reports `Head following live at #<block>` without confusing background code-crawl % with primary sync completion, and includes contract archetype badges.
+- [x] Unit tests in `test/economyDataManager.spec.ts`, `test/contractIntelligence.spec.ts`, `test/momentDetector.spec.ts`, and `test/tui.spec.ts` lock all new behaviors; `npm run tsc`, `npm test`, and `npm run spellcheck` pass with 0 errors.
 
 ---
 
 ## 2. Concrete Implementation Plan (Planner — Grok 4.7)
 
-*(To be filled by Grok 4.7 during the Planning pass.)*
+**Ethy only.** Decision **D-112**. Order: `format.ts` + trend floor → `types.ts` window fields → `economyDataManager.ts` publish + `cockpitPairs.ts` macro rows → `contractIntelligence.ts` proxy follow + `pass2Behavior` → `momentDetector.ts` + manager callbacks → `LiveHeadPlazaUIComponent.ts` CONTRACT PULSE → `overviewNarrator.ts` → tests + gates.
+
+**Files touched:** `src/economy/format.ts`, `types.ts`, `economyDataManager.ts`, `cockpitPairs.ts`, `src/contracts/contractIntelligence.ts`, `src/economy/momentDetector.ts`, `src/tui/components/LiveHeadPlazaUIComponent.ts`, `src/ai/overviewNarrator.ts`, tests under `test/economyDataManager.spec.ts`, `contractIntelligence.spec.ts`, `momentDetector.spec.ts`, `tui.spec.ts`, `overviewNarrator.spec.ts`.
+
+**Design locks:** TPS stays on 10 blocks; classify pool 24 / leaderboard 10; `macroArchetypeBucket` for plaza pills; optional moment callbacks preserve legacy headlines when omitted; HEAD_FOLLOWING narrator only for sync-complete wording fix.
 
 ---
 
 ## 3. Implementation Notes & Deviations (Implementer — Composer 2.5)
 
-*(To be filled by Composer 2.5 during the Implementation pass.)*
+- Shipped **D-112**: adaptive `formatGwei` / `formatBaseFeeNumber`, trend wei noise floor, 64-block `EconomySnapshot` aggregates + macro cockpit rows, proxy impl fingerprint follow, relaxed ERC-20 / V3 DEX pool rules, Plaza `● CONTRACT PULSE (64B)`, enriched Street Encounters, head-following AI state copy.
+- `formatTrendSuffix` uses explicit `(-N%)` on downward trends (matches cockpit macro row spec).
+- Gates: `npm run tsc`, **299** tests, `npm run spellcheck` in `@ethereumjs/ethy`.

@@ -87,11 +87,22 @@ function tryGraffitiNote(record: BlockEconomyRecord, blockKey: string, ts: numbe
   return out.slice(0, 1)
 }
 
+function archetypeBadge(
+  address: string | undefined,
+  addressArchetypes?: ReadonlyMap<string, string>,
+): string {
+  if (address === undefined || addressArchetypes === undefined) return ''
+  const arch = addressArchetypes.get(address.toLowerCase())
+  if (arch === undefined || arch === 'Contract') return ''
+  return ` [${arch}]`
+}
+
 function tryBirth(
   record: BlockEconomyRecord,
   bal: BALJSONBlockAccessList | undefined,
   blockKey: string,
   ts: number,
+  classifyCode?: (code: Uint8Array) => string | undefined,
 ): BlockMoment[] {
   const out: BlockMoment[] = []
   if (bal !== undefined) {
@@ -108,6 +119,16 @@ function tryBirth(
       const writes = acct.storageChanges.reduce((n, row) => n + row.slotChanges.length, 0)
       const kb = (byteLen / 1024).toFixed(1)
       const suffix = writes > 0 ? ` (${writes} slot writes)` : ''
+      let archTag = ''
+      if (classifyCode !== undefined && byteLen > 0) {
+        try {
+          const codeBytes = hexToBytes(last.newCode)
+          const label = classifyCode(codeBytes)
+          if (label !== undefined) archTag = ` [${label}]`
+        } catch {
+          /* skip */
+        }
+      }
       out.push({
         id: `${blockKey}:birth:${i}`,
         blockNumber: blockKey,
@@ -115,7 +136,7 @@ function tryBirth(
         kind: 'birth',
         badge: BADGE.birth,
         headline: clampHeadline(
-          `New ${kb} KB contract deployed at ${shortAddress(acct.address)}${suffix}`,
+          `New ${kb} KB${archTag} deployed at ${shortAddress(acct.address)}${suffix}`,
         ),
         address: acct.address.toLowerCase(),
       })
@@ -196,6 +217,7 @@ function tryChoreography(
   bal: BALJSONBlockAccessList | undefined,
   blockKey: string,
   ts: number,
+  addressArchetypes?: ReadonlyMap<string, string>,
 ): BlockMoment[] {
   const indexAccounts = new Map<number, number>()
   if (bal !== undefined) {
@@ -235,6 +257,18 @@ function tryChoreography(
   if (bestIdx >= 0) {
     const slice = record.observations?.txSlices[bestIdx - 1]
     const label = callLabel(slice?.selector)
+    const to = slice?.to
+    const badge = archetypeBadge(to, addressArchetypes)
+    const knownSel =
+      slice?.selector !== undefined && lookupFunctionSelector(slice.selector) !== undefined
+    let headline: string
+    if (knownSel && to !== undefined) {
+      headline = `Tx #${bestIdx} orchestrated ${bestCount} accounts · ${label}() on ${shortAddress(to)}${badge}`
+    } else if (to !== undefined && badge.length > 0) {
+      headline = `Tx #${bestIdx} orchestrated ${bestCount} accounts via ${shortAddress(to)}${badge}`
+    } else {
+      headline = `Tx #${bestIdx} orchestrated ${bestCount} accounts · ${label}() path`
+    }
     return [
       {
         id: `${blockKey}:choreography:${bestIdx}`,
@@ -242,9 +276,7 @@ function tryChoreography(
         timestampSec: ts,
         kind: 'choreography',
         badge: BADGE.choreography,
-        headline: clampHeadline(
-          `Tx #${bestIdx} orchestrated ${bestCount} accounts · ${label}() path`,
-        ),
+        headline: clampHeadline(headline),
       },
     ]
   }
@@ -358,10 +390,16 @@ function tryVeteran(
   ]
 }
 
-function tryRevert(record: BlockEconomyRecord, blockKey: string, ts: number): BlockMoment[] {
+function tryRevert(
+  record: BlockEconomyRecord,
+  blockKey: string,
+  ts: number,
+  addressArchetypes?: ReadonlyMap<string, string>,
+): BlockMoment[] {
   const reverts = record.receiptReverts ?? 0
   if (reverts <= 0) return []
   const to = record.firstRevertTo !== undefined ? shortAddress(record.firstRevertTo) : 'a contract'
+  const badge = archetypeBadge(record.firstRevertTo, addressArchetypes)
   return [
     {
       id: `${blockKey}:revert:0`,
@@ -370,7 +408,7 @@ function tryRevert(record: BlockEconomyRecord, blockKey: string, ts: number): Bl
       kind: 'revert',
       badge: BADGE.revert,
       headline: clampHeadline(
-        `Transaction to ${to} reverted on-chain (${reverts} revert in block)`,
+        `Transaction to ${to}${badge} reverted on-chain (${reverts} revert in block)`,
       ),
       address: record.firstRevertTo,
     },
@@ -413,21 +451,23 @@ function tryHeartbeat(record: BlockEconomyRecord, blockKey: string, ts: number):
 export type DetectBlockMomentsInput = {
   record: BlockEconomyRecord
   balJson?: BALJSONBlockAccessList
+  classifyCode?: (code: Uint8Array) => string | undefined
+  addressArchetypes?: ReadonlyMap<string, string>
 }
 
 /** Pure zero-EVM moment extraction; up to 3 moments by rarity. */
 export function detectBlockMoments(input: DetectBlockMomentsInput): BlockMoment[] {
-  const { record, balJson } = input
+  const { record, balJson, classifyCode, addressArchetypes } = input
   const blockKey = record.blockNumber.toString()
   const ts = record.timestamp ?? 0
   const candidates: BlockMoment[] = [
     ...tryGraffitiNote(record, blockKey, ts),
-    ...tryBirth(record, balJson, blockKey, ts),
+    ...tryBirth(record, balJson, blockKey, ts, classifyCode),
     ...tryEip7702(record, balJson, blockKey, ts),
-    ...tryChoreography(record, balJson, blockKey, ts),
+    ...tryChoreography(record, balJson, blockKey, ts, addressArchetypes),
     ...tryWhale(record, blockKey, ts),
     ...tryFirstStep(balJson, blockKey, ts),
-    ...tryRevert(record, blockKey, ts),
+    ...tryRevert(record, blockKey, ts, addressArchetypes),
     ...tryVeteran(balJson, blockKey, ts),
     ...tryBlob(record, blockKey, ts),
   ]

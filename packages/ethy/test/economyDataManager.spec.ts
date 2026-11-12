@@ -18,9 +18,15 @@ import {
   assertRegistryMatchesSlashList,
   registryWriteActions,
 } from '../src/domains/toolRegistry.ts'
+import { economyCockpitPairs } from '../src/economy/cockpitPairs.ts'
 import { decodeBundle } from '../src/economy/decodeBundle.ts'
 import { ETHEconomyDataManager } from '../src/economy/economyDataManager.ts'
-import { formatEthFromWei, formatSignedEthFromWei } from '../src/economy/format.ts'
+import {
+  formatBaseFeeNumber,
+  formatEthFromWei,
+  formatGwei,
+  formatSignedEthFromWei,
+} from '../src/economy/format.ts'
 import { activeHardfork, chainConfigForNetwork } from '../src/net/chainHardfork.ts'
 import { createSpine } from '../src/spine/createSpine.ts'
 import { economyDeepViewWidget } from '../src/tools/economyTools.ts'
@@ -71,6 +77,52 @@ function balWithContract(addr: string, writes: number, reads: number, code = fal
   return bal.serialize()
 }
 
+describe('[Ethy/Economy]: formatGwei', () => {
+  it('uses adaptive precision bands', () => {
+    assert.equal(formatGwei(0n), '0 Gwei')
+    assert.equal(formatBaseFeeNumber(14_200_000_000n), '14.2')
+    assert.equal(formatGwei(420_000_000n), '0.42 Gwei')
+    assert.equal(formatGwei(4_000_000n), '0.004 Gwei')
+    assert.equal(formatGwei(500_000n), '<0.001 Gwei')
+  })
+})
+
+describe('[Ethy/Economy]: macro cockpit pairs', () => {
+  it('renders four macro rows', () => {
+    const pairs = economyCockpitPairs({
+      hasBlocks: true,
+      hasTxBody: true,
+      baseFeeGwei: '0.004',
+      trend: 'flat',
+      gasFullPct: 40,
+      avgGasFullPct: 44,
+      tps: 12.1,
+      windowTxCount: 9140,
+      windowRevertPct: 1.4,
+      ethTransferredWindowEth: '41.4 ETH',
+      windowBlockCount: 64,
+      windowPeakTransferEth: '12.0 ETH',
+      topContracts: [
+        {
+          address: '0xbe22',
+          blocksActive: 41,
+          storageWrites: 41,
+          storageReads: 0,
+          netEthDeltaWei: 0n,
+          archetype: 'EIP-1967 Proxy',
+          topSelectors: ['execute (3x)'],
+        },
+      ],
+      recentBlocks: [],
+    })
+    assert.equal(pairs[0]?.label, 'Fee (64b)')
+    assert.include(pairs[0]?.value, 'avg load')
+    assert.equal(pairs[1]?.label, 'Throughput')
+    assert.include(pairs[1]?.value, 'tx/s')
+    assert.notInclude(pairs.map((p) => p.label).join(' '), 'Gas / Base')
+  })
+})
+
 describe('[Ethy/Economy]: trend and ingest', () => {
   const chain = chainConfigForNetwork('sepolia')
   const hardfork = activeHardfork(chain)
@@ -100,6 +152,32 @@ describe('[Ethy/Economy]: trend and ingest', () => {
       balRlp,
     })
     assert.isTrue(spine.economy?.trend === 'down' || spine.economy?.trend === 'flat')
+  })
+
+  it('flattens sub-10k wei base-fee noise', () => {
+    const spine = createSpine('sepolia', 11155111n)
+    const mgr = new ETHEconomyDataManager({ spine, chain, hardfork })
+    const balRlp = balWithContract('0x00000000000000000000000000000000000000c1', 1, 0)
+    const bal = createBlockLevelAccessListFromRLP(balRlp)
+    const balHash = bal.hash()
+    for (let i = 1; i <= 16; i++) {
+      mgr.noteBundle({
+        blockNumber: BigInt(i),
+        headerRlp: headerAt(BigInt(i), 50_000n + BigInt(i) * 100n, balHash),
+        bodyRlp: RLP.encode([[], [], []]),
+        receiptsEth69Rlp: RLP.encode([]),
+        balRlp,
+      })
+    }
+    mgr.noteBundle({
+      blockNumber: 17n,
+      headerRlp: headerAt(17n, 52_000n, balHash),
+      bodyRlp: RLP.encode([[], [], []]),
+      receiptsEth69Rlp: RLP.encode([]),
+      balRlp,
+    })
+    assert.equal(spine.economy?.trend, 'flat')
+    assert.notEqual(spine.economy?.baseFeeGwei, '0')
   })
 
   it('aggregates tx value and types', () => {

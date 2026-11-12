@@ -404,7 +404,7 @@ describe('[Ethy/TUI]: renderFrame', () => {
     const spine = createSpine('sepolia', 11155111n)
     const joined = stripAnsi(renderFrame(spine, createInitialViewState(), 100, 40).join('\n'))
     assert.include(joined, 'Economy')
-    assert.include(joined, 'Gas / Base')
+    assert.include(joined, 'Fee (64b)')
   })
 
   it('renderFrame() at 100x60 respects column width', () => {

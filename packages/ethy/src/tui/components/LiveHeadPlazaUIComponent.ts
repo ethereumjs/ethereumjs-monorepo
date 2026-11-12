@@ -1,5 +1,5 @@
-import { formatGwei, trendArrow } from '../../economy/format.ts'
-import type { BlockMomentKind, EconomySnapshot } from '../../economy/types.ts'
+import { formatGwei, shortAddress, trendArrow } from '../../economy/format.ts'
+import type { BlockMomentKind, EconomySnapshot, TopContractRow } from '../../economy/types.ts'
 import type { EthySpine } from '../../spine/types.ts'
 import { BOLD, DIM, FG, RESET, visibleWidth } from '../ansi.ts'
 import { COCKPIT_COLUMN_GAP } from '../cockpit.ts'
@@ -275,7 +275,48 @@ function buildLeftColumn(econ: EconomySnapshot, colW: number): string[] {
     }
     out.push(fixedLine(cells.join('  '), colW))
   }
+  out.push(fixedLine('', colW))
+  out.push(fixedLine(`${BOLD}● CONTRACT PULSE (64B)${RESET}`, colW))
+  const mix = econ.archetypeMix ?? []
+  if (mix.length > 0) {
+    const pills: string[] = []
+    for (const entry of mix.slice(0, 4)) {
+      if (entry.sharePct <= 0) continue
+      const color = mixPillColor(entry.archetype)
+      pills.push(`${color}[${entry.archetype} ${entry.sharePct.toFixed(0)}%]${RESET}`)
+    }
+    out.push(fixedLine(pills.join(' '), colW))
+  } else {
+    out.push(fixedLine(`${DIM}No classified venues in window…${RESET}`, colW))
+  }
+  const venues = econ.topContracts.slice(0, 3)
+  for (const row of venues) {
+    out.push(fixedLine(contractPulseVenueLine(row, colW), colW))
+  }
   return out
+}
+
+function mixPillColor(archetype: string): string {
+  if (archetype === 'ERC-20') return FG.cyan
+  if (archetype === 'DEX') return FG.magenta
+  if (archetype === 'Proxy') return FG.yellow
+  if (archetype === 'AA/7702') return FG.green
+  return DIM
+}
+
+function venuePulseBadge(row: TopContractRow): string {
+  if (row.knownName !== undefined) return row.knownName
+  if (row.archetype !== undefined && row.archetype !== 'Contract') return row.archetype
+  if (row.proxyKind !== undefined) return row.proxyKind
+  return 'Contract'
+}
+
+function contractPulseVenueLine(row: TopContractRow, _colW: number): string {
+  const w = row.storageWrites + row.storageReads
+  const slots = Math.round(w / Math.max(1, row.blocksActive))
+  const sel = row.topSelectors?.[0]?.split(' (')[0]
+  const selClause = sel !== undefined ? ` · ${sel}()` : ''
+  return `${shortAddress(row.address)}  [${venuePulseBadge(row)}]   ${slots}w/blk${selClause}`
 }
 
 function buildRightColumn(econ: EconomySnapshot, colW: number, budget: number): string[] {

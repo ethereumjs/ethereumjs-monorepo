@@ -4,9 +4,11 @@ import type { BALJSONBlockAccessList } from '@ethereumjs/util'
 
 import {
   type ContractAddressAgg,
+  archetypeLabelFromCode,
   buildCodeLookup,
   createFingerprintCache,
   enrichTopContracts,
+  macroArchetypeBucket,
 } from '../contracts/contractIntelligence.ts'
 import { formatCalldataPreview, formatLogPreview } from '../contracts/localAbi.ts'
 import { TOPIC } from '../contracts/signatureCatalog.ts'
@@ -14,11 +16,12 @@ import type { EthySpine } from '../spine/types.ts'
 import type { TwoColumnPair } from '../tui/layout.ts'
 import { economyCockpitPairs } from './cockpitPairs.ts'
 import { decodeBundle } from './decodeBundle.ts'
-import { formatEthFromWei, formatGwei, shortAddress, trendArrow } from './format.ts'
+import { formatBaseFeeNumber, formatEthFromWei } from './format.ts'
 import { detectBlockMoments } from './momentDetector.ts'
 import type { BlockEconomyRecord, BlockMoment, EconomySnapshot, TopContractRow } from './types.ts'
 import {
   ECONOMY_ADDRESS_MAP_CAP,
+  ECONOMY_CLASSIFY_POOL,
   ECONOMY_FEE_AVG_BLOCKS,
   ECONOMY_LEADERBOARD_SIZE,
   ECONOMY_MOMENTS_RING,
@@ -333,6 +336,9 @@ export class ETHEconomyDataManager {
     for (const f of prior) sum += f
     const mean = sum / BigInt(prior.length)
     if (mean === 0n) return { trend: 'flat' }
+    if (currentBase < 100_000n && mean < 100_000n) return { trend: 'flat' }
+    const absDiff = currentBase >= mean ? currentBase - mean : mean - currentBase
+    if (absDiff < 10_000n) return { trend: 'flat' }
     const diff = currentBase - mean
     const pct = Number((diff * 10000n) / mean) / 100
     if (Math.abs(pct) < 0.5) return { trend: 'flat' }
@@ -355,7 +361,7 @@ export class ETHEconomyDataManager {
     return txs / (n * SLOT_SECONDS)
   }
 
-  private buildTopContracts(): TopContractRow[] {
+  private buildTopContracts(limit: number): TopContractRow[] {
     const rows: TopContractRow[] = []
     for (const [address, agg] of this.addressAgg) {
       let net = 0n
@@ -380,11 +386,85 @@ export class ETHEconomyDataManager {
       if (absB !== absA) return absB > absA ? 1 : -1
       return a.address.localeCompare(b.address)
     })
-    return rows.slice(0, ECONOMY_LEADERBOARD_SIZE)
+    return rows.slice(0, limit)
+  }
+
+  private buildArchetypeMix(classified: TopContractRow[]): EconomySnapshot['archetypeMix'] {
+    if (classified.length === 0) return undefined
+    const counts = new Map<string, number>()
+    for (const row of classified) {
+      const bucket = macroArchetypeBucket(row.archetype)
+      counts.set(bucket, (counts.get(bucket) ?? 0) + 1)
+    }
+    const total = classified.length
+    const mix = [...counts.entries()]
+      .map(([archetype, count]) => ({
+        archetype,
+        count,
+        sharePct: Math.round((count * 1000) / total) / 10,
+      }))
+      .filter((e) => e.sharePct > 0)
+      .sort((a, b) => b.count - a.count)
+    return mix.length > 0 ? mix : undefined
+  }
+
+  private buildMomentContext(): {
+    classifyCode: (code: Uint8Array) => string | undefined
+    addressArchetypes: ReadonlyMap<string, string>
+  } {
+    const addressArchetypes = new Map<string, string>()
+    const pool = this.buildTopContracts(ECONOMY_CLASSIFY_POOL)
+    if (this.stateManager !== undefined) {
+      const lookup = buildCodeLookup(this.stateManager, this.chain)
+      const enriched = enrichTopContracts(pool, this.contractAgg, lookup, this.fingerprintCache)
+      for (const row of enriched) {
+        if (row.archetype !== undefined) {
+          addressArchetypes.set(row.address.toLowerCase(), row.archetype)
+        }
+      }
+    }
+    const classifyCode = (code: Uint8Array) => archetypeLabelFromCode(code, this.fingerprintCache)
+    return { classifyCode, addressArchetypes }
+  }
+
+  private computeWindowStats(): Pick<
+    EconomySnapshot,
+    | 'windowBlockCount'
+    | 'avgGasFullPct'
+    | 'windowTxCount'
+    | 'windowRevertPct'
+    | 'windowPeakTransferEth'
+  > {
+    const n = this.ring.length
+    if (n === 0) {
+      return {}
+    }
+    let gasSum = 0
+    let windowTxCount = 0
+    let reverts = 0
+    let successes = 0
+    let peakWei = 0n
+    for (const block of this.ring) {
+      gasSum += block.gasFullPct
+      if (block.hasTxBody) windowTxCount += block.txCount
+      if (block.receiptReverts !== undefined) reverts += block.receiptReverts
+      if (block.receiptSuccess !== undefined) successes += block.receiptSuccess
+      if (block.largestTransferWei > peakWei) peakWei = block.largestTransferWei
+    }
+    const revertDenom = reverts + successes
+    return {
+      windowBlockCount: n,
+      avgGasFullPct: Math.round(gasSum / n),
+      windowTxCount,
+      windowRevertPct:
+        revertDenom > 0 ? Math.round((reverts * 1000) / revertDenom) / 10 : undefined,
+      windowPeakTransferEth: formatEthFromWei(peakWei),
+    }
   }
 
   private ingestMoments(record: BlockEconomyRecord, balJson?: BALJSONBlockAccessList): void {
-    const fresh = detectBlockMoments({ record, balJson })
+    const ctx = this.buildMomentContext()
+    const fresh = detectBlockMoments({ record, balJson, ...ctx })
     for (let i = fresh.length - 1; i >= 0; i--) {
       const m = fresh[i]!
       const dup = this.momentFeed.findIndex((x) => x.id === m.id)
@@ -416,11 +496,20 @@ export class ETHEconomyDataManager {
     return heat
   }
 
-  private enrichedTopContracts(): TopContractRow[] {
-    const rows = this.buildTopContracts()
-    if (this.stateManager === undefined) return rows
+  private enrichedTopContracts(): {
+    top: TopContractRow[]
+    archetypeMix?: EconomySnapshot['archetypeMix']
+  } {
+    const pool = this.buildTopContracts(ECONOMY_CLASSIFY_POOL)
+    if (this.stateManager === undefined) {
+      return { top: pool.slice(0, ECONOMY_LEADERBOARD_SIZE) }
+    }
     const lookup = buildCodeLookup(this.stateManager, this.chain)
-    return enrichTopContracts(rows, this.contractAgg, lookup, this.fingerprintCache)
+    const classified = enrichTopContracts(pool, this.contractAgg, lookup, this.fingerprintCache)
+    return {
+      top: classified.slice(0, ECONOMY_LEADERBOARD_SIZE),
+      archetypeMix: this.buildArchetypeMix(classified),
+    }
   }
 
   private publish(): void {
@@ -432,14 +521,14 @@ export class ETHEconomyDataManager {
     let windowWei = 0n
     for (const b of this.ring) windowWei += b.ethTransferredWei
     const trend = this.computeTrend(latest.baseFeeWei)
+    const windowStats = this.computeWindowStats()
+    const { top: topContracts, archetypeMix } = this.enrichedTopContracts()
     const snap: EconomySnapshot = {
       hasBlocks: true,
       hasTxBody: latest.hasTxBody,
       latestBlockNumber: latest.blockNumber.toString(),
       baseFeeGwei:
-        latest.baseFeeWei !== undefined
-          ? formatGwei(latest.baseFeeWei).replace(' Gwei', '')
-          : undefined,
+        latest.baseFeeWei !== undefined ? formatBaseFeeNumber(latest.baseFeeWei) : undefined,
       trend: trend.trend,
       trendPercent: trend.percent,
       gasFullPct: latest.gasFullPct,
@@ -456,11 +545,12 @@ export class ETHEconomyDataManager {
       storageWrites: latest.storageWrites,
       storageReads: latest.storageReads,
       newDeployments: latest.newDeployments,
-      topContracts: this.enrichedTopContracts(),
+      topContracts,
+      ...windowStats,
+      archetypeMix,
       recentBlocks: this.ring.slice(0, 10).map((b) => ({
         blockNumber: b.blockNumber.toString(),
-        baseFeeGwei:
-          b.baseFeeWei !== undefined ? formatGwei(b.baseFeeWei).replace(' Gwei', '') : '—',
+        baseFeeGwei: b.baseFeeWei !== undefined ? formatBaseFeeNumber(b.baseFeeWei) : '—',
         gasFullPct: b.gasFullPct,
         txCount: b.txCount,
         ethTransferredEth: formatEthFromWei(b.ethTransferredWei),
