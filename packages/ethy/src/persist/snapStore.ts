@@ -72,6 +72,8 @@ type ActiveMeta = {
   baseSyncComplete?: boolean
   lastVerifiedBlockNumber?: string
   ethyBucketsBitmask?: number
+  /** Per-nibble ETHY snapshot block (`"0"`..`"15"`), WP-06g. */
+  bucketPivotBlocks?: Record<string, string>
 }
 
 type PivotMeta = {
@@ -295,6 +297,24 @@ export class SnapPivotStore {
     }
     this.activeStateRoot = undefined
     this.restoredContracts = []
+  }
+
+  noteBucketPivot(bucketIndex: number, blockNumber: bigint): void {
+    if (!this.enabled) return
+    const active = this.readActive()
+    if (active === undefined) return
+    const key = bucketIndex.toString(16)
+    const next: Record<string, string> = { ...(active.bucketPivotBlocks ?? {}) }
+    next[key] = blockNumber.toString()
+    writeAtomicDoc(path.join(this.networkDir, 'active.json'), {
+      ...active,
+      bucketPivotBlocks: next,
+    } satisfies ActiveMeta)
+  }
+
+  getBucketPivotBlocks(): Record<string, string> | undefined {
+    if (!this.enabled) return undefined
+    return this.readActive()?.bucketPivotBlocks
   }
 
   markBaseSyncComplete(pivotBlock: bigint): void {

@@ -132,7 +132,12 @@ export function buildDeterministicOverviewSections(
       sections.economy += ` Hottest: ${addr}${badgeClause}.`
     }
   }
-  const headN = econ.latestBlockNumber ?? snapshots.pulse.pivotBlockNumber ?? '—'
+  const headN =
+    econ.latestBlockNumber ??
+    snapshots.pulse.headBlockNumber ??
+    snapshots.head.headBlockNumber ??
+    snapshots.pulse.pivotBlockNumber ??
+    '—'
   if (snapshots.snap.bucketsDone === 16) {
     let stateLine = `Head following live at #${headN} (16/16 buckets synced).`
     const codeDone = snapshots.snap.codesSynced

@@ -61,7 +61,9 @@ import {
   finalizeBlockBundle,
   startBlockBundleByNumber,
 } from '../sync/blockBundle.ts'
+import { selectCanonicalSnapPivotTarget } from '../sync/canonicalPivotGrid.ts'
 import { SnapCodeAndStorageSynchronizer } from '../sync/codeAndStorageSync.ts'
+import { seederFromWorkerStatus } from '../sync/ethySeederSchedule.ts'
 import { EthySwarmSynchronizer } from '../sync/ethySwarmSync.ts'
 import {
   notePivotBridgingProgress,
@@ -84,7 +86,10 @@ import { SNAP_VERIFY_POOL_MODULE_URL, SnapVerifyPool } from '../sync/snapVerifyW
 import {
   type EthySeederView,
   type SyncMode,
+  freshestEthyPivot,
+  pickAllUsableEthySeeders,
   pickUsableEthySeeder,
+  preferCanonicalSnapOverEthy,
   shouldLockSnapAfterGrace,
 } from '../sync/syncSourceSelector.ts'
 import { livePlazaWidget } from '../tools/livePlaza.ts'
@@ -263,8 +268,28 @@ function ethySeederRows(
         bucketsBitmask: mask,
         basePivotBlock: BigInt(st.basePivotBlock),
         balEarliestBlock: BigInt(st.balEarliestBlock ?? st.basePivotBlock),
+        balLatestBlock: BigInt(st.balLatestBlock ?? st.basePivotBlock),
       },
     })
+  }
+  return out
+}
+
+function buildUsableEthyDescriptors(
+  peers: WorkerPeerSnapshot[],
+  bestPeerHead: bigint,
+  syncMode: SyncMode,
+  explicitConnect: boolean,
+): import('../sync/ethySeederSchedule.ts').EthySeederDescriptor[] {
+  const rows = ethySeederRows(peers)
+  const modeForPick: SyncMode = explicitConnect ? 'ethy' : syncMode
+  const usable = pickAllUsableEthySeeders(rows, bestPeerHead, modeForPick)
+  const out: import('../sync/ethySeederSchedule.ts').EthySeederDescriptor[] = []
+  for (const row of usable) {
+    const peer = peers.find((p) => p.id === row.peerId)
+    if (peer?.ethyStatus === undefined) continue
+    const desc = seederFromWorkerStatus(row.peerId, peer.ethyStatus)
+    if (desc !== undefined) out.push(desc)
   }
   return out
 }
@@ -341,6 +366,7 @@ export async function startPeerCoordinator(
   let ethyAnchorBlock: bigint | undefined
   let ethyAnchorRoot: Uint8Array | undefined
   let ethyAnchorPending = false
+  let pendingCanonicalSnapTarget: bigint | undefined
   const bucketsAdvertised = new Set<number>()
   const verifyPool = new SnapVerifyPool({
     inProcess: opts.inProcess === true,
@@ -375,7 +401,11 @@ export async function startPeerCoordinator(
 
   const ensureHeadFollower = (clientRef: Devp2pWorkerClient) => {
     if (spine.pivotStateRoot === undefined) return
-    if (spine.syncTransport === 'ethy' && (ethySwarm === undefined || ethySwarm.isActive())) {
+    if (
+      spine.syncTransport === 'ethy' &&
+      !handoffCatchup &&
+      (ethySwarm === undefined || ethySwarm.isActive())
+    ) {
       return
     }
     if (headFollower === undefined) {
@@ -899,6 +929,15 @@ export async function startPeerCoordinator(
           message: `Restored ${restored.toLocaleString('en-US')} accounts from disk (base sync complete)`,
         })
       }
+      const resumedHead =
+        spine.bestPeerHead ?? spine.lastVerifiedBlockNumber ?? spine.pivotBlockNumber
+      if (resumedHead !== undefined && resumedHead > 0n) {
+        seedBalCatchUp(spine, resumedHead)
+        if (spine.phase === 'HEAD_FOLLOWING') {
+          populateHeadFlipSummary(resumedHead)
+        }
+      }
+      ensureHeadFollower(client)
     } else {
       setPhase(spine, 'SNAP_SYNCING')
       if (restored > 0) {
@@ -1019,10 +1058,17 @@ export async function startPeerCoordinator(
     for (const [id, until] of pendingVipDials) {
       if (until <= now) pendingVipDials.delete(id)
     }
-    const towardTarget = countSnapPeersTowardVipTarget([...spine.peers.values()])
-    if (!shouldVipReconnect({ snapPeersTowardTarget: towardTarget })) return
+    const peerList = [...spine.peers.values()]
+    const inHeadOrCatchup =
+      spine.phase === 'HEAD_FOLLOWING' || spine.phase === 'BAL_CATCHUP' || handoffCatchup
+    const target = inHeadOrCatchup ? 6 : VIP_SNAP_PEER_TARGET
+    const towardTarget = inHeadOrCatchup
+      ? peerList.filter((p) => p.hasHead === true).length
+      : countSnapPeersTowardVipTarget(peerList)
+    if (!shouldVipReconnect({ snapPeersTowardTarget: towardTarget, target })) return
     const connected = new Set(spine.peers.keys())
-    const need = Math.min(2, VIP_SNAP_PEER_TARGET - towardTarget)
+    const maxBatch = peerList.length < 3 ? 4 : 2
+    const need = Math.min(maxBatch, target - towardTarget)
     let dialed = 0
     for (const peer of peerBook.vipDialCandidates(now, 64)) {
       const id = bytesToUnprefixedHex(peer.id as Uint8Array).toLowerCase()
@@ -1360,6 +1406,29 @@ export async function startPeerCoordinator(
     client.sendEthMessage(peerIdToBytes(peer.id), EthMessageCodes.GET_BLOCK_HEADERS, payload)
   }
 
+  const maybeRequestCanonicalSnapPivot = (
+    peer: WorkerPeerSnapshot,
+    peers: WorkerPeerSnapshot[],
+  ) => {
+    if (peer.latestBlock === undefined) {
+      requestPivotFromPeer(peer)
+      return
+    }
+    const head = BigInt(peer.latestBlock)
+    const { targetBlock, waitBlocks } = selectCanonicalSnapPivotTarget(head)
+    if (waitBlocks > 0n) {
+      pendingCanonicalSnapTarget = targetBlock
+      spine.pivotStatusHint = `Aligning SNAP pivot to canonical grid #${targetBlock.toString()} (+${waitBlocks.toString()} blk)`
+      const ready = peers.some(
+        (p) => p.latestBlock !== undefined && BigInt(p.latestBlock) >= targetBlock,
+      )
+      if (!ready) return
+      pendingCanonicalSnapTarget = undefined
+      spine.pivotStatusHint = undefined
+    }
+    requestPivotHeaderAt(peer, targetBlock)
+  }
+
   const requestPivotFromPeer = (peer: WorkerPeerSnapshot, mode: 'hash' | 'number' = 'hash') => {
     if (mode === 'number') {
       if (peer.latestBlock === undefined) return
@@ -1452,21 +1521,34 @@ export async function startPeerCoordinator(
     sendEth: sendEthToPeer,
   })
 
-  const startEthySwarmSync = () => {
+  const syncEthySeedersFromPeers = (peers: WorkerPeerSnapshot[]) => {
+    if (spine.syncTransport !== 'ethy' || ethySwarm === undefined) return
+    const head = spine.bestPeerHead ?? 0n
+    const descriptors = buildUsableEthyDescriptors(
+      peers,
+      head,
+      syncMode,
+      explicitConnectPeerIds.size > 0,
+    )
+    ethySwarm.syncSeeders(descriptors)
+  }
+
+  const startEthySwarmSync = (peers: WorkerPeerSnapshot[]) => {
     if (
-      ethySeederPeerId === undefined ||
       ethyAnchorBlock === undefined ||
       ethyAnchorRoot === undefined ||
       spine.pivotStateRoot === undefined
     ) {
       return
     }
-    const peer = lastTelemetryPeers.find((p) => p.id === ethySeederPeerId)
-    const maskRaw = peer?.ethyStatus?.bucketsBitmask ?? '0'
-    const seedMask = maskRaw.startsWith('0x')
-      ? Number.parseInt(maskRaw, 16)
-      : Number.parseInt(maskRaw, 10)
     const head = spine.bestPeerHead ?? ethyAnchorBlock
+    const initialSeeders = buildUsableEthyDescriptors(
+      peers,
+      head,
+      syncMode,
+      explicitConnectPeerIds.size > 0,
+    )
+    if (initialSeeders.length === 0) return
     ethySwarm?.stop()
     ethySwarm = new EthySwarmSynchronizer({
       spine,
@@ -1474,13 +1556,13 @@ export async function startPeerCoordinator(
       client,
       snapStore,
       verifyPool,
-      seederPeerId: ethySeederPeerId,
-      seedBucketsBitmask: seedMask,
-      chunkStateRoot: ethyAnchorRoot,
       pivotBlockNumber: ethyAnchorBlock,
+      initialSeeders,
+      initialBucketPivotBlocks: snapStore?.getBucketPivotBlocks(),
       balThroughBlock: head,
       onAccountsIngested: (entries) => codeSync?.noteAccounts(entries),
       onBucketDone: (idx) => noteBucketAdvertised(client, idx),
+      onBucketPivot: (idx, pivotBlock) => snapStore?.noteBucketPivot(idx, pivotBlock),
       onAccountsComplete: () => {
         if (!ethySwarm?.isActive()) {
           maybeMarkBaseSyncComplete()
@@ -1530,7 +1612,7 @@ export async function startPeerCoordinator(
       highestEthVersion(peer.caps),
       { skipServableBundle: true, firstAnchor: true },
     )
-    startEthySwarmSync()
+    startEthySwarmSync([peer])
   }
 
   const requestEthyPivotHeader = () => {
@@ -1583,6 +1665,25 @@ export async function startPeerCoordinator(
     const explicitSeeders = seeders.filter((s) =>
       explicitConnectPeerIds.has(s.peerId.toLowerCase()),
     )
+    const hasSnapPeer = peers.some((p) => p.snapSession === true && p.latestBlock !== undefined)
+    const freshest = freshestEthyPivot(seeders)
+    if (
+      preferCanonicalSnapOverEthy({
+        syncMode,
+        explicitConnect: explicitConnectPeerIds.size > 0,
+        bestPeerHead: head,
+        freshestEthyPivotBlock: freshest,
+        hasSnapPeer,
+      })
+    ) {
+      if (spine.syncTransport === 'unset' && firstEthStatusAtMs > 0) {
+        const elapsed = Date.now() - firstEthStatusAtMs
+        if (shouldLockSnapAfterGrace(syncMode, spine.syncTransport, elapsed, false)) {
+          spine.syncTransport = 'snap'
+        }
+      }
+      return
+    }
     const pick =
       explicitSeeders.length > 0
         ? pickUsableEthySeeder(explicitSeeders, head, 'ethy')
@@ -1714,7 +1815,9 @@ export async function startPeerCoordinator(
     deriveCapabilities(spine)
     maybePivotInFlightTimeout(snap.peers)
     maybePivotBundleTimeout()
-    updatePivotStatusHint(spine, snap.peers)
+    if (pendingCanonicalSnapTarget === undefined) {
+      updatePivotStatusHint(spine, snap.peers)
+    }
     maybeApplyResumeFromPeers(snap.peers)
     maybeRefreshUnservedPivot(snap.peers)
     const bestPeer = pickBestPeer(snap.peers, pivotBlockedPeers)
@@ -1733,6 +1836,7 @@ export async function startPeerCoordinator(
     }
     noteRemoteEthyPeers(snap.peers)
     tryLockSyncTransport(snap.peers)
+    syncEthySeedersFromPeers(snap.peers)
     if (spine.syncTransport === 'ethy' && spine.pivotStateRoot === undefined) {
       const row = ethySeederPeerId
         ? lastTelemetryPeers.find((p) => p.id === ethySeederPeerId)
@@ -1746,8 +1850,8 @@ export async function startPeerCoordinator(
     ) {
       if (spine.syncTransport === 'unset' && syncMode === 'ethy') {
         // Wait for a usable ETHY STATUS (selector locks transport).
-      } else if (spine.syncTransport !== 'ethy' && bestPeer !== undefined) {
-        requestPivotFromPeer(bestPeer)
+      } else if (spine.syncTransport === 'snap' && bestPeer !== undefined) {
+        maybeRequestCanonicalSnapPivot(bestPeer, snap.peers)
       }
     }
     syncDiscoveryHold(client)
@@ -1865,7 +1969,7 @@ export async function startPeerCoordinator(
         skipServableBundle: true,
         firstAnchor: true,
       })
-      startEthySwarmSync()
+      startEthySwarmSync(lastTelemetryPeers)
       return
     }
     if (parsed === null) {
@@ -1953,6 +2057,14 @@ export async function startPeerCoordinator(
       client.disconnectPeer(peerIdToBytes(peerId))
     },
     noteChainHead: (blockNumber: bigint) => {
+      raiseBestPeerHead(spine, blockNumber)
+      if (!resumeHeadHandled && diskHydrated) {
+        resumeHeadHandled = true
+        finishDiskResumeWithHead(blockNumber, lastTelemetryPeers)
+      }
+      if (handoffCatchup) {
+        ensureHeadFollower(client)
+      }
       headFollower?.noteChainHead(blockNumber)
     },
     refreshPivotHeader: () => {
