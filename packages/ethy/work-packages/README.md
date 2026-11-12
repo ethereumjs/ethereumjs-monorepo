@@ -176,6 +176,13 @@ Every Work Package delivers a **runnable, observable, and live-testable incremen
                       │         16-Acc Batching & Progress UI   │                 │
                       └───────────────────┬─────────────────────┘                 │
                                           │                                       │
+                                          ▼                                       │
+                      ┌─────────────────────────────────────────┐                 │
+                      │ WP-06g: Canonical Pivot Grid (K = 32),  │                 │
+                      │         Multi-Peer & Cross-Snapshot     │                 │
+                      │         ETHY/0 Bucket Striping & Cap    │                 │
+                      └───────────────────┬─────────────────────┘                 │
+                                          │                                       │
                                           └───────────────────┬───────────────────┘
                                                               ▼
                                           ┌─────────────────────────────────────────┐
