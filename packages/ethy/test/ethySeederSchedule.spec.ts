@@ -1,8 +1,10 @@
-import { createAddressFromString } from '@ethereumjs/util'
+import { createFlatStateManager } from '@ethereumjs/statemanager'
+import { Account, type BALJSONBlockAccessList, createAddressFromString } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import {
   assignBuckets,
+  balApplySegments,
   bucketNibbleFromAddress,
   bucketPivotMinMax,
   peersOnSnapshot,
@@ -115,5 +117,102 @@ describe('[Ethy/Sync]: ethy seeder schedule', () => {
   it('peersOnSnapshot groups matching roots', () => {
     const list = [seeder('a', 10n, ROOT_A, 1, 20n), seeder('b', 10n, ROOT_A, 2, 20n)]
     assert.equal(peersOnSnapshot(list, 10n, ROOT_A).length, 2)
+  })
+
+  it('balApplySegments + consumeBALBatch converges cross-snapshot state (#100 vs #132 through #150)', async () => {
+    const pivots = Array.from({ length: 16 }, (_, b) => (b < 8 ? 100n : 132n))
+    let addrLow = createAddressFromString('0x0000000000000000000000000000000000000001')
+    let addrHigh = createAddressFromString('0x0000000000000000000000000000000000000002')
+    for (let i = 0; i < 256; i++) {
+      const probe = createAddressFromString(`0x${i.toString(16).padStart(40, '0')}`)
+      if (bucketNibbleFromAddress(probe) === 0) addrLow = probe
+      if (bucketNibbleFromAddress(probe) === 15) addrHigh = probe
+    }
+
+    // State manager starts with Bucket 0 at block #100 (balance 100) and Bucket 15 already at block #132 (balance 132)
+    const sm = createFlatStateManager()
+    await sm.putAccount(addrLow, new Account(1n, 100n))
+    await sm.putAccount(addrHigh, new Account(5n, 132n))
+
+    const rows: Array<{ blockNumber: bigint; balJson: BALJSONBlockAccessList }> = []
+    for (let blk = 101n; blk <= 150n; blk++) {
+      // Blocks 101..132 mutate both addrLow (to blk) and addrHigh (to 9999 if mistakenly applied, except at 132 where high was snapshotted at 132)
+      // Blocks 133..150 mutate both addrLow and addrHigh to blk
+      const highVal = blk <= 132n ? 9999n : blk
+      rows.push({
+        blockNumber: blk,
+        balJson: [
+          {
+            address: addrLow.toString(),
+            storageReads: [],
+            storageChanges: [],
+            balanceChanges: [{ blockAccessIndex: '0x0', postBalance: `0x${blk.toString(16)}` }],
+            nonceChanges: [],
+            codeChanges: [],
+          },
+          {
+            address: addrHigh.toString(),
+            storageReads: [],
+            storageChanges: [],
+            balanceChanges: [{ blockAccessIndex: '0x0', postBalance: `0x${highVal.toString(16)}` }],
+            nonceChanges: [],
+            codeChanges: [],
+          },
+        ],
+      })
+    }
+
+    // Verify segment splitting at block #132 -> #133
+    const segments = balApplySegments(pivots, rows)
+    assert.equal(segments.length, 2)
+    assert.equal(segments[0]!.fromBlock, 101n)
+    assert.equal(segments[0]!.toBlock, 132n)
+    assert.ok(segments[0]!.shouldApplyAccount !== undefined)
+    assert.equal(segments[1]!.fromBlock, 133n)
+    assert.equal(segments[1]!.toBlock, 150n)
+    assert.equal(segments[1]!.shouldApplyAccount, undefined)
+
+    // Apply only first segment (#101..#132): addrLow advances to 132, addrHigh stays at 132 (ignores 9999)
+    await sm.consumeBALBatch(segments[0]!.accessLists, {
+      shouldApplyAccount: segments[0]!.shouldApplyAccount,
+    })
+    assert.equal((await sm.getAccount(addrLow))?.balance, 132n)
+    assert.equal((await sm.getAccount(addrHigh))?.balance, 132n)
+
+    // Apply second segment (#133..#150): both addrLow and addrHigh advance to 150
+    await sm.consumeBALBatch(segments[1]!.accessLists)
+    assert.equal((await sm.getAccount(addrLow))?.balance, 150n)
+    assert.equal((await sm.getAccount(addrHigh))?.balance, 150n)
+  })
+
+  it('assignBuckets falls back to single snapshot when cross-snapshot BAL range has a hole', () => {
+    // Seeder A has all 16 buckets at #100 with BALs 101..200
+    // Seeder B has only bucket 0 at #150, but neither seeder covers BALs if A only had 101..120
+    const fullAt100: import('../src/sync/ethySeederSchedule.ts').EthySeederDescriptor = {
+      peerId: 'full-100',
+      basePivotBlock: 100n,
+      basePivotRoot: ROOT_A,
+      bucketsBitmask: 0xffff,
+      balEarliestBlock: 101n,
+      balLatestBlock: 120n,
+    }
+    const partialAt150: import('../src/sync/ethySeederSchedule.ts').EthySeederDescriptor = {
+      peerId: 'partial-150',
+      basePivotBlock: 150n,
+      basePivotRoot: ROOT_B,
+      bucketsBitmask: 0x00ff,
+      balEarliestBlock: 151n,
+      balLatestBlock: 200n,
+    }
+    // Draft mixes partialAt150 (0..7) and fullAt100 (8..15), requiring BALs 101..150, which has a hole (121..150 missing).
+    // Fallback walks groupList by freshness and picks fullAt100 (which covers all 16 buckets on a single snapshot)!
+    const res = assignBuckets([fullAt100, partialAt150])
+    assert.ok(res !== undefined)
+    assert.equal(res.fallbackSingleSnapshot, true)
+    assert.equal(res.crossSnapshot, false)
+    for (let b = 0; b < 16; b++) {
+      assert.equal(res.assignments.get(b)?.peerId, 'full-100')
+      assert.equal(res.bucketPivotBlocks[b], 100n)
+    }
   })
 })

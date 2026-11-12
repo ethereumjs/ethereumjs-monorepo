@@ -1,4 +1,4 @@
-import type { Address } from '@ethereumjs/util'
+import type { Address, BALJSONBlockAccessList } from '@ethereumjs/util'
 import { equalsBytes, hexToBytes } from '@ethereumjs/util'
 
 import { accountHashFromAddress } from './syncedAccountHash.ts'
@@ -141,11 +141,13 @@ export function assignBuckets(
   const bMin = pivots.reduce((a, c) => (c < a ? c : a), draft.bucketPivotBlocks[0] ?? 0n)
   const bMax = pivots.reduce((a, c) => (c > a ? c : a), 0n)
   if (draft.crossSnapshot && !balRangeCovers(involvedSeeders, bMin, bMax)) {
-    const freshest = groupList[0]
-    if (freshest === undefined) return undefined
-    const single = tryAssignFromGroups([freshest], assignedLoad)
-    if (single === undefined) return undefined
-    return { ...single, fallbackSingleSnapshot: true }
+    for (const group of groupList) {
+      const single = tryAssignFromGroups([group], assignedLoad)
+      if (single !== undefined) {
+        return { ...single, fallbackSingleSnapshot: true }
+      }
+    }
+    return undefined
   }
   return draft
 }
@@ -174,13 +176,75 @@ export function shouldApplyBalAtBlock(
   bucketPivotBlocks: readonly bigint[],
   blockNumber: bigint,
 ): ((address: Address) => boolean) | undefined {
-  const { bMin, bMax, uniform } = bucketPivotMinMax(bucketPivotBlocks)
+  const { bMax, uniform } = bucketPivotMinMax(bucketPivotBlocks)
   if (uniform || bMax === 0n) return undefined
   if (blockNumber > bMax) return undefined
   return (address) => {
     const b = bucketNibbleFromAddress(address)
     return bucketPivotBlocks[b]! < blockNumber
   }
+}
+
+export type BalApplySegment = {
+  fromBlock: bigint
+  toBlock: bigint
+  accessLists: BALJSONBlockAccessList[]
+  shouldApplyAccount?: (address: Address) => boolean
+}
+
+function activeBucketMaskAtBlock(
+  bucketPivotBlocks: readonly bigint[],
+  blockNumber: bigint,
+): number {
+  const { bMax, uniform } = bucketPivotMinMax(bucketPivotBlocks)
+  if (uniform || bMax === 0n || blockNumber > bMax) return 0xffff
+  let mask = 0
+  for (let b = 0; b < 16; b++) {
+    if ((bucketPivotBlocks[b] ?? 0n) < blockNumber) {
+      mask |= 1 << b
+    }
+  }
+  return mask
+}
+
+/**
+ * Group consecutive BAL blocks that share the exact same active bucket mask
+ * so each contiguous segment can be compacted and applied via `consumeBALBatch` (WP-06g).
+ */
+export function balApplySegments(
+  bucketPivotBlocks: readonly bigint[],
+  rows: ReadonlyArray<{ blockNumber: bigint; balJson: BALJSONBlockAccessList }>,
+): BalApplySegment[] {
+  if (rows.length === 0) return []
+  const segments: BalApplySegment[] = []
+  let currentMask = -1
+  let currentSegment: BalApplySegment | undefined
+
+  for (const row of rows) {
+    const mask = activeBucketMaskAtBlock(bucketPivotBlocks, row.blockNumber)
+    if (mask === 0) continue
+    if (currentSegment === undefined || mask !== currentMask) {
+      currentMask = mask
+      const shouldApplyAccount =
+        mask === 0xffff
+          ? undefined
+          : (address: Address) => {
+              const b = bucketNibbleFromAddress(address)
+              return (mask & (1 << b)) !== 0
+            }
+      currentSegment = {
+        fromBlock: row.blockNumber,
+        toBlock: row.blockNumber,
+        accessLists: [row.balJson],
+        shouldApplyAccount,
+      }
+      segments.push(currentSegment)
+    } else {
+      currentSegment.toBlock = row.blockNumber
+      currentSegment.accessLists.push(row.balJson)
+    }
+  }
+  return segments
 }
 
 export function seederCoversBalRange(

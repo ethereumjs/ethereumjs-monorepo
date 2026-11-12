@@ -1510,12 +1510,7 @@ export async function startPeerCoordinator(
       syncMode,
       explicitConnectPeerIds.size > 0,
     )
-    const seen = new Set(descriptors.map((d) => d.peerId.toLowerCase()))
-    for (const d of descriptors) ethySwarm.upsertSeeder(d)
-    for (const p of peers) {
-      if (p.ethySession !== true) continue
-      if (!seen.has(p.id.toLowerCase())) ethySwarm.removeSeeder(p.id)
-    }
+    ethySwarm.syncSeeders(descriptors)
   }
 
   const startEthySwarmSync = (peers: WorkerPeerSnapshot[]) => {
@@ -1543,6 +1538,7 @@ export async function startPeerCoordinator(
       verifyPool,
       pivotBlockNumber: ethyAnchorBlock,
       initialSeeders,
+      initialBucketPivotBlocks: snapStore?.getBucketPivotBlocks(),
       balThroughBlock: head,
       onAccountsIngested: (entries) => codeSync?.noteAccounts(entries),
       onBucketDone: (idx) => noteBucketAdvertised(client, idx),

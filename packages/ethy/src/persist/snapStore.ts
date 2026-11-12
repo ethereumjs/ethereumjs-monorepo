@@ -312,6 +312,11 @@ export class SnapPivotStore {
     } satisfies ActiveMeta)
   }
 
+  getBucketPivotBlocks(): Record<string, string> | undefined {
+    if (!this.enabled) return undefined
+    return this.readActive()?.bucketPivotBlocks
+  }
+
   markBaseSyncComplete(pivotBlock: bigint): void {
     if (!this.enabled) return
     const active = this.readActive()

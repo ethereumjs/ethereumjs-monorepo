@@ -27,10 +27,10 @@ import {
   type BucketAssignment,
   type EthySeederDescriptor,
   assignBuckets,
+  balApplySegments,
   bucketPivotMinMax,
   peersOnSnapshot,
   seederCoversBalRange,
-  shouldApplyBalAtBlock,
 } from './ethySeederSchedule.ts'
 import { verifyProvenAccountChunkJob } from './snapVerifyJob.ts'
 import type { SnapVerifyPool } from './snapVerifyWorker.ts'
@@ -56,6 +56,7 @@ export type EthySwarmSyncOpts = {
   chunkStateRoot?: Uint8Array
   pivotBlockNumber?: bigint
   initialSeeders?: EthySeederDescriptor[]
+  initialBucketPivotBlocks?: Record<string, string>
   balThroughBlock: bigint
   onAccountsIngested?: (entries: IngestedAccountMeta[]) => void
   onBucketDone?: (bucketIndex: number) => void
@@ -74,8 +75,25 @@ type ManifestEntry = {
 type ChunkFlight = {
   bucketIndex: number
   originHash: Uint8Array
+  originIndex: number
   reqId: bigint
   peerId: string
+}
+
+type VerifiedChunkCommit = {
+  bucketIndex: number
+  originHash: Uint8Array
+  originIndex: number
+  doneKey: string
+  peerId: string
+  chunkStateRoot: Uint8Array
+  chunkBlockNumber: bigint
+  proofCopy: Uint8Array[]
+  bucketSlab: Uint8Array
+  bucketCount: number
+  rangeOrigin?: Uint8Array
+  lastKey?: Uint8Array
+  hasRight: boolean
 }
 
 function asBytes(v: unknown): Uint8Array | undefined {
@@ -245,9 +263,15 @@ export class EthySwarmSynchronizer {
   private balPeerRoundRobin = 0
   private nextReqId = 1n
   private readonly chunkFlights = new Map<string, ChunkFlight>()
+  private readonly manifestRequested = new Set<number>()
   private readonly manifestOrigins = new Map<number, Uint8Array[]>()
   private readonly nextOriginCursor = new Map<number, number>()
-  private readonly retryQueue = new Map<number, Uint8Array[]>()
+  private readonly nextCommitCursor = new Map<number, number>()
+  private readonly reorderBuffers = new Map<number, Map<number, VerifiedChunkCommit>>()
+  private readonly retryQueue = new Map<
+    number,
+    Array<{ originHash: Uint8Array; originIndex: number }>
+  >()
   private readonly chunkRetries = new Map<string, number>()
   private readonly chunksDone = new Set<string>()
   private readonly bucketDoneCount = new Map<number, number>()
@@ -255,6 +279,7 @@ export class EthySwarmSynchronizer {
   private roundRobinBucket = 0
   private expectedManifestCount = 0
   private manifestsLogged = false
+  private started = false
   private balNext: bigint
   private balInFlight = false
   private lastBalBatchAt = 0
@@ -272,6 +297,22 @@ export class EthySwarmSynchronizer {
       opts.spine.lastVerifiedBlockNumber > anchor
         ? opts.spine.lastVerifiedBlockNumber + 1n
         : anchor + 1n
+    if (opts.initialBucketPivotBlocks !== undefined) {
+      for (let b = 0; b < 16; b++) {
+        const raw =
+          opts.initialBucketPivotBlocks[b.toString(16)] ??
+          opts.initialBucketPivotBlocks[b.toString(10)]
+        if (raw !== undefined) {
+          this.bucketPivotBlocks[b] = BigInt(raw)
+        }
+      }
+    }
+    this.lastAccountCount = opts.spine.totalAccountsSynced
+    for (const b of opts.spine.snapBuckets) {
+      if (b.status === 'done') {
+        this.bucketsDone.add(b.index)
+      }
+    }
     if (opts.initialSeeders !== undefined) {
       for (const s of opts.initialSeeders) this.upsertSeeder(s)
     } else if (
@@ -289,12 +330,6 @@ export class EthySwarmSynchronizer {
         balLatestBlock: opts.balThroughBlock,
       })
     }
-    this.lastAccountCount = opts.spine.totalAccountsSynced
-    for (const b of opts.spine.snapBuckets) {
-      if (b.status === 'done') {
-        this.bucketsDone.add(b.index)
-      }
-    }
   }
 
   upsertSeeder(seeder: EthySeederDescriptor): void {
@@ -304,6 +339,19 @@ export class EthySwarmSynchronizer {
 
   removeSeeder(peerId: string): void {
     this.seeders.delete(peerId.toLowerCase())
+    this.rebuildAssignments()
+  }
+
+  syncSeeders(seeders: EthySeederDescriptor[]): void {
+    const nextIds = new Set(seeders.map((s) => s.peerId.toLowerCase()))
+    for (const id of [...this.seeders.keys()]) {
+      if (!nextIds.has(id)) {
+        this.seeders.delete(id)
+      }
+    }
+    for (const s of seeders) {
+      this.seeders.set(s.peerId.toLowerCase(), s)
+    }
     this.rebuildAssignments()
   }
 
@@ -323,13 +371,51 @@ export class EthySwarmSynchronizer {
     for (const flight of this.chunkFlights.values()) {
       load.set(flight.peerId, (load.get(flight.peerId) ?? 0) + 1)
     }
-    const assigned = assignBuckets([...this.seeders.values()], load)
+    const allSeeders = [...this.seeders.values()]
+    const assigned = assignBuckets(allSeeders, load)
     if (assigned === undefined) return
-    this.bucketAssignments = assigned.assignments
+
     for (let b = 0; b < 16; b++) {
-      this.bucketPivotBlocks[b] = assigned.bucketPivotBlocks[b] ?? 0n
+      const existing = this.bucketAssignments.get(b)
+      const bucketLocked =
+        this.manifestOrigins.has(b) ||
+        this.bucketsDone.has(b) ||
+        (this.bucketDoneCount.get(b) ?? 0) > 0
+      if (existing !== undefined && bucketLocked) {
+        const matchingPeers = peersOnSnapshot(
+          allSeeders,
+          existing.basePivotBlock,
+          existing.basePivotRoot,
+        )
+        if (matchingPeers.length > 0) {
+          this.bucketAssignments.set(b, {
+            peerId: matchingPeers[0]!.peerId,
+            basePivotBlock: existing.basePivotBlock,
+            basePivotRoot: existing.basePivotRoot,
+          })
+          continue
+        }
+      }
+      const nextAssign = assigned.assignments.get(b)
+      if (nextAssign !== undefined) {
+        this.bucketAssignments.set(b, nextAssign)
+        if (this.bucketPivotBlocks[b] === 0n || !bucketLocked) {
+          this.bucketPivotBlocks[b] = assigned.bucketPivotBlocks[b] ?? 0n
+        }
+      }
     }
-    this.crossSnapshot = assigned.crossSnapshot
+    const { uniform } = bucketPivotMinMax(this.bucketPivotBlocks)
+    this.crossSnapshot = !uniform
+
+    if (this.started && !this.stopped && !this.accountsPassComplete) {
+      const mask = this.seedMaskUnion()
+      for (let b = 0; b < 16; b++) {
+        if ((mask & (1 << b)) === 0) continue
+        if (this.bucketsDone.has(b) || this.manifestRequested.has(b)) continue
+        this.requestManifest(b)
+      }
+      this.pumpAllBuckets()
+    }
   }
 
   private seedMaskUnion(): number {
@@ -372,6 +458,7 @@ export class EthySwarmSynchronizer {
   }
 
   start(): void {
+    this.started = true
     this.rebuildAssignments()
     const mask = this.seedMaskUnion()
     let seededCount = 0
@@ -434,6 +521,7 @@ export class EthySwarmSynchronizer {
     const assign = this.assignmentForBucket(bucketIndex)
     const peerId = assign?.peerId
     if (peerId === undefined) return
+    this.manifestRequested.add(bucketIndex)
     const reqId = this.nextReqId++
     const payload = RLP.encode([
       bigIntToUnpaddedBytes(reqId),
@@ -465,13 +553,13 @@ export class EthySwarmSynchronizer {
       retries !== undefined &&
       retries.length > 0
     ) {
-      const origin = retries.shift()!
-      if (this.chunksDone.has(this.chunkDoneKey(bucketIndex, origin))) continue
+      const retry = retries.shift()!
+      if (this.chunksDone.has(this.chunkDoneKey(bucketIndex, retry.originHash))) continue
       const alreadyQueued = [...this.chunkFlights.values()].some(
-        (f) => f.bucketIndex === bucketIndex && equalsBytes(f.originHash, origin),
+        (f) => f.bucketIndex === bucketIndex && equalsBytes(f.originHash, retry.originHash),
       )
       if (alreadyQueued) continue
-      this.sendChunkRequest(bucketIndex, origin)
+      this.sendChunkRequest(bucketIndex, retry.originHash, retry.originIndex)
       inFlight++
       sentAny = true
     }
@@ -482,6 +570,7 @@ export class EthySwarmSynchronizer {
       this.chunkFlights.size < MAX_TOTAL_CHUNKS_IN_FLIGHT &&
       cursor < all.length
     ) {
+      const originIndex = cursor
       const origin = all[cursor]!
       cursor++
       if (this.chunksDone.has(this.chunkDoneKey(bucketIndex, origin))) continue
@@ -489,7 +578,7 @@ export class EthySwarmSynchronizer {
         (f) => f.bucketIndex === bucketIndex && equalsBytes(f.originHash, origin),
       )
       if (alreadyQueued) continue
-      this.sendChunkRequest(bucketIndex, origin)
+      this.sendChunkRequest(bucketIndex, origin, originIndex)
       inFlight++
       sentAny = true
     }
@@ -497,7 +586,7 @@ export class EthySwarmSynchronizer {
     return sentAny
   }
 
-  private sendChunkRequest(bucketIndex: number, origin: Uint8Array): void {
+  private sendChunkRequest(bucketIndex: number, origin: Uint8Array, originIndex: number): void {
     const assign = this.assignmentForBucket(bucketIndex)
     if (assign === undefined) return
     const snapKey = `${assign.basePivotBlock}:${bytesToUnprefixedHex(assign.basePivotRoot)}`
@@ -517,6 +606,7 @@ export class EthySwarmSynchronizer {
     this.chunkFlights.set(this.flightKey(reqId), {
       bucketIndex,
       originHash: origin,
+      originIndex,
       reqId,
       peerId,
     })
@@ -542,6 +632,8 @@ export class EthySwarmSynchronizer {
     const origins = parsed.entries.map((e) => new Uint8Array(e.originHash))
     this.manifestOrigins.set(parsed.bucketIndex, origins)
     this.nextOriginCursor.set(parsed.bucketIndex, 0)
+    this.nextCommitCursor.set(parsed.bucketIndex, 0)
+    this.reorderBuffers.set(parsed.bucketIndex, new Map())
     this.bucketDoneCount.set(parsed.bucketIndex, 0)
     if (
       !this.manifestsLogged &&
@@ -583,18 +675,20 @@ export class EthySwarmSynchronizer {
   private async onProvenChunk(payload: Uint8Array): Promise<void> {
     const parsed = parseProvenAccountChunk(payload)
     if (parsed === undefined) return
-    const pin = this.assignmentForBucket(parsed.bucketIndex)
-    if (
-      pin === undefined ||
-      !equalsBytes(parsed.chunkStateRoot, pin.basePivotRoot) ||
-      parsed.chunkBlockNumber !== pin.basePivotBlock
-    ) {
+    const flight = this.chunkFlights.get(this.flightKey(parsed.reqId))
+    if (flight === undefined || flight.bucketIndex !== parsed.bucketIndex) {
       return
     }
     this.chunkFlights.delete(this.flightKey(parsed.reqId))
     const doneKey = this.chunkDoneKey(parsed.bucketIndex, parsed.originHash)
     if (parsed.binaryAccountsSlab.length === 0) {
-      this.noteChunkFailure(parsed.bucketIndex, parsed.originHash, doneKey, 'empty proven chunk')
+      this.noteChunkFailure(
+        parsed.bucketIndex,
+        parsed.originHash,
+        flight.originIndex,
+        doneKey,
+        'empty proven chunk',
+      )
       return
     }
     const proofCopy = parsed.proofNodes.map((n) => {
@@ -618,13 +712,74 @@ export class EthySwarmSynchronizer {
       this.noteChunkFailure(
         parsed.bucketIndex,
         parsed.originHash,
+        flight.originIndex,
         doneKey,
         result.reason ?? 'ETHY proven chunk verify failed',
       )
       return
     }
+    if (parsed.chunkBlockNumber > 0n) {
+      const prevPivot = this.bucketPivotBlocks[parsed.bucketIndex] ?? 0n
+      if (prevPivot === 0n || parsed.chunkBlockNumber < prevPivot) {
+        this.bucketPivotBlocks[parsed.bucketIndex] = parsed.chunkBlockNumber
+      }
+      const { uniform } = bucketPivotMinMax(this.bucketPivotBlocks)
+      this.crossSnapshot = !uniform
+    }
     const bucketSlab = filterSlabToBucket(result.slab, parsed.bucketIndex)
     const bucketCount = bucketSlab.length / ACCOUNT_SLAB_STRIDE
+    let reorder = this.reorderBuffers.get(parsed.bucketIndex)
+    if (reorder === undefined) {
+      reorder = new Map()
+      this.reorderBuffers.set(parsed.bucketIndex, reorder)
+    }
+    reorder.set(flight.originIndex, {
+      bucketIndex: parsed.bucketIndex,
+      originHash: parsed.originHash,
+      originIndex: flight.originIndex,
+      doneKey,
+      peerId: flight.peerId,
+      chunkStateRoot: parsed.chunkStateRoot,
+      chunkBlockNumber: parsed.chunkBlockNumber,
+      proofCopy,
+      bucketSlab,
+      bucketCount,
+      rangeOrigin: result.rangeOrigin,
+      lastKey: result.lastKey,
+      hasRight: result.hasRight,
+    })
+    this.flushOrderedBucketCommits(parsed.bucketIndex)
+    this.pumpAllBuckets()
+    this.maybeFinishAccountsPass()
+  }
+
+  private flushOrderedBucketCommits(bucketIndex: number): void {
+    const reorder = this.reorderBuffers.get(bucketIndex)
+    if (reorder === undefined || reorder.size === 0) return
+    let nextIdx = this.nextCommitCursor.get(bucketIndex) ?? 0
+    while (reorder.has(nextIdx)) {
+      const item = reorder.get(nextIdx)!
+      reorder.delete(nextIdx)
+      nextIdx++
+      this.nextCommitCursor.set(bucketIndex, nextIdx)
+      this.commitVerifiedChunk(item)
+    }
+  }
+
+  private commitVerifiedChunk(item: VerifiedChunkCommit): void {
+    const {
+      bucketIndex,
+      doneKey,
+      peerId,
+      chunkStateRoot,
+      chunkBlockNumber,
+      proofCopy,
+      bucketSlab,
+      bucketCount,
+      rangeOrigin,
+      lastKey,
+      hasRight,
+    } = item
     if (bucketSlab.length > 0) {
       if (
         this.opts.snapStore !== undefined &&
@@ -639,7 +794,7 @@ export class EthySwarmSynchronizer {
       }
       this.opts.onAccountsIngested?.(ingestedMetaFromBinarySlab(bucketSlab))
     }
-    const bucket = this.opts.spine.snapBuckets[parsed.bucketIndex]
+    const bucket = this.opts.spine.snapBuckets[bucketIndex]
     if (bucket !== undefined) {
       bucket.accountsLoaded += bucketCount
       this.opts.spine.totalAccountsSynced += bucketCount
@@ -649,7 +804,7 @@ export class EthySwarmSynchronizer {
               bucketSlab.length - ACCOUNT_SLAB_STRIDE,
               bucketSlab.length - ACCOUNT_SLAB_STRIDE + 32,
             )
-          : result.lastKey
+          : lastKey
       if (lastInBucket instanceof Uint8Array) {
         bucket.currentLastHash = new Uint8Array(lastInBucket)
         if (bucket.subRanges !== undefined && bucket.subRanges.length > 0) {
@@ -690,21 +845,21 @@ export class EthySwarmSynchronizer {
       this.lastRateAt = now
     }
     const proof =
-      result.rangeOrigin !== undefined && result.lastKey instanceof Uint8Array
+      rangeOrigin !== undefined && lastKey instanceof Uint8Array
         ? {
             slabByteOffset: 0,
             slabByteLength: bucketSlab.length,
-            originHash: result.rangeOrigin,
-            lastHash: result.lastKey,
-            hasRight: result.hasRight ? 1 : 0,
-            chunkStateRoot: parsed.chunkStateRoot,
-            chunkBlockNumber: parsed.chunkBlockNumber,
+            originHash: rangeOrigin,
+            lastHash: lastKey,
+            hasRight: hasRight ? 1 : 0,
+            chunkStateRoot,
+            chunkBlockNumber,
             proofNodes: proofCopy,
           }
         : undefined
     if (bucketSlab.length > 0) {
       void this.opts.snapStore?.appendVerifiedSlabAsync(
-        parsed.bucketIndex,
+        bucketIndex,
         bucketSlab,
         this.opts.spine.snapBuckets,
         'prefix',
@@ -713,17 +868,14 @@ export class EthySwarmSynchronizer {
     }
     if (!this.chunksDone.has(doneKey)) {
       this.chunksDone.add(doneKey)
-      this.bucketDoneCount.set(
-        parsed.bucketIndex,
-        (this.bucketDoneCount.get(parsed.bucketIndex) ?? 0) + 1,
-      )
+      this.bucketDoneCount.set(bucketIndex, (this.bucketDoneCount.get(bucketIndex) ?? 0) + 1)
     }
-    const pending = this.manifestOrigins.get(parsed.bucketIndex) ?? []
-    const doneInBucket = this.bucketDoneCount.get(parsed.bucketIndex) ?? 0
+    const pending = this.manifestOrigins.get(bucketIndex) ?? []
+    const doneInBucket = this.bucketDoneCount.get(bucketIndex) ?? 0
     const allDone = pending.length > 0 && doneInBucket >= pending.length
-    const bucketFinished = allDone || (result.hasRight && pending.length === 0)
-    if (bucketFinished && !this.bucketsDone.has(parsed.bucketIndex)) {
-      this.bucketsDone.add(parsed.bucketIndex)
+    const bucketFinished = allDone || (hasRight && pending.length === 0)
+    if (bucketFinished && !this.bucketsDone.has(bucketIndex)) {
+      this.bucketsDone.add(bucketIndex)
       if (bucket !== undefined) {
         bucket.status = 'done'
         bucket.subRanges = []
@@ -732,21 +884,20 @@ export class EthySwarmSynchronizer {
       recordDiagnostic(this.opts.spine, {
         subsystem: 'ethy',
         severity: 'info',
-        peerId: pin?.peerId,
-        bucketIndex: parsed.bucketIndex,
-        message: `ETHY bucket 0x${parsed.bucketIndex.toString(16)} complete (${(bucket?.accountsLoaded ?? 0).toLocaleString('en-US')} accounts, ${this.bucketsDone.size}/16 buckets)`,
+        peerId,
+        bucketIndex,
+        message: `ETHY bucket 0x${bucketIndex.toString(16)} complete (${(bucket?.accountsLoaded ?? 0).toLocaleString('en-US')} accounts, ${this.bucketsDone.size}/16 buckets)`,
       })
-      this.opts.onBucketDone?.(parsed.bucketIndex)
-      const pb = this.bucketPivotBlocks[parsed.bucketIndex]
-      if (pb > 0n) this.opts.onBucketPivot?.(parsed.bucketIndex, pb)
+      this.opts.onBucketDone?.(bucketIndex)
+      const pb = this.bucketPivotBlocks[bucketIndex]
+      if (pb > 0n) this.opts.onBucketPivot?.(bucketIndex, pb)
     }
-    this.pumpAllBuckets()
-    this.maybeFinishAccountsPass()
   }
 
   private noteChunkFailure(
     bucketIndex: number,
     originHash: Uint8Array,
+    originIndex: number,
     doneKey: string,
     reason: string,
   ): void {
@@ -761,11 +912,16 @@ export class EthySwarmSynchronizer {
     })
     if (attempts <= MAX_CHUNK_RETRIES) {
       const q = this.retryQueue.get(bucketIndex) ?? []
-      q.push(originHash)
+      q.push({ originHash, originIndex })
       this.retryQueue.set(bucketIndex, q)
     } else if (!this.chunksDone.has(doneKey)) {
       this.chunksDone.add(doneKey)
       this.bucketDoneCount.set(bucketIndex, (this.bucketDoneCount.get(bucketIndex) ?? 0) + 1)
+      const nextIdx = this.nextCommitCursor.get(bucketIndex) ?? 0
+      if (nextIdx === originIndex) {
+        this.nextCommitCursor.set(bucketIndex, nextIdx + 1)
+        this.flushOrderedBucketCommits(bucketIndex)
+      }
     }
     this.pumpAllBuckets()
     this.maybeFinishAccountsPass()
@@ -881,12 +1037,24 @@ export class EthySwarmSynchronizer {
       }
     }
 
+    const rowsWithBal = verifiedRows
+      .filter(
+        (r): r is typeof r & { balJson: NonNullable<typeof r.balJson> } => r.balJson !== undefined,
+      )
+      .map((r) => ({ blockNumber: r.block.blockNumber, balJson: r.balJson }))
+
+    const segments = balApplySegments(this.bucketPivotBlocks, rowsWithBal)
+    for (const seg of segments) {
+      const opts =
+        seg.shouldApplyAccount !== undefined
+          ? { shouldApplyAccount: seg.shouldApplyAccount }
+          : undefined
+      await this.opts.stateManager.consumeBALBatch(seg.accessLists, opts)
+    }
+
     for (let i = 0; i < verifiedRows.length; i++) {
       const { block, fields, balJson } = verifiedRows[i]!
       if (balJson !== undefined) {
-        const predicate = shouldApplyBalAtBlock(this.bucketPivotBlocks, block.blockNumber)
-        const opts = predicate !== undefined ? { shouldApplyAccount: predicate } : undefined
-        await this.opts.stateManager.consumeBAL(balJson, opts)
         pushBalWindow(this.opts.spine, block.blockNumber, balJson)
         this.opts.spine.appliedBalCount = (this.opts.spine.appliedBalCount ?? 0) + 1
       }
