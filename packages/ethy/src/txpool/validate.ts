@@ -42,6 +42,13 @@ export async function validateRawTransaction(
     return err(-32000, 'Transaction nonce too high')
   }
   const gasLimit = tx.gasLimit
+  const intrinsicGas = tx.getIntrinsicGas()
+  if (gasLimit < intrinsicGas) {
+    return err(
+      -32000,
+      `Intrinsic gas too low: gasLimit ${gasLimit.toString()} < required ${intrinsicGas.toString()}`,
+    )
+  }
   let feePerGas =
     'gasPrice' in tx && tx.gasPrice !== undefined
       ? tx.gasPrice

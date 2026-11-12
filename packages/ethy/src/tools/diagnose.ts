@@ -211,10 +211,18 @@ export function bucketsTableWidget(spine: EthySpine): WidgetSpec {
   }
 }
 
+function formatLocalClock(timestampMs: number): string {
+  const d = new Date(timestampMs)
+  const hh = String(d.getHours()).padStart(2, '0')
+  const mm = String(d.getMinutes()).padStart(2, '0')
+  const ss = String(d.getSeconds()).padStart(2, '0')
+  return `${hh}:${mm}:${ss}`
+}
+
 export function diagnosticsTableWidget(spine: EthySpine): WidgetSpec {
   const recent = spine.diagnosticRingBuffer.slice(-20).reverse()
   const rows = recent.map((e) => [
-    new Date(e.timestamp).toISOString().slice(11, 19),
+    formatLocalClock(e.timestamp),
     e.subsystem,
     e.severity,
     e.peerId ?? '—',

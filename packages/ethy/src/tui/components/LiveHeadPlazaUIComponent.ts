@@ -47,12 +47,12 @@ function barRow(label: string, fill: number, barW: number, totalW: number, suffi
   return fixedLine(`${paddedLabel} ${bar}${tail}`, totalW)
 }
 
-function formatUtcTime(sec: number): string {
+function formatLocalTime(sec: number): string {
   if (sec <= 0) return '--:--:--'
   const d = new Date(sec * 1000)
-  const hh = String(d.getUTCHours()).padStart(2, '0')
-  const mm = String(d.getUTCMinutes()).padStart(2, '0')
-  const ss = String(d.getUTCSeconds()).padStart(2, '0')
+  const hh = String(d.getHours()).padStart(2, '0')
+  const mm = String(d.getMinutes()).padStart(2, '0')
+  const ss = String(d.getSeconds()).padStart(2, '0')
   return `${hh}:${mm}:${ss}`
 }
 
@@ -346,7 +346,7 @@ function buildRightColumn(econ: EconomySnapshot, colW: number, budget: number): 
     if (used >= budget) break
     const color = BADGE_COLOR[m.kind] ?? RESET
     const [line1, line2] = wrapHeadline(m.headline, textW)
-    const prefix = `${DIM}${formatUtcTime(m.timestampSec)}${RESET} ${color}${BOLD}${m.badge}${RESET} `
+    const prefix = `${DIM}${formatLocalTime(m.timestampSec)}${RESET} ${color}${BOLD}${m.badge}${RESET} `
     const padPrefix = ' '.repeat(timeW + badgeW + 2)
     out.push(fixedLine(`${prefix}${line1}`, colW))
     used += 1
