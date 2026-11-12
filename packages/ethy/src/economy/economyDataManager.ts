@@ -205,10 +205,11 @@ export class ETHEconomyDataManager {
     const obs = record.observations
     if (obs !== undefined) {
       const touchAddresses = obs.blockAddresses
-      for (let i = 0; i < touchAddresses.length; i++) {
+      const coTouchCap = Math.min(touchAddresses.length, 48)
+      for (let i = 0; i < coTouchCap; i++) {
         const a = touchAddresses[i]!
         const agg = this.ensureContractAgg(a)
-        for (let j = 0; j < touchAddresses.length; j++) {
+        for (let j = 0; j < coTouchCap; j++) {
           if (i === j) continue
           agg.coTouched.add(touchAddresses[j]!)
         }

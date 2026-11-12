@@ -376,7 +376,8 @@ export async function runEthySession(node: EthyNode): Promise<void> {
             navigateHistory('left')
           } else {
             const canPlaza =
-              node.spine.economy?.hasBlocks === true || node.spine.phase === 'HEAD_FOLLOWING'
+              node.spine.phase === 'HEAD_FOLLOWING' ||
+              (node.spine.demoClock === true && node.spine.economy?.hasBlocks === true)
             if (canPlaza) {
               view = openPlazaView(view, node.spine, slashCtx())
             }

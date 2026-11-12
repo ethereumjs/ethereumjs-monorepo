@@ -62,14 +62,17 @@ export function getCommandAvailability(
     case '/live':
     case '/plaza':
     case '/head':
-      if (spine.economy?.hasBlocks === true || spine.phase === 'HEAD_FOLLOWING') {
+      if (
+        spine.phase === 'HEAD_FOLLOWING' ||
+        (spine.demoClock === true && spine.economy?.hasBlocks === true)
+      ) {
         return { status: 'ready' }
       }
       return {
         status: 'locked',
         shortTag: 'awaiting blocks',
-        reason: 'Ethereum Plaza needs at least one verified block or head following.',
-        suggestion: 'Wait for BAL streaming or snap catch-up.',
+        reason: 'Ethereum Plaza activates once sync reaches live chain head.',
+        suggestion: 'Wait for base sync and BAL catch-up to reach head.',
       }
     case '/economy':
     case '/e':

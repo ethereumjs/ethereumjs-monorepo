@@ -1149,10 +1149,18 @@ export class SnapPivotStore {
         buckets: serializeBuckets(createSnapBuckets()),
       })
     }
-    writeAtomicDoc(path.join(this.networkDir, 'active.json'), {
-      stateRoot: stateRootHex,
-      previousStateRoot,
-    } satisfies ActiveMeta)
+    if (prior !== undefined && prior.stateRoot.toLowerCase() === stateRootHex.toLowerCase()) {
+      writeAtomicDoc(path.join(this.networkDir, 'active.json'), {
+        ...prior,
+        stateRoot: stateRootHex,
+        previousStateRoot,
+      } satisfies ActiveMeta)
+    } else {
+      writeAtomicDoc(path.join(this.networkDir, 'active.json'), {
+        stateRoot: stateRootHex,
+        previousStateRoot,
+      } satisfies ActiveMeta)
+    }
     this.activeStateRoot = stateRootHex
     this.seedInitializedAccountFiles(stateRootHex)
     this.prunePivots(stateRootHex, previousStateRoot)

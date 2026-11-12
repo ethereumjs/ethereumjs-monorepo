@@ -811,8 +811,17 @@ export async function startPeerCoordinator(
 
   const maybeApplyResumeFromPeers = (peers: WorkerPeerSnapshot[]) => {
     const best = pickBestPeer(peers, pivotBlockedPeers)
-    if (best?.latestBlock === undefined) return
-    const headBlock = BigInt(best.latestBlock)
+    let headBlock = best?.latestBlock !== undefined ? BigInt(best.latestBlock) : undefined
+    if (headBlock === undefined) {
+      for (const p of peers) {
+        const raw = p.ethyStatus?.balLatestBlock
+        if (raw !== undefined && raw.length > 0) {
+          const b = BigInt(raw)
+          if (headBlock === undefined || b > headBlock) headBlock = b
+        }
+      }
+    }
+    if (headBlock === undefined || headBlock === 0n) return
     handleSnapResumeAtHead(headBlock, peers)
   }
 
@@ -878,8 +887,11 @@ export async function startPeerCoordinator(
       spine.storageAccountsTotal = contractProgress.storageAccountsTotal
       spine.storageSlotsSynced = contractProgress.storageSlotsSynced
     }
-    if (peek.baseSyncComplete) {
+    if (peek.baseSyncComplete || !snapBucketsUnfinished(spine.snapBuckets)) {
       handoffCatchup = true
+      if (spine.syncTransport === 'unset') {
+        spine.syncTransport = (spine.ethyBucketsBitmask ?? 0) > 0 ? 'ethy' : 'snap'
+      }
       if (restored > 0) {
         recordDiagnostic(spine, {
           subsystem: 'snap',
@@ -913,9 +925,19 @@ export async function startPeerCoordinator(
     deriveCapabilities(spine)
     if (!resumeHeadHandled) {
       const best = pickBestPeer(lastTelemetryPeers, pivotBlockedPeers)
+      let ethyHead: bigint | undefined
+      for (const p of lastTelemetryPeers) {
+        const raw = p.ethyStatus?.balLatestBlock
+        if (raw !== undefined && raw.length > 0) {
+          const b = BigInt(raw)
+          if (ethyHead === undefined || b > ethyHead) ethyHead = b
+        }
+      }
       const headBlock =
-        best?.latestBlock !== undefined ? BigInt(best.latestBlock) : pendingResumeHead
-      if (headBlock !== undefined) {
+        best?.latestBlock !== undefined
+          ? BigInt(best.latestBlock)
+          : (pendingResumeHead ?? spine.bestPeerHead ?? ethyHead)
+      if (headBlock !== undefined && headBlock > 0n) {
         resumeHeadHandled = true
         finishDiskResumeWithHead(headBlock, lastTelemetryPeers)
       }
@@ -1531,6 +1553,12 @@ export async function startPeerCoordinator(
   const explicitConnectPeerIds = new Set(explicitConnectPeers.map((p) => p.idHex))
 
   const tryLockSyncTransport = (peers: WorkerPeerSnapshot[]) => {
+    if (handoffCatchup || !snapBucketsUnfinished(spine.snapBuckets)) {
+      if (spine.syncTransport === 'unset') {
+        spine.syncTransport = (spine.ethyBucketsBitmask ?? 0) > 0 ? 'ethy' : 'snap'
+      }
+      return
+    }
     const bucketsDone = spine.snapBuckets.filter((b) => b.status === 'done').length
     const canPreemptSnapForEthy =
       spine.syncTransport === 'snap' &&

@@ -27,7 +27,7 @@ import { verifyProvenAccountChunkJob } from './snapVerifyJob.ts'
 import type { SnapVerifyPool } from './snapVerifyWorker.ts'
 import { incrementKey32, ingestedMetaFromBinarySlab } from './syntheticPeer.ts'
 
-const MAX_CHUNK_PIPELINE = 3
+const MAX_CHUNK_PIPELINE = 1
 const MAX_TOTAL_CHUNKS_IN_FLIGHT = 16
 const MAX_CHUNK_RETRIES = 2
 const MAX_BAL_RANGE = 32
@@ -246,25 +246,40 @@ export class EthySwarmSynchronizer {
 
   constructor(opts: EthySwarmSyncOpts) {
     this.opts = opts
-    this.balNext = opts.pivotBlockNumber + 1n
+    this.balNext =
+      opts.spine.lastVerifiedBlockNumber !== undefined &&
+      opts.spine.lastVerifiedBlockNumber > opts.pivotBlockNumber
+        ? opts.spine.lastVerifiedBlockNumber + 1n
+        : opts.pivotBlockNumber + 1n
     this.lastAccountCount = opts.spine.totalAccountsSynced
+    for (const b of opts.spine.snapBuckets) {
+      if (b.status === 'done') {
+        this.bucketsDone.add(b.index)
+      }
+    }
   }
 
   start(): void {
     let seededCount = 0
     for (let b = 0; b < 16; b++) {
       if ((this.opts.seedBucketsBitmask & (1 << b)) === 0) continue
+      if (this.bucketsDone.has(b)) continue
       seededCount++
     }
     this.expectedManifestCount = seededCount
+    if (seededCount === 0) {
+      this.maybeFinishAccountsPass()
+      return
+    }
     recordDiagnostic(this.opts.spine, {
       subsystem: 'ethy',
       severity: 'info',
       peerId: this.opts.seederPeerId,
-      message: `ETHY swarm sync started at pivot #${this.opts.pivotBlockNumber.toString()} (${seededCount}/16 buckets seeded)`,
+      message: `ETHY swarm sync started at pivot #${this.opts.pivotBlockNumber.toString()} (${seededCount}/16 buckets remaining)`,
     })
     for (let b = 0; b < 16; b++) {
       if ((this.opts.seedBucketsBitmask & (1 << b)) === 0) continue
+      if (this.bucketsDone.has(b)) continue
       this.requestManifest(b)
     }
   }
@@ -725,12 +740,14 @@ export class EthySwarmSynchronizer {
       await this.opts.stateManager.consumeBALBatch(batchBalJson)
     }
 
-    for (const { block, fields, balJson } of verifiedRows) {
+    for (let i = 0; i < verifiedRows.length; i++) {
+      const { block, fields, balJson } = verifiedRows[i]!
       if (balJson !== undefined) {
         pushBalWindow(this.opts.spine, block.blockNumber, balJson)
         this.opts.spine.appliedBalCount = (this.opts.spine.appliedBalCount ?? 0) + 1
       }
-      if (block.headerRlp.length > 0) {
+      const nearHead = this.opts.balThroughBlock <= block.blockNumber + 64n
+      if (block.headerRlp.length > 0 && nearHead) {
         this.opts.economy?.noteBundle({
           blockNumber: block.blockNumber,
           headerRlp: block.headerRlp,

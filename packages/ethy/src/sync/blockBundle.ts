@@ -140,8 +140,14 @@ export async function finalizeBlockBundle(opts: FinalizeBlockBundleOpts): Promis
     receiptsEth69Rlp: bundle.receiptsEth69Rlp,
     balJson: economyBalJson,
   }
-  opts.economy?.noteBundle({ ...rpcNote, balRlp: bundle.balRlp })
-  opts.onRpcBundle?.(rpcNote)
+  if (
+    opts.spine.phase === 'HEAD_FOLLOWING' ||
+    opts.spine.phase === 'BAL_CATCHUP' ||
+    opts.spine.demoClock === true
+  ) {
+    opts.economy?.noteBundle({ ...rpcNote, balRlp: bundle.balRlp })
+    opts.onRpcBundle?.(rpcNote)
+  }
 }
 
 export function headFieldsFromHeaderRlp(

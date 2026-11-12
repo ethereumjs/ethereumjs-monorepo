@@ -305,6 +305,9 @@ export class BalChainStreamer {
       void this.tick()
     }, pollMs)
     this.timer.unref?.()
+    queueMicrotask(() => {
+      void this.tick()
+    })
   }
 
   stop(): void {
@@ -501,8 +504,11 @@ export class BalChainStreamer {
             balRlp: row.balRlp,
           })
         }
-        this.opts.economy?.noteBundle({ ...note, balRlp: row.balRlp })
-        this.opts.onRpcBundle?.(note)
+        const nearHead = seq.targetHead <= row.header.number + 64n
+        if (nearHead) {
+          this.opts.economy?.noteBundle({ ...note, balRlp: row.balRlp })
+          this.opts.onRpcBundle?.(note)
+        }
       }
       this.opts.onVerifiedExecutionHeader?.(row.header.number, row.header.hash)
       if (snapStreaming) {
@@ -761,13 +767,17 @@ export class BalChainStreamer {
     }
     const now = Date.now()
     const batch = this.catchUp?.batchInFlight
-    if (batch !== undefined && now - batch.startedAt >= BUNDLE_IN_FLIGHT_TIMEOUT_MS) {
+    if (
+      batch !== undefined &&
+      (!spine.peers.has(batch.peerId) || now - batch.startedAt >= BUNDLE_IN_FLIGHT_TIMEOUT_MS)
+    ) {
       restBalCatchUpPeer(this.peerRestUntil, batch.peerId)
       this.catchUp!.batchInFlight = undefined
     }
     if (
       this.catchUp?.inFlight !== undefined &&
-      now - this.catchUp.inFlight.startedAt >= BUNDLE_IN_FLIGHT_TIMEOUT_MS
+      (!spine.peers.has(this.catchUp.inFlight.peerId) ||
+        now - this.catchUp.inFlight.startedAt >= BUNDLE_IN_FLIGHT_TIMEOUT_MS)
     ) {
       restBalCatchUpPeer(this.peerRestUntil, this.catchUp.peerId)
       this.catchUp.inFlight = undefined

@@ -15,8 +15,10 @@ export function openPlazaView(
   spine: EthySpine,
   slashCtx: SlashDispatchCtx,
 ): TuiViewState {
-  const hasBlocks = spine.economy?.hasBlocks === true
-  if (!hasBlocks && spine.phase !== 'HEAD_FOLLOWING') {
+  const canPlaza =
+    spine.phase === 'HEAD_FOLLOWING' ||
+    (spine.demoClock === true && spine.economy?.hasBlocks === true)
+  if (!canPlaza) {
     return {
       ...view,
       activeWidget: { kind: 'start_page' },

@@ -70,23 +70,35 @@ export function pickBalCatchUpPeer(
     if (p.latestBlock > targetHead) targetHead = p.latestBlock
   }
   if (targetHead === 0n) return undefined
-  const filterCandidates = (minEthVersion: number): PeerTelemetry[] => {
+  const filterCandidates = (minEthVersion: number, allowRollingEthy: boolean): PeerTelemetry[] => {
     const out: PeerTelemetry[] = []
     for (const p of spine.peers.values()) {
       if (p.hasHead !== true || p.latestBlock === undefined) continue
       if (highestEthVersion(p.caps) < minEthVersion) continue
       if (minBlock !== undefined && p.latestBlock < minBlock) continue
+      if (
+        !allowRollingEthy &&
+        p.ethySession === true &&
+        minBlock !== undefined &&
+        minBlock + SERVING_TAIL_BLOCKS < p.latestBlock
+      ) {
+        continue
+      }
       const rest = peerRestUntil.get(p.id)
       if (rest !== undefined && now < rest) continue
       out.push(p)
     }
     return out
   }
-  const candidates = filterCandidates(71).length > 0 ? filterCandidates(71) : filterCandidates(69)
+  let candidates = filterCandidates(71, false)
+  if (candidates.length === 0) candidates = filterCandidates(71, true)
+  if (candidates.length === 0) candidates = filterCandidates(69, false)
+  if (candidates.length === 0) candidates = filterCandidates(69, true)
   if (candidates.length === 0) return undefined
+  const effectiveRtt = (p: PeerTelemetry): number => (p.avgLatencyMs > 0 ? p.avgLatencyMs : 250)
   let best = candidates[0]!
   for (const p of candidates) {
-    if (p.avgLatencyMs < best.avgLatencyMs) best = p
+    if (effectiveRtt(p) < effectiveRtt(best)) best = p
   }
   return {
     id: best.id,
