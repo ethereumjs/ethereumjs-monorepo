@@ -597,6 +597,7 @@ export async function dispatchRpcMethod(
           codesSynced: ctx.spine.codesSynced,
           storageSlotsSynced: ctx.spine.storageSlotsSynced,
           peersCount: ctx.spine.peers.size,
+          localEnode: ctx.spine.discovery?.localEnode,
           rpcUrl: ctx.spine.rpc?.url,
         },
       }

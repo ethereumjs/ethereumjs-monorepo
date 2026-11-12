@@ -107,10 +107,8 @@ function renderRightFooterRpc(spine: EthySpine, width: number): string {
 
 function renderLeftHint(draft: string, leftW: number): string {
   const leftHint = `${renderFooterHint()}${RESET}`
-  const slash =
-    draft.startsWith('/') && completeSlashDraft(draft) !== null
-      ? `${draft} → ${completeSlashDraft(draft)}`
-      : ''
+  const completed = draft.startsWith('/') ? completeSlashDraft(draft) : null
+  const slash = completed !== null && completed !== draft ? `${draft} → ${completed}` : ''
   const hintWidth = visibleWidth(leftHint)
   if (slash.length === 0 || hintWidth + 2 >= leftW) return fixedField(leftHint, leftW)
   const tabWidth = Math.max(0, leftW - hintWidth - 2)

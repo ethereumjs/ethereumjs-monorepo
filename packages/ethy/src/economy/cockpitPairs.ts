@@ -18,7 +18,8 @@ function topSelectorName(hot: TopContractRow): string | undefined {
   const raw = hot.topSelectors?.[0]
   if (raw === undefined) return undefined
   const name = raw.split(' (')[0]
-  return name.length > 0 ? name : undefined
+  if (name.length === 0 || name.startsWith('0x')) return undefined
+  return name
 }
 
 function formatSelectorSuffix(sel: string | undefined): string {

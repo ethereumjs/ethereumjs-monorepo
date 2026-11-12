@@ -42,9 +42,11 @@ export function ethyOverviewWidget(spine: EthySpine): WidgetSpec {
     s?.earliestBlock !== undefined && s?.latestBlock !== undefined
       ? `#${BigInt(s.earliestBlock).toLocaleString('en-US')}..#${BigInt(s.latestBlock).toLocaleString('en-US')} (${servableCount} block${servableCount === 1 ? '' : 's'})`
       : '—'
+  const localEnode = spine.discovery?.localEnode ?? '—'
   return {
     kind: 'table',
     title: 'ETHY/0 swarm',
+    preface: [{ key: 'Local enode', value: localEnode }],
     headers: ['Field', 'Value'],
     rows: [
       ['Transport', transport],
@@ -83,9 +85,11 @@ export function peersTableWidget(spine: EthySpine): WidgetSpec {
   if (rows.length === 0) {
     rows.push(['—', '—', '—', '—', '—', 'No peers yet'])
   }
+  const localEnode = spine.discovery?.localEnode
   return {
     kind: 'table',
     title: 'Peer health',
+    preface: localEnode !== undefined ? [{ key: 'Local enode', value: localEnode }] : undefined,
     headers: ['Peer', 'Client', 'Caps', 'Ethy', 'Avg ms', 'Last issue'],
     rows,
     debugPage: peersDebugSections(spine),

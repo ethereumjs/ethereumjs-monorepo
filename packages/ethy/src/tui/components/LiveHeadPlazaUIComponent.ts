@@ -326,10 +326,10 @@ function contractPulseVenueLine(row: TopContractRow, _colW: number): string {
   const slots = Math.round(w / Math.max(1, row.blocksActive))
   const badge = venuePulseBadge(row)
   const color = venueBadgeColor(badge)
-  const paddedBadge = fixedField(`${color}[${badge}]${RESET}`, 12)
+  const paddedBadge = fixedField(`${color}[${badge}]${RESET}`, 14)
   const sel = row.topSelectors?.[0]?.split(' (')[0]
   const selFormatted =
-    sel !== undefined && sel.length > 0 ? (sel.startsWith('0x') ? sel : `${sel}()`) : undefined
+    sel !== undefined && sel.length > 0 && !sel.startsWith('0x') ? `${sel}()` : undefined
   const selClause = selFormatted !== undefined ? `${DIM} · ${selFormatted}${RESET}` : ''
   return `${shortAddress(row.address)}  ${paddedBadge} ${slots}w/blk${selClause}`
 }

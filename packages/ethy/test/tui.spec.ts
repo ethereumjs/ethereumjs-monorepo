@@ -4,7 +4,7 @@ import { getEthyClientVersion } from '../src/clientMeta.ts'
 import { P2P_REACHABILITY_HINT } from '../src/notify/p2pLink.ts'
 import { createSpine, deriveCapabilities, setPhase } from '../src/spine/createSpine.ts'
 import type { WidgetSpec } from '../src/spine/types.ts'
-import { diagnosticsTableWidget } from '../src/tools/diagnose.ts'
+import { diagnosticsTableWidget, peersTableWidget } from '../src/tools/diagnose.ts'
 import { stripAnsi, visibleWidth } from '../src/tui/ansi.ts'
 import { CAPABILITY_FG, capabilityMark } from '../src/tui/capabilityMark.ts'
 import { cockpitColumnWidths } from '../src/tui/cockpit.ts'
@@ -567,5 +567,33 @@ describe('[Ethy/TUI]: prompt reducer', () => {
     assert.equal(r.actions.length, 0)
     r = decodeKey(buf, '[A')
     assert.deepEqual(r.actions, [{ type: 'up' }])
+  })
+
+  it('peersTableWidget surfaces full untruncated local enode on main page and wraps in KeyValueUIComponent', () => {
+    const spine = createSpine('sepolia', 11155111n)
+    const fullEnode = `enode://${'f1e12475'.repeat(16)}@127.0.0.1:30303`
+    spine.discovery = {
+      boundAddress: '127.0.0.1',
+      boundUdpPort: 30303,
+      boundTcpPort: 30303,
+      tablePeers: 10,
+      localEnode: fullEnode,
+      advertisedFork: { hardfork: 'amsterdam', hash: '0x6c1d9423', next: '0' },
+      bootstrap: { attempts: 1, ok: 1, fail: 0 },
+      dns: { attempts: 1, peersAdded: 1, resolver: 'system' },
+      rlpx: { dials: 1, connected: 1, statusOk: 1, statusSent: 1, disconnects: {} },
+      dpt: { banSkips: 0, bansIssued: 0 },
+    }
+    let view = createInitialViewState(spine)
+    view = {
+      ...view,
+      activeWidget: peersTableWidget(spine),
+      interactionLabel: '/peers',
+    }
+    const frame = renderFrame(spine, view, 100, 30).map(stripAnsi).join('\n')
+    // At 100 cols, innerWidth is ~60 cols so a 153-char enode wraps onto 3 aligned rows without ellipsis
+    assert.include(frame, 'enode://f1e12475')
+    assert.include(frame, '30303')
+    assert.notInclude(frame, 'f1e12475…')
   })
 })
