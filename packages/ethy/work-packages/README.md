@@ -238,6 +238,13 @@ Every Work Package delivers a **runnable, observable, and live-testable incremen
                                                               │
                                                               ▼
                                           ┌─────────────────────────────────────────┐
+                                          │ WP-07i: Adaptive Sub-Gwei Fees, 64-Blk  │
+                                          │         Macro Economy Cockpit & Plaza   │
+                                          │         Contract Pulse (64B)            │
+                                          └───────────────────┬─────────────────────┘
+                                                              │
+                                                              ▼
+                                          ┌─────────────────────────────────────────┐
                                           │ WP-08a: Default-On JSON-RPC 2.0 Server  │
                                           │         (:8545), coldStorageLookup,     │
                                           │         Header/Footer Chrome & /rpc     │
