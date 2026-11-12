@@ -74,6 +74,7 @@ export function buildDeterministicOverviewSections(
       snapshots.pulse.snapEtaMinutes !== undefined && snapshots.pulse.snapEtaMinutes > 0
         ? ` ETA ~${Math.round(snapshots.pulse.snapEtaMinutes)}m.`
         : ''
+    const isEthy = snapshots.pulse.syncTransport === 'ethy'
     if (snapshots.snap.bucketsDone === 16) {
       const codeDone = snapshots.snap.codesSynced
       const codeTot = snapshots.snap.codesTotal ?? codeDone
@@ -81,12 +82,14 @@ export function buildDeterministicOverviewSections(
       const storTot = snapshots.snap.storageAccountsTotal ?? storDone
       sections.state = `Accounts 16/16 complete; bytecode ${codeDone.toLocaleString('en-US')}/${codeTot.toLocaleString('en-US')}, storage ${storDone.toLocaleString('en-US')}/${storTot.toLocaleString('en-US')} — ${pct}% overall.${eta}`
     } else {
-      sections.state = `Snap sync ${pct}% complete.${eta}`
+      sections.state = `${isEthy ? 'Ethy' : 'Snap'} sync ${pct}% complete.${eta}`
     }
     if (snapshots.economy.hasBlocks && snapshots.economy.tps !== undefined) {
       sections.economy = `Live blocks ~${snapshots.economy.tps.toFixed(1)} TPS on recent traffic.`
     }
-    if (peers <= 1) {
+    if (isEthy && snapshots.p2p.ethySession > 0) {
+      sections.p2p = `${snapshots.p2p.ethySession} ETHY/0 peer${snapshots.p2p.ethySession === 1 ? '' : 's'} streaming proven chunks.`
+    } else if (peers <= 1) {
       sections.p2p = `Only ${peers} peer — try /peers or Ctrl+D for discovery.`
     } else {
       sections.p2p = `${peers} peers active for snap ranges.`

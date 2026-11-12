@@ -6,6 +6,7 @@ export type { DomainPermission }
 
 export type NodePulseSnapshot = {
   phase: string
+  syncTransport?: string
   pivotBlockNumber?: string
   headBlockNumber?: string
   progressPct: number

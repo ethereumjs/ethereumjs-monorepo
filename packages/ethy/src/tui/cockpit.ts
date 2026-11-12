@@ -74,6 +74,9 @@ function snapTargetRow(spine: EthySpine): string {
   }
   const rawTip = spine.bestPeerHead ?? spine.headBlockNumber ?? pivot
   const tip = rawTip > pivot ? rawTip : pivot
+  if (spine.syncTransport === 'ethy') {
+    return `${formatBlockNum(pivot)} → ${formatBlockNum(tip)} · ETHY/0 swarm`
+  }
   const buffered = spine.bufferedBalCount ?? 0
   const steps = spine.pivotStepsCompleted ?? 0
   return `${formatBlockNum(pivot)} → ${formatBlockNum(tip)} · +${buffered} BALs · step ${steps}`

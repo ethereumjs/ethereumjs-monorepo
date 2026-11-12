@@ -80,7 +80,7 @@ export interface SnapBucket {
   subRanges?: SnapRangeCursor[]
 }
 
-export type DiagnosticSubsystem = 'devp2p' | 'snap' | 'bal' | 'mpt' | 'cl' | 'ai'
+export type DiagnosticSubsystem = 'devp2p' | 'snap' | 'ethy' | 'bal' | 'mpt' | 'cl' | 'ai'
 
 export interface DiagnosticEvent {
   timestamp: number
