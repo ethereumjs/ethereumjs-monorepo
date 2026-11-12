@@ -245,6 +245,13 @@ Every Work Package delivers a **runnable, observable, and live-testable incremen
                                                               │
                                                               ▼
                                           ┌─────────────────────────────────────────┐
+                                          │ WP-07j: Unified Tab Help, Universal     │
+                                          │         View History, Frame Chrome &    │
+                                          │         /rpc Method Status Matrix       │
+                                          └───────────────────┬─────────────────────┘
+                                                              │
+                                                              ▼
+                                          ┌─────────────────────────────────────────┐
                                           │ WP-08a: Default-On JSON-RPC 2.0 Server  │
                                           │         (:8545), coldStorageLookup,     │
                                           │         Header/Footer Chrome & /rpc     │
