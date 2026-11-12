@@ -122,7 +122,7 @@ function readStoredDoc<T>(filePath: string): T {
 /** On-disk snap pivot journal for one network. */
 export class SnapPivotStore {
   readonly enabled: boolean
-  private readonly root: string
+  readonly root: string
   private readonly networkDir: string
   private readonly network: string
   private readonly chainId: bigint
@@ -139,6 +139,8 @@ export class SnapPivotStore {
   private readonly initializedAccountFiles = new Set<string>()
   private bucketsFlushInFlight?: Promise<void>
   private readonly journalFdCache = new Map<number, number>()
+  private readonly lookupFdCache = new Map<string, number>()
+  private readonly lookupRowScratch = Buffer.alloc(BINARY_ACCOUNT_JOURNAL_RECORD_SIZE)
   private contractScan?: { bucket: number; byteOffset: number; segment?: string }
   private contractScanComplete = false
   private contractProgress?: {
@@ -249,10 +251,12 @@ export class SnapPivotStore {
     if (!fs.existsSync(pivotPath)) return undefined
     const pivot = readStoredDoc<PivotMeta>(pivotPath)
     let bucketsDoneCount = 0
+    let totalAccountsSaved = 0
     const bucketsPath = path.join(this.pivotDir(active.stateRoot), 'buckets.json')
     if (fs.existsSync(bucketsPath)) {
       const saved = readStoredDoc<{ buckets: SerializedBucket[] }>(bucketsPath).buckets
       bucketsDoneCount = saved.filter((b) => b.status === 'done').length
+      totalAccountsSaved = saved.reduce((sum, b) => sum + (b.accountsLoaded ?? 0), 0)
     }
     const pivotBlock = BigInt(pivot.blockNumber)
     let lastVerifiedBlockNumber: bigint | undefined
@@ -260,6 +264,15 @@ export class SnapPivotStore {
       lastVerifiedBlockNumber = BigInt(active.lastVerifiedBlockNumber)
     } else if (active.baseSyncComplete === true) {
       lastVerifiedBlockNumber = pivotBlock
+    }
+    if (
+      active.baseSyncComplete !== true &&
+      bucketsDoneCount === 0 &&
+      totalAccountsSaved === 0 &&
+      this.heldAccountCount(active.stateRoot) === 0 &&
+      (lastVerifiedBlockNumber === undefined || lastVerifiedBlockNumber <= pivotBlock)
+    ) {
+      return undefined
     }
     return {
       pivotBlockNumber: pivotBlock,
@@ -288,10 +301,15 @@ export class SnapPivotStore {
     if (!this.enabled) return
     const active = this.readActive()
     if (active === undefined) return
+    let lastVerified = pivotBlock
+    if (active.lastVerifiedBlockNumber !== undefined) {
+      const existing = BigInt(active.lastVerifiedBlockNumber)
+      if (existing > lastVerified) lastVerified = existing
+    }
     writeAtomicDoc(path.join(this.networkDir, 'active.json'), {
       ...active,
       baseSyncComplete: true,
-      lastVerifiedBlockNumber: pivotBlock.toString(),
+      lastVerifiedBlockNumber: lastVerified.toString(),
     } satisfies ActiveMeta)
   }
 
@@ -1018,31 +1036,46 @@ export class SnapPivotStore {
   }
 
   private lookupBinaryAccountInFile(file: string, accountHash: Uint8Array): Uint8Array | undefined {
-    if (!fs.existsSync(file)) return undefined
-    const stat = fs.statSync(file)
+    let fd = this.lookupFdCache.get(file)
+    if (fd === undefined) {
+      if (!fs.existsSync(file)) return undefined
+      try {
+        fd = fs.openSync(file, 'r')
+        this.lookupFdCache.set(file, fd)
+      } catch {
+        return undefined
+      }
+    }
+    let size = 0
+    try {
+      size = fs.fstatSync(fd).size
+    } catch {
+      try {
+        fs.closeSync(fd)
+      } catch {
+        // ignore
+      }
+      this.lookupFdCache.delete(file)
+      return undefined
+    }
     const payloadStart = BINARY_ACCOUNT_JOURNAL_MAGIC.length
     const rowSize = BINARY_ACCOUNT_JOURNAL_RECORD_SIZE
-    const recordCount = Math.floor((stat.size - payloadStart) / rowSize)
+    const recordCount = Math.floor((size - payloadStart) / rowSize)
     if (recordCount <= 0) return undefined
-    const fd = fs.openSync(file, 'r')
-    const rowBuf = Buffer.alloc(rowSize)
-    try {
-      let lo = 0
-      let hi = recordCount - 1
-      while (lo <= hi) {
-        const mid = (lo + hi) >> 1
-        const offset = payloadStart + mid * rowSize
-        fs.readSync(fd, rowBuf, 0, rowSize, offset)
-        const midHash = rowBuf.subarray(0, 32)
-        const cmp = compareBytes32(midHash, accountHash)
-        if (cmp === 0) {
-          return new Uint8Array(rowBuf.subarray(32, rowSize))
-        }
-        if (cmp < 0) lo = mid + 1
-        else hi = mid - 1
+    const rowBuf = this.lookupRowScratch
+    let lo = 0
+    let hi = recordCount - 1
+    while (lo <= hi) {
+      const mid = (lo + hi) >>> 1
+      const offset = payloadStart + mid * rowSize
+      fs.readSync(fd, rowBuf, 0, rowSize, offset)
+      const midHash = rowBuf.subarray(0, 32)
+      const cmp = compareBytes32(midHash, accountHash)
+      if (cmp === 0) {
+        return new Uint8Array(rowBuf.subarray(32, rowSize))
       }
-    } finally {
-      fs.closeSync(fd)
+      if (cmp < 0) lo = mid + 1
+      else hi = mid - 1
     }
     return undefined
   }
@@ -1127,6 +1160,14 @@ export class SnapPivotStore {
 
   private seedInitializedAccountFiles(stateRootHex: string): void {
     this.initializedAccountFiles.clear()
+    for (const fd of this.lookupFdCache.values()) {
+      try {
+        fs.closeSync(fd)
+      } catch {
+        // ignore
+      }
+    }
+    this.lookupFdCache.clear()
     const dir = path.join(this.pivotDir(stateRootHex), 'accounts')
     if (!fs.existsSync(dir)) return
     for (const name of fs.readdirSync(dir)) {

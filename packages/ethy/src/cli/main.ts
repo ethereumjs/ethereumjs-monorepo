@@ -132,6 +132,7 @@ async function main(): Promise<void> {
       spine: node.spine,
       stateManager: node.stateManager,
       network,
+      dataDir: cli.dataDir,
       notices: node.notices,
       snapStore: node.snapStore,
       peerBook: node.peerBook,

@@ -105,12 +105,7 @@ export async function finalizeBlockBundle(opts: FinalizeBlockBundleOpts): Promis
   if (bundle.balRlp !== undefined && bundle.balRlp.length > 0 && opts.persistHeal !== false) {
     opts.appendHealBal?.(bundle.blockNumber, bundle.balRlp)
   }
-  if (
-    opts.deferStateApply === true &&
-    opts.persistHeal !== false &&
-    bundle.balRlp !== undefined &&
-    bundle.balRlp.length > 0
-  ) {
+  if (opts.persistHeal !== false && bundle.balRlp !== undefined && bundle.balRlp.length > 0) {
     const fields = headFieldsFromHeaderRlp(bundle.headerRlp, opts.chain, opts.hardfork)
     if (fields !== null && bundle.hash !== undefined) {
       opts.appendHealBundle?.({

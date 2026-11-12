@@ -4,7 +4,7 @@ export type SyncTransport = 'unset' | 'ethy' | 'snap'
 
 export const ETHY_DISCOVERY_GRACE_MS = 2_500
 
-export const MAX_ETHY_BAL_TAIL_BLOCKS = 14_400n
+export const MAX_ETHY_BAL_TAIL_BLOCKS = 64_800n
 
 export type EthySeederView = {
   bucketsBitmask: number
@@ -19,10 +19,14 @@ export function isUsableEthySeeder(
 ): boolean {
   if (seeder.bucketsBitmask === 0) return false
   if (syncMode === 'ethy') return true
-  if (bestPeerHead <= seeder.basePivotBlock) return false
-  const tail = bestPeerHead - seeder.basePivotBlock
-  if (tail > MAX_ETHY_BAL_TAIL_BLOCKS) return false
-  if (seeder.balEarliestBlock > seeder.basePivotBlock + 1n) return false
+  if (seeder.basePivotBlock === 0n) return false
+  if (bestPeerHead > seeder.basePivotBlock) {
+    const tail = bestPeerHead - seeder.basePivotBlock
+    if (tail > MAX_ETHY_BAL_TAIL_BLOCKS) return false
+  }
+  if (seeder.bucketsBitmask !== 0xffff && seeder.balEarliestBlock > seeder.basePivotBlock + 1n) {
+    return false
+  }
   return true
 }
 

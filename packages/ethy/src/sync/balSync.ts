@@ -123,6 +123,25 @@ export function pushBalWindow(
   }
 }
 
+export function extractBlockAccessListHashFromHeaderRlp(
+  headerRlp: Uint8Array,
+  chain: ChainConfig,
+  hardfork: string,
+): Uint8Array | null {
+  const common = new Common({ chain, hardfork })
+  try {
+    const raw = RLP.decode(headerRlp)
+    const header = createBlockHeaderFromBytesArray(raw as never, {
+      common,
+      skipConsensusFormatValidation: true,
+    })
+    const balHash = header.blockAccessListHash
+    return balHash !== undefined && balHash.length > 0 ? balHash : null
+  } catch {
+    return null
+  }
+}
+
 export async function applyBlockBal(
   stateManager: FlatStateManager,
   headerRlp: Uint8Array,
@@ -167,7 +186,8 @@ function snapSyncStagesDone(
   codeSync: SnapCodeAndStorageSynchronizer | undefined,
 ): boolean {
   const bucketsDone = spine.snapBuckets.every((b) => b.status === 'done')
-  const codeDone = codeSync === undefined || codeSync.pendingDone()
+  const codeDone =
+    spine.syncTransport === 'ethy' || codeSync === undefined || codeSync.pendingDone()
   return bucketsDone && codeDone
 }
 
@@ -178,7 +198,7 @@ export function tryEnterBalCatchUp(
   codeSync: SnapCodeAndStorageSynchronizer | undefined,
   bestPeerHead: bigint,
 ): boolean {
-  if (spine.phase !== 'SNAP_SYNCING') return false
+  if (spine.phase !== 'SNAP_SYNCING' && spine.phase !== 'BAL_CATCHUP') return false
   if (accountSync !== undefined && !spine.snapBuckets.every((b) => b.status === 'done')) {
     return false
   }
@@ -186,11 +206,15 @@ export function tryEnterBalCatchUp(
   const pivot = spine.pivotBlockNumber
   if (pivot === undefined) return false
 
-  spine.lastVerifiedBlockNumber = spine.lastVerifiedBlockNumber ?? pivot
-  spine.headBlockNumber = spine.lastVerifiedBlockNumber
+  const startAfter =
+    spine.lastVerifiedBlockNumber !== undefined && spine.lastVerifiedBlockNumber > pivot
+      ? spine.lastVerifiedBlockNumber
+      : pivot
+  spine.lastVerifiedBlockNumber = startAfter
+  spine.headBlockNumber = startAfter
   spine.headStateRoot = spine.pivotStateRoot
 
-  const gap = bestPeerHead > pivot ? bestPeerHead - pivot : 0n
+  const gap = bestPeerHead > startAfter ? bestPeerHead - startAfter : 0n
   const total = Number(gap)
   if (total <= 0) {
     setPhase(spine, 'HEAD_FOLLOWING')
@@ -202,7 +226,7 @@ export function tryEnterBalCatchUp(
 
   setPhase(spine, 'BAL_CATCHUP')
   spine.balCatchUp = {
-    fromBlock: pivot + 1n,
+    fromBlock: startAfter + 1n,
     applied: 0,
     total,
   }
@@ -467,6 +491,15 @@ export class BalChainStreamer {
           blockNumber: row.header.number,
           headerRlp: row.header.headerRlp,
           balJson: row.balJson,
+        }
+        if (row.balRlp !== undefined && row.balRlp.length > 0) {
+          this.opts.appendHealBundle?.({
+            blockNumber: row.header.number,
+            blockHash: row.header.hash,
+            stateRoot: row.header.stateRoot,
+            headerRlp: row.header.headerRlp,
+            balRlp: row.balRlp,
+          })
         }
         this.opts.economy?.noteBundle({ ...note, balRlp: row.balRlp })
         this.opts.onRpcBundle?.(note)
