@@ -328,7 +328,9 @@ function contractPulseVenueLine(row: TopContractRow, _colW: number): string {
   const color = venueBadgeColor(badge)
   const paddedBadge = fixedField(`${color}[${badge}]${RESET}`, 12)
   const sel = row.topSelectors?.[0]?.split(' (')[0]
-  const selClause = sel !== undefined ? `${DIM} · ${sel}()${RESET}` : ''
+  const selFormatted =
+    sel !== undefined && sel.length > 0 ? (sel.startsWith('0x') ? sel : `${sel}()`) : undefined
+  const selClause = selFormatted !== undefined ? `${DIM} · ${selFormatted}${RESET}` : ''
   return `${shortAddress(row.address)}  ${paddedBadge} ${slots}w/blk${selClause}`
 }
 

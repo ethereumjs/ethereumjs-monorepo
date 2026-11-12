@@ -133,9 +133,8 @@ export function buildDeterministicOverviewSections(
   if (snapshots.snap.bucketsDone === 16) {
     let stateLine = `Head following live at #${headN} (16/16 buckets synced).`
     const codeDone = snapshots.snap.codesSynced
-    const codeTot = snapshots.snap.codesTotal
-    if (codeTot !== undefined && codeTot > codeDone) {
-      stateLine += ` Background code index ${codeDone.toLocaleString('en-US')}/${codeTot.toLocaleString('en-US')}.`
+    if (codeDone > 0) {
+      stateLine += ` ${codeDone.toLocaleString('en-US')} contract bytecodes indexed.`
     }
     sections.state = stateLine
   } else {

@@ -21,6 +21,11 @@ function topSelectorName(hot: TopContractRow): string | undefined {
   return name.length > 0 ? name : undefined
 }
 
+function formatSelectorSuffix(sel: string | undefined): string {
+  if (sel === undefined || sel.length === 0) return ''
+  return sel.startsWith('0x') ? ` · ${sel}` : ` · ${sel}()`
+}
+
 /** Top-middle Economy cockpit rows (read-only; no decodeBundle import). */
 export function economyCockpitPairs(snap: EconomySnapshot | undefined): TwoColumnPair[] {
   const awaiting: TwoColumnPair[] = [
@@ -60,8 +65,7 @@ export function economyCockpitPairs(snap: EconomySnapshot | undefined): TwoColum
     const label = hot.knownName ?? shortAddress(hot.address)
     const badge = venueBadge(hot)
     const sel = topSelectorName(hot)
-    const tail = sel !== undefined ? ` · ${sel}()` : ''
-    topVenue = `${label} [${badge}] · ${slots}w/blk${tail}`
+    topVenue = `${label} [${badge}] · ${slots}w/blk${formatSelectorSuffix(sel)}`
   }
 
   return [
