@@ -401,7 +401,11 @@ export async function startPeerCoordinator(
 
   const ensureHeadFollower = (clientRef: Devp2pWorkerClient) => {
     if (spine.pivotStateRoot === undefined) return
-    if (spine.syncTransport === 'ethy' && (ethySwarm === undefined || ethySwarm.isActive())) {
+    if (
+      spine.syncTransport === 'ethy' &&
+      !handoffCatchup &&
+      (ethySwarm === undefined || ethySwarm.isActive())
+    ) {
       return
     }
     if (headFollower === undefined) {
@@ -925,6 +929,15 @@ export async function startPeerCoordinator(
           message: `Restored ${restored.toLocaleString('en-US')} accounts from disk (base sync complete)`,
         })
       }
+      const resumedHead =
+        spine.bestPeerHead ?? spine.lastVerifiedBlockNumber ?? spine.pivotBlockNumber
+      if (resumedHead !== undefined && resumedHead > 0n) {
+        seedBalCatchUp(spine, resumedHead)
+        if (spine.phase === 'HEAD_FOLLOWING') {
+          populateHeadFlipSummary(resumedHead)
+        }
+      }
+      ensureHeadFollower(client)
     } else {
       setPhase(spine, 'SNAP_SYNCING')
       if (restored > 0) {
@@ -1045,10 +1058,17 @@ export async function startPeerCoordinator(
     for (const [id, until] of pendingVipDials) {
       if (until <= now) pendingVipDials.delete(id)
     }
-    const towardTarget = countSnapPeersTowardVipTarget([...spine.peers.values()])
-    if (!shouldVipReconnect({ snapPeersTowardTarget: towardTarget })) return
+    const peerList = [...spine.peers.values()]
+    const inHeadOrCatchup =
+      spine.phase === 'HEAD_FOLLOWING' || spine.phase === 'BAL_CATCHUP' || handoffCatchup
+    const target = inHeadOrCatchup ? 6 : VIP_SNAP_PEER_TARGET
+    const towardTarget = inHeadOrCatchup
+      ? peerList.filter((p) => p.hasHead === true).length
+      : countSnapPeersTowardVipTarget(peerList)
+    if (!shouldVipReconnect({ snapPeersTowardTarget: towardTarget, target })) return
     const connected = new Set(spine.peers.keys())
-    const need = Math.min(2, VIP_SNAP_PEER_TARGET - towardTarget)
+    const maxBatch = peerList.length < 3 ? 4 : 2
+    const need = Math.min(maxBatch, target - towardTarget)
     let dialed = 0
     for (const peer of peerBook.vipDialCandidates(now, 64)) {
       const id = bytesToUnprefixedHex(peer.id as Uint8Array).toLowerCase()
@@ -2037,6 +2057,14 @@ export async function startPeerCoordinator(
       client.disconnectPeer(peerIdToBytes(peerId))
     },
     noteChainHead: (blockNumber: bigint) => {
+      raiseBestPeerHead(spine, blockNumber)
+      if (!resumeHeadHandled && diskHydrated) {
+        resumeHeadHandled = true
+        finishDiskResumeWithHead(blockNumber, lastTelemetryPeers)
+      }
+      if (handoffCatchup) {
+        ensureHeadFollower(client)
+      }
       headFollower?.noteChainHead(blockNumber)
     },
     refreshPivotHeader: () => {

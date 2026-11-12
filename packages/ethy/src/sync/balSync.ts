@@ -823,6 +823,28 @@ export class BalChainStreamer {
       if (spine.phase === 'SNAP_SYNCING') {
         void this.maybePivotStep()
       }
+      if (
+        spine.phase === 'HEAD_FOLLOWING' &&
+        spine.balWindow.length === 0 &&
+        this.verifiedTipHash === undefined &&
+        tip > 0n
+      ) {
+        this.lastTipProbeAt = now
+        const seedPeer = pickBalCatchUpPeer(this.opts.spine, this.peerRestUntil, tip) ?? peer
+        this.catchUp = {
+          peerId: seedPeer.id,
+          ethVersion: seedPeer.ethVersion,
+          targetHead: tip,
+          probingNextTip: true,
+          inFlight: startBlockBundleByNumber(
+            this.opts.getClient(),
+            seedPeer.id,
+            seedPeer.ethVersion,
+            tip,
+          ),
+        }
+        return
+      }
       // Because Geth/Nethermind only send BLOCK_RANGE_UPDATE every 32 blocks (~6.4m),
       // probe tip + 1n periodically to discover newly mined 12s blocks live.
       if (now - this.lastTipProbeAt >= TIP_POLL_MS) {
