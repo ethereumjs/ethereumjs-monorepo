@@ -768,6 +768,12 @@ export class FlatStateManager implements StateManagerInterface {
     return this.readCodeKey(bytesToUnprefixedHex(codeHash))
   }
 
+  /** Storage slot value keyed by `accountHash` (32B) and `slotHash` (32B), including cold disk hydrate. */
+  getStorageByHash(accountHash: Uint8Array, slotHash: Uint8Array): Uint8Array | undefined {
+    const sk = this.storageKey(this.accountHashKey(accountHash), bytesToUnprefixedHex(slotHash))
+    return this.readStorageKey(sk)
+  }
+
   /** Logical account total (includes cold-only snap rows). */
   accountCount(): number {
     if (this._parent === undefined) {
