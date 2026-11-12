@@ -12,6 +12,12 @@ describe('[Block/Helpers]: numberToHex', () => {
     assert.strictEqual(numberToHex('10'), '0xa')
   })
 
+  it('numberToHex() converts decimal strings above 2^53 exactly', () => {
+    // Late proof-of-work mainnet difficulties were around 1.1e16, past Number.MAX_SAFE_INTEGER
+    assert.strictEqual(numberToHex('9007199254740993'), '0x20000000000001')
+    assert.strictEqual(numberToHex('11055787484078699'), '0x27472e1db3626b')
+  })
+
   it('numberToHex() passes through 0x-prefixed hex', () => {
     assert.strictEqual(numberToHex('0x0a'), '0x0a')
   })

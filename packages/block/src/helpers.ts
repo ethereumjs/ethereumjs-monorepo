@@ -30,7 +30,7 @@ export const numberToHex = function (input?: string): PrefixedHexString | undefi
       const msg = `Cannot convert string to hex string. numberToHex only supports 0x-prefixed hex or integer strings but the given string was: ${input}`
       throw EthereumJSErrorWithoutCode(msg)
     }
-    return `0x${parseInt(input, 10).toString(16)}`
+    return `0x${BigInt(input).toString(16)}`
   }
   return input
 }
