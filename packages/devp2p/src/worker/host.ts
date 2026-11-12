@@ -216,10 +216,12 @@ export class Devp2pWorkerHost {
           }
           const peerId = bytesToUnprefixedHex(idBytes)
           try {
-            await this._rlpx?.connect({ ...cmd.peer, id: idBytes })
+            await this._rlpx?.connect({ ...cmd.peer, id: idBytes }, { priority: true })
           } catch (err: unknown) {
             const message = err instanceof Error ? err.message : String(err)
-            this._pushDiagnostic('warn', message, peerId)
+            if (message !== 'Already connected') {
+              this._pushDiagnostic('warn', message, peerId)
+            }
           }
           break
         }
@@ -421,7 +423,8 @@ export class Devp2pWorkerHost {
     this._rlpx.events.on('peer:added', (peer) => this._wirePeer(peer))
     this._rlpx.events.on('peer:removed', (peer, reason, disconnectWe) => {
       if (typeof reason !== 'number') return
-      const peerId = peer.getId() ? bytesToUnprefixedHex(peer.getId()!) : undefined
+      const rawId = peer.getId()
+      const peerId = rawId instanceof Uint8Array ? bytesToUnprefixedHex(rawId) : undefined
       if (reason === DISCONNECT_REASON.TOO_MANY_PEERS) {
         const who = disconnectWe === true ? 'we dropped remote' : 'remote dropped us'
         this._pushDiagnostic('warn', `TOO_MANY_PEERS (${who})`, peerId)
@@ -457,7 +460,8 @@ export class Devp2pWorkerHost {
       const message = err instanceof Error ? err.message : String(err)
       const reject = classifyHandshakeReject(message)
       if (reject !== undefined) this._discoveryMetrics.recordHandshakeReject(reject)
-      const peerId = bytesToUnprefixedHex(peer.getId()!)
+      const rawId = peer.getId()
+      const peerId = rawId instanceof Uint8Array ? bytesToUnprefixedHex(rawId) : undefined
       if (reject === 'reset' && peer.getHelloMessage() !== null) {
         this._discoveryMetrics.recordResetAfterHello()
         notePeerFate(this._discoveryMetrics, peer, 'reset')
@@ -482,7 +486,9 @@ export class Devp2pWorkerHost {
   }
 
   private _wirePeer(peer: Peer): void {
-    const peerKey = bytesToUnprefixedHex(peer.getId()!)
+    const rawId = peer.getId()
+    if (!(rawId instanceof Uint8Array)) return
+    const peerKey = bytesToUnprefixedHex(rawId)
     peer.events.on('pong', (rttMs) => {
       if (rttMs !== undefined) this._peerRtt.set(peerKey, rttMs)
     })
@@ -653,7 +659,9 @@ export class Devp2pWorkerHost {
       const version = (protocol as ETH | SNAP).getVersion()
       const decoded = RLP.decode(payload)
       if (layer === 'eth') {
-        const peerKey = bytesToUnprefixedHex(peer.getId()!)
+        const rawId = peer.getId()
+        if (!(rawId instanceof Uint8Array)) return false
+        const peerKey = bytesToUnprefixedHex(rawId)
         const budget = this._serveGovernor.bytesAllowed(peerKey, true)
         const served = tryServeEthGet(this._rollingStore, version, name, decoded, budget)
         if (served !== undefined) {
@@ -747,7 +755,8 @@ export class Devp2pWorkerHost {
   private _findEth(peerId: Uint8Array): ETH | undefined {
     const key = bytesToUnprefixedHex(peerId)
     for (const p of this._rlpx?.getPeers() ?? []) {
-      if (bytesToUnprefixedHex(p.getId()!) !== key) continue
+      const rawId = p.getId()
+      if (!(rawId instanceof Uint8Array) || bytesToUnprefixedHex(rawId) !== key) continue
       for (const protocol of p.getProtocols()) {
         if (protocol.constructor.name === 'ETH') return protocol as ETH
       }
@@ -899,7 +908,8 @@ export class Devp2pWorkerHost {
   private _findEthy(peerId: Uint8Array): ETHY | undefined {
     const key = bytesToUnprefixedHex(peerId)
     for (const p of this._rlpx?.getPeers() ?? []) {
-      if (bytesToUnprefixedHex(p.getId()!) !== key) continue
+      const rawId = p.getId()
+      if (!(rawId instanceof Uint8Array) || bytesToUnprefixedHex(rawId) !== key) continue
       return this._findEthyOnPeer(p)
     }
     return undefined
@@ -914,7 +924,8 @@ export class Devp2pWorkerHost {
   private _findSnap(peerId: Uint8Array): SNAP | undefined {
     const key = bytesToUnprefixedHex(peerId)
     for (const p of this._rlpx?.getPeers() ?? []) {
-      if (bytesToUnprefixedHex(p.getId()!) !== key) continue
+      const rawId = p.getId()
+      if (!(rawId instanceof Uint8Array) || bytesToUnprefixedHex(rawId) !== key) continue
       for (const protocol of p.getProtocols()) {
         if (protocol.constructor.name === 'SNAP') return protocol as SNAP
       }
@@ -968,7 +979,9 @@ export class Devp2pWorkerHost {
   private _emitTelemetry(): void {
     const peers: WorkerTelemetrySnapshot['peers'] = []
     for (const peer of this._rlpx?.getPeers() ?? []) {
-      const id = bytesToUnprefixedHex(peer.getId()!)
+      const rawId = peer.getId()
+      if (!(rawId instanceof Uint8Array)) continue
+      const id = bytesToUnprefixedHex(rawId)
       const hello = peer.getHelloMessage()
       let bestHash: string | undefined
       let latestBlock: string | undefined

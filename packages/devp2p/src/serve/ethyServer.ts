@@ -141,10 +141,16 @@ export function tryServeEthyGet(
     for (let i = 0; i < count; i++) {
       const n = start + BigInt(i)
       const b = blocks.getByNumber(n)
-      if (b === undefined) break
-      const bal = b.balRlp ?? new Uint8Array(0)
-      tuples.push([bigIntToUnpaddedBytes(n), b.headerRlp, bal])
-      bytes += b.headerRlp.length + bal.length
+      if (b !== undefined) {
+        const bal = b.balRlp ?? new Uint8Array(0)
+        tuples.push([bigIntToUnpaddedBytes(n), b.headerRlp, bal])
+        bytes += b.headerRlp.length + bal.length
+        continue
+      }
+      const diskBundle = chunks.getBalBundleFromDisk(n)
+      if (diskBundle === undefined) break
+      tuples.push([bigIntToUnpaddedBytes(n), diskBundle.headerRlp, diskBundle.balRlp])
+      bytes += diskBundle.headerRlp.length + diskBundle.balRlp.length
     }
     return {
       code: EthyMessageCodes.BAL_RANGE,

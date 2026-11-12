@@ -123,7 +123,11 @@ export function listProofSidecarsForBucket(accountsDir: string, bucketIndex: num
       out.push(path.join(accountsDir, name))
     }
   }
-  return out.sort()
+  return out.sort((a, b) => {
+    const aSeg = a.endsWith('.seg.proof.idx') ? 1 : 0
+    const bSeg = b.endsWith('.seg.proof.idx') ? 1 : 0
+    return aSeg - bSeg || a.localeCompare(b)
+  })
 }
 
 export function readSlabSlice(
