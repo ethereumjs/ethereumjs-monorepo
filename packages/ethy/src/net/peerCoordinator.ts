@@ -401,6 +401,9 @@ export async function startPeerCoordinator(
 
   const ensureHeadFollower = (clientRef: Devp2pWorkerClient) => {
     if (spine.pivotStateRoot === undefined) return
+    if (handoffCatchup && ethySwarm !== undefined && ethySwarm.isActive()) {
+      return
+    }
     if (
       spine.syncTransport === 'ethy' &&
       !handoffCatchup &&
@@ -1570,13 +1573,32 @@ export async function startPeerCoordinator(
         }
       },
       onSwarmComplete: () => {
+        const pivot = spine.pivotBlockNumber
+        if (pivot !== undefined && snapStore !== undefined) {
+          const verified =
+            spine.lastVerifiedBlockNumber !== undefined && spine.lastVerifiedBlockNumber > pivot
+              ? spine.lastVerifiedBlockNumber
+              : pivot
+          snapStore.markBaseSyncComplete(verified)
+        }
         maybeMarkBaseSyncComplete()
+        handoffCatchup = true
+        const headNow =
+          spine.bestPeerHead ?? spine.lastVerifiedBlockNumber ?? spine.pivotBlockNumber
+        if (headNow !== undefined && headNow > 0n) {
+          seedBalCatchUp(spine, headNow)
+          if (spine.phase === 'HEAD_FOLLOWING') {
+            populateHeadFlipSummary(headNow)
+          }
+        }
+        ensureHeadFollower(client)
         ensureSnapSync(client)
+        deriveCapabilities(spine)
       },
       economy: opts.economy,
     })
-    ethySwarm.start()
     setPhase(spine, 'SNAP_SYNCING')
+    ethySwarm.start()
     deriveCapabilities(spine)
   }
 
@@ -1638,6 +1660,28 @@ export async function startPeerCoordinator(
     if (handoffCatchup || !snapBucketsUnfinished(spine.snapBuckets)) {
       if (spine.syncTransport === 'unset') {
         spine.syncTransport = (spine.ethyBucketsBitmask ?? 0) > 0 ? 'ethy' : 'snap'
+      }
+      if (
+        ethySwarm === undefined &&
+        spine.phase !== 'HEAD_FOLLOWING' &&
+        spine.pivotBlockNumber !== undefined &&
+        spine.pivotStateRoot !== undefined
+      ) {
+        const lastVer = spine.lastVerifiedBlockNumber ?? spine.pivotBlockNumber
+        const seeders = ethySeederRows(peers)
+        const balSeeder = seeders.find(
+          (s) =>
+            s.seeder.balEarliestBlock <= lastVer + 1n && (s.seeder.balLatestBlock ?? 0n) > lastVer,
+        )
+        if (balSeeder !== undefined) {
+          spine.syncTransport = 'ethy'
+          ethySeederPeerId = balSeeder.peerId
+          ethyAnchorBlock = spine.pivotBlockNumber
+          ethyAnchorRoot = spine.pivotStateRoot
+          headFollower?.stop()
+          headFollower = undefined
+          startEthySwarmSync(peers)
+        }
       }
       return
     }

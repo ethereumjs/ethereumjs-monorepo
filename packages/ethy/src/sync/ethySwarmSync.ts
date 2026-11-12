@@ -448,9 +448,16 @@ export class EthySwarmSynchronizer {
   }
 
   private pickBalPeer(fromBlock: bigint, count: bigint): string | undefined {
-    const candidates = [...this.seeders.values()].filter((s) =>
-      seederCoversBalRange(s, fromBlock, count),
-    )
+    const all = [...this.seeders.values()]
+    let candidates = all.filter((s) => seederCoversBalRange(s, fromBlock, count))
+    if (candidates.length === 0) {
+      candidates = all.filter(
+        (s) => s.balEarliestBlock <= fromBlock && s.balLatestBlock >= fromBlock,
+      )
+    }
+    if (candidates.length === 0) {
+      candidates = all
+    }
     if (candidates.length === 0) return undefined
     const peer = candidates[this.balPeerRoundRobin % candidates.length]!
     this.balPeerRoundRobin = (this.balPeerRoundRobin + 1) % candidates.length
@@ -718,11 +725,8 @@ export class EthySwarmSynchronizer {
       )
       return
     }
-    if (parsed.chunkBlockNumber > 0n) {
-      const prevPivot = this.bucketPivotBlocks[parsed.bucketIndex] ?? 0n
-      if (prevPivot === 0n || parsed.chunkBlockNumber < prevPivot) {
-        this.bucketPivotBlocks[parsed.bucketIndex] = parsed.chunkBlockNumber
-      }
+    if (parsed.chunkBlockNumber > 0n && (this.bucketPivotBlocks[parsed.bucketIndex] ?? 0n) === 0n) {
+      this.bucketPivotBlocks[parsed.bucketIndex] = parsed.chunkBlockNumber
       const { uniform } = bucketPivotMinMax(this.bucketPivotBlocks)
       this.crossSnapshot = !uniform
     }
@@ -984,6 +988,8 @@ export class EthySwarmSynchronizer {
     const peerId = this.pickBalPeer(this.balNext, BigInt(count))
     if (peerId === undefined) {
       this.balInFlight = false
+      this.balNext = this.opts.balThroughBlock + 1n
+      this.opts.onSwarmComplete?.()
       return
     }
     const payload = RLP.encode([
