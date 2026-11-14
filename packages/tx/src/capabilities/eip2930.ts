@@ -69,20 +69,28 @@ function getAccessListDataGas(tx: EIP2930CompatibleTx): bigint {
  */
 export function verifyAccessList(tx: EIP2930CompatibleTx) {
   const accessList = tx.accessList
+  if (!Array.isArray(accessList)) {
+    throw EthereumJSErrorWithoutCode('Invalid EIP-2930 transaction: access list should be a list')
+  }
   for (const accessListItem of accessList) {
-    if (accessListItem.length !== 2) {
+    if (!Array.isArray(accessListItem) || accessListItem.length !== 2) {
       throw EthereumJSErrorWithoutCode(
         'Invalid EIP-2930 transaction: access list item should have 2 elements',
       )
     }
     const [address, storageSlots] = accessListItem
-    if (address.length !== 20) {
+    if (!(address instanceof Uint8Array) || address.length !== 20) {
       throw EthereumJSErrorWithoutCode(
         'Invalid EIP-2930 transaction: address length should be 20 bytes',
       )
     }
+    if (!Array.isArray(storageSlots)) {
+      throw EthereumJSErrorWithoutCode(
+        'Invalid EIP-2930 transaction: storage keys should be a list',
+      )
+    }
     for (const slot of storageSlots) {
-      if (slot.length !== 32) {
+      if (!(slot instanceof Uint8Array) || slot.length !== 32) {
         throw EthereumJSErrorWithoutCode(
           'Invalid EIP-2930 transaction: storage slot length should be 32 bytes',
         )

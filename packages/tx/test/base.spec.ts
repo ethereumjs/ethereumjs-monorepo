@@ -1,4 +1,5 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
 import {
   MAX_INTEGER,
   SECP256K1_ORDER,
@@ -137,7 +138,7 @@ const txTypes = [
     hasAccessList: true,
     common: londonCommon,
     txData: {},
-    values: [new Uint8Array([1])].concat(Array(7).fill(zero)),
+    values: [new Uint8Array([1]), ...Array(6).fill(zero), []],
     txs: eip2930Txs,
     fixtures: eip2930TxsData,
     numericFields: ['chainId', 'nonce', 'gasPrice', 'gasLimit', 'value', 'v', 'r', 's'],
@@ -158,7 +159,7 @@ const txTypes = [
     hasAccessList: true,
     common: londonCommon,
     txData: {},
-    values: [new Uint8Array([1])].concat(Array(8).fill(zero)),
+    values: [new Uint8Array([1]), ...Array(7).fill(zero), []],
     txs: eip1559Txs,
     fixtures: eip1559TxsData,
     numericFields: [
@@ -657,6 +658,10 @@ describe('[Tx/Matrix]: access lists', () => {
         [[validAddress]],
         [[validAddress, validSlot]],
         [[validAddress, [], []]],
+        new Uint8Array(0),
+        hexToBytes('0x4e'),
+        [hexToBytes('0x4e')],
+        [[validAddress, new Uint8Array(0)]],
       ]
       for (const accessList of invalidLists) {
         assert.throws(
@@ -667,7 +672,27 @@ describe('[Tx/Matrix]: access lists', () => {
             )
           },
           undefined,
+          /Invalid EIP-2930 transaction/,
+          txType.name,
+        )
+      }
+    }
+  })
+
+  it('rejects a byte string in place of the access list when decoding RLP', () => {
+    for (const txType of txTypes) {
+      if (!txType.hasAccessList) continue
+
+      const raw = txType.txs[0].raw() as any[]
+      const accessListIndex = txType.type === TransactionType.AccessListEIP2930 ? 7 : 8
+      for (const malformed of [new Uint8Array(0), hexToBytes('0x4e')]) {
+        const values = [...raw]
+        values[accessListIndex] = malformed
+        const serialized = concatBytes(new Uint8Array([txType.type]), RLP.encode(values))
+        assert.throws(
+          () => txType.create.rlp(serialized, { common: txType.common }),
           undefined,
+          'Invalid EIP-2930 transaction: access list should be a list',
           txType.name,
         )
       }

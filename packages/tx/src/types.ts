@@ -116,10 +116,15 @@ export function isAccessListBytes(input: AccessListBytes | AccessList): input is
     return true
   }
   const firstItem = input[0]
-  if (Array.isArray(firstItem)) {
-    return true
-  }
-  return false
+  // JSON access list items are `{ address, storageKeys }` objects. Anything else (a nested array,
+  // or malformed decoded RLP such as a byte string) is treated as bytes, so that
+  // `verifyAccessList` rejects it with a descriptive error.
+  return (
+    typeof firstItem !== 'object' ||
+    firstItem === null ||
+    Array.isArray(firstItem) ||
+    firstItem instanceof Uint8Array
+  )
 }
 
 /**
