@@ -421,3 +421,93 @@ describe('[MPT/Trie]: missing node on put and del', () => {
     assert.strictEqual(await trie.get(utf8ToBytes('a')), null)
   })
 })
+
+describe('[MPT/Trie]: branch value preservation on del', () => {
+  it('preserves branch value when deleting one of two child leaves', async () => {
+    for (const useNodePruning of [false, true]) {
+      const trie = new MerklePatriciaTrie({ useNodePruning })
+      await trie.put(hexToBytes('0x01'), hexToBytes('0xaa'))
+      await trie.put(hexToBytes('0x0120'), hexToBytes('0xbb'))
+      await trie.put(hexToBytes('0x0130'), hexToBytes('0xcc'))
+      await trie.del(hexToBytes('0x0120'))
+
+      const expected = new MerklePatriciaTrie()
+      await expected.put(hexToBytes('0x01'), hexToBytes('0xaa'))
+      await expected.put(hexToBytes('0x0130'), hexToBytes('0xcc'))
+
+      assert.deepEqual(await trie.get(hexToBytes('0x01')), hexToBytes('0xaa'))
+      assert.strictEqual(await trie.get(hexToBytes('0x0120')), null)
+      assert.deepEqual(await trie.get(hexToBytes('0x0130')), hexToBytes('0xcc'))
+      assert.deepEqual(trie.root(), expected.root())
+      if (useNodePruning) {
+        assert.isTrue(await trie.verifyPrunedIntegrity())
+      }
+    }
+  })
+
+  it('preserves root branch value when deleting one of two child leaves', async () => {
+    for (const useNodePruning of [false, true]) {
+      const trie = new MerklePatriciaTrie({ useNodePruning })
+      const emptyKey = new Uint8Array()
+      await trie.put(emptyKey, hexToBytes('0x01'))
+      await trie.put(hexToBytes('0x10'), hexToBytes('0x02'))
+      await trie.put(hexToBytes('0x20'), hexToBytes('0x03'))
+      await trie.del(hexToBytes('0x10'))
+
+      const expected = new MerklePatriciaTrie()
+      await expected.put(emptyKey, hexToBytes('0x01'))
+      await expected.put(hexToBytes('0x20'), hexToBytes('0x03'))
+
+      assert.deepEqual(await trie.get(emptyKey), hexToBytes('0x01'))
+      assert.strictEqual(await trie.get(hexToBytes('0x10')), null)
+      assert.deepEqual(await trie.get(hexToBytes('0x20')), hexToBytes('0x03'))
+      assert.deepEqual(trie.root(), expected.root())
+      if (useNodePruning) {
+        assert.isTrue(await trie.verifyPrunedIntegrity())
+      }
+    }
+  })
+
+  it('collapses root branch with single child when deleting the empty key', async () => {
+    for (const useNodePruning of [false, true]) {
+      const trie = new MerklePatriciaTrie({ useNodePruning })
+      const emptyKey = new Uint8Array()
+      await trie.put(emptyKey, hexToBytes('0x01'))
+      await trie.put(hexToBytes('0x10'), hexToBytes('0x02'))
+      await trie.del(emptyKey)
+
+      const expected = new MerklePatriciaTrie()
+      await expected.put(hexToBytes('0x10'), hexToBytes('0x02'))
+
+      assert.strictEqual(await trie.get(emptyKey), null)
+      assert.deepEqual(await trie.get(hexToBytes('0x10')), hexToBytes('0x02'))
+      assert.deepEqual(trie.root(), expected.root())
+      if (useNodePruning) {
+        assert.isTrue(await trie.verifyPrunedIntegrity())
+      }
+    }
+  })
+
+  it('preserves children when deleting the empty key from a multi-child root branch', async () => {
+    for (const useNodePruning of [false, true]) {
+      const trie = new MerklePatriciaTrie({ useNodePruning })
+      const emptyKey = new Uint8Array()
+      await trie.put(emptyKey, hexToBytes('0x01'))
+      await trie.put(hexToBytes('0x10'), hexToBytes('0x02'))
+      await trie.put(hexToBytes('0x20'), hexToBytes('0x03'))
+      await trie.del(emptyKey)
+
+      const expected = new MerklePatriciaTrie()
+      await expected.put(hexToBytes('0x10'), hexToBytes('0x02'))
+      await expected.put(hexToBytes('0x20'), hexToBytes('0x03'))
+
+      assert.strictEqual(await trie.get(emptyKey), null)
+      assert.deepEqual(await trie.get(hexToBytes('0x10')), hexToBytes('0x02'))
+      assert.deepEqual(await trie.get(hexToBytes('0x20')), hexToBytes('0x03'))
+      assert.deepEqual(trie.root(), expected.root())
+      if (useNodePruning) {
+        assert.isTrue(await trie.verifyPrunedIntegrity())
+      }
+    }
+  })
+})
