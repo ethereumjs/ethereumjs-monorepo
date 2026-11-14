@@ -948,7 +948,7 @@ export class MerklePatriciaTrie {
     const opStack: BatchDBOp[] = []
     let pathNibbles = bytesToNibbles(keyBytes)
 
-    if (parentNode === undefined) {
+    if (parentNode === undefined && !(lastNode instanceof BranchMPTNode)) {
       this.root(this.EMPTY_TRIE_ROOT)
       return
     }
@@ -1004,7 +1004,7 @@ export class MerklePatriciaTrie {
       return
     }
 
-    if (branchNodes.length === 1) {
+    if (branchNodes.length === 1 && lastNode.value() === null) {
       // add the one remaining branch node to node above it
       const branchNode = branchNodes[0][1]
       const branchNodeKey = branchNodes[0][0]
