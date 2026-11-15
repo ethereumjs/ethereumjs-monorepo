@@ -323,8 +323,7 @@ export class RPCStateManager implements StateManagerInterface {
    * Partial implementation, called from the subclass.
    */
   async commit(): Promise<void> {
-    // setup cache checkpointing
-    this._caches.account?.commit()
+    this._caches.commit()
   }
 
   /**
