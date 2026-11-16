@@ -9,6 +9,7 @@ import {
   bigIntToBytes,
   bytesToHex,
   bytesToUnprefixedHex,
+  createAccount,
   createAccountFromRLP,
   createAddressFromString,
   equalsBytes,
@@ -365,6 +366,33 @@ describe('[StateManager/RPC]: Merkle parity', () => {
       account0,
       account1,
       'Should return same value as MerkleStateManager when account does not exist',
+    )
+  })
+
+  it('drops cached code and storage of a deleted account like MerkleStateManager', async () => {
+    // The mock provider returns empty code for this address and 0xabcd for every slot
+    const address = createAddressFromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
+    const key = setLengthLeft(bigIntToBytes(1n), 32)
+    const rpcState = new RPCStateManager({ provider, blockTag: 1n })
+    const defaultState = new MerkleStateManager()
+
+    for (const state of [rpcState, defaultState]) {
+      await state.putAccount(address, createAccount({ nonce: 1n }))
+      await state.putCode(address, hexToBytes('0x6001600055'))
+      await state.putStorage(address, key, hexToBytes('0x2a'))
+      await state.deleteAccount(address)
+    }
+
+    assert.isUndefined(await rpcState.getAccount(address), 'account should be deleted')
+    assert.strictEqual(
+      bytesToHex(await rpcState.getCode(address)),
+      bytesToHex(await defaultState.getCode(address)),
+      'should not return the code written before the account was deleted',
+    )
+    assert.strictEqual(
+      bytesToHex(await rpcState.getStorage(address, key)),
+      '0xabcd',
+      'should read the slot from the provider, not the value written before the account was deleted',
     )
   })
 })
