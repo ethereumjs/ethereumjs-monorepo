@@ -294,7 +294,7 @@ export class RPCStateManager implements StateManagerInterface {
     if (this.DEBUG) {
       this._debug(`deleting account corresponding to ${address.toString()}`)
     }
-    this._caches.account?.del(address)
+    this._caches.deleteAccount(address)
   }
 
   /**
