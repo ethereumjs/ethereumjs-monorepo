@@ -7,6 +7,7 @@ import {
   bigIntToBytes,
   equalsBytes,
   toType,
+  validateNoLeadingZeroes,
 } from '@ethereumjs/util'
 
 import { generateCliqueBlockExtraData } from '../consensus/clique.ts'
@@ -91,6 +92,17 @@ export function createBlockHeaderFromBytesArray(values: BlockHeaderBytes, opts: 
   headerData = reconcileHeaderDataFromRlpLength(values, headerData, commonAtHeaderFields)
   const { number, baseFeePerGas, excessBlobGas, blobGasUsed, parentBeaconBlockRoot, requestsHash } =
     headerData
+  validateNoLeadingZeroes({
+    difficulty: headerData.difficulty as Uint8Array,
+    number: headerData.number as Uint8Array,
+    gasLimit: headerData.gasLimit as Uint8Array,
+    gasUsed: headerData.gasUsed as Uint8Array,
+    timestamp: headerData.timestamp as Uint8Array,
+    baseFeePerGas: headerData.baseFeePerGas as Uint8Array,
+    blobGasUsed: headerData.blobGasUsed as Uint8Array,
+    excessBlobGas: headerData.excessBlobGas as Uint8Array,
+    slotNumber: headerData.slotNumber as Uint8Array,
+  })
   const header = createBlockHeader(headerData, opts)
   if (header.common.isActivatedEIP(1559) && baseFeePerGas === undefined) {
     const eip1559ActivationBlock = bigIntToBytes(header.common.eipBlock(1559)!)

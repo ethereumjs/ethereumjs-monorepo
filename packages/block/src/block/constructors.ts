@@ -14,6 +14,7 @@ import {
   bigIntToHex,
   bytesToHex,
   createWithdrawal,
+  createWithdrawalFromBytesArray,
   equalsBytes,
   fetchFromProvider,
   getProvider,
@@ -21,6 +22,7 @@ import {
   intToHex,
   isHexString,
   toType,
+  validateNoLeadingZeroes,
 } from '@ethereumjs/util'
 
 import { generateCliqueBlockExtraData } from '../consensus/clique.ts'
@@ -110,14 +112,19 @@ export function createEmptyBlock(headerData: HeaderData, opts?: BlockOptions): B
 /**
  * Instantiate a block from RLP-encoded field values.
  *
- * @throws If more than five top-level RLP elements are present
+ * @throws If the top-level RLP list has the wrong length for the active hardfork
  * @throws If EIP-4895 is active but withdrawals are missing
  * @throws If delegated header or transaction factory validation fails
  */
 export function createBlockFromBytesArray(values: BlockBytes, opts?: BlockOptions): Block {
-  if (values.length > 5) {
+  if (values.length < 3) {
     throw EthereumJSErrorWithoutCode(
-      `invalid  More values=${values.length} than expected were received (at most 5)`,
+      `invalid block. Less values than expected were received. Min: 3, got: ${values.length}`,
+    )
+  }
+  if (values.length > 4) {
+    throw EthereumJSErrorWithoutCode(
+      `invalid block. More values=${values.length} than expected were received (at most 4)`,
     )
   }
 
@@ -138,6 +145,10 @@ export function createBlockFromBytesArray(values: BlockBytes, opts?: BlockOption
     throw EthereumJSErrorWithoutCode(
       'Invalid serialized block input: EIP-4895 is active, and no withdrawals were provided as array',
     )
+  }
+
+  if (valuesTail.length !== 0) {
+    throw EthereumJSErrorWithoutCode('Invalid serialized block input: More values than expected')
   }
 
   // parse transactions
@@ -169,14 +180,12 @@ export function createBlockFromBytesArray(values: BlockBytes, opts?: BlockOption
     uncleHeaders.push(createBlockHeaderFromBytesArray(uncleHeaderData, uncleOpts))
   }
 
-  const withdrawals = (withdrawalBytes as WithdrawalBytes[])
-    ?.map(([index, validatorIndex, address, amount]) => ({
-      index,
-      validatorIndex,
-      address,
-      amount,
-    }))
-    ?.map(createWithdrawal)
+  const withdrawals = (withdrawalBytes as WithdrawalBytes[])?.map((withdrawal) => {
+    const result = createWithdrawalFromBytesArray(withdrawal)
+    const [index, validatorIndex, , amount] = withdrawal
+    validateNoLeadingZeroes({ index, validatorIndex, amount })
+    return result
+  })
 
   return new Block(header, transactions, uncleHeaders, withdrawals, opts)
 }
