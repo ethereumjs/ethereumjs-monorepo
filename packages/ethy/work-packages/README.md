@@ -271,12 +271,13 @@ Every Work Package delivers a **runnable, observable, and live-testable incremen
                                           │         Broadcast & Headless SDK        │
                                           └───────────────────┬─────────────────────┘
                                                               │
-                                                              ▼ (Optional)
-                                          ┌─────────────────────────────────────────┐
-                                          │ WP-09: Optional ETHY/0 Discovery Infra  │
-                                          │        (--rendezvous Seed & Signed      │
-                                          │        EIP-1459 DNS ENR Tree)           │
-                                          └─────────────────────────────────────────┘
+                                                              ├───────────────────────────────┐
+                                                              ▼                               ▼ (Optional)
+                                          ┌─────────────────────────────────────────┐   ┌─────────────────────────────────────────┐
+                                          │ WP-10a: Modular AI Modes (default/off/  │   │ WP-09: Optional ETHY/0 Discovery Infra  │
+                                          │         local), First-Open Choice,      │   │        (--rendezvous Seed & Signed      │
+                                          │         Full-Width UI & Ollama Auto-Det │   │        EIP-1459 DNS ENR Tree)           │
+                                          └─────────────────────────────────────────┘   └─────────────────────────────────────────┘
 ```
 
 ---
