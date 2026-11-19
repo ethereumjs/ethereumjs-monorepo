@@ -1,7 +1,10 @@
 import type { WorkerDiscoverySnapshot, WorkerServingSnapshot } from '@ethereumjs/devp2p'
 import type { BALJSONBlockAccessList } from '@ethereumjs/util'
 
+import type { HardwareSnapshot } from '../ai/hardwareCheck.ts'
+import type { DiscoveredLocalModel } from '../ai/localProviders.ts'
 import type { EconomySnapshot } from '../economy/types.ts'
+import type { EthyAiMode } from '../persist/userConfig.ts'
 
 export type CapabilityId = 'state' | 'economy' | 'p2p'
 
@@ -18,6 +21,27 @@ export type EthyPhase = 'BOOTING' | 'P2P_WARMUP' | 'SNAP_SYNCING' | 'BAL_CATCHUP
 export type SyncTransport = 'unset' | 'ethy' | 'snap'
 
 export type CapabilityReadiness = 'locked' | 'partial' | 'ready'
+
+/** Default managed model lifecycle (WP-10d). */
+export type ManagedAiPhase =
+  | 'idle'
+  | 'probing'
+  | 'downloading'
+  | 'deferred'
+  | 'warming'
+  | 'ready'
+  | 'needs-runner'
+  | 'ollama-bridge'
+
+export interface ManagedAiState {
+  phase: ManagedAiPhase
+  progressPct?: number
+  downloadedBytes?: number
+  totalBytes?: number
+  bytesPerSec?: number
+  detail?: string
+  label?: string
+}
 
 export type SnapBucketStatus = 'pending' | 'syncing' | 'verifying_proof' | 'done' | 'stalled'
 
@@ -150,6 +174,12 @@ export interface EthySpine {
   pivotBridging?: PivotBridgingProgress
   /** Set after a heal that held accounts, or when the previous pivot still has unloaded journals. */
   pivotCarry?: PivotCarry
+  /** Effective AI runtime mode (WP-10a). */
+  aiMode: EthyAiMode
+  /** Opt-in RAM-only prompt sharing for Chain Detective (WP-10c). */
+  sharePromptHistory?: boolean
+  /** Integrated default model runner state (`aiMode === 'default'`). */
+  managedAi?: ManagedAiState
   /** `--demo` uses {@link currentSlot} as a synthetic clock in the capability bar. */
   demoClock?: boolean
   headBlockNumber?: bigint
@@ -297,11 +327,26 @@ export type InteractionHistoryEntry =
       page: InteractionPage
     }
 
+export type ChainDispatchCard = {
+  category: string
+  severity: string
+  headline: string
+  body: string
+  relatedAddress?: string
+  suggestedAction?: string
+  blockNumber?: string
+  atMs: number
+  deterministic?: boolean
+}
+
 export interface AiOverviewSections {
   state?: string
   economy?: string
   p2p?: string
   focusNote?: { domain: CapabilityId; text: string }
+  /** WP-10c Dispatch Feed (replaces 3-domain prose when set). */
+  dispatches?: ChainDispatchCard[]
+  bootstrapNote?: string
 }
 
 export type WidgetSpec =
@@ -350,9 +395,23 @@ export type WidgetSpec =
       kind: 'live_plaza'
       debugPage?: DebugSectionSpec[]
     }
+  | {
+      kind: 'ai_onboarding'
+      /** 0 = default, 1 = no AI, 2 = local */
+      initialOption?: number
+      selectedOption?: number
+      selectedLocalIndex?: number
+      sharePromptHistory?: boolean
+      discoveredModels?: DiscoveredLocalModel[]
+      hardware?: HardwareSnapshot
+      statusNote?: string
+      debugPage?: DebugSectionSpec[]
+    }
 
 export interface TuiViewState {
   activeDomain: CapabilityId
+  /** When true, first-run onboarding is required before normal prompt routing (WP-10a). */
+  aiOnboardingActive?: boolean
   activeWidget: WidgetSpec | null
   interactionPage: InteractionPage
   /** Three-domain situational prose for the full-height AI box (refreshed in session). */

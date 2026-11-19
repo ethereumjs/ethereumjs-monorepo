@@ -73,11 +73,18 @@ export class EthyChunkStore {
   private _pivotAccountsDir?: string
   private readonly _diskCache = new Map<number, BucketDiskCache>()
   private readonly _journalFds = new Map<string, number>()
+  private _healWindowCache?: {
+    accountsDir: string
+    mtimeMs: number
+    earliest: bigint
+    latest: bigint
+  }
 
   setPivotAccountsDir(dir: string | undefined): void {
     if (this._pivotAccountsDir !== dir) {
       this._pivotAccountsDir = dir
       this._diskCache.clear()
+      this._healWindowCache = undefined
       for (const fd of this._journalFds.values()) {
         try {
           fs.closeSync(fd)
@@ -86,6 +93,55 @@ export class EthyChunkStore {
         }
       }
       this._journalFds.clear()
+    }
+  }
+
+  hasPivotAccountsDir(): boolean {
+    return this._pivotAccountsDir !== undefined && this._pivotAccountsDir.length > 0
+  }
+
+  /** Return the contiguous `(earliest, latest)` heal bundle range on disk in `../heal/`. */
+  getDiskHealWindow(): { earliest: bigint; latest: bigint } | undefined {
+    const accountsDir = this._pivotAccountsDir
+    if (accountsDir === undefined) return undefined
+    const healDir = path.join(path.dirname(accountsDir), 'heal')
+    let stat: fs.Stats
+    try {
+      stat = fs.statSync(healDir)
+    } catch {
+      return undefined
+    }
+    if (
+      this._healWindowCache !== undefined &&
+      this._healWindowCache.accountsDir === accountsDir &&
+      this._healWindowCache.mtimeMs === stat.mtimeMs
+    ) {
+      return {
+        earliest: this._healWindowCache.earliest,
+        latest: this._healWindowCache.latest,
+      }
+    }
+    try {
+      let earliest: bigint | undefined
+      let latest: bigint | undefined
+      for (const name of fs.readdirSync(healDir)) {
+        if (!name.endsWith('.bundle.rlp')) continue
+        const prefix = name.slice(0, -'.bundle.rlp'.length)
+        if (!/^\d+$/.test(prefix)) continue
+        const n = BigInt(prefix)
+        if (earliest === undefined || n < earliest) earliest = n
+        if (latest === undefined || n > latest) latest = n
+      }
+      if (earliest === undefined || latest === undefined) return undefined
+      this._healWindowCache = {
+        accountsDir,
+        mtimeMs: stat.mtimeMs,
+        earliest,
+        latest,
+      }
+      return { earliest, latest }
+    } catch {
+      return undefined
     }
   }
 

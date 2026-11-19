@@ -59,6 +59,13 @@ describe('[Ethy/CLI]: args', () => {
     assert.equal(noRpc.rpcEnabled, false)
   })
 
+  it('parseEthyArgs() reads wp-10a ai flags', () => {
+    const a = parseEthyArgs(['node', 'ethy', '--no-ai', '--ai-save', '--llm-model', 'foo'])
+    assert.isTrue(a.noAi)
+    assert.isTrue(a.aiSave)
+    assert.equal(a.llmModel, 'foo')
+  })
+
   it('parseEthyArgs() reads llm and ai-memory flags', () => {
     const a = parseEthyArgs([
       'node',

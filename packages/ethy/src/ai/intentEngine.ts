@@ -16,6 +16,10 @@ export interface IntentResult {
   overviewNote?: string
   /** Slash history should store this instead of re-running `/simulate` or `/send`. */
   frozenSlashWidget?: WidgetSpec
+  /** Open or refresh the AI onboarding card (WP-10a). */
+  openOnboarding?: boolean
+  /** TUI should redraw layout after AI mode change (WP-10a). */
+  aiLayoutRefresh?: boolean
 }
 
 export interface IntentEngine {

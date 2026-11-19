@@ -18,7 +18,11 @@ export function interactionBoxRightChrome(
   _page: InteractionPage,
   _hasDebugPage: boolean,
 ): string {
-  if (view.activeWidget === null || view.activeWidget.kind === 'start_page') {
+  if (
+    view.activeWidget === null ||
+    view.activeWidget.kind === 'start_page' ||
+    view.activeWidget.kind === 'ai_onboarding'
+  ) {
     return ''
   }
   const left = historyCanGoLeft(view) ? `${RESET}${BOLD}←${RESET}` : `${RESET}${DIM}←${RESET}`

@@ -69,6 +69,6 @@ describe('[Ethy/Sync]: bridge-pivot resume', () => {
     assert.isTrue(snapReleased)
     assert.isUndefined(spine.pivotBridging)
     assert.equal(spine.pivotBlockNumber, 10_240n)
-    assert.equal(spine.pivotStepsCompleted, 15)
+    assert.equal(spine.pivotStepsCompleted, 1)
   })
 })

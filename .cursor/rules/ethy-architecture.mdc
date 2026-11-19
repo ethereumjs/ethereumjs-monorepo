@@ -70,7 +70,7 @@ Every external I/O boundary must sit behind a lightweight TypeScript interface w
 - **No Beacon Node required for Snap Bootstrap:** Acquire the fresh pivot `stateRoot` and `blockNumber` directly from the best connected `eth` peer's latest block header (staying within the 128-block `snapAvailabilityDepth`).
 - **Continuous Parallel `eth/71` BAL Streaming & Routine Rolling-Pivot Heartbeat (`WP-04k` — supersedes static single-pivot `WP-04a`):**
   - From the moment the initial pivot header `#P_0` is anchored, `BalChainStreamer` runs **in parallel** with `SNAP_SYNCING`, continuously fetching and verifying blocks + `eth/71` Block-Level Access Lists (`#P_k + 1, #P_k + 2, ...`).
-  - Every `PIVOT_STEP_BLOCKS = 16` blocks (keeping target `<= bestPeerHead - 2` so all peers have the root), Ethy steps the active pivot forward (`#P_k → #P_{k+1}`):
+  - Every canonical grid step (`PIVOT_STEP_BLOCKS = 32`, keeping target `<= bestPeerHead - 2` so all peers have the root), Ethy steps the active pivot forward (`#P_k → #P_{k+1}`):
     1. Applies buffered BALs `#P_k + 1 .. #P_{k+1}` only to **already-synced** key-space ranges (`isAccountHashSynced === true`, skipping unsynced `subRanges` that `snap/1` will download directly at `R_{k+1}`).
     2. Keeps in-flight `snap/1` requests alive by verifying each reply against its per-request `flight.stateRoot` (`R_k`) — zero aborted requests!
     3. Updates `pivot.json` / `active.json` in place without wiping `accounts/` journals.

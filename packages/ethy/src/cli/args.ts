@@ -1,6 +1,10 @@
+import { parseOllamaModelArg } from '../persist/userConfig.ts'
+
 export type EthySyncMode = 'auto' | 'ethy' | 'snap'
 
 export type EthyAiMemory = 'ephemeral' | 'off'
+
+export type EthyAiModeCli = 'default' | 'off' | 'local'
 
 export interface EthyCliArgs {
   network: string
@@ -17,9 +21,22 @@ export interface EthyCliArgs {
   /** `enode://` URLs for direct dial after P2P start. */
   connectEnodeUrls: string[]
   llmUrl?: string
+  llmModel?: string
   llmAllowRemote: boolean
   aiMemory: EthyAiMemory
+  /** True when `--ai-memory` or `--no-ai-history` was explicitly passed on CLI. */
+  aiMemoryExplicit?: boolean
   recordFixturePath?: string
+  /** `--ai default|off|local` */
+  aiMode?: EthyAiModeCli
+  noAi?: boolean
+  /** `--ollama [model]` — true when flag present without model name */
+  ollama?: string | true
+  aiSave?: boolean
+  aiSetup?: boolean
+  noSave?: boolean
+  /** `--ai-share-prompts` — opt in to RAM-only prompt steering (WP-10c). */
+  aiSharePrompts?: boolean
 }
 
 export function parseEthyArgs(argv: string[]): EthyCliArgs {
@@ -38,9 +55,18 @@ export function parseEthyArgs(argv: string[]): EthyCliArgs {
   let rpcForced = false
   const connectEnodeUrls: string[] = []
   let llmUrl: string | undefined
+  let llmModel: string | undefined
   let llmAllowRemote = false
   let aiMemory: EthyAiMemory = 'ephemeral'
+  let aiMemoryExplicit = false
   let recordFixturePath: string | undefined
+  let aiMode: EthyAiModeCli | undefined
+  let noAi = false
+  let ollama: string | true | undefined
+  let aiSave = false
+  let aiSetup = false
+  let noSave = false
+  let aiSharePrompts: boolean | undefined
 
   for (let i = 0; i < args.length; i++) {
     const a = args[i]
@@ -116,6 +142,12 @@ export function parseEthyArgs(argv: string[]): EthyCliArgs {
       llmUrl = next
       continue
     }
+    if (a === '--llm-model') {
+      const next = args[++i]
+      if (next === undefined) throw new Error('--llm-model requires a model id')
+      llmModel = next
+      continue
+    }
     if (a === '--llm-allow-remote') {
       llmAllowRemote = true
       continue
@@ -126,10 +158,52 @@ export function parseEthyArgs(argv: string[]): EthyCliArgs {
         throw new Error('--ai-memory must be ephemeral or off')
       }
       aiMemory = next
+      aiMemoryExplicit = true
       continue
     }
     if (a === '--no-ai-history') {
       aiMemory = 'off'
+      aiMemoryExplicit = true
+      continue
+    }
+    if (a === '--ai-share-prompts') {
+      aiSharePrompts = true
+      continue
+    }
+    if (a === '--no-ai') {
+      noAi = true
+      continue
+    }
+    if (a === '--ai') {
+      const next = args[++i]
+      if (next !== 'default' && next !== 'off' && next !== 'local') {
+        throw new Error('--ai must be default, off, or local')
+      }
+      aiMode = next
+      continue
+    }
+    if (a === '--ollama') {
+      const model = parseOllamaModelArg(args, i + 1)
+      if (typeof model === 'string') {
+        ollama = model
+        i += 1
+      } else if (model === true) {
+        ollama = true
+      } else {
+        ollama = true
+      }
+      continue
+    }
+    if (a === '--ai-save') {
+      aiSave = true
+      continue
+    }
+    if (a === '--ai-setup') {
+      aiSetup = true
+      continue
+    }
+    if (a === '--no-save') {
+      noSave = true
       continue
     }
     if (a === '--record-fixture') {
@@ -165,9 +239,18 @@ export function parseEthyArgs(argv: string[]): EthyCliArgs {
     syncMode,
     connectEnodeUrls,
     llmUrl,
+    llmModel,
     llmAllowRemote,
     aiMemory,
+    aiMemoryExplicit,
     recordFixturePath,
+    aiMode,
+    noAi,
+    ollama,
+    aiSave,
+    aiSetup,
+    noSave,
+    aiSharePrompts,
   }
 }
 
@@ -178,7 +261,9 @@ Usage:
   ethy [network] [--demo] [--headless] [--fresh] [--sync-mode auto|ethy|snap]
         [--no-rpc] [--rpc] [--rpc-host HOST] [--rpc-port N]
         [--datadir PATH] [--port N] [--connect enode://...]
-        [--llm-url URL] [--llm-allow-remote] [--ai-memory ephemeral|off] [--no-ai-history]
+        [--no-ai] [--ai default|off|local] [--ollama [model]]
+        [--llm-url URL] [--llm-model ID] [--llm-allow-remote]
+        [--ai-memory ephemeral|off] [--no-ai-history] [--ai-share-prompts] [--ai-save] [--ai-setup] [--no-save]
         [--record-fixture PATH]
 
 Networks: sepolia (default), mainnet, hoodi, holesky

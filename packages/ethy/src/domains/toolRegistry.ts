@@ -22,6 +22,7 @@ const READ_COMMANDS = [
   '/simulate',
   '/cl',
   '/economy',
+  '/signals',
   '/contract',
   '/clear',
   '/ai',

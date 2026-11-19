@@ -5,13 +5,16 @@ import type { FlatStateManager } from '@ethereumjs/statemanager'
 import { ethyKeccak256 } from '../crypto/keccak.ts'
 
 import * as fs from 'node:fs'
+import type { AiRuntimeController } from '../ai/aiRuntime.ts'
 import { FetchLlmTransport, type LlmTransport, RecordingTransport } from '../ai/fixtureEngine.ts'
 import type { AiMemoryMode, HybridIntentEngine } from '../ai/hybridEngine.ts'
 import { HybridIntentEngine as HybridIntentEngineClass } from '../ai/hybridEngine.ts'
 import type { IntentEngine, IntentResult } from '../ai/intentEngine.ts'
+import { InvestigationJournal, UserInterestRing } from '../ai/investigationJournal.ts'
 import { assertLlmBaseUrl, normalizeLlmBase } from '../ai/llmClient.ts'
+import { DEFAULT_OLLAMA_BASE } from '../ai/localProviders.ts'
 import { ETHEconomyDataManager } from '../economy/economyDataManager.ts'
-import { createEthySandbox } from '../evm/sandbox.ts'
+import { type EthySandbox, createEthySandbox } from '../evm/sandbox.ts'
 import { activeHardfork, advertisedForkHash, chainConfigForNetwork } from '../net/chainHardfork.ts'
 import { networkGenesisHash } from '../net/genesisStatus.ts'
 import { NoticeBoard } from '../notify/board.ts'
@@ -19,10 +22,11 @@ import { resolveEthyDataDir } from '../persist/ethyDataRoot.ts'
 import { EthyFlightRecorder } from '../persist/flightRecorder.ts'
 import { PeerBookStore } from '../persist/peerBook.ts'
 import { SnapPivotStore } from '../persist/snapStore.ts'
+import type { EthyAiConfig } from '../persist/userConfig.ts'
 import { RpcBlockWindowStore } from '../rpc/blockWindowStore.ts'
 import { dispatchRpcMethod } from '../rpc/methods.ts'
 import type { JsonRpcError } from '../rpc/types.ts'
-import { createSpine } from '../spine/createSpine.ts'
+import { createSpine, deriveCapabilities } from '../spine/createSpine.ts'
 import type { EthySpine } from '../spine/types.ts'
 import { type EthyTxPool, createEthyTxPool } from '../txpool/pool.ts'
 
@@ -36,6 +40,8 @@ export interface CreateEthyNodeOptions {
   dataDir?: string
   /** Enable on-disk flight recorder logs in `networks/<net>/logs/` (default: `!demo && dataDir !== undefined`). */
   enableFlightRecorder?: boolean
+  /** Resolved effective AI config (WP-10a). */
+  aiConfig?: EthyAiConfig
   llmUrl?: string
   llmAllowRemote?: boolean
   aiMemory?: AiMemoryMode
@@ -70,6 +76,12 @@ export interface EthyNode {
   /** Wired when P2P coordinator or demo pool is attached (`main.ts`). */
   txPool?: EthyTxPool
   submitRawTransaction?: (hex: string) => Promise<{ result: string } | { error: JsonRpcError }>
+  /** Live AI mode switching (WP-10a). */
+  aiRuntime?: AiRuntimeController
+  dataDir?: string
+  investigationJournal: InvestigationJournal
+  userInterest: UserInterestRing
+  sandbox: EthySandbox
 }
 
 export function createEthyNode(opts: CreateEthyNodeOptions): EthyNode {
@@ -124,7 +136,6 @@ export function createEthyNode(opts: CreateEthyNodeOptions): EthyNode {
     spine.onDiagnosticRecorded = (entry) => flightRecorder.recordDiagnostic(entry)
     flightRecorder.start()
   }
-  const economy = new ETHEconomyDataManager({ spine, chain, hardfork, stateManager })
   const blockWindow = new RpcBlockWindowStore(chain, hardfork)
   const sandbox = createEthySandbox({
     spine,
@@ -133,15 +144,39 @@ export function createEthyNode(opts: CreateEthyNodeOptions): EthyNode {
     hardfork,
     blockWindow,
   })
+  const economy = new ETHEconomyDataManager({ spine, chain, hardfork, stateManager, sandbox })
+
+  const effectiveAi: EthyAiConfig = opts.aiConfig ?? {
+    mode: opts.llmUrl !== undefined && opts.llmUrl.length > 0 ? 'local' : 'off',
+    memory: opts.aiMemory ?? 'ephemeral',
+    baseUrl: opts.llmUrl,
+    model: undefined,
+    localProvider: 'openai-compatible',
+    allowRemote: opts.llmAllowRemote,
+  }
+  spine.aiMode = effectiveAi.mode
+  spine.sharePromptHistory = effectiveAi.sharePromptHistory === true
+  deriveCapabilities(spine)
+  const investigationJournal = new InvestigationJournal()
+  const userInterest = new UserInterestRing()
 
   let llm: EthyNode['llm']
   let hybridEngine: HybridIntentEngine | undefined
   let intentEngine: IntentEngine
 
-  if (opts.llmUrl !== undefined && opts.llmUrl.length > 0) {
-    const parsed = assertLlmBaseUrl(opts.llmUrl, opts.llmAllowRemote === true)
+  const wireLocalLlm = (config: EthyAiConfig): void => {
+    const url =
+      config.baseUrl ?? (config.localProvider === 'ollama' ? DEFAULT_OLLAMA_BASE : opts.llmUrl)
+    if (url === undefined || url.length === 0) return
+    const parsed = assertLlmBaseUrl(
+      url,
+      config.allowRemote === true || opts.llmAllowRemote === true,
+    )
     const base = normalizeLlmBase(parsed)
-    let transport: LlmTransport = new FetchLlmTransport(base)
+    let transport: LlmTransport = new FetchLlmTransport(base, {
+      model: config.model,
+      provider: config.localProvider,
+    })
     const fixturePath = opts.recordFixturePath
     if (fixturePath !== undefined) {
       transport = new RecordingTransport(transport, (line) => {
@@ -154,23 +189,32 @@ export function createEthyNode(opts: CreateEthyNodeOptions): EthyNode {
       snapStore,
       transport,
       llmBase: base,
-      memoryMode: opts.aiMemory ?? 'ephemeral',
+      llmModel: config.model,
+      llmProvider: config.localProvider,
+      memoryMode: config.memory ?? opts.aiMemory ?? 'ephemeral',
       economy,
       chain,
       sandbox,
-    })
-    intentEngine = hybridEngine
-  } else {
-    hybridEngine = new HybridIntentEngineClass({
-      stateManager,
-      snapStore,
-      memoryMode: opts.aiMemory ?? 'ephemeral',
-      economy,
-      chain,
-      sandbox,
+      journal: investigationJournal,
     })
     intentEngine = hybridEngine
   }
+
+  if (effectiveAi.mode === 'local') {
+    wireLocalLlm(effectiveAi)
+  }
+  if (hybridEngine === undefined) {
+    hybridEngine = new HybridIntentEngineClass({
+      stateManager,
+      snapStore,
+      memoryMode: effectiveAi.memory ?? opts.aiMemory ?? 'ephemeral',
+      economy,
+      chain,
+      sandbox,
+      journal: investigationJournal,
+    })
+  }
+  intentEngine = hybridEngine
 
   // Disk restore and resume policy run in `startPeerCoordinator` once a peer head is known.
   let submitRawTransaction: EthyNode['submitRawTransaction']
@@ -194,6 +238,10 @@ export function createEthyNode(opts: CreateEthyNodeOptions): EthyNode {
 
   const node: EthyNode = {
     spine,
+    investigationJournal,
+    userInterest,
+    sandbox,
+    dataDir,
     stateManager,
     notices: new NoticeBoard(),
     intentEngine,

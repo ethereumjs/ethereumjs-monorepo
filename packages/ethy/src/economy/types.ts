@@ -49,6 +49,78 @@ export type EconomySkylinePoint = {
   mutation: number
 }
 
+export type BlobTxRow = {
+  to: string
+  blobCount: number
+  blobGasUsed?: bigint
+  maxFeePerBlobGas?: bigint
+}
+
+export type DelegationTargetRow = {
+  target: string
+  count: number
+  revocations: number
+}
+
+export type ContractGasRow = {
+  address: string
+  gasUsed: bigint
+}
+
+export type ContractRevertRow = {
+  address: string
+  reverts: number
+}
+
+export type SlotWriteRow = {
+  address: string
+  slot: string
+  postValue: bigint
+}
+
+export type SlotTrendKind = 'monotonic_up' | 'monotonic_down' | 'oscillating' | 'step_jump'
+
+export type SignalKind =
+  | 'delegation_surge'
+  | 'contract_surge'
+  | 'l2_blob_pressure'
+  | 'congestion_pressure'
+  | 'slot_trend'
+  | 'deployment_or_upgrade'
+  | 'whale_or_flow'
+  | 'sender_burst'
+
+export type SignalSeverity = 'calm' | 'notable' | 'surge'
+
+export type SignalCandidate = {
+  id: string
+  kind: SignalKind
+  severity: SignalSeverity
+  noveltyScore: number
+  headline: string
+  address?: string
+  secondaryAddress?: string
+  metrics: Record<string, string | number>
+  windowBlocks: number
+}
+
+export type L2RollupWindowStat = {
+  inbox: string
+  displayName?: string
+  blobCount: number
+  estimatedEthWei: bigint
+}
+
+export type MacroBaselineSnapshot = {
+  avgBaseFeeWei?: bigint
+  avgBlobBaseFeeWei?: bigint
+  avgPriorityTipWei?: bigint
+  avgGasFullPct?: number
+  avgRevertPct?: number
+  avgSetCodeTxCount?: number
+  bucketCount: number
+}
+
 export type BlockEconomyRecord = {
   blockNumber: bigint
   /** When false, block had header (+ optional BAL) only (no body txs). */
@@ -80,6 +152,17 @@ export type BlockEconomyRecord = {
   contractContributions: ContractBlockContribution[]
   observations?: BlockContractObservations
   balSnapshots?: Array<{ address: string; code?: Uint8Array; implSlot?: string }>
+  blobBaseFeeWei?: bigint
+  blobFeeBurnedWei?: bigint
+  totalBlobCount?: number
+  blobTxs?: BlobTxRow[]
+  delegationTargets?: DelegationTargetRow[]
+  gasUsedByContract?: ContractGasRow[]
+  revertsByContract?: ContractRevertRow[]
+  medianPriorityTipWei?: bigint
+  p90PriorityTipWei?: bigint
+  sameSenderBursts?: string[]
+  slotWrites?: SlotWriteRow[]
 }
 
 export type ContractConfidence = 'high' | 'medium' | 'low'
@@ -170,6 +253,10 @@ export type EconomySnapshot = {
   windowRevertPct?: number
   windowPeakTransferEth?: string
   archetypeMix?: Array<{ archetype: string; count: number; sharePct: number }>
+  blobBaseFeeGwei?: string
+  signals?: SignalCandidate[]
+  l2RollupStats?: L2RollupWindowStat[]
+  macroBaseline?: MacroBaselineSnapshot
 }
 
 export const ECONOMY_MOMENTS_RING = 24
@@ -182,3 +269,7 @@ export const ECONOMY_LEADERBOARD_SIZE = 10
 export const ECONOMY_CLASSIFY_POOL = 24
 export const ECONOMY_ADDRESS_MAP_CAP = 4096
 export const SLOT_SECONDS = 12
+export const MACRO_ROLLUP_BUCKETS = 96
+export const MACRO_BLOCKS_PER_BUCKET = 8
+export const SLOT_TREND_TRACK_CAP = 64
+export const MAX_SIGNAL_CANDIDATES = 8

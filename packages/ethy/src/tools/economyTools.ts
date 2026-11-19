@@ -25,6 +25,9 @@ export function economyDeepViewWidget(spine: EthySpine): WidgetSpec {
   if (snap.blobGasUsed !== undefined) {
     preface.push({ key: 'Blob gas', value: snap.blobGasUsed })
   }
+  if (snap.blobBaseFeeGwei !== undefined) {
+    preface.push({ key: 'Blob base fee', value: `${snap.blobBaseFeeGwei} Gwei` })
+  }
   if (snap.tps !== undefined) {
     preface.push({ key: 'TPS (10 blk)', value: snap.tps.toFixed(1) })
   }

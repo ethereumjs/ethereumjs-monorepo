@@ -88,6 +88,9 @@ export function rankPeerRows(rows: Iterable<PeerBookRow>, now: number): PeerBook
       const ta = tier(a)
       const tb = tier(b)
       if (ta !== tb) return tb - ta
+      const aPenalty = (a.tooManyPeersStreak ?? 0) + a.resetStreak
+      const bPenalty = (b.tooManyPeersStreak ?? 0) + b.resetStreak
+      if (aPenalty !== bPenalty) return aPenalty - bPenalty
       if (ta === 3) {
         const aAff = clientAffinityRank(a.clientFamily)
         const bAff = clientAffinityRank(b.clientFamily)
@@ -348,7 +351,7 @@ export class PeerBookStore {
       const streak = (row.tooManyPeersStreak ?? 0) + 1
       row.tooManyPeersStreak = streak
       const vip = row.snapResponsesOk > 0
-      row.dialAfter = now + tooManyPeersHoldMs(vip, streak - 1)
+      row.dialAfter = Math.max(row.dialAfter, now + tooManyPeersHoldMs(vip, streak - 1))
       this.schedulePersist()
       return
     }

@@ -65,11 +65,15 @@ function buildRightRows(spine: EthySpine): string[] {
     word3,
     '',
     `${BOLD}Execution-Free Ethereum Node${RESET}`,
-    `${DIM}Economy · Flat State · Swarm Intelligence${RESET}`,
+    spine.aiMode === 'off'
+      ? `${DIM}Economy · Flat State · P2P observatory${RESET}`
+      : `${DIM}Economy · Flat State · Swarm Intelligence${RESET}`,
     '',
     `${econMark} ${BOLD}Economy${RESET}   ${stateMark} ${BOLD}State${RESET}   ${p2pMark} ${BOLD}P2P${RESET}`,
     '',
-    `${DIM}Press ${RESET}${BOLD}Tab${RESET}${DIM} for help · ${RESET}${BOLD}/${RESET}${DIM} command · ask AI${RESET}`,
+    spine.aiMode === 'off'
+      ? `${DIM}Press ${RESET}${BOLD}Tab${RESET}${DIM} for help · Enter plaza · ${RESET}${BOLD}/${RESET}${DIM} command${RESET}`
+      : `${DIM}Press ${RESET}${BOLD}Tab${RESET}${DIM} for help · ${RESET}${BOLD}/${RESET}${DIM} command · ask AI${RESET}`,
   ]
 }
 
@@ -102,13 +106,17 @@ export function renderStartPageUIComponent(
       '',
       `  ${BOLD}Execution-Free Ethereum Intelligence Node${RESET}`,
       `  ${capabilityMark('economy', spine.capabilities.economy.status)} Economy   ${capabilityMark('state', spine.capabilities.state.status)} State   ${capabilityMark('p2p', spine.capabilities.p2p.status)} P2P`,
-      `  ${DIM}Tab help · /command · ask AI${RESET}`,
+      spine.aiMode === 'off'
+        ? `  ${DIM}Tab help · Enter plaza · /command${RESET}`
+        : `  ${DIM}Tab help · /command · ask AI${RESET}`,
     ]
   } else {
     blockWidth = Math.min(w, 40)
     composition = [
       `${BOLD}ETHY v${spine.clientVersion}${RESET} · ${spine.network.toUpperCase()}`,
-      `${DIM}Tab help · /command · ask AI${RESET}`,
+      spine.aiMode === 'off'
+        ? `${DIM}Tab help · /command${RESET}`
+        : `${DIM}Tab help · /command · ask AI${RESET}`,
     ].slice(0, maxBodyLines)
   }
 
