@@ -3,8 +3,9 @@
 - **Status:** `READY_FOR_PLANNING`
 - **Series:** `WP-10` — Next-Generation LLM Integration, Capabilities & Model Strategy
   - **`WP-10a` (this package):** Modular AI runtime modes (`default` / `off` / `local`), first-open TUI choice & `/ai` live switcher, persistent `<dataDir>/config.json` with session-override CLI semantics, full-width `No AI` TUI layout, hardware feasibility probe, and zero-friction local model connectors (`Ollama` auto-discovery + OpenAI-compatible loopback fixes).
-  - **`WP-10b` (next):** LLM Role, High-Leverage Protocol Tasks & Grounded Capability Redesign (*"What should the model actually do"*).
-  - **`WP-10c` (follow-up):** Default Model Benchmarking, Selection (`~400 MB – 1 GB`), Grammar / Optional Post-Training Pipeline & Managed Built-In Model Runner.
+  - **`WP-10b` (Layer 1):** Deterministic Ethereum signal engine, multi-horizon time series, EIP-7702/L2-blob/BAL-slot analytics, anomaly detection, and local `name()`/`symbol()` + ENS reverse identity resolution.
+  - **`WP-10c` (Layer 2):** Autonomous Chain-Detective LLM replacing the 3-domain split, novelty-gated 2-step read-only Investigation Toolbelt, AI Dispatch Feed UI, self-history journal, and opt-in prompt-history sharing.
+  - **`WP-10d` (follow-up):** Default model benchmarking against `WP-10b`/`WP-10c` fixtures (`~400 MB – 1 GB`), grammar / optional QLoRA post-training pipeline, and managed built-in model runner.
 - **Dependencies:** `WP-07c`, `WP-07f`, `WP-07h`, `WP-07j`, `WP-08a`, `WP-08b` (`DONE`)
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
@@ -59,7 +60,9 @@ Ethy has matured into a fast, standalone Ethereum state & economy observatory (`
        allowRemote?: boolean
        /** Turn memory preference (`ephemeral` 3-turn RAM ring vs `off`). */
        memory?: 'ephemeral' | 'off'
-       /** Default model id override once WP-10c ships multiple tiers. */
+       /** Opt-in: allow autonomous AI dispatches (`WP-10c`) to see recent RAM-only session prompts. */
+       sharePromptHistory?: boolean
+       /** Default model id override once WP-10d ships multiple tiers. */
        defaultModelId?: string
      }
 

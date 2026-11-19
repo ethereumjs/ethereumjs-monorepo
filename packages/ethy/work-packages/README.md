@@ -277,7 +277,21 @@ Every Work Package delivers a **runnable, observable, and live-testable incremen
                                           │ WP-10a: Modular AI Modes (default/off/  │   │ WP-09: Optional ETHY/0 Discovery Infra  │
                                           │         local), First-Open Choice,      │   │        (--rendezvous Seed & Signed      │
                                           │         Full-Width UI & Ollama Auto-Det │   │        EIP-1459 DNS ENR Tree)           │
-                                          └─────────────────────────────────────────┘   └─────────────────────────────────────────┘
+                                          └───────────────────┬─────────────────────┘   └─────────────────────────────────────────┘
+                                                              │
+                                                              ▼
+                                          ┌─────────────────────────────────────────┐
+                                          │ WP-10b: Layer 1 Deterministic Signal    │
+                                          │         Engine, Multi-Horizon Series,   │
+                                          │         7702/L2/BAL Slots & Local ENS   │
+                                          └───────────────────┬─────────────────────┘
+                                                              │
+                                                              ▼
+                                          ┌─────────────────────────────────────────┐
+                                          │ WP-10c: Layer 2 Chain-Detective LLM,    │
+                                          │         Bounded Investigation Toolbelt, │
+                                          │         Dispatch Feed & Prompt Consent  │
+                                          └─────────────────────────────────────────┘
 ```
 
 ---
