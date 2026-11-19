@@ -177,7 +177,8 @@ export async function runEthySession(node: EthyNode, opts?: EthySessionOpts): Pr
     const hasBlocks = node.spine.economy?.hasBlocks === true
     const allBucketsDone = node.spine.snapBuckets.every((b) => b.status === 'done')
     if (node.spine.aiMode !== 'off') {
-      if (!llmConfigured) {
+      const hasLiveDetective = detectiveNarrator !== undefined
+      if (!hasLiveDetective) {
         if (
           node.spine.phase !== lastPhase ||
           hasBlocks !== lastEconomyHasBlocks ||
@@ -197,10 +198,13 @@ export async function runEthySession(node: EthyNode, opts?: EthySessionOpts): Pr
         hasBlocks !== lastEconomyHasBlocks ||
         allBucketsDone !== lastAllBucketsDone
       ) {
+        const blocksJustArrived = hasBlocks && !lastEconomyHasBlocks
         lastPhase = node.spine.phase
         lastEconomyHasBlocks = hasBlocks
         lastAllBucketsDone = allBucketsDone
-        void detectiveNarrator
+        if (blocksJustArrived) {
+          detectiveNarrator?.noteBlocksReady(node.spine)
+        }
       }
     }
     view = applyLiveSlashRefresh(view, node.spine, slashCtx())
@@ -270,9 +274,13 @@ export async function runEthySession(node: EthyNode, opts?: EthySessionOpts): Pr
         draw()
       })
     }
-    if (result.aiLayoutRefresh === true && node.spine.aiMode === 'off') {
-      detectiveNarrator?.stop()
-      detectiveNarrator = undefined
+    if (result.aiLayoutRefresh === true) {
+      if (node.spine.aiMode === 'off') {
+        detectiveNarrator?.stop()
+        detectiveNarrator = undefined
+      } else if (node.llm !== undefined) {
+        startDetectiveNarrator()
+      }
     }
     if (isNl) {
       const entry: InteractionHistoryEntry = {

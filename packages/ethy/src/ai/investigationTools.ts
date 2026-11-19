@@ -1,11 +1,23 @@
 import type { ChainConfig } from '@ethereumjs/common'
 import type { FlatStateManager } from '@ethereumjs/statemanager'
-import { bytesToHex, hexToBytes } from '@ethereumjs/util'
+import { bytesToBigInt, bytesToHex, hexToBytes } from '@ethereumjs/util'
 
+import { fingerprintBytecode } from '../contracts/bytecodeFingerprint.ts'
+import {
+  archetypeLabelFromCode,
+  buildCodeLookup,
+  createFingerprintCache,
+} from '../contracts/contractIntelligence.ts'
+import { decodeAbiString } from '../contracts/identityResolver.ts'
 import { knownContractName } from '../contracts/knownContracts.ts'
+import {
+  EIP1967_IMPLEMENTATION_SLOT,
+  lookupFunctionSelector,
+} from '../contracts/signatureCatalog.ts'
 import { ethyKeccak256 } from '../crypto/keccak.ts'
 import type { ETHEconomyDataManager } from '../economy/economyDataManager.ts'
 import type { EthySandbox } from '../evm/sandbox.ts'
+import { quantityHex } from '../rpc/quantities.ts'
 import type { EthySpine } from '../spine/types.ts'
 
 export type InvestigationToolName =
@@ -19,15 +31,21 @@ export type InvestigationToolName =
 const MAX_JSON_CHARS = 1400
 const LIST_CAP = 6
 const PROBE_GAS = 100_000n
+const HEX_ADDR_RE = /^0x[0-9a-f]{40}$/i
 
-const PROBE_SELECTORS: Record<string, `0x${string}`> = {
-  name: '0x06fdde03',
-  symbol: '0x95d89b41',
-  decimals: '0x313ce567',
-  totalSupply: '0x18160ddd',
-  owner: '0x8da5cb5b',
-  implementation: '0x5c60da1b',
-  paused: '0x5c975abb',
+const PROBE_ENTRIES: ReadonlyArray<{ selector: `0x${string}`; canonical: string }> = [
+  { selector: '0x06fdde03', canonical: 'name' },
+  { selector: '0x95d89b41', canonical: 'symbol' },
+  { selector: '0x313ce567', canonical: 'decimals' },
+  { selector: '0x18160ddd', canonical: 'totalSupply' },
+  { selector: '0x8da5cb5b', canonical: 'owner' },
+  { selector: '0x5c60da1b', canonical: 'implementation' },
+  { selector: '0x5c975abb', canonical: 'paused' },
+]
+
+function lookupProbeEntry(fn: string): { selector: `0x${string}`; canonical: string } | undefined {
+  const q = fn.trim().toLowerCase()
+  return PROBE_ENTRIES.find((e) => e.canonical.toLowerCase() === q)
 }
 
 export type InvestigationContext = {
@@ -47,14 +65,74 @@ export const INVESTIGATION_TOOL_NAMES: readonly InvestigationToolName[] = [
   'probe_contract_view',
 ]
 
+function safeJSONStringify(obj: unknown): string {
+  return JSON.stringify(obj, (_key, val) => (typeof val === 'bigint' ? val.toString() : val))
+}
+
 function trimPayload(obj: unknown): string {
-  let s = JSON.stringify(obj)
+  const s = safeJSONStringify(obj)
   if (s.length <= MAX_JSON_CHARS) return s
   return `${s.slice(0, MAX_JSON_CHARS - 1)}…`
 }
 
 function normAddr(a: string): string {
-  return a.toLowerCase()
+  return a.trim().toLowerCase()
+}
+
+function isValidAddress(a: string): boolean {
+  return HEX_ADDR_RE.test(a)
+}
+
+function bytecodeRiskCues(code: Uint8Array): string[] {
+  const cues: string[] = []
+  let hasDelegateCall = false
+  let hasSelfDestruct = false
+  for (let i = 0; i < code.length; i++) {
+    const op = code[i]!
+    if (op >= 0x60 && op <= 0x7f) {
+      i += op - 0x5f
+      continue
+    }
+    if (op === 0xf4) hasDelegateCall = true
+    else if (op === 0xff) hasSelfDestruct = true
+  }
+  if (hasDelegateCall) cues.push('DELEGATECALL')
+  if (hasSelfDestruct) cues.push('SELFDESTRUCT')
+  return cues
+}
+
+function resolveProxyChain(
+  address: string,
+  ctx: InvestigationContext,
+): { proxyKind?: string; proxyTarget?: string; implArchetype?: string } {
+  const lookup = buildCodeLookup(ctx.stateManager, ctx.chain)
+  const code = lookup.getCodeForAddress(address)
+  const implSlot = lookup.getStorageSlotForAddress?.(address, EIP1967_IMPLEMENTATION_SLOT)
+  let proxyKind: string | undefined
+  let proxyTarget: string | undefined
+  if (code !== undefined && code.length > 0) {
+    const fp = fingerprintBytecode(code)
+    proxyKind = fp.proxyKind
+    proxyTarget = fp.proxyTarget
+  }
+  if (proxyTarget === undefined && implSlot !== undefined) {
+    const bare = implSlot.replace(/^0x/, '')
+    if (bare.length >= 40) {
+      const candidate = `0x${bare.slice(-40)}`.toLowerCase()
+      if (candidate !== '0x0000000000000000000000000000000000000000') {
+        proxyTarget = candidate
+        proxyKind = proxyKind ?? 'EIP-1967'
+      }
+    }
+  }
+  let implArchetype: string | undefined
+  if (proxyTarget !== undefined) {
+    const implCode = lookup.getCodeForAddress(proxyTarget)
+    if (implCode !== undefined && implCode.length > 0) {
+      implArchetype = archetypeLabelFromCode(implCode, createFingerprintCache())
+    }
+  }
+  return { proxyKind, proxyTarget, implArchetype }
 }
 
 export function runInvestigationTool(
@@ -89,6 +167,7 @@ export function runInvestigationTool(
 
 function inspectContract(address: string, ctx: InvestigationContext): Record<string, unknown> {
   const addr = normAddr(address)
+  if (!isValidAddress(addr)) return { error: 'invalid_address', address: addr }
   const identity = ctx.economy.getIdentityResolver()
   const agg = ctx.economy.getContractAgg(addr)
   let gasTotal = 0n
@@ -109,27 +188,35 @@ function inspectContract(address: string, ctx: InvestigationContext): Record<str
     acc !== undefined
       ? (ctx.stateManager.getCodeByHash(acc.codeHash) ?? new Uint8Array(0))
       : new Uint8Array(0)
-  const codeHex = code.length > 0 ? bytesToHex(code) : undefined
   const selectors = agg
     ? [...agg.selectorCounts.entries()]
         .sort((a, b) => b[1] - a[1])
         .slice(0, LIST_CAP)
-        .map(([sel, n]) => ({ sel, n }))
+        .map(([sel, n]) => ({ sel: lookupFunctionSelector(sel)?.name ?? sel, n }))
     : []
+  const archetype =
+    code.length > 0 ? archetypeLabelFromCode(code, createFingerprintCache()) : undefined
+  const proxy = resolveProxyChain(addr, ctx)
+  const riskCues = code.length > 0 ? bytecodeRiskCues(code) : []
   return {
     address: addr,
     knownName: knownContractName(BigInt(ctx.chain.chainId), addr) ?? identity.getKnownName(addr),
+    archetype: proxy.implArchetype ?? archetype,
+    proxyKind: proxy.proxyKind,
+    proxyTarget: proxy.proxyTarget,
     bytecodeBytes: code.length,
     blocksActive: blocks,
     gasUsedWindow: gasTotal.toString(),
     revertsWindow: reverts,
     topSelectors: selectors,
-    codePrefix: codeHex?.slice(0, 10),
+    riskCues: riskCues.length > 0 ? riskCues : undefined,
   }
 }
 
 function inspectDelegations(delegate: string, ctx: InvestigationContext): Record<string, unknown> {
   const target = normAddr(delegate)
+  if (!isValidAddress(target)) return { error: 'invalid_address', delegateAddress: target }
+  const identity = ctx.economy.getIdentityResolver()
   let count = 0
   let revocations = 0
   for (const b of ctx.economy.getBlockRing()) {
@@ -139,11 +226,27 @@ function inspectDelegations(delegate: string, ctx: InvestigationContext): Record
       revocations += row.revocations
     }
   }
+  const accHash = ethyKeccak256(hexToBytes(target as `0x${string}`))
+  const acc = ctx.stateManager.getAccountByHash(accHash)
+  const code =
+    acc !== undefined
+      ? (ctx.stateManager.getCodeByHash(acc.codeHash) ?? new Uint8Array(0))
+      : new Uint8Array(0)
+  const archetype =
+    code.length > 0 ? archetypeLabelFromCode(code, createFingerprintCache()) : undefined
+  const proxy = resolveProxyChain(target, ctx)
+  const riskCues = code.length > 0 ? bytecodeRiskCues(code) : []
   return {
     delegateAddress: target,
     delegationCount: count,
     revocations,
-    knownName: knownContractName(BigInt(ctx.chain.chainId), target),
+    knownName:
+      knownContractName(BigInt(ctx.chain.chainId), target) ?? identity.getKnownName(target),
+    archetype: proxy.implArchetype ?? archetype,
+    proxyKind: proxy.proxyKind,
+    proxyTarget: proxy.proxyTarget,
+    bytecodeBytes: code.length,
+    riskCues: riskCues.length > 0 ? riskCues : undefined,
   }
 }
 
@@ -152,11 +255,15 @@ function inspectStorageSlot(
   slot: string,
   ctx: InvestigationContext,
 ): Record<string, unknown> {
-  const series = ctx.economy.getSlotTracker().seriesFor(address, slot) ?? []
-  const trend = ctx.economy.getSlotTracker().classify(`${normAddr(address)}:${slot}`)
+  const addr = normAddr(address)
+  const normSlot = slot.trim().toLowerCase()
+  const series = ctx.economy.getSlotTracker().seriesFor(addr, normSlot) ?? []
+  const trend = ctx.economy.getSlotTracker().classify(`${addr}:${normSlot}`)
+  const identity = ctx.economy.getIdentityResolver()
   return {
-    address: normAddr(address),
-    slot,
+    address: addr,
+    knownName: knownContractName(BigInt(ctx.chain.chainId), addr) ?? identity.getKnownName(addr),
+    slot: normSlot,
     trend,
     series: series.slice(-LIST_CAP).map((p) => ({
       block: p.block.toString(),
@@ -174,12 +281,18 @@ function inspectL2Blobs(
   const filtered = inbox !== undefined ? stats.filter((s) => s.inbox === normAddr(inbox)) : stats
   return {
     blobBaseFeeGwei: snap?.blobBaseFeeGwei,
-    inboxes: filtered,
+    inboxes: filtered.map((s) => ({
+      inbox: s.inbox,
+      displayName: s.displayName,
+      blobCount: s.blobCount,
+      estimatedEthWei: s.estimatedEthWei.toString(),
+    })),
   }
 }
 
 function inspectAccount(address: string, ctx: InvestigationContext): Record<string, unknown> {
   const addr = normAddr(address)
+  if (!isValidAddress(addr)) return { error: 'invalid_address', address: addr }
   const identity = ctx.economy.getIdentityResolver()
   const accHash = ethyKeccak256(hexToBytes(addr as `0x${string}`))
   const acc = ctx.stateManager.getAccountByHash(accHash)
@@ -188,6 +301,10 @@ function inspectAccount(address: string, ctx: InvestigationContext): Record<stri
       ? (ctx.stateManager.getCodeByHash(acc.codeHash) ?? new Uint8Array(0))
       : new Uint8Array(0)
   const isContract = code.length > 0
+  let eip7702Delegate: string | undefined
+  if (code.length >= 23 && code[0] === 0xef && code[1] === 0x01 && code[2] === 0x00) {
+    eip7702Delegate = bytesToHex(code.subarray(3, 23)).toLowerCase()
+  }
   let burst = false
   for (const b of ctx.economy.getBlockRing()) {
     if (b.sameSenderBursts?.includes(addr)) burst = true
@@ -197,7 +314,8 @@ function inspectAccount(address: string, ctx: InvestigationContext): Record<stri
     balanceWei: acc?.balance?.toString() ?? '0',
     nonce: acc?.nonce?.toString() ?? '0',
     isContract,
-    knownName: identity.getKnownName(addr),
+    eip7702Delegate,
+    knownName: knownContractName(BigInt(ctx.chain.chainId), addr) ?? identity.getKnownName(addr),
     senderBurst: burst || undefined,
   }
 }
@@ -207,17 +325,41 @@ function probeContractView(
   fn: string,
   ctx: InvestigationContext,
 ): Record<string, unknown> {
-  const key = fn.trim().toLowerCase()
-  const sel = PROBE_SELECTORS[key]
-  if (sel === undefined) {
-    return { error: 'fn_not_whitelisted', allowed: Object.keys(PROBE_SELECTORS) }
+  const addr = normAddr(address)
+  if (!isValidAddress(addr)) return { error: 'invalid_address', address: addr }
+  const entry = lookupProbeEntry(fn)
+  if (entry === undefined) {
+    return {
+      error: 'fn_not_whitelisted',
+      allowed: PROBE_ENTRIES.map((v) => v.canonical),
+    }
   }
   if (ctx.sandbox === undefined) {
     return { error: 'sandbox_unavailable' }
   }
-  const addr = normAddr(address)
-  void ctx
-  return { address: addr, fn: key, pending: true }
+  return { address: addr, fn: entry.canonical, pending: true }
+}
+
+function decodeProbeReturn(canonicalFn: string, rawHex: string): string {
+  if (!rawHex.startsWith('0x') || rawHex.length <= 2) return rawHex
+  try {
+    const bytes = hexToBytes(rawHex as `0x${string}`)
+    if (canonicalFn === 'name' || canonicalFn === 'symbol') {
+      return decodeAbiString(bytes) ?? rawHex.slice(0, 66)
+    }
+    if (canonicalFn === 'decimals' || canonicalFn === 'totalSupply') {
+      if (bytes.length >= 32) return bytesToBigInt(bytes.subarray(0, 32)).toString()
+    }
+    if (canonicalFn === 'owner' || canonicalFn === 'implementation') {
+      if (bytes.length >= 32) return bytesToHex(bytes.subarray(12, 32)).toLowerCase()
+    }
+    if (canonicalFn === 'paused') {
+      if (bytes.length >= 32) return bytesToBigInt(bytes.subarray(0, 32)) !== 0n ? 'true' : 'false'
+    }
+  } catch {
+    // fall through to raw hex
+  }
+  return rawHex.slice(0, 66)
 }
 
 export async function runInvestigationToolAsync(
@@ -233,25 +375,29 @@ export async function runInvestigationToolAsync(
   return runInvestigationTool(name, args, ctx)
 }
 
-/** Sync probe for tests and deterministic paths. */
+/** Execute a whitelisted zero-arg read-only view against the local EVM sandbox. */
 export async function probeContractViewLive(
   address: string,
   fn: string,
   ctx: InvestigationContext,
 ): Promise<Record<string, unknown>> {
-  const key = fn.trim().toLowerCase()
-  const sel = PROBE_SELECTORS[key]
-  if (sel === undefined) {
-    return { error: 'fn_not_whitelisted' }
+  const addr = normAddr(address)
+  if (!isValidAddress(addr)) return { error: 'invalid_address', address: addr }
+  const entry = lookupProbeEntry(fn)
+  if (entry === undefined) {
+    return {
+      error: 'fn_not_whitelisted',
+      allowed: PROBE_ENTRIES.map((v) => v.canonical),
+    }
   }
   if (ctx.sandbox === undefined) {
     return { error: 'sandbox_unavailable' }
   }
   const outcome = await ctx.sandbox.runEthCall(
-    { to: address, data: sel, gas: PROBE_GAS },
+    { to: addr, data: entry.selector, gas: quantityHex(PROBE_GAS) },
     undefined,
   )
   if ('error' in outcome) return { error: outcome.error }
   const hex = String(outcome.result ?? '')
-  return { fn: key, result: hex.slice(0, 66) }
+  return { address: addr, fn: entry.canonical, value: decodeProbeReturn(entry.canonical, hex) }
 }

@@ -23,5 +23,5 @@ export function buildSignalDigest(snap: EconomySnapshot | undefined): SignalDige
 }
 
 export function digestForPrompt(digest: SignalDigest): string {
-  return JSON.stringify(digest)
+  return JSON.stringify(digest, (_key, val) => (typeof val === 'bigint' ? val.toString() : val))
 }

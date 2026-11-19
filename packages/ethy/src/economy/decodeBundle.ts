@@ -504,48 +504,28 @@ function slotWritesFromBal(bal: BALJSONBlockAccessList): SlotWriteRow[] {
   return out
 }
 
+const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
+
 function delegationFromBalCode(
   bal: BALJSONBlockAccessList,
-  delegateMap: Map<string, { count: number; revocations: number }>,
-): void {
+): Map<string, { count: number; revocations: number }> {
+  const balDelegates = new Map<string, { count: number; revocations: number }>()
   for (const acct of bal) {
     for (const ch of acct.codeChanges) {
       try {
         const code = hexToBytes(ch.newCode)
-        if (code.length === 0) {
-          const addr = acct.address.toLowerCase()
-          if (delegateMap.has(addr)) {
-            for (const key of [...delegateMap.keys()]) {
-              delegateMap.get(key)!.revocations += 0
-            }
-          }
-          continue
-        }
         if (code.length >= 23 && equalsBytes(code.subarray(0, 3), DELEGATION_PREFIX)) {
-          const target = `0x${bytesToHex(code.subarray(3, 23))}`.toLowerCase()
-          const row = delegateMap.get(target) ?? { count: 0, revocations: 0 }
+          const target = bytesToHex(code.subarray(3, 23)).toLowerCase()
+          const row = balDelegates.get(target) ?? { count: 0, revocations: 0 }
           row.count += 1
-          delegateMap.set(target, row)
-        }
-        if (code.length === 0) {
-          // revocation on this EOA — count on prior delegate if we tracked writes to ef0100 removal
-        }
-      } catch {
-        // skip
-      }
-    }
-    if (acct.codeChanges.length > 0) {
-      const last = acct.codeChanges[acct.codeChanges.length - 1]!
-      try {
-        const code = hexToBytes(last.newCode)
-        if (code.length === 0) {
-          for (const [, row] of delegateMap) row.revocations += 0
+          balDelegates.set(target, row)
         }
       } catch {
         // skip
       }
     }
   }
+  return balDelegates
 }
 
 function enrichFromBodyReceiptsAndBal(
@@ -590,10 +570,16 @@ function enrichFromBodyReceiptsAndBal(
                 const list = tx.authorizationList as readonly (readonly Uint8Array[])[]
                 for (const item of list) {
                   if (item.length < 2 || !(item[1] instanceof Uint8Array)) continue
-                  const target = `0x${bytesToHex(item[1])}`.toLowerCase()
-                  const row = delegateMap.get(target) ?? { count: 0, revocations: 0 }
-                  row.count += 1
-                  delegateMap.set(target, row)
+                  const target = bytesToHex(item[1]).toLowerCase()
+                  if (target === ZERO_ADDR) {
+                    const row = delegateMap.get(ZERO_ADDR) ?? { count: 0, revocations: 0 }
+                    row.revocations += 1
+                    delegateMap.set(ZERO_ADDR, row)
+                  } else {
+                    const row = delegateMap.get(target) ?? { count: 0, revocations: 0 }
+                    row.count += 1
+                    delegateMap.set(target, row)
+                  }
                 }
               }
               if (tx.type === TransactionType.BlobEIP4844) {
@@ -682,7 +668,14 @@ function enrichFromBodyReceiptsAndBal(
     }
 
     if (bal !== undefined) {
-      delegationFromBalCode(bal, delegateMap)
+      const balDelegates = delegationFromBalCode(bal)
+      // Prefer authoritative BAL code writes when present (avoid 2x double-counting with authList)
+      if (balDelegates.size > 0) {
+        const revocations = delegateMap.get(ZERO_ADDR)
+        delegateMap.clear()
+        for (const [k, v] of balDelegates) delegateMap.set(k, v)
+        if (revocations !== undefined) delegateMap.set(ZERO_ADDR, revocations)
+      }
       const slots = slotWritesFromBal(bal)
       if (slots.length > 0) base.slotWrites = slots
       for (const acct of bal) {

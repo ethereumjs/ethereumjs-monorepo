@@ -34,7 +34,7 @@ export function normalizeLlmBase(url: URL): string {
 export function isOllamaBase(base: string): boolean {
   try {
     const u = new URL(base)
-    return u.port === '11434' || (u.hostname === '127.0.0.1' && u.port === '')
+    return u.port === '11434'
   } catch {
     return base.includes(':11434')
   }

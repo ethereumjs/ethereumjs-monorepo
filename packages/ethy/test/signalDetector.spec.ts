@@ -59,4 +59,71 @@ describe('detectEconomySignals', () => {
     expect(out.some((s) => s.kind === 'delegation_surge')).toBe(true)
     expect(out.length).toBeLessThanOrEqual(8)
   })
+
+  it('does not trigger l2_blob_pressure on flat or falling blob fees, but fires when climbing', () => {
+    const tracker = new SlotTrendTracker()
+    const base = (n: bigint, blobBaseFeeWei: bigint): BlockEconomyRecord => ({
+      ...emptyRecord(n),
+      gasFullPct: 50,
+      receiptReverts: 0,
+      delegationTargets: undefined,
+      blobBaseFeeWei,
+    })
+
+    // Flat 1 wei across 8 blocks must NOT fire
+    const flatRing = [8n, 7n, 6n, 5n, 4n, 3n, 2n, 1n].map((n) => base(n, 1n))
+    const flatOut = detectEconomySignals({
+      ring: flatRing,
+      macroBuckets: [],
+      macroBaseline: { bucketCount: 0 },
+      slotTracker: tracker,
+      chainId: 1n,
+    })
+    expect(flatOut.some((s) => s.kind === 'l2_blob_pressure')).toBe(false)
+
+    // Falling fees (ring[0] newest = 10, ring[1] = 20, ring[2] = 30, ring[3] = 40) must NOT fire
+    const fallingRing = [10n, 20n, 30n, 40n, 50n].map((fee, i) => base(100n - BigInt(i), fee))
+    const fallingOut = detectEconomySignals({
+      ring: fallingRing,
+      macroBuckets: [],
+      macroBaseline: { bucketCount: 0 },
+      slotTracker: tracker,
+      chainId: 1n,
+    })
+    expect(fallingOut.some((s) => s.kind === 'l2_blob_pressure')).toBe(false)
+
+    // Strictly climbing fees (ring[0] newest = 50 > 40 > 30 > 20 > 10) MUST fire
+    const climbingRing = [50n, 40n, 30n, 20n, 10n].map((fee, i) => base(100n - BigInt(i), fee))
+    const climbingOut = detectEconomySignals({
+      ring: climbingRing,
+      macroBuckets: [],
+      macroBaseline: { bucketCount: 0 },
+      slotTracker: tracker,
+      chainId: 1n,
+    })
+    expect(climbingOut.some((s) => s.kind === 'l2_blob_pressure')).toBe(true)
+  })
+
+  it('does not false-positive contract_surge without a macro baseline', () => {
+    const tracker = new SlotTrendTracker()
+    const ring: BlockEconomyRecord[] = [
+      {
+        ...emptyRecord(10n),
+        gasFullPct: 50,
+        receiptReverts: 0,
+        delegationTargets: undefined,
+        gasUsedByContract: [
+          { address: '0x00000000000000000000000000000000000000bb', gasUsed: 250_000n },
+        ],
+      },
+    ]
+    const out = detectEconomySignals({
+      ring,
+      macroBuckets: [],
+      macroBaseline: { bucketCount: 0 },
+      slotTracker: tracker,
+      chainId: 1n,
+    })
+    expect(out.some((s) => s.kind === 'contract_surge')).toBe(false)
+  })
 })

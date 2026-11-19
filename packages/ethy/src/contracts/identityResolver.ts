@@ -1,8 +1,9 @@
 import type { ChainConfig } from '@ethereumjs/common'
 
-import { bytesToHex, hexToBytes } from '@ethereumjs/util'
+import { bytesToBigInt, bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { ethyKeccak256 } from '../crypto/keccak.ts'
 import type { EthySandbox } from '../evm/sandbox.ts'
+import { quantityHex } from '../rpc/quantities.ts'
 import type { EthySpine } from '../spine/types.ts'
 
 const NAME_SEL = hexToBytes('0x06fdde03')
@@ -111,8 +112,8 @@ export class IdentityResolver {
     const outcome = await this.sandbox.runEthCall(
       {
         to: contract,
-        data: `0x${bytesToHex(data)}` as `0x${string}`,
-        gas: CALL_GAS,
+        data: bytesToHex(data),
+        gas: quantityHex(CALL_GAS),
       },
       undefined,
     )
@@ -135,7 +136,12 @@ export class IdentityResolver {
       ENS_REGISTRY_MAINNET,
       concatCall(RESOLVER_SEL, forwardNode),
     )
-    if (forwardResolver === undefined) return undefined
+    if (
+      forwardResolver === undefined ||
+      forwardResolver === '0x0000000000000000000000000000000000000000'
+    ) {
+      return undefined
+    }
     const forwardAddr = await this.ethCallAddress(
       forwardResolver,
       concatCall(ADDR_SEL, forwardNode),
@@ -150,8 +156,8 @@ export class IdentityResolver {
     const outcome = await this.sandbox.runEthCall(
       {
         to: contract,
-        data: `0x${bytesToHex(data)}` as `0x${string}`,
-        gas: CALL_GAS,
+        data: bytesToHex(data),
+        gas: quantityHex(CALL_GAS),
       },
       undefined,
     )
@@ -161,7 +167,7 @@ export class IdentityResolver {
     const raw = hexToBytes(hex as `0x${string}`)
     if (raw.length < 32) return undefined
     const word = raw.subarray(raw.length - 20)
-    return `0x${bytesToHex(word)}`.toLowerCase()
+    return bytesToHex(word).toLowerCase()
   }
 }
 
@@ -172,16 +178,16 @@ function concatCall(sel: Uint8Array, node: Uint8Array): Uint8Array {
   return out
 }
 
-function decodeAbiString(ret: Uint8Array): string | undefined {
+export function decodeAbiString(ret: Uint8Array): string | undefined {
   if (ret.length === 32) {
     const text = asciiFromBytes32(ret)
     return text !== undefined ? text : undefined
   }
   if (ret.length < 64) return undefined
   try {
-    const offset = Number(BigInt(`0x${bytesToHex(ret.subarray(0, 32))}`))
+    const offset = Number(bytesToBigInt(ret.subarray(0, 32)))
     if (offset + 32 > ret.length) return undefined
-    const len = Number(BigInt(`0x${bytesToHex(ret.subarray(offset, offset + 32))}`))
+    const len = Number(bytesToBigInt(ret.subarray(offset, offset + 32)))
     const start = offset + 32
     if (start + len > ret.length) return undefined
     const slice = ret.subarray(start, start + len)

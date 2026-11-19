@@ -615,4 +615,76 @@ describe('[Ethy/TUI]: prompt reducer', () => {
     assert.include(frame, '30303')
     assert.notInclude(frame, 'f1e12475…')
   })
+
+  it('renders Chain Dispatch cards with zero embedded newlines and exact cols/rows', () => {
+    const spine = createSpine('sepolia', 11155111n)
+    spine.aiMode = 'local'
+    spine.economy = { hasBlocks: true, topContracts: [], recentBlocks: [] }
+    const view = {
+      ...createInitialViewState(spine),
+      aiOverviewSections: {
+        dispatches: [
+          {
+            category: '7702',
+            severity: 'surge',
+            headline: 'Unusual EIP-7702 proxy delegation wave targeting unknown delegate contract',
+            body: '19 EOAs delegated to 0x1234 which forwards calls to 0x5678 across the last 8 blocks.',
+            suggestedAction: '/contract 0x1234',
+            blockNumber: '12124001',
+            atMs: Date.now(),
+          },
+        ],
+      },
+    }
+    const lines = renderFrame(spine, view, 100, 30)
+    assert.equal(lines.length, 30)
+    for (const ln of lines) {
+      assert.isFalse(ln.includes('\n'))
+      assert.equal(visibleWidth(ln), 100)
+    }
+  })
+
+  it('onboarding up/down escapes Option 3 model list and M toggles sharePromptHistory', async () => {
+    const { buildOnboardingWidget, reduceOnboardingKey } = await import(
+      '../src/tui/aiOnboardingSession.ts'
+    )
+    const spine = createSpine('sepolia', 11155111n)
+    const widget = {
+      ...buildOnboardingWidget({
+        totalRamBytes: 16 * 1024 ** 3,
+        freeRamBytes: 8 * 1024 ** 3,
+        lowHardware: false,
+        platform: 'darwin',
+        arch: 'arm64',
+      }),
+      selectedOption: 2,
+      selectedLocalIndex: 0,
+      discoveredModels: [
+        {
+          provider: 'ollama' as const,
+          baseUrl: 'http://127.0.0.1:11434',
+          modelId: 'm1',
+          label: 'ollama · m1',
+        },
+        {
+          provider: 'ollama' as const,
+          baseUrl: 'http://127.0.0.1:11434',
+          modelId: 'm2',
+          label: 'ollama · m2',
+        },
+      ],
+    }
+    let view = { ...createInitialViewState(spine), activeWidget: widget, aiOnboardingActive: true }
+    // Up at localIndex 0 escapes back to Option 2 (index 1)
+    const up = reduceOnboardingKey(view, { type: 'up' })!
+    assert.equal(
+      up.view.activeWidget?.kind === 'ai_onboarding' ? up.view.activeWidget.selectedOption : -1,
+      1,
+    )
+    // Toggle M on Option 3 and commit
+    const toggled = reduceOnboardingKey(view, { type: 'char', ch: 'm' })!
+    const committed = reduceOnboardingKey(toggled.view, { type: 'enter' })!
+    assert.equal(committed.committed?.mode, 'local')
+    assert.equal(committed.committed?.sharePromptHistory, true)
+  })
 })

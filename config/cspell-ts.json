@@ -680,6 +680,12 @@
     "ethy",
     "Ethy",
     "Ollama",
-    "ollama"
+    "ollama",
+    "statfs",
+    "bavail",
+    "qwen",
+    "nomic",
+    "mxbai",
+    "minilm"
   ]
 }

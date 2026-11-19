@@ -235,7 +235,9 @@ export function renderAiOverviewSections(
   }
   const dispatchList = sections?.dispatches
   if (dispatchList !== undefined && dispatchList.length > 0 && spine.economy?.hasBlocks === true) {
-    const wrapW = Math.max(8, innerWidth - 4)
+    const padCols = 2
+    const wrapW = Math.max(8, innerWidth - padCols * 2)
+    const pad = ' '.repeat(padCols)
     const blocks: string[] = []
     for (const card of dispatchList.slice(0, 2)) {
       const badge = categoryBadge(card)
@@ -244,15 +246,21 @@ export function renderAiOverviewSections(
         card.blockNumber !== undefined
           ? `${DIM}#${card.blockNumber}${RESET}`
           : `${DIM}${Math.round((Date.now() - card.atMs) / 1000)}s ago${RESET}`
-      blocks.push(wrapSectionText(`${head}  ${age}`, wrapW).join('\n'))
-      blocks.push('')
-      blocks.push(...wrapSectionText(card.body, wrapW))
+      for (const ln of wrapSectionText(`${head}  ${age}`, wrapW)) {
+        blocks.push(`${pad}${ln}`)
+      }
+      for (const ln of wrapSectionText(card.body, wrapW)) {
+        blocks.push(`${pad}${ln}`)
+      }
       if (card.suggestedAction !== undefined) {
-        blocks.push(`${DIM}› ${card.suggestedAction}${RESET}`)
+        for (const ln of wrapSectionText(`› ${card.suggestedAction}`, wrapW)) {
+          blocks.push(`${pad}${DIM}${ln}${RESET}`)
+        }
       }
       blocks.push('')
     }
     const body = blocks.filter((b, i, arr) => !(b === '' && arr[i + 1] === ''))
+    if (body[body.length - 1] === '') body.pop()
     const topPad = Math.max(0, Math.floor((innerLines - body.length) / 2))
     const rows: string[] = []
     for (let i = 0; i < innerLines; i++) {

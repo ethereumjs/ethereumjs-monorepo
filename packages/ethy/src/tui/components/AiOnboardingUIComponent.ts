@@ -1,7 +1,7 @@
 import { formatRamGiB } from '../../ai/hardwareCheck.ts'
 import { DEFAULT_MANAGED_MODEL_SPEC } from '../../ai/managedModel.ts'
 import type { WidgetSpec } from '../../spine/types.ts'
-import { BOLD, DIM, FG, RESET } from '../ansi.ts'
+import { BOLD, DIM, FG, RESET, visibleWidth } from '../ansi.ts'
 import { fixedLine } from '../layout.ts'
 
 function optionLine(
@@ -15,7 +15,7 @@ function optionLine(
   const head = `${mark} ${BOLD}${n}. ${title}${RESET}`
   const sub = `${DIM}${subtitle}${RESET}`
   const combined = `${head}  ${sub}`
-  if (combined.length <= innerWidth) return fixedLine(combined, innerWidth)
+  if (visibleWidth(combined) <= innerWidth) return fixedLine(combined, innerWidth)
   return fixedLine(head, innerWidth)
 }
 
@@ -101,6 +101,17 @@ export function renderAiOnboardingUIComponent(
     push(
       `${DIM}Default embedded runner lands in WP-10d — Ollama bridge used when the recommended family is installed.${RESET}`,
     )
+  }
+
+  if (selected !== 1) {
+    const shareOn = widget.sharePromptHistory === true
+    push('')
+    push(
+      `${DIM}Session prompt history for AI follow-ups (RAM-only): ${RESET}${BOLD}${shareOn ? 'ON' : 'OFF'}${RESET}${DIM}  (press M to toggle · Enter to confirm)${RESET}`,
+    )
+  } else {
+    push('')
+    push(`${DIM}Press Enter to continue without AI (change anytime via /ai)${RESET}`)
   }
 
   while (lines.length < maxBodyLines) {

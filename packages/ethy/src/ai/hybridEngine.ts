@@ -9,6 +9,7 @@ import type { AiRuntimeController } from './aiRuntime.ts'
 import { DeterministicIntentEngine } from './deterministicEngine.ts'
 import type { LlmTransport } from './fixtureEngine.ts'
 import type { IntentEngine, IntentRequest, IntentResult } from './intentEngine.ts'
+import type { InvestigationJournal } from './investigationJournal.ts'
 import { probeLlmHealth } from './llmClient.ts'
 import { LocalHttpIntentEngine } from './localHttpEngine.ts'
 import { discoverAllLocalModels, matchDiscoveredModel } from './localProviders.ts'
@@ -29,6 +30,7 @@ export type HybridIntentEngineOpts = {
   economy?: ETHEconomyDataManager
   chain?: ChainConfig
   sandbox?: EthySandbox
+  journal?: InvestigationJournal
 }
 
 const AI_OFF_HINT = 'Commands start with / — press Tab for /help, or run /ai to enable a model'
@@ -38,6 +40,9 @@ export class HybridIntentEngine implements IntentEngine {
   private readonly snapStore?: SnapPivotStore
   private readonly economy?: ETHEconomyDataManager
   private readonly chain?: ChainConfig
+  private readonly sandbox?: EthySandbox
+  private readonly journal?: InvestigationJournal
+  private disconnectPeerFn?: (peerId: string) => void
   private readonly deterministic: DeterministicIntentEngine
   private local?: LocalHttpIntentEngine
   private readonly memory: TurnMemoryRing
@@ -55,6 +60,8 @@ export class HybridIntentEngine implements IntentEngine {
     this.snapStore = opts.snapStore
     this.economy = opts.economy
     this.chain = opts.chain
+    this.sandbox = opts.sandbox
+    this.journal = opts.journal
     this.memoryMode = opts.memoryMode ?? 'ephemeral'
     this.memory = new TurnMemoryRing()
     this.deterministic = new DeterministicIntentEngine({
@@ -75,6 +82,8 @@ export class HybridIntentEngine implements IntentEngine {
         getTurns: () => (this.memoryMode === 'ephemeral' ? this.memory.snapshot() : []),
         economy: opts.economy,
         chain: opts.chain,
+        sandbox: opts.sandbox,
+        journal: opts.journal,
       })
     }
   }
@@ -97,10 +106,13 @@ export class HybridIntentEngine implements IntentEngine {
       transport,
       stateManager: this.stateManager,
       snapStore: this.snapStore,
+      disconnectPeer: this.disconnectPeerFn,
       fallback: this.deterministic,
       getTurns: () => (this.memoryMode === 'ephemeral' ? this.memory.snapshot() : []),
       economy: this.economy,
       chain: this.chain,
+      sandbox: this.sandbox,
+      journal: this.journal,
     })
     void opts?.model
   }
@@ -114,6 +126,7 @@ export class HybridIntentEngine implements IntentEngine {
   }
 
   setDisconnectPeer(fn: (peerId: string) => void): void {
+    this.disconnectPeerFn = fn
     this.deterministic.setDisconnectPeer(fn)
     this.local?.setDisconnectPeer(fn)
   }

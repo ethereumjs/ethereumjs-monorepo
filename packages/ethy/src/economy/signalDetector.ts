@@ -148,47 +148,62 @@ export function detectEconomySignals(input: DetectEconomySignalsInput): SignalCa
     }
   }
 
-  // contract_surge — top gas vs macro top
-  const gasWindow = new Map<string, bigint>()
+  // contract_surge — compare per-block average gas vs macro baseline per-block average
+  const gasWindow = new Map<string, { gas: bigint; blocks: number }>()
   for (const b of ring) {
     if (b.gasUsedByContract === undefined) continue
     for (const row of b.gasUsedByContract) {
-      gasWindow.set(row.address, (gasWindow.get(row.address) ?? 0n) + row.gasUsed)
+      const prev = gasWindow.get(row.address) ?? { gas: 0n, blocks: 0 }
+      prev.gas += row.gasUsed
+      prev.blocks += 1
+      gasWindow.set(row.address, prev)
     }
   }
-  const topGas = [...gasWindow.entries()].sort((a, b) => (b[1] > a[1] ? 1 : -1))[0]
-  if (topGas !== undefined) {
-    const [addr, gas] = topGas
+  const topGas = [...gasWindow.entries()].sort((a, b) => (b[1].gas > a[1].gas ? 1 : -1))[0]
+  if (topGas !== undefined && input.macroBuckets.length >= 1) {
+    const [addr, stat] = topGas
+    const recentPerBlock = stat.gas / BigInt(Math.max(1, ring.length))
+    const macroSlice = input.macroBuckets.slice(0, 12)
     let macroGas = 0n
-    for (const bucket of input.macroBuckets.slice(0, 12)) {
+    for (const bucket of macroSlice) {
       for (const [a, g] of bucket.topContractGas) {
         if (a === addr) macroGas += g
       }
     }
-    const threshold = macroGas > 0n ? macroGas * 3n : gas / 2n
-    if (gas > threshold && gas > 100_000n) {
+    const macroBlocks = BigInt(Math.max(1, macroSlice.length * 8))
+    const macroPerBlock = macroGas / macroBlocks
+    const isKnownSurge =
+      macroPerBlock > 0n && recentPerBlock >= macroPerBlock * 3n && stat.gas > 100_000n
+    const isBreakoutEntrant =
+      macroGas === 0n && macroSlice.length >= 2 && stat.blocks >= 2 && stat.gas >= 2_000_000n
+    if (isKnownSurge || isBreakoutEntrant) {
       const name = knownContractName(chainId, addr)
       pushCandidate(
         out,
         'contract_surge',
         70,
-        name !== undefined ? `${name} gas spike` : `Contract gas share spike`,
-        ECONOMY_WINDOW_BLOCKS,
-        { gas: gas.toString() },
+        name !== undefined ? `${name} gas spike` : 'Contract gas share spike',
+        Math.min(ring.length, ECONOMY_WINDOW_BLOCKS),
+        { gas: stat.gas.toString() },
         addr,
       )
     }
   }
 
-  // l2_blob_pressure
+  // l2_blob_pressure — ring[0] is newest, so climbing means newer > older (strictly rising)
   let blobFeeStreak = 0
-  let prevBlobFee: bigint | undefined
+  let prevNewerBlobFee: bigint | undefined
   for (let i = 0; i < Math.min(ring.length, 8); i++) {
     const fee = ring[i]?.blobBaseFeeWei
     if (fee === undefined) break
-    if (prevBlobFee !== undefined && fee >= prevBlobFee) blobFeeStreak += 1
-    else blobFeeStreak = 0
-    prevBlobFee = fee
+    if (prevNewerBlobFee !== undefined) {
+      if (prevNewerBlobFee > fee) {
+        blobFeeStreak += 1
+      } else {
+        break
+      }
+    }
+    prevNewerBlobFee = fee
   }
   const curBlob = latest.blobBaseFeeWei
   const baseBlob = macroBaseline.avgBlobBaseFeeWei

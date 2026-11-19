@@ -195,6 +195,7 @@ export function createEthyNode(opts: CreateEthyNodeOptions): EthyNode {
       economy,
       chain,
       sandbox,
+      journal: investigationJournal,
     })
     intentEngine = hybridEngine
   }
@@ -210,6 +211,7 @@ export function createEthyNode(opts: CreateEthyNodeOptions): EthyNode {
       economy,
       chain,
       sandbox,
+      journal: investigationJournal,
     })
   }
   intentEngine = hybridEngine

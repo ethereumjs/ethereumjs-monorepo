@@ -37,67 +37,53 @@ export function signalsDeepViewWidget(spine: EthySpine): WidgetSpec {
       String(snap.windowBlockCount ?? 64),
     ])
   }
-  const debug = macroBaselineDebugRows(snap)
+  const debugEntries = macroBaselineDebugEntries(snap)
   return {
     kind: 'table',
     title: 'Live signals (Layer 1)',
     headers: ['Severity', 'Kind', 'Headline', 'Target', 'Window'],
     rows,
     preface,
-    secondaryTable:
-      debug.rows.length > 0
-        ? {
-            title: 'Macro baseline (Ctrl+D)',
-            headers: debug.headers,
-            rows: debug.rows,
-          }
+    debugPage:
+      debugEntries.length > 0
+        ? [{ title: 'Macro baseline (~2.5h)', entries: debugEntries }]
         : undefined,
   }
 }
 
-function macroBaselineDebugRows(snap: NonNullable<EthySpine['economy']>): {
-  headers: string[]
-  rows: string[][]
-} {
+function macroBaselineDebugEntries(
+  snap: NonNullable<EthySpine['economy']>,
+): Array<{ key: string; value: string }> {
   const baseline = snap.macroBaseline
-  const latestFee = snap.baseFeeGwei
-  const headers = ['Metric', 'Latest / window', '~2.5h baseline']
-  const rows: string[][] = []
-  if (baseline === undefined) return { headers, rows }
-  rows.push([
-    'Base fee',
-    latestFee ?? '—',
-    baseline.avgBaseFeeWei !== undefined ? formatBaseFeeNumber(baseline.avgBaseFeeWei) : '—',
-  ])
-  rows.push([
-    'Blob base fee',
-    snap.blobBaseFeeGwei ?? '—',
-    baseline.avgBlobBaseFeeWei !== undefined
-      ? formatBaseFeeNumber(baseline.avgBlobBaseFeeWei)
-      : '—',
-  ])
-  rows.push([
-    'Gas fullness',
-    snap.gasFullPct !== undefined ? `${snap.gasFullPct}%` : '—',
-    baseline.avgGasFullPct !== undefined ? `${baseline.avgGasFullPct}%` : '—',
-  ])
-  rows.push([
-    'Revert %',
-    snap.windowRevertPct !== undefined ? `${snap.windowRevertPct}%` : '—',
-    baseline.avgRevertPct !== undefined ? `${baseline.avgRevertPct}%` : '—',
-  ])
-  rows.push([
-    'EIP-7702 tx/bucket',
-    snap.txTypeSplit?.setCode !== undefined ? String(snap.txTypeSplit.setCode) : '—',
-    baseline.avgSetCodeTxCount !== undefined ? String(baseline.avgSetCodeTxCount) : '—',
-  ])
+  if (baseline === undefined) return []
+  const latestFee = snap.baseFeeGwei ?? '—'
+  const baseFeeAvg =
+    baseline.avgBaseFeeWei !== undefined ? formatBaseFeeNumber(baseline.avgBaseFeeWei) : '—'
+  const blobFeeAvg =
+    baseline.avgBlobBaseFeeWei !== undefined ? formatBaseFeeNumber(baseline.avgBlobBaseFeeWei) : '—'
+  const entries: Array<{ key: string; value: string }> = [
+    { key: 'Buckets', value: `${baseline.bucketCount} × 8 blk` },
+    { key: 'Base fee', value: `${latestFee} (baseline ${baseFeeAvg})` },
+    { key: 'Blob base fee', value: `${snap.blobBaseFeeGwei ?? '—'} (baseline ${blobFeeAvg})` },
+    {
+      key: 'Gas fullness',
+      value: `${snap.gasFullPct !== undefined ? `${snap.gasFullPct}%` : '—'} (baseline ${baseline.avgGasFullPct !== undefined ? `${baseline.avgGasFullPct}%` : '—'})`,
+    },
+    {
+      key: 'Revert %',
+      value: `${snap.windowRevertPct !== undefined ? `${snap.windowRevertPct}%` : '—'} (baseline ${baseline.avgRevertPct !== undefined ? `${baseline.avgRevertPct}%` : '—'})`,
+    },
+    {
+      key: 'EIP-7702 tx/bkt',
+      value: `${snap.txTypeSplit?.setCode ?? 0} latest (baseline ${baseline.avgSetCodeTxCount ?? '—'})`,
+    },
+  ]
   if (snap.l2RollupStats !== undefined && snap.l2RollupStats[0] !== undefined) {
     const top = snap.l2RollupStats[0]
-    rows.push([
-      'L2 blob spend (est.)',
-      formatEthFromWei(top.estimatedEthWei),
-      `${baseline.bucketCount} buckets`,
-    ])
+    entries.push({
+      key: 'Top L2 blob spend',
+      value: `${top.displayName ?? shortAddress(top.inbox)} · ${formatEthFromWei(top.estimatedEthWei)}`,
+    })
   }
-  return { headers, rows }
+  return entries
 }

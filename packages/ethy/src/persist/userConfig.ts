@@ -109,13 +109,12 @@ export function writeUserConfig(dataDir: string | undefined, ai: EthyAiConfig): 
   fs.renameSync(tmp, file)
 }
 
-function cliTouchesAi(cli: EthyCliArgs): boolean {
+function cliTouchesAiMode(cli: EthyCliArgs): boolean {
   return (
     cli.aiMode !== undefined ||
     cli.noAi === true ||
     cli.ollama !== undefined ||
-    cli.llmUrl !== undefined ||
-    cli.aiSetup === true
+    cli.llmUrl !== undefined
   )
 }
 
@@ -168,7 +167,16 @@ function aiConfigFromCli(cli: EthyCliArgs): EthyAiConfig {
 }
 
 export function mergeAiMemory(base: EthyAiConfig, cli: EthyCliArgs): EthyAiConfig {
-  return { ...base, memory: cli.aiMemory }
+  const next: EthyAiConfig = { ...base }
+  if (cli.aiMemoryExplicit === true) {
+    next.memory = cli.aiMemory
+  } else if (next.memory === undefined) {
+    next.memory = cli.aiMemory
+  }
+  if (cli.aiSharePrompts === true) {
+    next.sharePromptHistory = true
+  }
+  return next
 }
 
 /**
@@ -180,9 +188,9 @@ export function resolveEffectiveAiConfig(
   env: ResolveEnv,
 ): EffectiveAiResolution {
   const savedAi = saved?.ai
-  const hasCliAi = cliTouchesAi(cli)
+  const hasCliAiMode = cliTouchesAiMode(cli)
 
-  if (hasCliAi) {
+  if (hasCliAiMode) {
     const effective = aiConfigFromCli(cli)
     const persistOnBoot = cli.aiSave === true || (savedAi === undefined && cli.noSave !== true)
     return {
@@ -193,19 +201,37 @@ export function resolveEffectiveAiConfig(
     }
   }
 
+  if (cli.aiSetup === true) {
+    const base =
+      savedAi !== undefined
+        ? mergeAiMemory(savedAi, cli)
+        : { mode: 'off' as const, memory: cli.aiMemory }
+    return {
+      effective: base,
+      showOnboarding: env.isTTY && !cli.headless && !cli.demo,
+      persistOnBoot: false,
+      sessionOnly: cli.noSave === true,
+    }
+  }
+
   if (savedAi !== undefined) {
     const effective = mergeAiMemory(savedAi, cli)
+    const persistOnBoot = cli.aiSave === true && cli.noSave !== true
     return {
       effective,
       showOnboarding: false,
-      persistOnBoot: false,
+      persistOnBoot,
       sessionOnly: false,
     }
   }
 
   if (env.isTTY && !cli.demo && !cli.headless) {
     return {
-      effective: { mode: 'off', memory: cli.aiMemory },
+      effective: {
+        mode: 'off',
+        memory: cli.aiMemory,
+        ...(cli.aiSharePrompts === true ? { sharePromptHistory: true } : {}),
+      },
       showOnboarding: true,
       persistOnBoot: false,
       sessionOnly: false,
@@ -213,7 +239,11 @@ export function resolveEffectiveAiConfig(
   }
 
   return {
-    effective: { mode: 'off', memory: cli.aiMemory },
+    effective: {
+      mode: 'off',
+      memory: cli.aiMemory,
+      ...(cli.aiSharePrompts === true ? { sharePromptHistory: true } : {}),
+    },
     showOnboarding: false,
     persistOnBoot: false,
     sessionOnly: false,

@@ -86,4 +86,22 @@ describe('[Ethy/persist]: userConfig', () => {
     assert.equal(a.network, 'mainnet')
     assert.equal(a.ollama, true)
   })
+
+  it('resolveEffectiveAiConfig() preserves saved memory: off and saved mode on --ai-setup', () => {
+    const saved = {
+      schemaVersion: 1 as const,
+      updatedAt: '',
+      ai: { mode: 'local' as const, model: 'qwen3:4b', memory: 'off' as const },
+    }
+    const plain = resolveEffectiveAiConfig(saved, baseCli(), { isTTY: true })
+    assert.equal(plain.effective.memory, 'off')
+    assert.equal(plain.effective.mode, 'local')
+
+    const setup = resolveEffectiveAiConfig(saved, parseEthyArgs(['node', 'ethy', '--ai-setup']), {
+      isTTY: true,
+    })
+    assert.isTrue(setup.showOnboarding)
+    assert.equal(setup.effective.mode, 'local')
+    assert.isFalse(setup.persistOnBoot)
+  })
 })

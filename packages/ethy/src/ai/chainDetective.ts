@@ -193,10 +193,17 @@ export class ChainDetectiveNarrator {
     })
   }
 
+  noteBlocksReady(spine: EthySpine): void {
+    this.spineRef = spine
+    this.ctx.spine = spine
+    if (this.lastDispatchBlock === 0n && spine.economy?.hasBlocks === true) {
+      void this.runCycle('welcome')
+    }
+  }
+
   private publishDispatches(cards: ChainDispatchCard[]): void {
-    const prior = this.journal.snapshot(1)[0]
-    const dispatches =
-      prior !== undefined && cards[0] !== undefined ? [cards[0], prior] : cards.slice(0, 2)
+    const fromJournal = this.journal.snapshot(2)
+    const dispatches = fromJournal.length > 0 ? [...fromJournal] : cards.slice(0, 2)
     this.onOverview({ dispatches })
   }
 

@@ -24,6 +24,8 @@ export interface EthyCliArgs {
   llmModel?: string
   llmAllowRemote: boolean
   aiMemory: EthyAiMemory
+  /** True when `--ai-memory` or `--no-ai-history` was explicitly passed on CLI. */
+  aiMemoryExplicit?: boolean
   recordFixturePath?: string
   /** `--ai default|off|local` */
   aiMode?: EthyAiModeCli
@@ -56,6 +58,7 @@ export function parseEthyArgs(argv: string[]): EthyCliArgs {
   let llmModel: string | undefined
   let llmAllowRemote = false
   let aiMemory: EthyAiMemory = 'ephemeral'
+  let aiMemoryExplicit = false
   let recordFixturePath: string | undefined
   let aiMode: EthyAiModeCli | undefined
   let noAi = false
@@ -155,10 +158,12 @@ export function parseEthyArgs(argv: string[]): EthyCliArgs {
         throw new Error('--ai-memory must be ephemeral or off')
       }
       aiMemory = next
+      aiMemoryExplicit = true
       continue
     }
     if (a === '--no-ai-history') {
       aiMemory = 'off'
+      aiMemoryExplicit = true
       continue
     }
     if (a === '--ai-share-prompts') {
@@ -237,6 +242,7 @@ export function parseEthyArgs(argv: string[]): EthyCliArgs {
     llmModel,
     llmAllowRemote,
     aiMemory,
+    aiMemoryExplicit,
     recordFixturePath,
     aiMode,
     noAi,

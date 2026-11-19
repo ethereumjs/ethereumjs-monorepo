@@ -30,19 +30,22 @@ export function reduceOnboardingKey(
 
   let selected = w.selectedOption ?? w.initialOption ?? 0
   let localIdx = w.selectedLocalIndex ?? 0
+  let sharePromptHistory = w.sharePromptHistory === true
   const models = w.discoveredModels ?? []
 
   if (action.type === 'up') {
-    if (selected === 2 && models.length > 0) {
-      localIdx = (localIdx - 1 + models.length) % models.length
+    if (selected === 2 && models.length > 0 && localIdx > 0) {
+      localIdx -= 1
     } else {
       selected = (selected - 1 + 3) % 3
+      localIdx = selected === 2 && models.length > 0 ? models.length - 1 : 0
     }
   } else if (action.type === 'down') {
-    if (selected === 2 && models.length > 0) {
-      localIdx = (localIdx + 1) % models.length
+    if (selected === 2 && models.length > 0 && localIdx < models.length - 1) {
+      localIdx += 1
     } else {
       selected = (selected + 1) % 3
+      localIdx = 0
     }
   } else if (
     action.type === 'char' &&
@@ -50,8 +53,13 @@ export function reduceOnboardingKey(
   ) {
     selected = Number.parseInt(action.ch, 10) - 1
     localIdx = 0
+  } else if (action.type === 'char' && (action.ch === 'm' || action.ch === 'M')) {
+    sharePromptHistory = !sharePromptHistory
   } else if (action.type === 'enter') {
-    return { view, committed: configForOnboardingChoice(w, selected, localIdx) }
+    return {
+      view,
+      committed: configForOnboardingChoice(w, selected, localIdx, sharePromptHistory),
+    }
   } else {
     return undefined
   }
@@ -63,6 +71,7 @@ export function reduceOnboardingKey(
         ...w,
         selectedOption: selected,
         selectedLocalIndex: localIdx,
+        sharePromptHistory,
       },
     },
   }
@@ -72,7 +81,9 @@ export function configForOnboardingChoice(
   widget: Extract<WidgetSpec, { kind: 'ai_onboarding' }>,
   option: number,
   localIndex: number,
+  sharePromptHistory = widget.sharePromptHistory === true,
 ): EthyAiConfig {
+  const shareField = sharePromptHistory ? { sharePromptHistory: true as const } : {}
   if (option === 1) {
     return { mode: 'off', memory: 'ephemeral' }
   }
@@ -88,6 +99,7 @@ export function configForOnboardingChoice(
       baseUrl: hit.baseUrl,
       model: hit.modelId,
       memory: 'ephemeral',
+      ...shareField,
     }
   }
   const names = (widget.discoveredModels ?? []).map((m) => m.modelId)
@@ -101,10 +113,11 @@ export function configForOnboardingChoice(
         baseUrl: hit.baseUrl,
         model: hit.modelId,
         memory: 'ephemeral',
+        ...shareField,
       }
     }
   }
-  return { mode: 'default', memory: 'ephemeral' }
+  return { mode: 'default', memory: 'ephemeral', ...shareField }
 }
 
 export async function hydrateOnboardingDiscovery(

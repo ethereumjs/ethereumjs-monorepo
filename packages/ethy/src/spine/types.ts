@@ -378,6 +378,7 @@ export type WidgetSpec =
       initialOption?: number
       selectedOption?: number
       selectedLocalIndex?: number
+      sharePromptHistory?: boolean
       discoveredModels?: DiscoveredLocalModel[]
       hardware?: HardwareSnapshot
       statusNote?: string
