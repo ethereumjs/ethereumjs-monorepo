@@ -291,6 +291,20 @@ Every Work Package delivers a **runnable, observable, and live-testable incremen
                                           │ WP-10c: Layer 2 Chain-Detective LLM,    │
                                           │         Bounded Investigation Toolbelt, │
                                           │         Dispatch Feed & Prompt Consent  │
+                                          └───────────────────┬─────────────────────┘
+                                                              │
+                                                              ▼
+                                          ┌─────────────────────────────────────────┐
+                                          │ WP-10d: Default Model (Qwen3.5-2B) —    │
+                                          │         GGUF Store, Local Runner, Live  │
+                                          │         Hot-Start & ai:smoke Testing    │
+                                          └───────────────────┬─────────────────────┘
+                                                              │
+                                                              ▼ (Optional Future)
+                                          ┌─────────────────────────────────────────┐
+                                          │ WP-10e..10g: Optional Eval Bake-Off,    │
+                                          │         ~30 MB LoRA Diffset + KV-Cache, │
+                                          │         Zero-CPU Watch Rules & Lenses   │
                                           └─────────────────────────────────────────┘
 ```
 
