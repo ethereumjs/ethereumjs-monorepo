@@ -131,8 +131,25 @@ describe('[Ethy/TUI]: renderFrame', () => {
     assertFrameFits(renderFrame(spine, view, 80, 24), 80, 24)
   })
 
+  it('renderFrame() omits AI pill when aiMode is off', () => {
+    const spine = createSpine('sepolia', 11155111n)
+    spine.aiMode = 'off'
+    const top = stripAnsi(renderFrame(spine, createInitialViewState(), 100, 30)[0] ?? '')
+    assert.notMatch(top, / AI/)
+  })
+
+  it('renderFrame() full-width interaction when aiMode is off', () => {
+    const spine = createSpine('sepolia', 11155111n)
+    spine.aiMode = 'off'
+    const lines = renderFrame(spine, createInitialViewState(), 120, 30)
+    const joined = stripAnsi(lines.join('\n'))
+    assert.notInclude(joined, '● AI')
+    assert.notInclude(joined, '◐ AI')
+  })
+
   it('renderFrame() shows Ethy version and fixed capability columns on top row', () => {
     const spine = createSpine('sepolia', 11155111n)
+    spine.aiMode = 'local'
     setPhase(spine, 'HEAD_FOLLOWING')
     const lines = renderFrame(spine, createInitialViewState(), 100, 30)
     const top = stripAnsi(lines[0] ?? '')
@@ -294,6 +311,7 @@ describe('[Ethy/TUI]: renderFrame', () => {
 
   it('renderFrame() starts on centered Welcome start page and Tab help opens economy commands without polluting history', () => {
     const spine = createSpine('sepolia', 11155111n)
+    spine.aiMode = 'local'
     const startView = createInitialViewState(spine)
     assert.equal(startView.activeWidget?.kind, 'start_page')
     assert.equal(startView.showingHelp, false)
@@ -422,6 +440,7 @@ describe('[Ethy/TUI]: renderFrame', () => {
 
   it('renderFrame() keeps all 3 domain paragraphs visible when focusNote targets economy and openDomainHelp clears focusNote', () => {
     const spine = createSpine('sepolia', 11155111n)
+    spine.aiMode = 'local'
     let view = createInitialViewState(spine)
     view.aiOverviewSections = mergeOverviewFocus(
       {

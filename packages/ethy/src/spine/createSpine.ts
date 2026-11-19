@@ -60,8 +60,18 @@ function deriveP2pCapability(spine: EthySpine): void {
 }
 
 function deriveAiCapability(spine: EthySpine): void {
+  if (spine.aiMode === 'off') {
+    spine.capabilities.ai = { status: 'locked', label: 'No AI' }
+    return
+  }
+  if (spine.aiMode === 'default') {
+    spine.capabilities.ai = { status: 'partial', label: 'Default (WP-10d)' }
+    return
+  }
   if (spine.llmPulseReady === true) {
     spine.capabilities.ai = { status: 'ready', label: 'Local LLM' }
+  } else if (spine.aiMode === 'local') {
+    spine.capabilities.ai = { status: 'partial', label: 'Local LLM' }
   } else {
     spine.capabilities.ai = { status: 'partial', label: 'Slash/Rule' }
   }
@@ -84,6 +94,7 @@ export function createSpine(network: string, chainId: bigint): EthySpine {
     syncTransport: 'unset',
     ethyBucketsBitmask: 0,
     currentSlot: 0,
+    aiMode: 'off',
     capabilities: {
       state: { status: 'locked', label: 'Starting' },
       economy: { status: 'locked', label: 'No blocks' },

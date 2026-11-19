@@ -10,6 +10,7 @@ import { DOMAIN_ORDER } from '../spine/types.ts'
 import { helpDomainLabel } from '../tools/help.ts'
 import { BOLD, DIM, RESET, visibleWidth } from './ansi.ts'
 import { capabilityMark } from './capabilityMark.ts'
+import { renderAiOnboardingUIComponent } from './components/AiOnboardingUIComponent.ts'
 import { renderDebugPageUIComponent } from './components/DebugPageUIComponent.ts'
 import {
   type DomainHelpColumnMetrics,
@@ -136,6 +137,9 @@ export function renderInteractionWidgetBody(
         pushLines(renderLiveHeadPlazaUIComponent(spine, w, budget, tick, colMetrics))
       }
       break
+    case 'ai_onboarding':
+      pushLines(renderAiOnboardingUIComponent(widget, w, budget))
+      break
   }
 
   return lines
@@ -181,9 +185,15 @@ export function interactionViewTitle(
   } else {
     base = `${BOLD}Interaction${RESET}`
   }
+  if (widget?.kind === 'ai_onboarding') {
+    return `${BOLD}Choose AI Mode${RESET}`
+  }
   if (widget?.kind === 'domain_help') {
     if (widget.unified === true) {
-      base = `${BOLD}/help · Commands & AI${RESET}`
+      base =
+        spine?.aiMode === 'off'
+          ? `${BOLD}/help · Commands${RESET}`
+          : `${BOLD}/help · Commands & AI${RESET}`
     } else if (spine !== undefined && widget.domain !== undefined) {
       const mark = capabilityMark(widget.domain, spine.capabilities[widget.domain].status)
       base = `${mark} ${BOLD}/help · ${helpDomainLabel(widget.domain)}${RESET}`

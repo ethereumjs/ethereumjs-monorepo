@@ -678,6 +678,8 @@
     "IMPLS",
     "impls",
     "ethy",
-    "Ethy"
+    "Ethy",
+    "Ollama",
+    "ollama"
   ]
 }

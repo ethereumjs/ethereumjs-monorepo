@@ -2,6 +2,7 @@ import { stdin as input, stdout as output } from 'node:process'
 import readline from 'node:readline'
 
 import type { SlashDispatchCtx } from '../ai/deterministicEngine.ts'
+import { probeHardware } from '../ai/hardwareCheck.ts'
 import {
   buildDeterministicOverviewSections,
   clampOverviewSections,
@@ -14,6 +15,12 @@ import { chainConfigForNetwork } from '../net/chainHardfork.ts'
 import { describeNotice } from '../notify/board.ts'
 import type { AiOverviewSections, InteractionHistoryEntry, TuiViewState } from '../spine/types.ts'
 import { parseHelpDomainArg } from '../tools/help.ts'
+import {
+  applyOnboardingCommit,
+  buildOnboardingWidget,
+  hydrateOnboardingDiscovery,
+  reduceOnboardingKey,
+} from './aiOnboardingSession.ts'
 import {
   ALT_SCREEN_OFF,
   ALT_SCREEN_ON,
@@ -45,7 +52,12 @@ function isHelpCommand(line: string): boolean {
   return cmd === '/help' || cmd === '/h'
 }
 
-export async function runEthySession(node: EthyNode): Promise<void> {
+export type EthySessionOpts = {
+  showOnboarding?: boolean
+  sessionNoSave?: boolean
+}
+
+export async function runEthySession(node: EthyNode, opts?: EthySessionOpts): Promise<void> {
   const demoStart = Date.now()
   let view = createInitialViewState(node.spine)
   let lastQuerySlot: number | undefined
@@ -56,7 +68,24 @@ export async function runEthySession(node: EthyNode): Promise<void> {
   let lastAllBucketsDone = node.spine.snapBuckets.every((b) => b.status === 'done')
   let lastOverviewMs = Date.now()
   const OVERVIEW_INTERVAL_MS = 30_000
-  const llmConfigured = node.llm !== undefined
+  const llmConfigured = node.spine.aiMode !== 'off' && node.llm !== undefined
+
+  if (opts?.showOnboarding === true && node.aiRuntime !== undefined) {
+    const hw = probeHardware(node.dataDir ?? node.snapStore?.root ?? process.cwd())
+    const onboarding = buildOnboardingWidget(hw)
+    view = {
+      ...view,
+      aiOnboardingActive: true,
+      activeWidget: onboarding,
+      interactionPage: 'main',
+    }
+    void hydrateOnboardingDiscovery(onboarding).then((hydrated) => {
+      if (view.activeWidget?.kind === 'ai_onboarding') {
+        view = { ...view, activeWidget: hydrated }
+        draw()
+      }
+    })
+  }
   let intentGeneration = 0
   let savedOverviewSections: AiOverviewSections | undefined
   let pulseNarrator: AiPulseNarrator | undefined
@@ -136,23 +165,23 @@ export async function runEthySession(node: EthyNode): Promise<void> {
     const now = Date.now()
     const hasBlocks = node.spine.economy?.hasBlocks === true
     const allBucketsDone = node.spine.snapBuckets.every((b) => b.status === 'done')
-    if (!llmConfigured) {
-      if (
-        node.spine.phase !== lastPhase ||
-        hasBlocks !== lastEconomyHasBlocks ||
-        allBucketsDone !== lastAllBucketsDone
-      ) {
-        lastPhase = node.spine.phase
-        lastEconomyHasBlocks = hasBlocks
-        lastAllBucketsDone = allBucketsDone
-        refreshOverview('pulse')
-        lastOverviewMs = now
-      } else if (now - lastOverviewMs >= OVERVIEW_INTERVAL_MS) {
-        refreshOverview('pulse')
-        lastOverviewMs = now
-      }
-    } else {
-      if (
+    if (node.spine.aiMode !== 'off') {
+      if (!llmConfigured) {
+        if (
+          node.spine.phase !== lastPhase ||
+          hasBlocks !== lastEconomyHasBlocks ||
+          allBucketsDone !== lastAllBucketsDone
+        ) {
+          lastPhase = node.spine.phase
+          lastEconomyHasBlocks = hasBlocks
+          lastAllBucketsDone = allBucketsDone
+          refreshOverview('pulse')
+          lastOverviewMs = now
+        } else if (now - lastOverviewMs >= OVERVIEW_INTERVAL_MS) {
+          refreshOverview('pulse')
+          lastOverviewMs = now
+        }
+      } else if (
         node.spine.phase !== lastPhase ||
         hasBlocks !== lastEconomyHasBlocks ||
         allBucketsDone !== lastAllBucketsDone
@@ -222,6 +251,17 @@ export async function runEthySession(node: EthyNode): Promise<void> {
       interactionTitle: isNl ? result.viewTitle : undefined,
       aiOverviewSections: nextSections,
       showingHelp: false,
+      aiOnboardingActive: result.openOnboarding === true ? true : view.aiOnboardingActive,
+    }
+    if (result.openOnboarding === true && result.widget.kind === 'ai_onboarding') {
+      void hydrateOnboardingDiscovery(result.widget).then((hydrated) => {
+        view = { ...view, activeWidget: hydrated }
+        draw()
+      })
+    }
+    if (result.aiLayoutRefresh === true && node.spine.aiMode === 'off') {
+      pulseNarrator?.stop()
+      pulseNarrator = undefined
     }
     if (isNl) {
       const entry: InteractionHistoryEntry = {
@@ -255,7 +295,7 @@ export async function runEthySession(node: EthyNode): Promise<void> {
       draw()
       return
     }
-    if (isNl) {
+    if (isNl && node.spine.aiMode !== 'off') {
       pulseNarrator?.abortInFlight()
       if (view.aiOverviewSections?.focusNote === undefined) {
         savedOverviewSections = view.aiOverviewSections
@@ -292,7 +332,10 @@ export async function runEthySession(node: EthyNode): Promise<void> {
       })
   }
 
-  if (llmConfigured && node.llm !== undefined && !node.demo && !node.headless) {
+  const startPulseNarrator = () => {
+    if (node.demo || node.headless) return
+    if (node.spine.aiMode === 'off' || node.llm === undefined) return
+    pulseNarrator?.stop()
     pulseNarrator = new AiPulseNarrator({
       transport: node.llm.transport,
       onOverview: (sections) => {
@@ -304,6 +347,10 @@ export async function runEthySession(node: EthyNode): Promise<void> {
       },
     })
     pulseNarrator.start(node.spine)
+  }
+
+  if (llmConfigured) {
+    startPulseNarrator()
   }
 
   draw()
@@ -336,6 +383,31 @@ export async function runEthySession(node: EthyNode): Promise<void> {
           continue
         }
         dirty = true
+        const onboardingStep = reduceOnboardingKey(view, action)
+        if (onboardingStep !== undefined) {
+          if (onboardingStep.committed !== undefined && node.aiRuntime !== undefined) {
+            void applyOnboardingCommit(
+              node.aiRuntime,
+              onboardingStep.committed,
+              opts?.sessionNoSave === true,
+            ).then(() => {
+              view = {
+                ...onboardingStep.view,
+                aiOnboardingActive: false,
+                activeWidget: { kind: 'start_page' },
+              }
+              if (node.spine.aiMode !== 'off' && node.llm !== undefined) {
+                startPulseNarrator()
+              }
+              draw()
+            })
+          } else {
+            view = onboardingStep.view
+          }
+          dirty = true
+          if (dirty) draw()
+          continue
+        }
         const {
           view: nextView,
           submittedLine,

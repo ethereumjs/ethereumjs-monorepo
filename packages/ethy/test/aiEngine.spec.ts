@@ -2,11 +2,17 @@ import { assert, describe, it, vi } from 'vitest'
 
 import { createFlatStateManager } from '@ethereumjs/statemanager'
 
+import type { AiRuntimeController } from '../src/ai/aiRuntime.ts'
 import { buildCompactDomainContext } from '../src/ai/compactContext.ts'
 import { composeViewFromRequest } from '../src/ai/composeView.ts'
 import { FixtureReplayTransport } from '../src/ai/fixtureEngine.ts'
 import { HybridIntentEngine } from '../src/ai/hybridEngine.ts'
-import { assertLlmBaseUrl, normalizeLlmBase, parseLlmJSONObject } from '../src/ai/llmClient.ts'
+import {
+  assertLlmBaseUrl,
+  normalizeLlmBase,
+  parseLlmJSONObject,
+  stripThinkingBlocks,
+} from '../src/ai/llmClient.ts'
 import { LocalHttpIntentEngine } from '../src/ai/localHttpEngine.ts'
 import {
   MAX_AI_TOTAL_CHARS,
@@ -35,6 +41,13 @@ describe('[Ethy/AI]: llm client', () => {
     assert.equal(obj.overviewText, 'hi')
     const rawProse = parseLlmJSONObject('Sure! {"overviewText":"hello"}')
     assert.equal(rawProse.overviewText, 'hello')
+  })
+
+  it('stripThinkingBlocks removes leading reasoning wrapper', () => {
+    const open = String.fromCharCode(60) + 'think' + String.fromCharCode(62)
+    const close = String.fromCharCode(60) + '/' + 'think' + String.fromCharCode(62)
+    const raw = `${open}reasoning tokens${close}{"ok":true}`
+    assert.equal(stripThinkingBlocks(raw), '{"ok":true}')
   })
 
   it('normalizeLlmBase strips trailing /v1 so /v1/models does not double', () => {
@@ -163,6 +176,36 @@ describe('[Ethy/AI]: turn memory', () => {
     }
     assert.equal(ring.snapshot().length, 3)
     assert.equal(ring.snapshot()[0]?.userQuery, 'q2')
+  })
+})
+
+describe('[Ethy/AI]: hybrid ai mode', () => {
+  it('/ai off switches spine aiMode not memory ring', async () => {
+    const spine = createSpine('sepolia', 11155111n)
+    spine.aiMode = 'local'
+    const engine = new HybridIntentEngine({ stateManager: createFlatStateManager() })
+    const runtime: AiRuntimeController = {
+      getConfig: () => ({ mode: 'local' }),
+      setAiConfig: async (next) => {
+        spine.aiMode = next.mode
+      },
+      refreshAiCapability: async () => {},
+    }
+    engine.attachAiRuntime(runtime, false)
+    const r = await engine.handle({ text: '/ai off', spine })
+    assert.equal(spine.aiMode, 'off')
+    assert.equal(r.widget.kind, 'key_value')
+    if (r.widget.kind === 'key_value') {
+      assert.include(r.widget.title ?? '', 'AI disabled')
+    }
+  })
+
+  it('natural language is rejected when aiMode is off', async () => {
+    const spine = createSpine('sepolia', 11155111n)
+    spine.aiMode = 'off'
+    const engine = new HybridIntentEngine({ stateManager: createFlatStateManager() })
+    const r = await engine.handle({ text: 'show peers', spine })
+    assert.equal(r.widget.kind, 'key_value')
   })
 })
 

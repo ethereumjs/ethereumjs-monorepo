@@ -1,10 +1,12 @@
+import type { LocalLlmProviderKind } from '../persist/userConfig.ts'
+
 export type LlmCompletionKind = 'pulse' | 'intent'
 
 const PULSE_TIMEOUT_MS = 8_000
 const INTENT_TIMEOUT_MS = 12_000
 const HEALTH_TIMEOUT_MS = 1_500
 
-const LOOPBACK_HOSTS = new Set(['127.0.0.1', 'localhost', '::1', '[::1]'])
+const LOOPBACK_HOSTS = new Set(['127.0.0.1', 'localhost', '::1'])
 
 export function assertLlmBaseUrl(baseUrl: string, allowRemote: boolean): URL {
   let url: URL
@@ -29,6 +31,15 @@ export function normalizeLlmBase(url: URL): string {
   return `${url.origin}${path}`.replace(/\/$/, '')
 }
 
+export function isOllamaBase(base: string): boolean {
+  try {
+    const u = new URL(base)
+    return u.port === '11434' || (u.hostname === '127.0.0.1' && u.port === '')
+  } catch {
+    return base.includes(':11434')
+  }
+}
+
 async function fetchWithTimeout(
   input: string,
   init: RequestInit,
@@ -47,8 +58,21 @@ async function fetchWithTimeout(
   }
 }
 
-export async function probeLlmHealth(base: string, signal?: AbortSignal): Promise<boolean> {
+export async function probeLlmHealth(
+  base: string,
+  provider?: LocalLlmProviderKind,
+  signal?: AbortSignal,
+): Promise<boolean> {
   try {
+    if (provider === 'ollama' || (provider === undefined && isOllamaBase(base))) {
+      const res = await fetchWithTimeout(
+        `${base}/api/tags`,
+        { method: 'GET' },
+        HEALTH_TIMEOUT_MS,
+        signal,
+      )
+      return res.ok
+    }
     const res = await fetchWithTimeout(
       `${base}/v1/models`,
       { method: 'GET' },
@@ -63,24 +87,88 @@ export async function probeLlmHealth(base: string, signal?: AbortSignal): Promis
 
 export type ChatMessage = { role: 'system' | 'user'; content: string }
 
+export type PostChatOpts = {
+  model?: string
+  provider?: LocalLlmProviderKind
+}
+
+function maxPredictTokens(kind: LlmCompletionKind): number {
+  return kind === 'pulse' ? 256 : 600
+}
+
+async function postOllamaChat(
+  base: string,
+  kind: LlmCompletionKind,
+  messages: ChatMessage[],
+  model: string,
+  signal?: AbortSignal,
+): Promise<string> {
+  const timeout = kind === 'pulse' ? PULSE_TIMEOUT_MS : INTENT_TIMEOUT_MS
+  const res = await fetchWithTimeout(
+    `${base}/api/chat`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model,
+        messages,
+        stream: false,
+        format: 'json',
+        think: false,
+        options: {
+          num_predict: maxPredictTokens(kind),
+          temperature: kind === 'pulse' ? 0.35 : 0.1,
+        },
+      }),
+    },
+    timeout,
+    signal,
+  )
+  if (!res.ok) {
+    throw new Error(`LLM HTTP ${res.status}`)
+  }
+  const json = (await res.json()) as { message?: { content?: string } }
+  const text = json.message?.content
+  if (text === undefined || text.length === 0) {
+    throw new Error('LLM returned empty content')
+  }
+  return text
+}
+
 export async function postChatCompletion(
   base: string,
   kind: LlmCompletionKind,
   messages: ChatMessage[],
   signal?: AbortSignal,
+  opts?: PostChatOpts,
 ): Promise<string> {
+  const provider = opts?.provider
+  const model = opts?.model
+  if (
+    provider === 'ollama' ||
+    (provider === undefined && isOllamaBase(base) && model !== undefined)
+  ) {
+    if (model === undefined) {
+      throw new Error('Ollama requires a model name')
+    }
+    return postOllamaChat(base, kind, messages, model, signal)
+  }
+
   const timeout = kind === 'pulse' ? PULSE_TIMEOUT_MS : INTENT_TIMEOUT_MS
+  const body: Record<string, unknown> = {
+    messages,
+    temperature: kind === 'pulse' ? 0.35 : 0.1,
+    max_tokens: maxPredictTokens(kind),
+    response_format: { type: 'json_object' },
+  }
+  if (model !== undefined) body.model = model
+
   const res = await fetchWithTimeout(
     `${base}/v1/chat/completions`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        messages,
-        temperature: kind === 'pulse' ? 0.35 : 0.1,
-        max_tokens: kind === 'pulse' ? 120 : 600,
-        response_format: { type: 'json_object' },
-      }),
+      body: JSON.stringify(body),
     },
     timeout,
     signal,
@@ -98,9 +186,25 @@ export async function postChatCompletion(
   return text
 }
 
+/** Remove optional reasoning blocks before JSON extraction. */
+export function stripThinkingBlocks(raw: string): string {
+  let text = raw.trim()
+  const open = String.fromCharCode(60) + 'think' + String.fromCharCode(62)
+  const close = String.fromCharCode(60) + '/' + 'think' + String.fromCharCode(62)
+  if (text.toLowerCase().startsWith(open)) {
+    const closeIdx = text.toLowerCase().indexOf(close)
+    if (closeIdx >= 0) {
+      text = text.slice(closeIdx + close.length).trim()
+    } else {
+      text = ''
+    }
+  }
+  return text
+}
+
 /** Strip optional markdown fences and parse JSON object from model output. */
 export function parseLlmJSONObject(raw: string): Record<string, unknown> {
-  let text = raw.trim()
+  let text = stripThinkingBlocks(raw)
   const fence = /```(?:json)?\s*([\s\S]*?)```/i.exec(text)
   if (fence !== null) {
     text = fence[1]!.trim()

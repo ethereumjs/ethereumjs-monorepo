@@ -1,7 +1,10 @@
 import type { WorkerDiscoverySnapshot, WorkerServingSnapshot } from '@ethereumjs/devp2p'
 import type { BALJSONBlockAccessList } from '@ethereumjs/util'
 
+import type { HardwareSnapshot } from '../ai/hardwareCheck.ts'
+import type { DiscoveredLocalModel } from '../ai/localProviders.ts'
 import type { EconomySnapshot } from '../economy/types.ts'
+import type { EthyAiMode } from '../persist/userConfig.ts'
 
 export type CapabilityId = 'state' | 'economy' | 'p2p'
 
@@ -150,6 +153,8 @@ export interface EthySpine {
   pivotBridging?: PivotBridgingProgress
   /** Set after a heal that held accounts, or when the previous pivot still has unloaded journals. */
   pivotCarry?: PivotCarry
+  /** Effective AI runtime mode (WP-10a). */
+  aiMode: EthyAiMode
   /** `--demo` uses {@link currentSlot} as a synthetic clock in the capability bar. */
   demoClock?: boolean
   headBlockNumber?: bigint
@@ -350,9 +355,22 @@ export type WidgetSpec =
       kind: 'live_plaza'
       debugPage?: DebugSectionSpec[]
     }
+  | {
+      kind: 'ai_onboarding'
+      /** 0 = default, 1 = no AI, 2 = local */
+      initialOption?: number
+      selectedOption?: number
+      selectedLocalIndex?: number
+      discoveredModels?: DiscoveredLocalModel[]
+      hardware?: HardwareSnapshot
+      statusNote?: string
+      debugPage?: DebugSectionSpec[]
+    }
 
 export interface TuiViewState {
   activeDomain: CapabilityId
+  /** When true, first-run onboarding is required before normal prompt routing (WP-10a). */
+  aiOnboardingActive?: boolean
   activeWidget: WidgetSpec | null
   interactionPage: InteractionPage
   /** Three-domain situational prose for the full-height AI box (refreshed in session). */

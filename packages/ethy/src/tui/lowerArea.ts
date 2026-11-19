@@ -28,6 +28,13 @@ function buildVariableBox(
   return renderBox(boxW, title, body, titleRight, bottomRight)
 }
 
+export function isInteractionFullWidth(spine: EthySpine, view: TuiViewState): boolean {
+  if (spine.aiMode === 'off') return true
+  if (view.aiOnboardingActive === true) return true
+  const w = view.activeWidget
+  return w?.kind === 'ai_onboarding'
+}
+
 export function renderLowerArea(
   spine: EthySpine,
   view: TuiViewState,
@@ -35,7 +42,8 @@ export function renderLowerArea(
   fillRows: number,
 ): string[] {
   const [w0, w1, w2] = cockpitColumnWidths(contentWidth)
-  const leftW = w0 + COCKPIT_COLUMN_GAP + w1
+  const fullWidth = isInteractionFullWidth(spine, view)
+  const leftW = fullWidth ? contentWidth : w0 + COCKPIT_COLUMN_GAP + w1
   const rightW = w2
   const gap = ' '.repeat(COCKPIT_COLUMN_GAP)
 
@@ -73,6 +81,15 @@ export function renderLowerArea(
         ? `${DIM}Ctrl+D debug${RESET}`
         : undefined
   const leftBox = buildVariableBox(leftW, fillRows, title, titleRight, bodyLines, bottomRight)
+
+  if (fullWidth) {
+    while (leftBox.length < fillRows) leftBox.push(fixedLine('', leftW))
+    const out: string[] = []
+    for (let i = 0; i < fillRows; i++) {
+      out.push(fixedLine(leftBox[i] ?? '', contentWidth))
+    }
+    return out
+  }
 
   const aiMark = capabilityMark('ai', spine.capabilities.ai.status)
   const aiTitle = `${aiMark} ${BOLD}AI${RESET}`

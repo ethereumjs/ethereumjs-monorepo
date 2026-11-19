@@ -252,6 +252,9 @@ export function buildHelpWidget(spine: EthySpine): WidgetSpec {
         { command: '/rpc', detail: 'JSON-RPC status & methods' },
         { command: '/diag', detail: 'Diagnostic ring buffer' },
         { command: '/send <txHex> · /drop <id>', detail: 'Broadcast tx or drop peer' },
+        ...(spine.aiMode === 'off'
+          ? [{ command: '/ai', detail: 'Configure or enable AI mode' }]
+          : []),
       ],
     },
   ]
@@ -259,7 +262,7 @@ export function buildHelpWidget(spine: EthySpine): WidgetSpec {
     kind: 'domain_help',
     unified: true,
     sections,
-    aiExamples: UNIFIED_AI_EXAMPLES,
+    aiExamples: spine.aiMode === 'off' ? undefined : UNIFIED_AI_EXAMPLES,
     debugPage: unifiedHelpDebugPage(spine),
   }
 }

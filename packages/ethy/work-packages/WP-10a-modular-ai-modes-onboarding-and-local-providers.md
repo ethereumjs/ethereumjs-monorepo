@@ -1,6 +1,6 @@
 # WP-10a: Modular AI Runtime Modes (`default` · `off` · `local`), First-Run TUI Onboarding, Full-Width `No AI` Cockpit, Persistent User Config & Zero-Friction Local Providers (`Ollama` / OpenAI Loopback)
 
-- **Status:** `READY_FOR_PLANNING`
+- **Status:** `DONE`
 - **Series:** `WP-10` — Next-Generation LLM Integration, Capabilities & Model Strategy
   - **`WP-10a` (this package):** Modular AI runtime modes (`default` / `off` / `local`), first-open TUI choice & `/ai` live switcher, persistent `<dataDir>/config.json` with session-override CLI semantics, full-width `No AI` TUI layout, hardware feasibility probe, and zero-friction local model connectors (`Ollama` auto-discovery + OpenAI-compatible loopback fixes).
   - **`WP-10b` (Layer 1):** Deterministic Ethereum signal engine, multi-horizon time series, EIP-7702/L2-blob/BAL-slot analytics, anomaly detection, and local `name()`/`symbol()` + ENS reverse identity resolution.
@@ -154,20 +154,20 @@ When effective `spine.aiMode === 'off'` (and while the user is on the initial `a
 
 ### 1.3 Acceptance Criteria (`WP-10a`)
 
-- [ ] **Zero new runtime dependencies** added to `packages/ethy/package.json`.
-- [ ] **Persistent `<dataDir>/config.json` & CLI Precedence:**
+- [x] **Zero new runtime dependencies** added to `packages/ethy/package.json`.
+- [x] **Persistent `<dataDir>/config.json` & CLI Precedence:**
   - First interactive launch without `config.json` or `--ai*` flags opens `AiOnboardingUIComponent` inside the TUI while P2P/sync runs uninterrupted in the background, and saves the chosen mode to `<dataDir>/config.json`.
   - Subsequent `ethy` launches boot directly into the saved mode without prompting; `--fresh` preserves `config.json`.
   - CLI flags (`--no-ai`, `--ai off|local|default`, `--ollama [model]`, `--llm-url <url> --llm-model <id>`, `--ai-save`, `--ai-setup`) obey the session-override vs. first-run/explicit-save rules, and `--headless` never blocks on onboarding.
-- [ ] **Full-Width `No AI` Mode (`aiMode === 'off'`):**
+- [x] **Full-Width `No AI` Mode (`aiMode === 'off'`):**
   - `renderLowerArea` omits the right `AI` box and renders the Interaction View across the full 3-column `contentWidth` (`visibleWidth === cols` across `80..160` cols).
   - Top bar omits the `AI` pill; `StartPageUIComponent` and unified `/help` omit AI examples/copy; non-`/` prompt submissions show a calm slash-command hint without invoking fuzzy NL matching or background timers.
-- [ ] **Zero-Friction `Ollama` & OpenAI-Compatible Local Model Support:**
+- [x] **Zero-Friction `Ollama` & OpenAI-Compatible Local Model Support:**
   - Auto-discovers running local Ollama models (`:11434/api/tags`, filtering out embedding models) and OpenAI-compatible loopback servers (`:1234`, `:8080`).
   - Fixes missing `model` parameter, suppresses/strips `<think>...</think>` blocks on Qwen 3 / reasoning models, and raises pulse output token cap from `120` to `256` so 3-domain JSON overviews (`<= 600` chars) never truncate.
-- [ ] **Live `/ai` Switching & Hardware Check:**
+- [x] **Live `/ai` Switching & Hardware Check:**
   - `/ai` (`/ai off`, `/ai local [model]`, `/ai setup`) transitions layout and active engine live inside a running session; low-RAM machines (`< 6 GiB`) pre-select `No AI` on first open.
-- [ ] **100% Offline Deterministic Tests & Gates:**
+- [x] **100% Offline Deterministic Tests & Gates:**
   - Unit & virtual-framebuffer tests cover config precedence, full-width vs split-width `renderFrame` geometry, onboarding key handling (`1`/`2`/`3`, `↑`/`↓`, `Enter`), mocked Ollama `/api/tags` + `/api/chat` (`think: false`), `<think>` stripping, and live `/ai` mode toggling.
   - `npm run tsc`, `npm test`, and `npm run spellcheck` pass in `@ethereumjs/ethy`.
 
@@ -175,10 +175,29 @@ When effective `spine.aiMode === 'off'` (and while the user is on the initial `a
 
 ## 2. Concrete Implementation Plan (Planner — Grok 4.7)
 
-*(To be filled out by Planner — Grok 4.7 when assigned.)*
+### Design locks
+
+- `/ai off` is **AI mode** `off` (memory ring uses `/ai stateless` and `/ai ephemeral`).
+- Embedded default runner remains **WP-10d**; Option 1 bridges via Ollama family match when present.
+- `sharePromptHistory` is schema-only until WP-10c.
+
+### Modules & wiring
+
+| Area | Files |
+| --- | --- |
+| Config | `src/persist/userConfig.ts`, `src/cli/args.ts`, `src/cli/main.ts` |
+| Runtime | `src/ai/aiRuntime.ts`, `src/core/createEthyNode.ts`, `spine.aiMode` |
+| Providers | `src/ai/localProviders.ts`, `src/ai/llmClient.ts`, `src/ai/fixtureEngine.ts` |
+| TUI | `src/tui/lowerArea.ts`, `renderFrame.ts`, `AiOnboardingUIComponent.ts`, `aiOnboardingSession.ts`, `session.ts` |
+| `/ai` | `src/ai/hybridEngine.ts` |
+| Placeholder default | `src/ai/managedModel.ts` |
+
+### Tests
+
+`test/userConfig.spec.ts`, `hardwareCheck.spec.ts`, `localProviders.spec.ts`; extensions to `aiEngine.spec.ts`, `tui.spec.ts`, `args.spec.ts`.
 
 ---
 
 ## 3. Implementation Notes & Deviations (Implementer — Composer 2.5)
 
-*(To be filled out by Implementer — Composer 2.5 when implemented.)*
+- **2026-11-19:** Shipped WP-10a end-to-end. `EthySpine.aiMode` defaults `off` (full-width interaction + no AI pill). `/ai` redefined for mode switching; `AiRuntimeController` hot-wires `HybridIntentEngine` transport. Ollama uses native `/api/chat` with `think: false` and `format: json`; pulse `num_predict` / `max_tokens` floor **256**. `cspell-ts`: `Ollama` / `ollama`.
