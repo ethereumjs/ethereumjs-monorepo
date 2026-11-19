@@ -37,6 +37,7 @@ export interface ManagedAiState {
   progressPct?: number
   downloadedBytes?: number
   totalBytes?: number
+  bytesPerSec?: number
   detail?: string
   label?: string
 }

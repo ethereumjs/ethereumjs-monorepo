@@ -1,6 +1,9 @@
 import * as crypto from 'node:crypto'
 import * as fs from 'node:fs'
 import * as path from 'node:path'
+import { Readable } from 'node:stream'
+import { pipeline } from 'node:stream/promises'
+import type { ReadableStream as NodeWebReadableStream } from 'node:stream/web'
 
 import { resolveEthyDataDir } from '../persist/ethyDataRoot.ts'
 import { ggufMagicAt } from './ggufValidate.ts'
@@ -11,6 +14,7 @@ export type ModelDownloadProgress = {
   downloadedBytes: number
   totalBytes: number
   pct: number
+  bytesPerSec?: number
 }
 
 export type EnsureManagedModelOpts = {
@@ -24,7 +28,8 @@ export type EnsureManagedModelOpts = {
 }
 
 const DISK_BUFFER_BYTES = 512 * 1024 * 1024
-const PROGRESS_THROTTLE_MS = 250
+const PROGRESS_THROTTLE_MS = 300
+const WRITE_HIGH_WATER_MARK = 4 * 1024 * 1024
 
 export function modelsDir(dataDir?: string): string {
   return path.join(resolveEthyDataDir(dataDir), 'models')
@@ -98,37 +103,6 @@ export class ModelDownloadAbortedError extends Error {
   }
 }
 
-/** Write a single chunk to an open WriteStream respecting backpressure. */
-function writeChunk(stream: fs.WriteStream, chunk: Uint8Array): Promise<void> {
-  return new Promise((resolve, reject) => {
-    if (stream.write(chunk)) {
-      resolve()
-      return
-    }
-    const onDrain = () => {
-      cleanup()
-      resolve()
-    }
-    const onError = (err: Error) => {
-      cleanup()
-      reject(err)
-    }
-    const cleanup = () => {
-      stream.off('drain', onDrain)
-      stream.off('error', onError)
-    }
-    stream.once('drain', onDrain)
-    stream.once('error', onError)
-  })
-}
-
-function closeStream(stream: fs.WriteStream): Promise<void> {
-  return new Promise((resolve, reject) => {
-    stream.once('error', reject)
-    stream.end(() => resolve())
-  })
-}
-
 export async function ensureManagedModel(
   spec: ManagedModelSpec,
   opts: EnsureManagedModelOpts = {},
@@ -152,13 +126,17 @@ export async function ensureManagedModel(
   let offset = fs.existsSync(part) ? fs.statSync(part).size : 0
   let totalBytes = spec.expectedBytes
   let lastProgressMs = 0
+  const transferStartMs = Date.now()
+  let transferBytes = 0
 
   const emitProgress = (downloaded: number, force = false) => {
     const now = Date.now()
     if (!force && now - lastProgressMs < PROGRESS_THROTTLE_MS) return
     lastProgressMs = now
+    const elapsedSec = Math.max(0.1, (now - transferStartMs) / 1000)
+    const bytesPerSec = transferBytes > 0 ? Math.round(transferBytes / elapsedSec) : undefined
     const pct = totalBytes > 0 ? Math.min(100, Math.round((downloaded / totalBytes) * 100)) : 0
-    opts.onProgress?.({ downloadedBytes: downloaded, totalBytes, pct })
+    opts.onProgress?.({ downloadedBytes: downloaded, totalBytes, pct, bytesPerSec })
   }
 
   const throwIfAborted = () => {
@@ -208,33 +186,34 @@ export async function ensureManagedModel(
     }
 
     const append = res.status === 206 && fs.existsSync(part)
-    const outStream = fs.createWriteStream(part, { flags: append ? 'a' : 'w' })
+    const outStream = fs.createWriteStream(part, {
+      flags: append ? 'a' : 'w',
+      highWaterMark: WRITE_HIGH_WATER_MARK,
+    })
     let downloaded = offset
     try {
       if (res.body === null) {
         const buf = new Uint8Array(await res.arrayBuffer())
         throwIfAborted()
-        await writeChunk(outStream, buf)
+        outStream.end(buf)
+        await new Promise<void>((resolve, reject) => {
+          outStream.once('error', reject)
+          outStream.once('finish', () => resolve())
+        })
+        transferBytes += buf.length
         downloaded += buf.length
         emitProgress(downloaded, true)
       } else {
-        const reader = res.body.getReader()
-        try {
-          while (true) {
-            throwIfAborted()
-            const { done, value } = await reader.read()
-            if (done) break
-            if (value !== undefined && value.length > 0) {
-              await writeChunk(outStream, value)
-              downloaded += value.length
-              emitProgress(downloaded, false)
-            }
-          }
-        } finally {
-          reader.releaseLock()
-        }
+        const src = Readable.fromWeb(res.body as unknown as NodeWebReadableStream, {
+          highWaterMark: WRITE_HIGH_WATER_MARK,
+        })
+        src.on('data', (chunk: Buffer | Uint8Array) => {
+          transferBytes += chunk.length
+          downloaded += chunk.length
+          emitProgress(downloaded, false)
+        })
+        await pipeline(src, outStream, { signal: opts.signal })
       }
-      await closeStream(outStream)
     } catch (e) {
       outStream.destroy()
       if (opts.signal?.aborted === true) throw new ModelDownloadAbortedError()

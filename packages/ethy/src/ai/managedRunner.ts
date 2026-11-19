@@ -278,6 +278,7 @@ export function createManagedModelRunner(opts: CreateManagedModelRunnerOpts): Ma
                 progressPct: p.pct,
                 downloadedBytes: p.downloadedBytes,
                 totalBytes: p.totalBytes,
+                bytesPerSec: p.bytesPerSec,
               })
               opts.onPhase({ phase: 'downloading' })
             },
@@ -314,6 +315,7 @@ export function createManagedModelRunner(opts: CreateManagedModelRunnerOpts): Ma
               progressPct: p.pct,
               downloadedBytes: p.downloadedBytes,
               totalBytes: p.totalBytes,
+              bytesPerSec: p.bytesPerSec,
             })
             opts.onPhase({ phase: 'downloading' })
           },

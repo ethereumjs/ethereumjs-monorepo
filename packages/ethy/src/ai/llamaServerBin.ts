@@ -1,6 +1,9 @@
 import { execFileSync } from 'node:child_process'
 import * as fs from 'node:fs'
 import * as path from 'node:path'
+import { Readable } from 'node:stream'
+import { pipeline } from 'node:stream/promises'
+import type { ReadableStream as NodeWebReadableStream } from 'node:stream/web'
 
 import { resolveEthyDataDir } from '../persist/ethyDataRoot.ts'
 import type { ModelDownloadProgress } from './modelStore.ts'
@@ -46,7 +49,8 @@ const RELEASE_ASSETS: Record<string, LlamaServerReleaseAsset> = {
   },
 }
 
-const PROGRESS_THROTTLE_MS = 250
+const PROGRESS_THROTTLE_MS = 300
+const WRITE_HIGH_WATER_MARK = 4 * 1024 * 1024
 
 export function llamaServerAssetForPlatform(
   platform: string = process.platform,
@@ -177,13 +181,16 @@ export async function ensureLlamaServerBin(
   const fetchFn = opts.fetchImpl ?? fetch
   let lastProgressMs = 0
   let totalBytes = asset.expectedBytes
+  const transferStartMs = Date.now()
 
   const emitProgress = (downloaded: number, force = false) => {
     const now = Date.now()
     if (!force && now - lastProgressMs < PROGRESS_THROTTLE_MS) return
     lastProgressMs = now
+    const elapsedSec = Math.max(0.1, (now - transferStartMs) / 1000)
+    const bytesPerSec = downloaded > 0 ? Math.round(downloaded / elapsedSec) : undefined
     const pct = totalBytes > 0 ? Math.min(100, Math.round((downloaded / totalBytes) * 100)) : 0
-    opts.onProgress?.({ downloadedBytes: downloaded, totalBytes, pct })
+    opts.onProgress?.({ downloadedBytes: downloaded, totalBytes, pct, bytesPerSec })
   }
 
   try {
@@ -197,36 +204,27 @@ export async function ensureLlamaServerBin(
       if (parsed > 0) totalBytes = parsed
     }
 
-    const outStream = fs.createWriteStream(archivePath)
+    const outStream = fs.createWriteStream(archivePath, { highWaterMark: WRITE_HIGH_WATER_MARK })
     let downloaded = 0
     try {
       if (res.body === null) {
         const buf = new Uint8Array(await res.arrayBuffer())
-        outStream.write(buf)
+        outStream.end(buf)
+        await new Promise<void>((resolve, reject) => {
+          outStream.once('error', reject)
+          outStream.once('finish', () => resolve())
+        })
         downloaded = buf.length
       } else {
-        const reader = res.body.getReader()
-        try {
-          while (true) {
-            if (opts.signal?.aborted === true) throw new Error('llama-server download aborted')
-            const { done, value } = await reader.read()
-            if (done) break
-            if (value !== undefined && value.length > 0) {
-              if (!outStream.write(value)) {
-                await new Promise<void>((r) => outStream.once('drain', r))
-              }
-              downloaded += value.length
-              emitProgress(downloaded, false)
-            }
-          }
-        } finally {
-          reader.releaseLock()
-        }
+        const src = Readable.fromWeb(res.body as unknown as NodeWebReadableStream, {
+          highWaterMark: WRITE_HIGH_WATER_MARK,
+        })
+        src.on('data', (chunk: Buffer | Uint8Array) => {
+          downloaded += chunk.length
+          emitProgress(downloaded, false)
+        })
+        await pipeline(src, outStream, { signal: opts.signal })
       }
-      await new Promise<void>((resolve, reject) => {
-        outStream.once('error', reject)
-        outStream.end(() => resolve())
-      })
     } catch (e) {
       outStream.destroy()
       throw e
