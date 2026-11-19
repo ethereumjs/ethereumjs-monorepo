@@ -19,6 +19,7 @@ export const SLASH_COMMANDS = [
   '/help',
   '/cl',
   '/economy',
+  '/signals',
   '/contract ',
   '/clear',
   '/ai ',
@@ -28,6 +29,7 @@ const PLAZA_ALIASES = new Set(['/plaza', '/head'])
 
 const SHORT_EXPAND: Record<string, string> = {
   '/e': '/economy',
+  '/si': '/signals',
   '/co': '/contract',
   '/p': '/peers',
   '/b': '/buckets',

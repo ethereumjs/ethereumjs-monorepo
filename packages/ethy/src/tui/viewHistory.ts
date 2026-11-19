@@ -173,6 +173,8 @@ export function inferDomainForCommandOrPrompt(
     cmd === '/head' ||
     cmd === '/economy' ||
     cmd === '/e' ||
+    cmd === '/signals' ||
+    cmd === '/si' ||
     cmd === '/contract' ||
     cmd === '/co'
   ) {

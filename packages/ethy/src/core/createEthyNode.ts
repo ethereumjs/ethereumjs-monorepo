@@ -132,7 +132,6 @@ export function createEthyNode(opts: CreateEthyNodeOptions): EthyNode {
     spine.onDiagnosticRecorded = (entry) => flightRecorder.recordDiagnostic(entry)
     flightRecorder.start()
   }
-  const economy = new ETHEconomyDataManager({ spine, chain, hardfork, stateManager })
   const blockWindow = new RpcBlockWindowStore(chain, hardfork)
   const sandbox = createEthySandbox({
     spine,
@@ -141,6 +140,7 @@ export function createEthyNode(opts: CreateEthyNodeOptions): EthyNode {
     hardfork,
     blockWindow,
   })
+  const economy = new ETHEconomyDataManager({ spine, chain, hardfork, stateManager, sandbox })
 
   const effectiveAi: EthyAiConfig = opts.aiConfig ?? {
     mode: opts.llmUrl !== undefined && opts.llmUrl.length > 0 ? 'local' : 'off',

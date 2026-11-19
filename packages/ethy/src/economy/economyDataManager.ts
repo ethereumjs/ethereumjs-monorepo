@@ -10,14 +10,18 @@ import {
   enrichTopContracts,
   macroArchetypeBucket,
 } from '../contracts/contractIntelligence.ts'
+import { IdentityResolver } from '../contracts/identityResolver.ts'
 import { formatCalldataPreview, formatLogPreview } from '../contracts/localAbi.ts'
 import { TOPIC } from '../contracts/signatureCatalog.ts'
+import type { EthySandbox } from '../evm/sandbox.ts'
 import type { EthySpine } from '../spine/types.ts'
 import type { TwoColumnPair } from '../tui/layout.ts'
 import { economyCockpitPairs } from './cockpitPairs.ts'
 import { decodeBundle } from './decodeBundle.ts'
 import { formatBaseFeeNumber, formatEthFromWei } from './format.ts'
 import { detectBlockMoments } from './momentDetector.ts'
+import { SlotTrendTracker, buildL2RollupStats, detectEconomySignals } from './signalDetector.ts'
+import { MacroRollupRing } from './timeSeries.ts'
 import type { BlockEconomyRecord, BlockMoment, EconomySnapshot, TopContractRow } from './types.ts'
 import {
   ECONOMY_ADDRESS_MAP_CAP,
@@ -55,6 +59,7 @@ export type ETHEconomyDataManagerOpts = {
   chain: ChainConfig
   hardfork: string
   stateManager?: FlatStateManager
+  sandbox?: EthySandbox
 }
 
 function emptyContractAgg(): ContractAddressAgg {
@@ -82,12 +87,20 @@ export class ETHEconomyDataManager {
   private readonly fingerprintCache = createFingerprintCache()
   private newestIngested: bigint | undefined
   private readonly momentFeed: BlockMoment[] = []
+  private readonly macroRing = new MacroRollupRing()
+  private readonly slotTracker = new SlotTrendTracker()
+  private readonly identity: IdentityResolver
 
   constructor(opts: ETHEconomyDataManagerOpts) {
     this.spine = opts.spine
     this.chain = opts.chain
     this.hardfork = opts.hardfork
     this.stateManager = opts.stateManager
+    this.identity = new IdentityResolver({
+      chain: opts.chain,
+      sandbox: opts.sandbox,
+      spine: opts.spine,
+    })
   }
 
   /** Exposed for `/contract` microscope (read-only). */
@@ -108,7 +121,9 @@ export class ETHEconomyDataManager {
       })
       const existingIdx = this.ring.findIndex((r) => r.blockNumber === input.blockNumber)
       if (existingIdx >= 0) {
-        this.revertBlock(this.ring[existingIdx]!)
+        const replaced = this.ring[existingIdx]!
+        this.macroRing.removeBlock(replaced.blockNumber)
+        this.revertBlock(replaced)
         this.ring.splice(existingIdx, 1)
         const blockKey = input.blockNumber.toString()
         for (let i = this.momentFeed.length - 1; i >= 0; i--) {
@@ -122,8 +137,14 @@ export class ETHEconomyDataManager {
       }
       this.applyBlock(record)
       this.applyContractSignals(record)
+      this.macroRing.noteBlock(record)
+      this.slotTracker.noteBlock(record)
       this.ingestMoments(record, input.balJson ?? record.resolvedBalJson)
       this.enforceAddressCap()
+      const hot = record.gasUsedByContract?.map((r) => r.address) ?? []
+      if (hot.length < 2 && record.largestTransferTo !== undefined)
+        hot.push(record.largestTransferTo)
+      this.identity.onBlock(record.blockNumber, hot.slice(0, 8))
       if (this.newestIngested === undefined || input.blockNumber >= this.newestIngested) {
         this.newestIngested = input.blockNumber
       }
@@ -551,6 +572,20 @@ export class ETHEconomyDataManager {
     const trend = this.computeTrend(latest.baseFeeWei)
     const windowStats = this.computeWindowStats()
     const { top: topContracts, archetypeMix } = this.enrichedTopContracts()
+    for (const row of topContracts) {
+      const resolved = this.identity.getKnownName(row.address)
+      if (resolved !== undefined && row.knownName === undefined) row.knownName = resolved
+    }
+    const chainId = BigInt(this.chain.chainId)
+    const macroBaseline = this.macroRing.baseline()
+    const signals = detectEconomySignals({
+      ring: this.ring,
+      macroBuckets: this.macroRing.getBuckets(),
+      macroBaseline,
+      slotTracker: this.slotTracker,
+      chainId,
+    })
+    const l2RollupStats = buildL2RollupStats(this.ring, chainId)
     const snap: EconomySnapshot = {
       hasBlocks: true,
       hasTxBody: latest.hasTxBody,
@@ -561,6 +596,13 @@ export class ETHEconomyDataManager {
       trendPercent: trend.percent,
       gasFullPct: latest.gasFullPct,
       blobGasUsed: latest.blobGasUsed?.toString(),
+      blobBaseFeeGwei:
+        latest.blobBaseFeeWei !== undefined
+          ? formatBaseFeeNumber(latest.blobBaseFeeWei)
+          : undefined,
+      signals,
+      l2RollupStats: l2RollupStats.length > 0 ? l2RollupStats : undefined,
+      macroBaseline,
       txCount: latest.hasTxBody ? latest.txCount : undefined,
       tps: latest.hasTxBody && this.ring.some((b) => b.hasTxBody) ? this.computeTps() : undefined,
       ethTransferredBlockEth:

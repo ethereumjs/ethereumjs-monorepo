@@ -16,10 +16,15 @@ import {
 import { EIP1967_IMPLEMENTATION_SLOT, TOPIC } from '../contracts/signatureCatalog.ts'
 import { ethyKeccak256 } from '../crypto/keccak.ts'
 import type {
+  BlobTxRow,
   BlockContractObservations,
   BlockEconomyRecord,
   ContractBlockContribution,
+  ContractGasRow,
+  ContractRevertRow,
+  DelegationTargetRow,
   LogObservation,
+  SlotWriteRow,
   TxCallObservation,
   TxObservationSlice,
   TxTypeSplit,
@@ -438,6 +443,285 @@ function parseHeaderWithFallback(
   })
 }
 
+const DELEGATION_PREFIX = hexToBytes('0xef0100')
+const MAX_BLOB_TXS = 32
+const MAX_CONTRACT_GAS_ROWS = 32
+const MAX_SLOT_WRITES = 64
+
+function percentileBigInt(sorted: bigint[], pct: number): bigint | undefined {
+  if (sorted.length === 0) return undefined
+  const idx = Math.min(sorted.length - 1, Math.floor((sorted.length - 1) * pct))
+  return sorted[idx]
+}
+
+function topGasAndRevertRows(
+  gasMap: Map<string, bigint>,
+  revMap: Map<string, number>,
+): { gas: ContractGasRow[]; reverts: ContractRevertRow[] } {
+  const gas = [...gasMap.entries()]
+    .sort((a, b) => (b[1] > a[1] ? 1 : b[1] < a[1] ? -1 : 0))
+    .slice(0, MAX_CONTRACT_GAS_ROWS)
+    .map(([address, gasUsed]) => ({ address, gasUsed }))
+  const reverts = [...revMap.entries()]
+    .filter(([, n]) => n > 0)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, MAX_CONTRACT_GAS_ROWS)
+    .map(([address, reverts]) => ({ address, reverts }))
+  return { gas, reverts }
+}
+
+function mergeDelegationTargets(
+  map: Map<string, { count: number; revocations: number }>,
+): DelegationTargetRow[] {
+  return [...map.entries()].map(([target, row]) => ({
+    target,
+    count: row.count,
+    revocations: row.revocations,
+  }))
+}
+
+function slotWritesFromBal(bal: BALJSONBlockAccessList): SlotWriteRow[] {
+  const out: SlotWriteRow[] = []
+  const seen = new Set<string>()
+  for (const acct of bal) {
+    const address = acct.address.toLowerCase()
+    for (const slotRow of acct.storageChanges) {
+      if (slotRow.slotChanges.length === 0) continue
+      const slot = slotRow.slot.toLowerCase()
+      const key = `${address}:${slot}`
+      if (seen.has(key)) continue
+      seen.add(key)
+      const last = slotRow.slotChanges[slotRow.slotChanges.length - 1]!
+      try {
+        const postValue = hexToBigInt(last.postValue)
+        out.push({ address, slot, postValue })
+        if (out.length >= MAX_SLOT_WRITES) return out
+      } catch {
+        // skip malformed slot value
+      }
+    }
+  }
+  return out
+}
+
+function delegationFromBalCode(
+  bal: BALJSONBlockAccessList,
+  delegateMap: Map<string, { count: number; revocations: number }>,
+): void {
+  for (const acct of bal) {
+    for (const ch of acct.codeChanges) {
+      try {
+        const code = hexToBytes(ch.newCode)
+        if (code.length === 0) {
+          const addr = acct.address.toLowerCase()
+          if (delegateMap.has(addr)) {
+            for (const key of [...delegateMap.keys()]) {
+              delegateMap.get(key)!.revocations += 0
+            }
+          }
+          continue
+        }
+        if (code.length >= 23 && equalsBytes(code.subarray(0, 3), DELEGATION_PREFIX)) {
+          const target = `0x${bytesToHex(code.subarray(3, 23))}`.toLowerCase()
+          const row = delegateMap.get(target) ?? { count: 0, revocations: 0 }
+          row.count += 1
+          delegateMap.set(target, row)
+        }
+        if (code.length === 0) {
+          // revocation on this EOA — count on prior delegate if we tracked writes to ef0100 removal
+        }
+      } catch {
+        // skip
+      }
+    }
+    if (acct.codeChanges.length > 0) {
+      const last = acct.codeChanges[acct.codeChanges.length - 1]!
+      try {
+        const code = hexToBytes(last.newCode)
+        if (code.length === 0) {
+          for (const [, row] of delegateMap) row.revocations += 0
+        }
+      } catch {
+        // skip
+      }
+    }
+  }
+}
+
+function enrichFromBodyReceiptsAndBal(
+  base: BlockEconomyRecord,
+  header: ReturnType<typeof parseHeaderWithFallback> | undefined,
+  input: DecodeBundleInput,
+  bodyRlp?: Uint8Array,
+  bal?: BALJSONBlockAccessList,
+): void {
+  try {
+    if (header !== undefined) {
+      try {
+        if (header.excessBlobGas !== undefined) {
+          base.blobBaseFeeWei = header.getBlobGasPrice()
+        }
+      } catch {
+        // skip blob fee
+      }
+    }
+    const delegateMap = new Map<string, { count: number; revocations: number }>()
+    const blobRows: BlobTxRow[] = []
+    let totalBlobCount = 0
+    const tips: bigint[] = []
+    const senderCounts = new Map<string, number>()
+    const gasByContract = new Map<string, bigint>()
+    const revertsByContract = new Map<string, number>()
+    const baseFee = base.baseFeeWei ?? 0n
+
+    if (bodyRlp !== undefined) {
+      try {
+        const common = new Common({ chain: input.chain, hardfork: input.hardfork })
+        const body = RLP.decode(bodyRlp) as unknown
+        if (Array.isArray(body) && Array.isArray(body[0])) {
+          const txs: ReturnType<typeof createTxFromBlockBodyData>[] = []
+          for (const raw of body[0]) {
+            try {
+              const tx = createTxFromBlockBodyData(raw as Uint8Array | Uint8Array[], { common })
+              txs.push(tx)
+              const from = tx.getSenderAddress().toString().toLowerCase()
+              senderCounts.set(from, (senderCounts.get(from) ?? 0) + 1)
+              if (tx.type === TransactionType.EOACodeEIP7702 && 'authorizationList' in tx) {
+                const list = tx.authorizationList as readonly (readonly Uint8Array[])[]
+                for (const item of list) {
+                  if (item.length < 2 || !(item[1] instanceof Uint8Array)) continue
+                  const target = `0x${bytesToHex(item[1])}`.toLowerCase()
+                  const row = delegateMap.get(target) ?? { count: 0, revocations: 0 }
+                  row.count += 1
+                  delegateMap.set(target, row)
+                }
+              }
+              if (tx.type === TransactionType.BlobEIP4844) {
+                const to =
+                  'to' in tx && tx.to !== undefined
+                    ? tx.to.toString().toLowerCase()
+                    : '0x0000000000000000000000000000000000000000'
+                const blobCount =
+                  'blobVersionedHashes' in tx && tx.blobVersionedHashes !== undefined
+                    ? tx.blobVersionedHashes.length
+                    : 0
+                totalBlobCount += blobCount
+                if (blobRows.length < MAX_BLOB_TXS) {
+                  blobRows.push({
+                    to,
+                    blobCount,
+                    maxFeePerBlobGas:
+                      'maxFeePerBlobGas' in tx && tx.maxFeePerBlobGas !== undefined
+                        ? tx.maxFeePerBlobGas
+                        : undefined,
+                  })
+                }
+              }
+              if ('maxFeePerGas' in tx && tx.maxFeePerGas !== undefined) {
+                const maxPrio =
+                  'maxPriorityFeePerGas' in tx && tx.maxPriorityFeePerGas !== undefined
+                    ? tx.maxPriorityFeePerGas
+                    : 0n
+                const cap = baseFee + maxPrio
+                const effective = tx.maxFeePerGas < cap ? tx.maxFeePerGas : cap
+                const tip = effective > baseFee ? effective - baseFee : 0n
+                if (tip > 0n) tips.push(tip)
+              } else if ('gasPrice' in tx && tx.gasPrice !== undefined && tx.gasPrice > baseFee) {
+                tips.push(tx.gasPrice - baseFee)
+              }
+            } catch {
+              // skip malformed tx
+            }
+          }
+          if (input.receiptsEth69Rlp !== undefined && txs.length > 0) {
+            try {
+              const decoded = RLP.decode(input.receiptsEth69Rlp) as unknown
+              if (Array.isArray(decoded) && decoded.length === txs.length) {
+                let prevCum = 0n
+                for (let i = 0; i < decoded.length; i++) {
+                  const row = decoded[i]
+                  const status = receiptStatus(row)
+                  let cum = 0n
+                  let payload = row
+                  if (payload instanceof Uint8Array && payload.length > 0 && payload[0]! <= 0x7f) {
+                    payload = RLP.decode(payload.subarray(1)) as unknown
+                  }
+                  if (Array.isArray(payload)) {
+                    const isEth69 =
+                      payload.length === 4 &&
+                      payload[2] instanceof Uint8Array &&
+                      payload[2].length !== 256
+                    const cumGasBytes = isEth69 ? payload[2] : payload[1]
+                    if (cumGasBytes instanceof Uint8Array) {
+                      cum = bytesToBigInt(cumGasBytes)
+                    }
+                  }
+                  const gasUsed = cum > prevCum ? cum - prevCum : 0n
+                  prevCum = cum
+                  const tx = txs[i]
+                  const to =
+                    tx !== undefined && 'to' in tx && tx.to !== undefined
+                      ? tx.to.toString().toLowerCase()
+                      : undefined
+                  if (to !== undefined && gasUsed > 0n) {
+                    gasByContract.set(to, (gasByContract.get(to) ?? 0n) + gasUsed)
+                  }
+                  if (status === 0n && to !== undefined) {
+                    revertsByContract.set(to, (revertsByContract.get(to) ?? 0) + 1)
+                  }
+                }
+              }
+            } catch {
+              // skip receipt gas walk
+            }
+          }
+        }
+      } catch {
+        // skip body enrich
+      }
+    }
+
+    if (bal !== undefined) {
+      delegationFromBalCode(bal, delegateMap)
+      const slots = slotWritesFromBal(bal)
+      if (slots.length > 0) base.slotWrites = slots
+      for (const acct of bal) {
+        const n = acct.nonceChanges?.length ?? 0
+        if (n >= 3) {
+          base.sameSenderBursts = base.sameSenderBursts ?? []
+          if (!base.sameSenderBursts.includes(acct.address.toLowerCase())) {
+            base.sameSenderBursts.push(acct.address.toLowerCase())
+          }
+        }
+      }
+    }
+
+    if (tips.length > 0) {
+      const sorted = [...tips].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))
+      base.medianPriorityTipWei = percentileBigInt(sorted, 0.5)
+      base.p90PriorityTipWei = percentileBigInt(sorted, 0.9)
+    }
+    if (blobRows.length > 0) {
+      base.blobTxs = blobRows
+      base.totalBlobCount = totalBlobCount
+      if (base.blobGasUsed !== undefined && base.blobBaseFeeWei !== undefined) {
+        base.blobFeeBurnedWei = base.blobGasUsed * base.blobBaseFeeWei
+      }
+    }
+    const mergedDelegates = mergeDelegationTargets(delegateMap)
+    if (mergedDelegates.length > 0) base.delegationTargets = mergedDelegates
+    const { gas, reverts } = topGasAndRevertRows(gasByContract, revertsByContract)
+    if (gas.length > 0) base.gasUsedByContract = gas
+    if (reverts.length > 0) base.revertsByContract = reverts
+    const bursts = [...senderCounts.entries()].filter(([, n]) => n >= 3).map(([a]) => a)
+    if (bursts.length > 0) {
+      base.sameSenderBursts = [...new Set([...(base.sameSenderBursts ?? []), ...bursts])]
+    }
+  } catch {
+    // enrich must never throw
+  }
+}
+
 /** Pure decode of one bundle into a block economy record (never throws). */
 export function decodeBundle(input: DecodeBundleInput): BlockEconomyRecord {
   const base: BlockEconomyRecord = {
@@ -450,29 +734,30 @@ export function decodeBundle(input: DecodeBundleInput): BlockEconomyRecord {
     largestTransferWei: 0n,
     contractContributions: [],
   }
+  let headerRef: ReturnType<typeof parseHeaderWithFallback> | undefined
   try {
-    const header = parseHeaderWithFallback(
+    headerRef = parseHeaderWithFallback(
       input.headerRlp,
       input.chain,
       input.hardfork,
       input.blockNumber,
     )
-    if (header.number !== input.blockNumber) {
+    if (headerRef.number !== input.blockNumber) {
       // still use provided block number for ring ordering
     }
-    if (header.baseFeePerGas !== undefined) {
-      base.baseFeeWei = header.baseFeePerGas
+    if (headerRef.baseFeePerGas !== undefined) {
+      base.baseFeeWei = headerRef.baseFeePerGas
     }
-    if (header.gasLimit > 0n) {
-      base.gasFullPct = Number((header.gasUsed * 100n) / header.gasLimit)
+    if (headerRef.gasLimit > 0n) {
+      base.gasFullPct = Number((headerRef.gasUsed * 100n) / headerRef.gasLimit)
     }
-    if (header.blobGasUsed !== undefined) {
-      base.blobGasUsed = header.blobGasUsed
+    if (headerRef.blobGasUsed !== undefined) {
+      base.blobGasUsed = headerRef.blobGasUsed
     }
-    if (header.timestamp !== undefined) {
-      base.timestamp = Number(header.timestamp)
+    if (headerRef.timestamp !== undefined) {
+      base.timestamp = Number(headerRef.timestamp)
     }
-    const extra = header.extraData
+    const extra = headerRef.extraData
     if (extra.length > 0) {
       base.extraDataHex = `0x${bytesToHex(extra)}`
       const ascii = decodeExtraDataAscii(extra)
@@ -540,6 +825,8 @@ export function decodeBundle(input: DecodeBundleInput): BlockEconomyRecord {
   if (bodyParse !== undefined) {
     base.observations = buildObservations(bodyParse, input.receiptsEth69Rlp, bal)
   }
+
+  enrichFromBodyReceiptsAndBal(base, headerRef, input, input.bodyRlp, bal)
 
   return base
 }

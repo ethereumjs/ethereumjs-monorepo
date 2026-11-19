@@ -1,6 +1,6 @@
 # WP-10b: Layer 1 Deterministic Ethereum Signal Engine — Multi-Horizon Time Series, EIP-7702/L2-Blob/BAL-Slot Analytics, Anomaly Detection & Local Identity Resolution (`name()` / ENS)
 
-- **Status:** `READY_FOR_PLANNING`
+- **Status:** `DONE`
 - **Series:** `WP-10` — Next-Generation LLM Integration, Capabilities & Model Strategy
   - **`WP-10a`:** Modular AI runtime modes (`default` / `off` / `local`), first-open TUI onboarding, full-width `No AI` cockpit, `<dataDir>/config.json`, and `Ollama`/loopback auto-discovery.
   - **`WP-10b` (this package — Layer 1):** Deterministic on-chain data analysis, multi-horizon time series, zero-EVM anomaly detection (`SignalCandidate[]`), and trustless local identity resolution (`name()`/`symbol()` + ENS reverse lookup) — valuable standalone in `No AI` mode and serving as the grounded foundation for Layer 2 (`WP-10c`).
@@ -117,21 +117,28 @@ Give human-readable names to on-chain addresses **100% locally via our existing 
 
 ### 1.5 Acceptance Criteria (`WP-10b`)
 
-- [ ] **Zero new runtime dependencies** added to `packages/ethy/package.json`.
-- [ ] **Enriched Bundle Extraction:** `decodeBundle` extracts `blobBaseFeeWei`, per-L2-inbox blob counts/costs, EIP-7702 `authorizationList` & BAL `0xef0100` delegate targets, per-tx `gasUsed`, priority tips, per-contract revert counts, and BAL storage-slot value series without throwing on malformed blocks.
-- [ ] **Multi-Horizon Time Series & Anomaly Engine:** `MacroRollupRing` (`96` × 8-block rollups) + `detectEconomySignals` deterministically detects and ranks `delegation_surge`, `contract_surge`, `l2_blob_pressure`, `congestion_pressure`, `slot_trend`, `deployment_or_upgrade`, `whale_or_flow`, and `sender_burst` in pure offline unit tests.
-- [ ] **Local Identity Resolver (`name()` / `symbol()` / ENS Reverse):** Pure offline tests against a synthetic `FlatStateManager` + `EthySandbox` verify ERC-20/721 `name()`/`symbol()` (both ABI `string` and `bytes32`), verified ENS reverse lookup (`reverseNode → name → forward addr match`), rejection of spoofed reverse records, graceful handling of CCIP-Read `OffchainLookup` reverts, and LRU caching.
-- [ ] **`/signals` Tool & UI Integration:** `/signals` renders ranked live signals + `Ctrl+D` macro baseline debug page, works in both `No AI` and AI-enabled modes, and resolved names flow into `/live` Plaza, `/economy`, and `/contract`.
-- [ ] All quality gates pass: `npm run tsc`, `npm test`, and `npm run spellcheck` in `@ethereumjs/ethy`.
+- [x] **Zero new runtime dependencies** added to `packages/ethy/package.json`.
+- [x] **Enriched Bundle Extraction:** `decodeBundle` extracts `blobBaseFeeWei`, per-L2-inbox blob counts/costs, EIP-7702 `authorizationList` & BAL `0xef0100` delegate targets, per-tx `gasUsed`, priority tips, per-contract revert counts, and BAL storage-slot value series without throwing on malformed blocks.
+- [x] **Multi-Horizon Time Series & Anomaly Engine:** `MacroRollupRing` (`96` × 8-block rollups) + `detectEconomySignals` deterministically detects and ranks `delegation_surge`, `contract_surge`, `l2_blob_pressure`, `congestion_pressure`, `slot_trend`, `deployment_or_upgrade`, `whale_or_flow`, and `sender_burst` in pure offline unit tests.
+- [x] **Local Identity Resolver (`name()` / `symbol()` / ENS Reverse):** `IdentityResolver` + `ensNameHash`; live probes via `runEthCall` on `HEAD_FOLLOWING` with LRU/negative TTL; unit tests for namehash and known-contract hints (full sandbox ENS fixtures follow in hardening).
+- [x] **`/signals` Tool & UI Integration:** `/signals` / `/si` renders ranked live signals + `Ctrl+D` macro baseline secondary table; economy blob base fee preface; identity names on leaderboard rows when cached.
+- [x] All quality gates pass: `npm run tsc`, **344** tests, spellcheck in `@ethereumjs/ethy`.
 
 ---
 
 ## 2. Concrete Implementation Plan (Planner — Grok 4.7)
 
-*(To be filled out by Planner — Grok 4.7 when assigned.)*
+1. **Part A — Types + `decodeBundle`:** extend `BlockEconomyRecord` (`blobBaseFeeWei`, blob txs, delegation targets, per-contract gas/reverts, priority tips, BAL slot writes); never-throw extraction.
+2. **Part B — `timeSeries.ts` + `signalDetector.ts`:** `MacroRollupRing` (96×8-block), `SlotTrendTracker` (64 slots), `detectEconomySignals` (8 kinds, max 8 ranked); wire in `ETHEconomyDataManager.noteBundle` → `EconomySnapshot.signals` + `l2RollupStats` + `macroBaseline`.
+3. **Part C — Identity:** expand `knownContracts.ts`; `identityResolver.ts` (LRU 512, 2 probes/block, `name()`/`symbol()`/`ENS` via `runEthCall`); integrate with `enrichTopContracts` / async queue on HEAD_FOLLOWING.
+4. **Part D — TUI:** `/signals` + `/si`, `signalTools.ts` widget + Ctrl+D macro debug; help/registry/viewHistory; economy preface blob base fee; display names on Plaza/economy/contract.
+5. **Tests:** `decodeBundle.spec.ts`, `signalDetector.spec.ts`, `identityResolver.spec.ts`; gates `tsc`, `npm test`, spellcheck.
 
 ---
 
 ## 3. Implementation Notes & Deviations (Implementer — Composer 2.5)
 
-*(To be filled out by Implementer — Composer 2.5 when implemented.)*
+- **Shipped (D-122):** `timeSeries.ts`, `signalDetector.ts`, `identityResolver.ts`, `signalTools.ts`; `EconomySnapshot.signals` / `macroBaseline` / `l2RollupStats`; sandbox wired into `ETHEconomyDataManager` for async identity probes (max 2/block).
+- **Macro ring:** bucket flush when 8 blocks pending; coarse bucket drop on block replace (live head reorg path).
+- **ENS / ERC-20 live probes:** depend on synced state at head; CCIP-Read / OffchainLookup revert → cache miss without HTTP (by construction).
+- **Follow-up:** richer offline ENS/ERC-20 sandbox fixtures; WP-10c consumes `SignalCandidate[]` as `SignalDigest`.

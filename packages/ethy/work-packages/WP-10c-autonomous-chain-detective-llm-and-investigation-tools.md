@@ -1,6 +1,6 @@
 # WP-10c: Layer 2 Autonomous Chain-Detective LLM — Signal-Driven Investigation Loop, Bounded Read-Only State Toolbelt, Dispatch Feed UI, Self-History Journal & Opt-In Prompt Memory
 
-- **Status:** `BLOCKED_BY_WP-10a,WP-10b`
+- **Status:** `READY_FOR_PLANNING`
 - **Series:** `WP-10` — Next-Generation LLM Integration, Capabilities & Model Strategy
   - **`WP-10a`:** Modular AI runtime modes (`default` / `off` / `local`), first-open TUI onboarding, full-width `No AI` cockpit, `<dataDir>/config.json`, and `Ollama`/loopback auto-discovery.
   - **`WP-10b` (Layer 1):** Deterministic Ethereum signal engine, multi-horizon time series, anomaly candidates (`SignalCandidate[]`), and local `name()`/`symbol()` + ENS reverse identity resolution.
