@@ -7,7 +7,8 @@ export function modelBootstrapNote(managed?: ManagedAiState): string | undefined
     const pct = managed.progressPct ?? 0
     const got = formatModelBytes(managed.downloadedBytes ?? 0)
     const total = formatModelBytes(managed.totalBytes ?? 0)
-    return `Downloading Qwen3.5-2B… ${pct}% (${got} / ${total}) · P2P & sync running normally`
+    const subject = managed.label ?? 'Qwen3.5-2B'
+    return `Downloading ${subject}… ${pct}% (${got} / ${total}) · P2P & sync running normally`
   }
   if (managed.phase === 'warming' || managed.phase === 'probing') {
     return 'Loading Qwen3.5-2B… · P2P & sync running normally'

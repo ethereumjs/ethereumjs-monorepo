@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process'
 import * as fs from 'node:fs'
 import * as http from 'node:http'
 import * as os from 'node:os'
@@ -6,6 +7,11 @@ import { fileURLToPath } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
 
 import { FetchLlmTransport } from '../src/ai/fixtureEngine.ts'
+import {
+  ensureLlamaServerBin,
+  llamaServerAssetForPlatform,
+  resolveLlamaServerBin,
+} from '../src/ai/llamaServerBin.ts'
 import { DEFAULT_MANAGED_MODEL_SPEC, resolveModelDownloadUrl } from '../src/ai/managedModel.ts'
 import { createManagedModelRunner } from '../src/ai/managedRunner.ts'
 import { ModelDownloadAbortedError, ensureManagedModel, modelsDir } from '../src/ai/modelStore.ts'
@@ -258,5 +264,112 @@ describe('resolveModelDownloadUrl', () => {
     process.env.ETHY_DEFAULT_MODEL_URL = 'http://127.0.0.1:9/x'
     expect(resolveModelDownloadUrl(DEFAULT_MANAGED_MODEL_SPEC)).toBe('http://127.0.0.1:9/x')
     delete process.env.ETHY_DEFAULT_MODEL_URL
+  })
+})
+
+describe('llama-server auto-install', () => {
+  const dirs: string[] = []
+  afterEach(() => {
+    delete process.env.ETHY_LLAMA_SERVER_URL
+    delete process.env.ETHY_LLAMA_SERVER_BIN
+    for (const d of dirs) fs.rmSync(d, { recursive: true, force: true })
+    dirs.length = 0
+  })
+
+  it('exposes pinned release assets for darwin-arm64, darwin-x64, linux-x64, win32-x64', () => {
+    expect(llamaServerAssetForPlatform('darwin', 'arm64')?.filename).toContain('macos-arm64.tar.gz')
+    expect(llamaServerAssetForPlatform('darwin', 'x64')?.filename).toContain('macos-x64.tar.gz')
+    expect(llamaServerAssetForPlatform('linux', 'x64')?.filename).toContain('ubuntu-x64.tar.gz')
+    expect(llamaServerAssetForPlatform('win32', 'x64')?.filename).toContain('win-cpu-x64.zip')
+  })
+
+  it('downloads and extracts tar.gz runner into <dataDir>/bin/llama-<tag>/ offline', async () => {
+    if (process.platform === 'win32') return
+    const work = fs.mkdtempSync(path.join(os.tmpdir(), 'ethy-bin-'))
+    dirs.push(work)
+    const stageDir = path.join(work, 'stage', 'build', 'bin')
+    fs.mkdirSync(stageDir, { recursive: true })
+    const fakePath = fileURLToPath(new URL('./helpers/fakeLlamaServer.mjs', import.meta.url))
+    fs.copyFileSync(fakePath, path.join(stageDir, 'llama-server'))
+    const tarPath = path.join(work, 'fake-llama.tar.gz')
+    execFileSync('tar', ['-czf', tarPath, '-C', path.join(work, 'stage'), 'build'])
+    const archiveBytes = fs.readFileSync(tarPath)
+
+    const srv = await startDownloadServer(archiveBytes)
+    process.env.ETHY_LLAMA_SERVER_URL = srv.url
+    const dataDir = path.join(work, 'data')
+    const progressTicks: number[] = []
+
+    const binPath = await ensureLlamaServerBin({
+      dataDir,
+      platform: 'darwin',
+      arch: 'arm64',
+      onProgress: (p) => progressTicks.push(p.pct),
+    })
+    await srv.close()
+
+    expect(binPath).toBeDefined()
+    expect(fs.existsSync(binPath!)).toBe(true)
+    expect(progressTicks.length).toBeGreaterThan(0)
+    expect(resolveLlamaServerBin(dataDir)).toBe(binPath)
+  })
+
+  it('notifies phase updates during runner + model download and handles <think> leaks on MockLlmServer', async () => {
+    const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ethy-boot-'))
+    dirs.push(dataDir)
+    const fake = fileURLToPath(new URL('./helpers/fakeLlamaServer.mjs', import.meta.url))
+    const modelPath = path.join(modelsDir(dataDir), DEFAULT_MANAGED_MODEL_SPEC.filename)
+    fs.mkdirSync(path.dirname(modelPath), { recursive: true })
+    fs.writeFileSync(modelPath, syntheticGguf(2048))
+
+    const spine = createSpine('sepolia', 11155111n)
+    spine.aiMode = 'default'
+    const phases: string[] = []
+    const runner = createManagedModelRunner({
+      spec: { ...DEFAULT_MANAGED_MODEL_SPEC, minValidBytes: 1024 },
+      dataDir,
+      spine,
+      getEpoch: () => 0,
+      tryImport: async () => undefined,
+      resolveBin: () => undefined,
+      ensureBin: async (binOpts) => {
+        binOpts?.onProgress?.({ downloadedBytes: 100, totalBytes: 100, pct: 100 })
+        return fake
+      },
+      ensureModel: async (_s, modelOpts) => {
+        modelOpts?.onProgress?.({ downloadedBytes: 1024, totalBytes: 2048, pct: 50 })
+        return modelPath
+      },
+      onPhase: (u) => phases.push(u.phase),
+    })
+
+    await runner.start()
+    expect(phases).toContain('downloading')
+    expect(phases).toContain('warming')
+    expect(phases).toContain('ready')
+    await runner.stop()
+
+    // Also verify MockLlmServer + <think> stripping over Ollama /api/chat wire
+    const think = `${String.fromCharCode(60)}think${String.fromCharCode(62)}checking${String.fromCharCode(60)}/think${String.fromCharCode(62)}`
+    const mock = await startMockLlmServer(
+      () =>
+        `${think}${JSON.stringify({
+          mode: 'dispatch',
+          category: 'watch',
+          severity: 'calm',
+          headline: 'Steady',
+          body: 'All quiet.',
+        })}`,
+    )
+    const ollamaTransport = new FetchLlmTransport(mock.ollamaBaseUrl, {
+      provider: 'ollama',
+      model: 'qwen3.5:2b',
+    })
+    const smoke = await runSmokeScenarios(ollamaTransport)
+    await mock.close()
+    expect(smoke.every((r) => r.validJSON)).toBe(true)
+    const firstReq = mock.requests[0] as { model?: string; think?: boolean }
+    expect(firstReq.model).toBe('qwen3.5:2b')
+    expect(firstReq.think).toBe(false)
   })
 })

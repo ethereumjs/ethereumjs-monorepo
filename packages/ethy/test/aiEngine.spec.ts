@@ -192,6 +192,7 @@ describe('[Ethy/AI]: hybrid ai mode', () => {
       refreshAiCapability: async () => {},
       subscribe: () => () => {},
       getManagedSnapshot: () => undefined,
+      stop: async () => {},
     }
     engine.attachAiRuntime(runtime, false)
     const r = await engine.handle({ text: '/ai off', spine })

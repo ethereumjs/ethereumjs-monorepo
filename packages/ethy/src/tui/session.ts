@@ -530,6 +530,7 @@ export async function runEthySession(node: EthyNode, opts?: EthySessionOpts): Pr
       output.off('resize', onResize)
       input.off('data', onData)
       detectiveNarrator?.stop()
+      void node.aiRuntime?.stop()
       unsubscribeManagedAi?.()
       node.hybridEngine?.clearMemory()
       if (input.isTTY) input.setRawMode(false)

@@ -37,7 +37,7 @@ export const DEFAULT_MANAGED_MODEL_SPEC: ManagedModelSpec = {
   downloadUrl: DEFAULT_URL,
   expectedBytes: 1_280_835_840,
   minValidBytes: 100 * 1024 * 1024,
-  downloadHint: 'Install llama.cpp (e.g. brew install llama.cpp) or run ollama pull qwen3.5:2b',
+  downloadHint: 'Auto-installs local runner (~17 MB) + Qwen3.5-2B (~1.28 GB) on first use',
   ollamaFamilyHints: ['qwen3.5:2b', 'qwen3.5', 'qwen3:4b', 'qwen3'],
 }
 

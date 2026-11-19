@@ -23,6 +23,7 @@ export type AiRuntimeController = {
   refreshAiCapability(): Promise<void>
   subscribe(listener: (snap: ManagedAiRuntimeSnapshot) => void): () => void
   getManagedSnapshot(): ManagedAiRuntimeSnapshot | undefined
+  stop(): Promise<void>
 }
 
 function applyAiModeToSpine(spine: EthySpine, config: EthyAiConfig): void {
@@ -210,6 +211,10 @@ export function createAiRuntimeController(opts: {
       const healthy = await probeLlmHealth(base, current.localProvider)
       opts.node.spine.llmPulseReady = healthy
       deriveCapabilities(opts.node.spine)
+    },
+    async stop() {
+      epoch += 1
+      await stopManagedRunner()
     },
   }
 }

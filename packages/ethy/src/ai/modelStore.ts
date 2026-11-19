@@ -98,6 +98,37 @@ export class ModelDownloadAbortedError extends Error {
   }
 }
 
+/** Write a single chunk to an open WriteStream respecting backpressure. */
+function writeChunk(stream: fs.WriteStream, chunk: Uint8Array): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (stream.write(chunk)) {
+      resolve()
+      return
+    }
+    const onDrain = () => {
+      cleanup()
+      resolve()
+    }
+    const onError = (err: Error) => {
+      cleanup()
+      reject(err)
+    }
+    const cleanup = () => {
+      stream.off('drain', onDrain)
+      stream.off('error', onError)
+    }
+    stream.once('drain', onDrain)
+    stream.once('error', onError)
+  })
+}
+
+function closeStream(stream: fs.WriteStream): Promise<void> {
+  return new Promise((resolve, reject) => {
+    stream.once('error', reject)
+    stream.end(() => resolve())
+  })
+}
+
 export async function ensureManagedModel(
   spec: ManagedModelSpec,
   opts: EnsureManagedModelOpts = {},
@@ -141,7 +172,13 @@ export async function ensureManagedModel(
     const headers: Record<string, string> = {}
     if (offset > 0) headers.Range = `bytes=${offset}-`
 
-    const res = await fetchFn(resolveModelDownloadUrl(spec), { headers, signal: opts.signal })
+    let res: Response
+    try {
+      res = await fetchFn(resolveModelDownloadUrl(spec), { headers, signal: opts.signal })
+    } catch (e) {
+      if (opts.signal?.aborted === true) throw new ModelDownloadAbortedError()
+      throw e
+    }
     throwIfAborted()
 
     if (res.status === 416 && !rangeRetried) {
@@ -161,7 +198,8 @@ export async function ensureManagedModel(
       const m = /\/(\d+)\s*$/u.exec(contentRange)
       if (m?.[1] !== undefined) totalBytes = Number.parseInt(m[1], 10)
     } else if (contentLength !== null) {
-      totalBytes = offset + Number.parseInt(contentLength, 10)
+      const len = Number.parseInt(contentLength, 10)
+      totalBytes = res.status === 206 ? offset + len : len
     }
 
     if (res.status === 200 && offset > 0) {
@@ -170,33 +208,39 @@ export async function ensureManagedModel(
     }
 
     const append = res.status === 206 && fs.existsSync(part)
-    const chunks: Uint8Array[] = []
-    if (res.body === null) {
-      chunks.push(new Uint8Array(await res.arrayBuffer()))
-    } else {
-      const reader = res.body.getReader()
-      try {
-        while (true) {
-          throwIfAborted()
-          const { done, value } = await reader.read()
-          if (done) break
-          if (value !== undefined && value.length > 0) chunks.push(value)
+    const outStream = fs.createWriteStream(part, { flags: append ? 'a' : 'w' })
+    let downloaded = offset
+    try {
+      if (res.body === null) {
+        const buf = new Uint8Array(await res.arrayBuffer())
+        throwIfAborted()
+        await writeChunk(outStream, buf)
+        downloaded += buf.length
+        emitProgress(downloaded, true)
+      } else {
+        const reader = res.body.getReader()
+        try {
+          while (true) {
+            throwIfAborted()
+            const { done, value } = await reader.read()
+            if (done) break
+            if (value !== undefined && value.length > 0) {
+              await writeChunk(outStream, value)
+              downloaded += value.length
+              emitProgress(downloaded, false)
+            }
+          }
+        } finally {
+          reader.releaseLock()
         }
-      } finally {
-        reader.releaseLock()
       }
+      await closeStream(outStream)
+    } catch (e) {
+      outStream.destroy()
+      if (opts.signal?.aborted === true) throw new ModelDownloadAbortedError()
+      throw e
     }
 
-    let totalChunk = 0
-    for (const c of chunks) totalChunk += c.length
-    const body = new Uint8Array(totalChunk)
-    let at = 0
-    for (const c of chunks) {
-      body.set(c, at)
-      at += c.length
-    }
-    if (append) fs.appendFileSync(part, body)
-    else fs.writeFileSync(part, body)
     offset = fs.statSync(part).size
     emitProgress(offset, true)
     break

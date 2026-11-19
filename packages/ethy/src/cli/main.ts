@@ -180,6 +180,7 @@ async function main(): Promise<void> {
   }
 
   const shutdown = () => {
+    void node.aiRuntime?.stop()
     void rpcHandle?.stop()
     coordinatorStop?.()
     consensusStop?.()

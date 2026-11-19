@@ -99,7 +99,7 @@ export function renderAiOnboardingUIComponent(
   if (selected === 0) {
     push('')
     push(
-      `${DIM}Built-in Qwen3.5-2B (~1.28 GB) — requires llama.cpp on PATH or matching Ollama; download runs in the background.${RESET}`,
+      `${DIM}Built-in Qwen3.5-2B (~1.28 GB) — auto-installs local llama-server (~17 MB) + model in the background.${RESET}`,
     )
   }
 

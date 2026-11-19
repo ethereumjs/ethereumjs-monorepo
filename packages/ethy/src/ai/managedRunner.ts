@@ -2,10 +2,14 @@ import { type ChildProcess, spawn } from 'node:child_process'
 import * as net from 'node:net'
 
 import { deriveCapabilities } from '../spine/createSpine.ts'
-import type { EthySpine } from '../spine/types.ts'
-import type { ManagedAiPhase, ManagedAiState } from '../spine/types.ts'
+import type { EthySpine, ManagedAiPhase, ManagedAiState } from '../spine/types.ts'
 import { FetchLlmTransport, type LlmTransport } from './fixtureEngine.ts'
-import { resolveLlamaServerBin, spawnLlamaServerCommand } from './llamaServerBin.ts'
+import {
+  ensureLlamaServerBin,
+  llamaServerAssetForPlatform,
+  resolveLlamaServerBin,
+  spawnLlamaServerCommand,
+} from './llamaServerBin.ts'
 import { probeLlmHealth } from './llmClient.ts'
 import { discoverOllamaModels } from './localProviders.ts'
 import {
@@ -36,13 +40,14 @@ export type CreateManagedModelRunnerOpts = {
   getEpoch: () => number
   onPhase: (update: ManagedRunnerPhaseUpdate) => void
   tryImport?: TryImportNodeLlamaCpp
-  resolveBin?: () => string | undefined
+  resolveBin?: (dataDir?: string) => string | undefined
+  ensureBin?: typeof ensureLlamaServerBin
   discoverOllama?: typeof discoverOllamaModels
   ensureModel?: typeof ensureManagedModel
 }
 
-const HEALTH_POLL_MS = 200
-const HEALTH_TIMEOUT_MS = 15_000
+const HEALTH_POLL_MS = 250
+const HEALTH_TIMEOUT_MS = 45_000
 
 function allocFreePort(): Promise<number> {
   return new Promise((resolve, reject) => {
@@ -64,6 +69,26 @@ function setManagedPhase(spine: EthySpine, patch: Partial<ManagedAiState>): void
   deriveCapabilities(spine)
 }
 
+async function probeLlamaServerReady(base: string, signal?: AbortSignal): Promise<boolean> {
+  try {
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), 1_500)
+    const onAbort = () => controller.abort()
+    signal?.addEventListener('abort', onAbort)
+    try {
+      const res = await fetch(`${base}/health`, { method: 'GET', signal: controller.signal })
+      if (res.status === 200) return true
+      if (res.status === 503) return false
+    } finally {
+      clearTimeout(timer)
+      signal?.removeEventListener('abort', onAbort)
+    }
+  } catch {
+    // fall through to /v1/models probe
+  }
+  return probeLlmHealth(base, 'openai-compatible', signal)
+}
+
 export type ManagedModelRunner = {
   start(): Promise<void>
   stop(): Promise<void>
@@ -73,21 +98,36 @@ export function createManagedModelRunner(opts: CreateManagedModelRunnerOpts): Ma
   const spec = opts.spec ?? DEFAULT_MANAGED_MODEL_SPEC
   const tryImport = opts.tryImport ?? tryImportNodeLlamaCpp
   const resolveBin = opts.resolveBin ?? resolveLlamaServerBin
+  const ensureBin = opts.ensureBin ?? ensureLlamaServerBin
   const discoverOllama = opts.discoverOllama ?? discoverOllamaModels
   const ensureModel = opts.ensureModel ?? ensureManagedModel
 
   let child: ChildProcess | undefined
+  let exitKillHandler: (() => void) | undefined
   let inProc: NodeLlamaCppTransport | undefined
   let startEpoch = 0
   let stopped = true
 
   const stale = () => stopped || opts.getEpoch() !== startEpoch
 
+  const clearExitHook = () => {
+    if (exitKillHandler !== undefined) {
+      process.off('exit', exitKillHandler)
+      exitKillHandler = undefined
+    }
+  }
+
   const stopChild = async (): Promise<void> => {
     const proc = child
     child = undefined
+    clearExitHook()
     if (proc === undefined) return
-    proc.kill('SIGTERM')
+    if (proc.exitCode !== null || proc.killed) return
+    try {
+      proc.kill('SIGTERM')
+    } catch {
+      return
+    }
     await new Promise<void>((resolve) => {
       const timer = setTimeout(() => {
         try {
@@ -97,6 +137,7 @@ export function createManagedModelRunner(opts: CreateManagedModelRunnerOpts): Ma
         }
         resolve()
       }, 2000)
+      timer.unref?.()
       proc.once('exit', () => {
         clearTimeout(timer)
         resolve()
@@ -117,27 +158,41 @@ export function createManagedModelRunner(opts: CreateManagedModelRunnerOpts): Ma
     const deadline = Date.now() + HEALTH_TIMEOUT_MS
     while (Date.now() < deadline) {
       if (stale() || signal?.aborted === true) return false
-      if (await probeLlmHealth(base, 'openai-compatible', signal)) return true
+      if (child !== undefined && child.exitCode !== null) return false
+      if (await probeLlamaServerReady(base, signal)) return true
       await new Promise((r) => setTimeout(r, HEALTH_POLL_MS))
     }
     return false
   }
 
-  const startLlamaChild = async (modelPath: string, signal?: AbortSignal): Promise<boolean> => {
-    const bin = resolveBin()
-    if (bin === undefined) return false
+  const startLlamaChild = async (
+    bin: string,
+    modelPath: string,
+    signal?: AbortSignal,
+  ): Promise<boolean> => {
     const port = await allocFreePort()
-    const { command, args } = spawnLlamaServerCommand(bin, modelPath, port)
-    const proc = spawn(command, args, { stdio: 'ignore' })
+    const { command, args, cwd, env } = spawnLlamaServerCommand(bin, modelPath, port)
+    const proc = spawn(command, args, { stdio: 'ignore', cwd, env })
     child = proc
+    exitKillHandler = () => {
+      try {
+        proc.kill('SIGTERM')
+      } catch {
+        // ignore
+      }
+    }
+    process.once('exit', exitKillHandler)
     const base = `http://127.0.0.1:${port}`
     const ok = await pollHealth(base, signal)
     if (!ok) {
       await stopChild()
       return false
     }
-    if (stale()) return false
-    setManagedPhase(opts.spine, { phase: 'ready' })
+    if (stale()) {
+      await stopChild()
+      return false
+    }
+    setManagedPhase(opts.spine, { phase: 'ready', label: 'Qwen3.5-2B' })
     opts.onPhase({
       phase: 'ready',
       transport: new FetchLlmTransport(base, {
@@ -181,29 +236,73 @@ export function createManagedModelRunner(opts: CreateManagedModelRunnerOpts): Ma
       stopped = false
       startEpoch = opts.getEpoch()
       setManagedPhase(opts.spine, { phase: 'probing', detail: undefined })
+      opts.onPhase({ phase: 'probing' })
 
       const nodeMod = await tryImport()
-      const hasBin = resolveBin() !== undefined
-      const canGguf = nodeMod !== undefined || hasBin
+      let llamaBin = resolveBin(opts.dataDir)
+      const canAutoBootstrap =
+        opts.ensureBin !== undefined ||
+        (opts.resolveBin === undefined && llamaServerAssetForPlatform() !== undefined)
+      const canGguf = nodeMod !== undefined || llamaBin !== undefined || canAutoBootstrap
 
       if (!canGguf) {
         if (await tryOllamaBridge()) return
         setManagedPhase(opts.spine, {
           phase: 'needs-runner',
           detail:
-            'Install llama.cpp (brew install llama.cpp) for built-in Qwen3.5-2B, or run ollama pull qwen3.5:2b',
+            'No prebuilt runner for this platform — install llama.cpp on PATH or run ollama pull qwen3.5:2b',
         })
         opts.onPhase({ phase: 'needs-runner' })
         return
       }
 
       try {
+        if (nodeMod === undefined && llamaBin === undefined) {
+          const asset = llamaServerAssetForPlatform()
+          setManagedPhase(opts.spine, {
+            phase: 'downloading',
+            label: 'llama-server runner',
+            progressPct: 0,
+            downloadedBytes: 0,
+            totalBytes: asset?.expectedBytes ?? 18_000_000,
+          })
+          opts.onPhase({ phase: 'downloading' })
+          llamaBin = await ensureBin({
+            dataDir: opts.dataDir,
+            signal: opts.signal,
+            onProgress: (p) => {
+              if (stale()) return
+              setManagedPhase(opts.spine, {
+                phase: 'downloading',
+                label: 'llama-server runner',
+                progressPct: p.pct,
+                downloadedBytes: p.downloadedBytes,
+                totalBytes: p.totalBytes,
+              })
+              opts.onPhase({ phase: 'downloading' })
+            },
+          })
+          if (stale()) return
+          if (llamaBin === undefined) {
+            if (await tryOllamaBridge()) return
+            setManagedPhase(opts.spine, {
+              phase: 'needs-runner',
+              detail:
+                'Could not install llama-server automatically — install llama.cpp or run ollama pull qwen3.5:2b',
+            })
+            opts.onPhase({ phase: 'needs-runner' })
+            return
+          }
+        }
+
         setManagedPhase(opts.spine, {
           phase: 'downloading',
+          label: 'Qwen3.5-2B',
           progressPct: 0,
           downloadedBytes: 0,
           totalBytes: spec.expectedBytes,
         })
+        opts.onPhase({ phase: 'downloading' })
         const modelPath = await ensureModel(spec, {
           dataDir: opts.dataDir,
           signal: opts.signal,
@@ -211,20 +310,27 @@ export function createManagedModelRunner(opts: CreateManagedModelRunnerOpts): Ma
             if (stale()) return
             setManagedPhase(opts.spine, {
               phase: 'downloading',
+              label: 'Qwen3.5-2B',
               progressPct: p.pct,
               downloadedBytes: p.downloadedBytes,
               totalBytes: p.totalBytes,
             })
+            opts.onPhase({ phase: 'downloading' })
           },
         })
         if (stale()) return
 
-        setManagedPhase(opts.spine, { phase: 'warming', progressPct: undefined })
+        setManagedPhase(opts.spine, {
+          phase: 'warming',
+          label: 'Qwen3.5-2B',
+          progressPct: undefined,
+        })
+        opts.onPhase({ phase: 'warming' })
 
         if (nodeMod !== undefined) {
           inProc = new NodeLlamaCppTransport(nodeMod, modelPath)
           if (stale()) return
-          setManagedPhase(opts.spine, { phase: 'ready' })
+          setManagedPhase(opts.spine, { phase: 'ready', label: 'Qwen3.5-2B' })
           opts.onPhase({
             phase: 'ready',
             transport: inProc,
@@ -235,22 +341,26 @@ export function createManagedModelRunner(opts: CreateManagedModelRunnerOpts): Ma
           return
         }
 
-        if (await startLlamaChild(modelPath, opts.signal)) return
+        if (llamaBin !== undefined && (await startLlamaChild(llamaBin, modelPath, opts.signal))) {
+          return
+        }
         await stopChild()
         if (await tryOllamaBridge()) return
 
         setManagedPhase(opts.spine, {
           phase: 'needs-runner',
           detail:
-            'Install llama.cpp (brew install llama.cpp) for built-in Qwen3.5-2B, or run ollama pull qwen3.5:2b',
+            'llama-server did not become healthy — try /ai local or run ollama pull qwen3.5:2b',
         })
         opts.onPhase({ phase: 'needs-runner' })
       } catch (e) {
-        if (e instanceof ModelDownloadAbortedError || stale()) return
+        if (e instanceof ModelDownloadAbortedError || opts.signal?.aborted === true || stale()) {
+          return
+        }
         if (await tryOllamaBridge()) return
         setManagedPhase(opts.spine, {
           phase: 'needs-runner',
-          detail: e instanceof Error ? e.message : 'Default model failed',
+          detail: e instanceof Error ? e.message : 'Default model setup failed',
         })
         opts.onPhase({ phase: 'needs-runner' })
       }
