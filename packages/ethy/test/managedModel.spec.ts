@@ -372,4 +372,45 @@ describe('llama-server auto-install', () => {
     expect(firstReq.model).toBe('qwen3.5:2b')
     expect(firstReq.think).toBe(false)
   })
+
+  it('paces model download at 8M and defers llama-server warmup during SNAP_SYNCING until wakeIfDeferred', async () => {
+    const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ethy-defer-'))
+    dirs.push(dataDir)
+    const fake = fileURLToPath(new URL('./helpers/fakeLlamaServer.mjs', import.meta.url))
+    const modelPath = path.join(modelsDir(dataDir), DEFAULT_MANAGED_MODEL_SPEC.filename)
+    fs.mkdirSync(path.dirname(modelPath), { recursive: true })
+    fs.writeFileSync(modelPath, syntheticGguf(2048))
+
+    const spine = createSpine('sepolia', 11155111n)
+    spine.aiMode = 'default'
+    spine.phase = 'SNAP_SYNCING'
+    let capturedRateLimit: string | undefined
+    const phases: string[] = []
+    const runner = createManagedModelRunner({
+      spec: { ...DEFAULT_MANAGED_MODEL_SPEC, minValidBytes: 1024 },
+      dataDir,
+      spine,
+      getEpoch: () => 0,
+      tryImport: async () => undefined,
+      resolveBin: () => fake,
+      ensureModel: async (_s, modelOpts) => {
+        capturedRateLimit = modelOpts?.rateLimit
+        return modelPath
+      },
+      onPhase: (u) => phases.push(u.phase),
+    })
+
+    await runner.start()
+    expect(capturedRateLimit).toBe('8M')
+    expect(spine.managedAi?.phase).toBe('deferred')
+    expect(spine.capabilities.ai.label).toBe('Ready after sync')
+    expect(phases).not.toContain('ready')
+
+    // Once sync finishes (or user asks a question), wakeIfDeferred loads llama-server
+    spine.phase = 'HEAD_FOLLOWING'
+    await runner.wakeIfDeferred()
+    expect(spine.managedAi?.phase).toBe('ready')
+    expect(phases).toContain('ready')
+    await runner.stop()
+  })
 })

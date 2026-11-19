@@ -44,10 +44,13 @@ export type CreateManagedModelRunnerOpts = {
   ensureBin?: typeof ensureLlamaServerBin
   discoverOllama?: typeof discoverOllamaModels
   ensureModel?: typeof ensureManagedModel
+  /** Defer spawning llama-server (~2.5 GB RAM) while `SNAP_SYNCING` (default true). */
+  deferWhileSyncing?: boolean
 }
 
 const HEALTH_POLL_MS = 250
 const HEALTH_TIMEOUT_MS = 45_000
+const SYNC_DOWNLOAD_RATE_LIMIT = '8M'
 
 function allocFreePort(): Promise<number> {
   return new Promise((resolve, reject) => {
@@ -91,6 +94,7 @@ async function probeLlamaServerReady(base: string, signal?: AbortSignal): Promis
 
 export type ManagedModelRunner = {
   start(): Promise<void>
+  wakeIfDeferred(): Promise<void>
   stop(): Promise<void>
 }
 
@@ -101,10 +105,18 @@ export function createManagedModelRunner(opts: CreateManagedModelRunnerOpts): Ma
   const ensureBin = opts.ensureBin ?? ensureLlamaServerBin
   const discoverOllama = opts.discoverOllama ?? discoverOllamaModels
   const ensureModel = opts.ensureModel ?? ensureManagedModel
+  const deferWhileSyncing = opts.deferWhileSyncing !== false
 
   let child: ChildProcess | undefined
   let exitKillHandler: (() => void) | undefined
   let inProc: NodeLlamaCppTransport | undefined
+  let deferredPayload:
+    | {
+        nodeMod: Awaited<ReturnType<TryImportNodeLlamaCpp>>
+        llamaBin?: string
+        modelPath: string
+      }
+    | undefined
   let startEpoch = 0
   let stopped = true
 
@@ -147,6 +159,7 @@ export function createManagedModelRunner(opts: CreateManagedModelRunnerOpts): Ma
 
   const stopAll = async (): Promise<void> => {
     stopped = true
+    deferredPayload = undefined
     await stopChild()
     if (inProc !== undefined) {
       await inProc.dispose()
@@ -304,9 +317,12 @@ export function createManagedModelRunner(opts: CreateManagedModelRunnerOpts): Ma
           totalBytes: spec.expectedBytes,
         })
         opts.onPhase({ phase: 'downloading' })
+        const isHeavySync =
+          opts.spine.phase === 'SNAP_SYNCING' || opts.spine.phase === 'BAL_CATCHUP'
         const modelPath = await ensureModel(spec, {
           dataDir: opts.dataDir,
           signal: opts.signal,
+          rateLimit: isHeavySync ? SYNC_DOWNLOAD_RATE_LIMIT : undefined,
           onProgress: (p) => {
             if (stale()) return
             setManagedPhase(opts.spine, {
@@ -322,39 +338,64 @@ export function createManagedModelRunner(opts: CreateManagedModelRunnerOpts): Ma
         })
         if (stale()) return
 
-        setManagedPhase(opts.spine, {
-          phase: 'warming',
-          label: 'Qwen3.5-2B',
-          progressPct: undefined,
-        })
-        opts.onPhase({ phase: 'warming' })
-
-        if (nodeMod !== undefined) {
-          inProc = new NodeLlamaCppTransport(nodeMod, modelPath)
+        const warmUpModel = async (payload: {
+          nodeMod: Awaited<ReturnType<TryImportNodeLlamaCpp>>
+          llamaBin?: string
+          modelPath: string
+        }): Promise<void> => {
           if (stale()) return
-          setManagedPhase(opts.spine, { phase: 'ready', label: 'Qwen3.5-2B' })
-          opts.onPhase({
-            phase: 'ready',
-            transport: inProc,
-            base: 'node-llama-cpp',
-            model: spec.id,
-            provider: 'openai-compatible',
+          setManagedPhase(opts.spine, {
+            phase: 'warming',
+            label: 'Qwen3.5-2B',
+            progressPct: undefined,
+            bytesPerSec: undefined,
           })
+          opts.onPhase({ phase: 'warming' })
+
+          if (payload.nodeMod !== undefined) {
+            inProc = new NodeLlamaCppTransport(payload.nodeMod, payload.modelPath)
+            if (stale()) return
+            setManagedPhase(opts.spine, { phase: 'ready', label: 'Qwen3.5-2B' })
+            opts.onPhase({
+              phase: 'ready',
+              transport: inProc,
+              base: 'node-llama-cpp',
+              model: spec.id,
+              provider: 'openai-compatible',
+            })
+            return
+          }
+
+          if (
+            payload.llamaBin !== undefined &&
+            (await startLlamaChild(payload.llamaBin, payload.modelPath, opts.signal))
+          ) {
+            return
+          }
+          await stopChild()
+          if (await tryOllamaBridge()) return
+
+          setManagedPhase(opts.spine, {
+            phase: 'needs-runner',
+            detail:
+              'llama-server did not become healthy — try /ai local or run ollama pull qwen3.5:2b',
+          })
+          opts.onPhase({ phase: 'needs-runner' })
+        }
+
+        if (deferWhileSyncing && opts.spine.phase === 'SNAP_SYNCING') {
+          deferredPayload = { nodeMod, llamaBin, modelPath }
+          setManagedPhase(opts.spine, {
+            phase: 'deferred',
+            label: 'Qwen3.5-2B',
+            progressPct: undefined,
+            bytesPerSec: undefined,
+          })
+          opts.onPhase({ phase: 'deferred' })
           return
         }
 
-        if (llamaBin !== undefined && (await startLlamaChild(llamaBin, modelPath, opts.signal))) {
-          return
-        }
-        await stopChild()
-        if (await tryOllamaBridge()) return
-
-        setManagedPhase(opts.spine, {
-          phase: 'needs-runner',
-          detail:
-            'llama-server did not become healthy — try /ai local or run ollama pull qwen3.5:2b',
-        })
-        opts.onPhase({ phase: 'needs-runner' })
+        await warmUpModel({ nodeMod, llamaBin, modelPath })
       } catch (e) {
         if (e instanceof ModelDownloadAbortedError || opts.signal?.aborted === true || stale()) {
           return
@@ -366,6 +407,45 @@ export function createManagedModelRunner(opts: CreateManagedModelRunnerOpts): Ma
         })
         opts.onPhase({ phase: 'needs-runner' })
       }
+    },
+    async wakeIfDeferred(): Promise<void> {
+      const payload = deferredPayload
+      if (payload === undefined || stale()) return
+      deferredPayload = undefined
+      setManagedPhase(opts.spine, {
+        phase: 'warming',
+        label: 'Qwen3.5-2B',
+        progressPct: undefined,
+        bytesPerSec: undefined,
+      })
+      opts.onPhase({ phase: 'warming' })
+
+      if (payload.nodeMod !== undefined) {
+        inProc = new NodeLlamaCppTransport(payload.nodeMod, payload.modelPath)
+        if (stale()) return
+        setManagedPhase(opts.spine, { phase: 'ready', label: 'Qwen3.5-2B' })
+        opts.onPhase({
+          phase: 'ready',
+          transport: inProc,
+          base: 'node-llama-cpp',
+          model: spec.id,
+          provider: 'openai-compatible',
+        })
+        return
+      }
+      if (
+        payload.llamaBin !== undefined &&
+        (await startLlamaChild(payload.llamaBin, payload.modelPath, opts.signal))
+      ) {
+        return
+      }
+      await stopChild()
+      if (await tryOllamaBridge()) return
+      setManagedPhase(opts.spine, {
+        phase: 'needs-runner',
+        detail: 'llama-server did not become healthy — try /ai local or run ollama pull qwen3.5:2b',
+      })
+      opts.onPhase({ phase: 'needs-runner' })
     },
     async stop(): Promise<void> {
       await stopAll()

@@ -6,6 +6,7 @@ import { pipeline } from 'node:stream/promises'
 import type { ReadableStream as NodeWebReadableStream } from 'node:stream/web'
 
 import { resolveEthyDataDir } from '../persist/ethyDataRoot.ts'
+import { downloadWithCurl, isCurlAvailable } from './curlDownload.ts'
 import type { ModelDownloadProgress } from './modelStore.ts'
 
 export const LLAMA_CPP_RELEASE_TAG = 'b12535'
@@ -194,42 +195,54 @@ export async function ensureLlamaServerBin(
   }
 
   try {
-    const res = await fetchFn(asset.url, { signal: opts.signal })
-    if (!res.ok) {
-      throw new Error(`llama-server download HTTP ${res.status}`)
-    }
-    const len = res.headers.get('content-length')
-    if (len !== null) {
-      const parsed = Number.parseInt(len, 10)
-      if (parsed > 0) totalBytes = parsed
-    }
-
-    const outStream = fs.createWriteStream(archivePath, { highWaterMark: WRITE_HIGH_WATER_MARK })
-    let downloaded = 0
-    try {
-      if (res.body === null) {
-        const buf = new Uint8Array(await res.arrayBuffer())
-        outStream.end(buf)
-        await new Promise<void>((resolve, reject) => {
-          outStream.once('error', reject)
-          outStream.once('finish', () => resolve())
-        })
-        downloaded = buf.length
-      } else {
-        const src = Readable.fromWeb(res.body as unknown as NodeWebReadableStream, {
-          highWaterMark: WRITE_HIGH_WATER_MARK,
-        })
-        src.on('data', (chunk: Buffer | Uint8Array) => {
-          downloaded += chunk.length
-          emitProgress(downloaded, false)
-        })
-        await pipeline(src, outStream, { signal: opts.signal })
+    if (opts.fetchImpl === undefined && isCurlAvailable()) {
+      await downloadWithCurl({
+        url: asset.url,
+        partPath: archivePath,
+        expectedBytes: asset.expectedBytes,
+        resume: false,
+        signal: opts.signal,
+        onProgress: opts.onProgress,
+        onAbortError: () => new Error('llama-server download aborted'),
+      })
+    } else {
+      const res = await fetchFn(asset.url, { signal: opts.signal })
+      if (!res.ok) {
+        throw new Error(`llama-server download HTTP ${res.status}`)
       }
-    } catch (e) {
-      outStream.destroy()
-      throw e
+      const len = res.headers.get('content-length')
+      if (len !== null) {
+        const parsed = Number.parseInt(len, 10)
+        if (parsed > 0) totalBytes = parsed
+      }
+
+      const outStream = fs.createWriteStream(archivePath, { highWaterMark: WRITE_HIGH_WATER_MARK })
+      let downloaded = 0
+      try {
+        if (res.body === null) {
+          const buf = new Uint8Array(await res.arrayBuffer())
+          outStream.end(buf)
+          await new Promise<void>((resolve, reject) => {
+            outStream.once('error', reject)
+            outStream.once('finish', () => resolve())
+          })
+          downloaded = buf.length
+        } else {
+          const src = Readable.fromWeb(res.body as unknown as NodeWebReadableStream, {
+            highWaterMark: WRITE_HIGH_WATER_MARK,
+          })
+          src.on('data', (chunk: Buffer | Uint8Array) => {
+            downloaded += chunk.length
+            emitProgress(downloaded, false)
+          })
+          await pipeline(src, outStream, { signal: opts.signal })
+        }
+      } catch (e) {
+        outStream.destroy()
+        throw e
+      }
+      emitProgress(downloaded, true)
     }
-    emitProgress(downloaded, true)
 
     extractArchive(archivePath, tmpDir, asset.archiveKind)
     const extractedBin = findLlamaServerInDir(tmpDir, platform)

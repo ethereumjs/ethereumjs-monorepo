@@ -6,6 +6,7 @@ import { pipeline } from 'node:stream/promises'
 import type { ReadableStream as NodeWebReadableStream } from 'node:stream/web'
 
 import { resolveEthyDataDir } from '../persist/ethyDataRoot.ts'
+import { downloadWithCurl, isCurlAvailable } from './curlDownload.ts'
 import { ggufMagicAt } from './ggufValidate.ts'
 import { probeHardware } from './hardwareCheck.ts'
 import { type ManagedModelSpec, resolveModelDownloadUrl } from './managedModel.ts'
@@ -25,6 +26,10 @@ export type EnsureManagedModelOpts = {
   freeDiskBytes?: number
   minValidBytes?: number
   sha256?: string
+  /** Optional curl `--limit-rate` string (e.g. `'8M'`) during active state sync. */
+  rateLimit?: string
+  /** Force or disable native `curl` child-process download (defaults to auto when `fetchImpl` unset). */
+  useCurl?: boolean
 }
 
 const DISK_BUFFER_BYTES = 512 * 1024 * 1024
@@ -122,107 +127,123 @@ export async function ensureManagedModel(
 
   assertDiskSpace(opts.dataDir, spec.expectedBytes, opts.freeDiskBytes)
 
-  const fetchFn = opts.fetchImpl ?? fetch
-  let offset = fs.existsSync(part) ? fs.statSync(part).size : 0
-  let totalBytes = spec.expectedBytes
-  let lastProgressMs = 0
-  const transferStartMs = Date.now()
-  let transferBytes = 0
-
-  const emitProgress = (downloaded: number, force = false) => {
-    const now = Date.now()
-    if (!force && now - lastProgressMs < PROGRESS_THROTTLE_MS) return
-    lastProgressMs = now
-    const elapsedSec = Math.max(0.1, (now - transferStartMs) / 1000)
-    const bytesPerSec = transferBytes > 0 ? Math.round(transferBytes / elapsedSec) : undefined
-    const pct = totalBytes > 0 ? Math.min(100, Math.round((downloaded / totalBytes) * 100)) : 0
-    opts.onProgress?.({ downloadedBytes: downloaded, totalBytes, pct, bytesPerSec })
-  }
-
   const throwIfAborted = () => {
     if (opts.signal?.aborted === true) throw new ModelDownloadAbortedError()
   }
 
-  let rangeRetried = false
+  const shouldUseCurl = opts.fetchImpl === undefined && opts.useCurl !== false && isCurlAvailable()
 
-  while (true) {
+  if (shouldUseCurl) {
     throwIfAborted()
-    const headers: Record<string, string> = {}
-    if (offset > 0) headers.Range = `bytes=${offset}-`
-
-    let res: Response
-    try {
-      res = await fetchFn(resolveModelDownloadUrl(spec), { headers, signal: opts.signal })
-    } catch (e) {
-      if (opts.signal?.aborted === true) throw new ModelDownloadAbortedError()
-      throw e
-    }
-    throwIfAborted()
-
-    if (res.status === 416 && !rangeRetried) {
-      if (fs.existsSync(part)) fs.unlinkSync(part)
-      offset = 0
-      rangeRetried = true
-      continue
-    }
-    if (!res.ok && res.status !== 206) {
-      if (fs.existsSync(part)) fs.unlinkSync(part)
-      throw new Error(`Model download HTTP ${res.status}`)
-    }
-
-    const contentRange = res.headers.get('content-range')
-    const contentLength = res.headers.get('content-length')
-    if (contentRange !== null) {
-      const m = /\/(\d+)\s*$/u.exec(contentRange)
-      if (m?.[1] !== undefined) totalBytes = Number.parseInt(m[1], 10)
-    } else if (contentLength !== null) {
-      const len = Number.parseInt(contentLength, 10)
-      totalBytes = res.status === 206 ? offset + len : len
-    }
-
-    if (res.status === 200 && offset > 0) {
-      fs.unlinkSync(part)
-      offset = 0
-    }
-
-    const append = res.status === 206 && fs.existsSync(part)
-    const outStream = fs.createWriteStream(part, {
-      flags: append ? 'a' : 'w',
-      highWaterMark: WRITE_HIGH_WATER_MARK,
+    await downloadWithCurl({
+      url: resolveModelDownloadUrl(spec),
+      partPath: part,
+      expectedBytes: spec.expectedBytes,
+      resume: true,
+      rateLimit: opts.rateLimit,
+      signal: opts.signal,
+      onProgress: opts.onProgress,
+      onAbortError: () => new ModelDownloadAbortedError(),
     })
-    let downloaded = offset
-    try {
-      if (res.body === null) {
-        const buf = new Uint8Array(await res.arrayBuffer())
-        throwIfAborted()
-        outStream.end(buf)
-        await new Promise<void>((resolve, reject) => {
-          outStream.once('error', reject)
-          outStream.once('finish', () => resolve())
-        })
-        transferBytes += buf.length
-        downloaded += buf.length
-        emitProgress(downloaded, true)
-      } else {
-        const src = Readable.fromWeb(res.body as unknown as NodeWebReadableStream, {
-          highWaterMark: WRITE_HIGH_WATER_MARK,
-        })
-        src.on('data', (chunk: Buffer | Uint8Array) => {
-          transferBytes += chunk.length
-          downloaded += chunk.length
-          emitProgress(downloaded, false)
-        })
-        await pipeline(src, outStream, { signal: opts.signal })
-      }
-    } catch (e) {
-      outStream.destroy()
-      if (opts.signal?.aborted === true) throw new ModelDownloadAbortedError()
-      throw e
+  } else {
+    const fetchFn = opts.fetchImpl ?? fetch
+    let offset = fs.existsSync(part) ? fs.statSync(part).size : 0
+    let totalBytes = spec.expectedBytes
+    let lastProgressMs = 0
+    const transferStartMs = Date.now()
+    let transferBytes = 0
+
+    const emitProgress = (downloaded: number, force = false) => {
+      const now = Date.now()
+      if (!force && now - lastProgressMs < PROGRESS_THROTTLE_MS) return
+      lastProgressMs = now
+      const elapsedSec = Math.max(0.1, (now - transferStartMs) / 1000)
+      const bytesPerSec = transferBytes > 0 ? Math.round(transferBytes / elapsedSec) : undefined
+      const pct = totalBytes > 0 ? Math.min(100, Math.round((downloaded / totalBytes) * 100)) : 0
+      opts.onProgress?.({ downloadedBytes: downloaded, totalBytes, pct, bytesPerSec })
     }
 
-    offset = fs.statSync(part).size
-    emitProgress(offset, true)
-    break
+    let rangeRetried = false
+
+    while (true) {
+      throwIfAborted()
+      const headers: Record<string, string> = {}
+      if (offset > 0) headers.Range = `bytes=${offset}-`
+
+      let res: Response
+      try {
+        res = await fetchFn(resolveModelDownloadUrl(spec), { headers, signal: opts.signal })
+      } catch (e) {
+        if (opts.signal?.aborted === true) throw new ModelDownloadAbortedError()
+        throw e
+      }
+      throwIfAborted()
+
+      if (res.status === 416 && !rangeRetried) {
+        if (fs.existsSync(part)) fs.unlinkSync(part)
+        offset = 0
+        rangeRetried = true
+        continue
+      }
+      if (!res.ok && res.status !== 206) {
+        if (fs.existsSync(part)) fs.unlinkSync(part)
+        throw new Error(`Model download HTTP ${res.status}`)
+      }
+
+      const contentRange = res.headers.get('content-range')
+      const contentLength = res.headers.get('content-length')
+      if (contentRange !== null) {
+        const m = /\/(\d+)\s*$/u.exec(contentRange)
+        if (m?.[1] !== undefined) totalBytes = Number.parseInt(m[1], 10)
+      } else if (contentLength !== null) {
+        const len = Number.parseInt(contentLength, 10)
+        totalBytes = res.status === 206 ? offset + len : len
+      }
+
+      if (res.status === 200 && offset > 0) {
+        fs.unlinkSync(part)
+        offset = 0
+      }
+
+      const append = res.status === 206 && fs.existsSync(part)
+      const outStream = fs.createWriteStream(part, {
+        flags: append ? 'a' : 'w',
+        highWaterMark: WRITE_HIGH_WATER_MARK,
+      })
+      let downloaded = offset
+      try {
+        if (res.body === null) {
+          const buf = new Uint8Array(await res.arrayBuffer())
+          throwIfAborted()
+          outStream.end(buf)
+          await new Promise<void>((resolve, reject) => {
+            outStream.once('error', reject)
+            outStream.once('finish', () => resolve())
+          })
+          transferBytes += buf.length
+          downloaded += buf.length
+          emitProgress(downloaded, true)
+        } else {
+          const src = Readable.fromWeb(res.body as unknown as NodeWebReadableStream, {
+            highWaterMark: WRITE_HIGH_WATER_MARK,
+          })
+          src.on('data', (chunk: Buffer | Uint8Array) => {
+            transferBytes += chunk.length
+            downloaded += chunk.length
+            emitProgress(downloaded, false)
+          })
+          await pipeline(src, outStream, { signal: opts.signal })
+        }
+      } catch (e) {
+        outStream.destroy()
+        if (opts.signal?.aborted === true) throw new ModelDownloadAbortedError()
+        throw e
+      }
+
+      offset = fs.statSync(part).size
+      emitProgress(offset, true)
+      break
+    }
   }
 
   const size = fs.statSync(part).size

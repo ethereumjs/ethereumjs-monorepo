@@ -23,6 +23,7 @@ export type AiRuntimeController = {
   refreshAiCapability(): Promise<void>
   subscribe(listener: (snap: ManagedAiRuntimeSnapshot) => void): () => void
   getManagedSnapshot(): ManagedAiRuntimeSnapshot | undefined
+  wakeIfDeferred(): void
   stop(): Promise<void>
 }
 
@@ -211,6 +212,11 @@ export function createAiRuntimeController(opts: {
       const healthy = await probeLlmHealth(base, current.localProvider)
       opts.node.spine.llmPulseReady = healthy
       deriveCapabilities(opts.node.spine)
+    },
+    wakeIfDeferred() {
+      if (opts.node.spine.managedAi?.phase === 'deferred') {
+        void runner?.wakeIfDeferred()
+      }
     },
     async stop() {
       epoch += 1

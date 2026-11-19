@@ -182,6 +182,12 @@ export async function runEthySession(node: EthyNode, opts?: EthySessionOpts): Pr
     const hasBlocks = node.spine.economy?.hasBlocks === true
     const allBucketsDone = node.spine.snapBuckets.every((b) => b.status === 'done')
     if (node.spine.aiMode !== 'off') {
+      if (
+        node.spine.managedAi?.phase === 'deferred' &&
+        (node.spine.phase === 'HEAD_FOLLOWING' || hasBlocks)
+      ) {
+        node.aiRuntime?.wakeIfDeferred()
+      }
       const hasLiveDetective = detectiveNarrator !== undefined
       if (!hasLiveDetective) {
         if (
@@ -322,6 +328,7 @@ export async function runEthySession(node: EthyNode, opts?: EthySessionOpts): Pr
       return
     }
     if (isNl && node.spine.aiMode !== 'off') {
+      node.aiRuntime?.wakeIfDeferred()
       detectiveNarrator?.abortInFlight()
       detectiveNarrator?.noteUserPrompt(text)
       node.userInterest.notePrompt(text)

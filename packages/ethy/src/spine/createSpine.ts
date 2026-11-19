@@ -78,6 +78,12 @@ function deriveAiCapability(spine: EthySpine): void {
           progressPct: m.progressPct,
         }
         return
+      case 'deferred':
+        spine.capabilities.ai = {
+          status: 'partial',
+          label: 'Ready after sync',
+        }
+        return
       case 'warming':
       case 'probing':
         spine.capabilities.ai = {

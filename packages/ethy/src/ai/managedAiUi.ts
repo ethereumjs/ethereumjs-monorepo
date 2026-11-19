@@ -14,6 +14,9 @@ export function modelBootstrapNote(managed?: ManagedAiState): string | undefined
     const subject = managed.label ?? 'Qwen3.5-2B'
     return `Downloading ${subject}… ${pct}% (${got} / ${total}${speed}) · P2P & sync running normally`
   }
+  if (managed.phase === 'deferred') {
+    return 'Qwen3.5-2B ready on disk · starts automatically once synced to head (or ask a question now)'
+  }
   if (managed.phase === 'warming' || managed.phase === 'probing') {
     return 'Loading Qwen3.5-2B… · P2P & sync running normally'
   }
@@ -26,6 +29,7 @@ export function modelBootstrapNote(managed?: ManagedAiState): string | undefined
 export function managedPhaseBlocksOverview(phase?: string): boolean {
   return (
     phase === 'downloading' ||
+    phase === 'deferred' ||
     phase === 'warming' ||
     phase === 'needs-runner' ||
     phase === 'probing'

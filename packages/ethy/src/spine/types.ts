@@ -27,6 +27,7 @@ export type ManagedAiPhase =
   | 'idle'
   | 'probing'
   | 'downloading'
+  | 'deferred'
   | 'warming'
   | 'ready'
   | 'needs-runner'
