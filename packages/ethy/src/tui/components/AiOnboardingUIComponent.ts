@@ -99,7 +99,7 @@ export function renderAiOnboardingUIComponent(
   if (selected === 0) {
     push('')
     push(
-      `${DIM}Default embedded runner lands in WP-10d — Ollama bridge used when the recommended family is installed.${RESET}`,
+      `${DIM}Built-in Qwen3.5-2B (~1.28 GB) — requires llama.cpp on PATH or matching Ollama; download runs in the background.${RESET}`,
     )
   }
 

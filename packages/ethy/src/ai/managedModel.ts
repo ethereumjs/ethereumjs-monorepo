@@ -1,33 +1,44 @@
 /**
- * Managed default model seam (WP-10d ships weights; WP-10a defines the contract only).
+ * Managed default model catalog (WP-10d).
  */
+
+const DEFAULT_URL =
+  'https://huggingface.co/unsloth/Qwen3.5-2B-GGUF/resolve/main/Qwen3.5-2B-Q4_K_M.gguf'
+
 export type ManagedModelSpec = {
   id: string
   displayName: string
+  filename: string
+  downloadUrl: string
+  expectedBytes: number
+  minValidBytes: number
+  sha256?: string
   downloadHint: string
   /** Substrings to match installed Ollama model names for interim bridge. */
   ollamaFamilyHints: string[]
 }
 
+export function resolveDefaultModelDownloadUrl(): string {
+  const fromEnv = process.env.ETHY_DEFAULT_MODEL_URL
+  if (fromEnv !== undefined && fromEnv.length > 0) return fromEnv
+  return DEFAULT_URL
+}
+
+export function resolveModelDownloadUrl(spec: ManagedModelSpec): string {
+  const fromEnv = process.env.ETHY_DEFAULT_MODEL_URL
+  if (fromEnv !== undefined && fromEnv.length > 0) return fromEnv
+  return spec.downloadUrl
+}
+
 export const DEFAULT_MANAGED_MODEL_SPEC: ManagedModelSpec = {
-  id: 'ethy-default-v1',
-  displayName: 'Ethy default (local)',
-  downloadHint: 'Embedded runner ships in WP-10d (~400 MB–1 GB)',
-  ollamaFamilyHints: ['qwen3', 'gemma3', 'gemma-3'],
-}
-
-export interface ManagedModelProvider {
-  readonly spec: ManagedModelSpec
-  /** `ready` when a local runner can serve chat; until WP-10d this stays false without a bridge. */
-  status(): 'unavailable' | 'warming' | 'ready'
-}
-
-export class PlaceholderManagedModelProvider implements ManagedModelProvider {
-  readonly spec = DEFAULT_MANAGED_MODEL_SPEC
-
-  status(): 'unavailable' | 'warming' | 'ready' {
-    return 'unavailable'
-  }
+  id: 'qwen3.5-2b-q4_k_m',
+  displayName: 'Qwen3.5-2B (~1.28 GB)',
+  filename: 'Qwen3.5-2B-Q4_K_M.gguf',
+  downloadUrl: DEFAULT_URL,
+  expectedBytes: 1_280_835_840,
+  minValidBytes: 100 * 1024 * 1024,
+  downloadHint: 'Install llama.cpp (e.g. brew install llama.cpp) or run ollama pull qwen3.5:2b',
+  ollamaFamilyHints: ['qwen3.5:2b', 'qwen3.5', 'qwen3:4b', 'qwen3'],
 }
 
 export function findOllamaBridgeModel(

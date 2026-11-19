@@ -65,8 +65,42 @@ function deriveAiCapability(spine: EthySpine): void {
     return
   }
   if (spine.aiMode === 'default') {
-    spine.capabilities.ai = { status: 'partial', label: 'Default (WP-10d)' }
-    return
+    const m = spine.managedAi
+    if (m === undefined) {
+      spine.capabilities.ai = { status: 'partial', label: 'Default model' }
+      return
+    }
+    switch (m.phase) {
+      case 'downloading':
+        spine.capabilities.ai = {
+          status: 'partial',
+          label: m.progressPct !== undefined ? `Downloading ${m.progressPct}%` : 'Downloading',
+          progressPct: m.progressPct,
+        }
+        return
+      case 'warming':
+      case 'probing':
+        spine.capabilities.ai = {
+          status: 'partial',
+          label: m.phase === 'warming' ? 'Loading Qwen3.5-2B' : 'Default model',
+        }
+        return
+      case 'ready':
+        spine.capabilities.ai = { status: 'ready', label: 'Qwen3.5-2B' }
+        return
+      case 'ollama-bridge':
+        spine.capabilities.ai = {
+          status: 'partial',
+          label: m.label ?? 'Ollama bridge',
+        }
+        return
+      case 'needs-runner':
+        spine.capabilities.ai = { status: 'partial', label: 'Install runner' }
+        return
+      default:
+        spine.capabilities.ai = { status: 'partial', label: 'Default model' }
+        return
+    }
   }
   if (spine.llmPulseReady === true) {
     spine.capabilities.ai = { status: 'ready', label: 'Local LLM' }

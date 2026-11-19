@@ -1,7 +1,6 @@
 import type { AiRuntimeController } from '../ai/aiRuntime.ts'
 import type { HardwareSnapshot } from '../ai/hardwareCheck.ts'
 import { discoverAllLocalModels } from '../ai/localProviders.ts'
-import { findOllamaBridgeModel } from '../ai/managedModel.ts'
 import type { EthyAiConfig } from '../persist/userConfig.ts'
 import type { TuiViewState, WidgetSpec } from '../spine/types.ts'
 import type { KeyAction } from './prompt.ts'
@@ -100,21 +99,6 @@ export function configForOnboardingChoice(
       model: hit.modelId,
       memory: 'ephemeral',
       ...shareField,
-    }
-  }
-  const names = (widget.discoveredModels ?? []).map((m) => m.modelId)
-  const bridge = findOllamaBridgeModel(names)
-  if (bridge !== undefined) {
-    const hit = widget.discoveredModels?.find((m) => m.modelId === bridge)
-    if (hit !== undefined) {
-      return {
-        mode: 'local',
-        localProvider: hit.provider,
-        baseUrl: hit.baseUrl,
-        model: hit.modelId,
-        memory: 'ephemeral',
-        ...shareField,
-      }
     }
   }
   return { mode: 'default', memory: 'ephemeral', ...shareField }

@@ -4,6 +4,7 @@ import readline from 'node:readline'
 import { ChainDetectiveNarrator, signalToDispatchCard } from '../ai/chainDetective.ts'
 import type { SlashDispatchCtx } from '../ai/deterministicEngine.ts'
 import { probeHardware } from '../ai/hardwareCheck.ts'
+import { managedPhaseBlocksOverview } from '../ai/managedAiUi.ts'
 import {
   buildDeterministicOverviewSections,
   clampOverviewSections,
@@ -89,6 +90,7 @@ export async function runEthySession(node: EthyNode, opts?: EthySessionOpts): Pr
   let intentGeneration = 0
   let savedOverviewSections: AiOverviewSections | undefined
   let detectiveNarrator: ChainDetectiveNarrator | undefined
+  let unsubscribeManagedAi: (() => void) | undefined
 
   const slashCtx = (): SlashDispatchCtx => ({
     spine: node.spine,
@@ -100,6 +102,9 @@ export async function runEthySession(node: EthyNode, opts?: EthySessionOpts): Pr
   })
 
   const refreshOverview = (trigger: 'welcome' | 'pulse') => {
+    if (managedPhaseBlocksOverview(node.spine.managedAi?.phase)) {
+      return
+    }
     if (node.spine.economy?.hasBlocks === true) {
       const sig = node.spine.economy.signals?.[0]
       const sections: AiOverviewSections =
@@ -377,6 +382,22 @@ export async function runEthySession(node: EthyNode, opts?: EthySessionOpts): Pr
     detectiveNarrator.start(node.spine)
   }
 
+  if (node.aiRuntime !== undefined) {
+    unsubscribeManagedAi = node.aiRuntime.subscribe((snap) => {
+      if (snap.bootstrapNote !== undefined) {
+        view = { ...view, aiOverviewSections: { bootstrapNote: snap.bootstrapNote } }
+      }
+      if (managedPhaseBlocksOverview(snap.phase)) {
+        detectiveNarrator?.stop()
+        detectiveNarrator = undefined
+      }
+      if (snap.phase === 'ready' && node.spine.aiMode !== 'off' && node.llm !== undefined) {
+        startDetectiveNarrator()
+      }
+      draw()
+    })
+  }
+
   if (llmConfigured) {
     startDetectiveNarrator()
   }
@@ -509,6 +530,7 @@ export async function runEthySession(node: EthyNode, opts?: EthySessionOpts): Pr
       output.off('resize', onResize)
       input.off('data', onData)
       detectiveNarrator?.stop()
+      unsubscribeManagedAi?.()
       node.hybridEngine?.clearMemory()
       if (input.isTTY) input.setRawMode(false)
       output.write(CURSOR_SHOW)

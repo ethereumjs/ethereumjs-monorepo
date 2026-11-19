@@ -1,6 +1,6 @@
 # WP-10d: Integrated Default Model (`Qwen3.5-2B`) — Managed GGUF Downloader, Zero-Dep Local Runner, Live Hot-Start & 3-Layer Offline `MockLlmServer` Test Suite
 
-- **Status:** `READY_FOR_PLANNING`
+- **Status:** `DONE`
 - **Series:** `WP-10` — Next-Generation LLM Integration, Capabilities & Model Strategy
   - **`WP-10a` (`DONE`):** Modular AI runtime modes (`default` / `off` / `local`), first-open TUI onboarding, full-width `No AI` cockpit, `<dataDir>/config.json`, and Ollama/loopback discovery.
   - **`WP-10b` (`DONE`):** Layer 1 deterministic Ethereum signal engine, multi-horizon time series, EIP-7702/L2-blob/BAL-slot analytics, and local `name()`/`symbol()` + ENS reverse identity resolution.
@@ -128,10 +128,75 @@ To thoroughly test the **entire** LLM wire, tool-calling, download, and lifecycl
 
 ## 2. Concrete Implementation Plan (Planner — Grok 4.7)
 
-*(To be filled out by Planner — Grok 4.7 when assigned.)*
+### 2.0 Current codebase gaps (pre-implementation)
+
+- [`managedModel.ts`](../src/ai/managedModel.ts) is a placeholder (`ethy-default-v1`, `PlaceholderManagedModelProvider`).
+- [`aiRuntime.ts`](../src/ai/aiRuntime.ts) `mode === 'default'` clears `node.llm` and hard-codes `Default (WP-10d)` on the AI pill.
+- [`deriveAiCapability`](../src/spine/createSpine.ts) overwrites that pill on every peer tick — download `progressPct` must not live on `capabilities.ai` alone.
+- [`hybridEngine.ts`](../src/ai/hybridEngine.ts) `/ai default` and onboarding option 1 still bridge matching Ollama into `mode: 'local'` or reopen onboarding with a WP-10d deferral note.
+- [`session.ts`](../src/tui/session.ts) starts `ChainDetectiveNarrator` only when `node.llm` exists at boot — no subscribe hook for async default runner ready.
+
+### 2.1 Design refinements (Decision **D-126**)
+
+1. **Runner-owned capability** — Add `spine.managedAi` (`phase`, optional `progressPct`, `detail`). `deriveAiCapability` reads it when `aiMode === 'default'` so peer ticks do not erase download percentage.
+2. **Stay on `default`** — Ollama bridge wires a transport but keeps `mode: 'default'` on disk; retire interim `local` rewrite in `hybridEngine` and onboarding.
+3. **Download only after a GGUF runner exists** — `node-llama-cpp` dynamic import or `llama-server` on `ETHY_LLAMA_SERVER_BIN` / `PATH`; Ollama-only and install-hint paths never fetch the 1.28 GB file.
+4. **`sha256` unset in production spec** — validate GGUF magic `47 47 55 46` + `minValidBytes` (100 MiB); optional streaming SHA-256 when tests inject `sha256`.
+5. **Abort keeps `.part`** for Range resume; invalid body deletes `.part` only.
+6. **Epoch token** on `AiRuntimeController` — `/ai off`, `/ai local`, and a newer `/ai default` invalidate late download/runner callbacks.
+7. **`llama-server` health timeout (15s)** — kill child, fall through to Ollama, then install hint (no re-download).
+8. **Status in AI box** — `bootstrapNote` during `downloading` / `warming` / `needs-runner`; `refreshOverview` must not clobber those phases.
+
+### 2.2 Pinned spec & types (`managedModel.ts`, `spine/types.ts`)
+
+1. Extend `ManagedModelSpec` with `filename`, `downloadUrl`, `expectedBytes`, `minValidBytes`, optional `sha256`; resolve `downloadUrl` via `ETHY_DEFAULT_MODEL_URL` at read time (function, not a frozen constant).
+2. Set `DEFAULT_MANAGED_MODEL_SPEC` to `qwen3.5-2b-q4_k_m`, Unsloth URL, `expectedBytes: 1_280_835_840`, hints `qwen3.5:2b`…`qwen3`; keep `findOllamaBridgeModel`. Drop or thin `PlaceholderManagedModelProvider` after runner owns status.
+3. Add `ManagedAiPhase` + `spine.managedAi` on `EthySpine`.
+
+### 2.3 Resumable downloader (`modelStore.ts`)
+
+1. `modelsDir(dataDir)` → `<dataDir>/models/` (survives `discardPivots` / `--fresh`).
+2. `ensureManagedModel(spec, { dataDir, signal, onProgress, fetchImpl, freeDiskBytes, minValidBytes })` — skip fetch when final file validates; HTTP `Range` on `.part`; throttled progress (250 ms); disk pre-check `expectedBytes + 512 MiB` via `probeHardware` / injectable `freeDiskBytes`.
+
+### 2.4 Runner chain (`managedRunner.ts`, `nodeLlamaCppAdapter.ts`)
+
+1. **`createManagedModelRunner`** — async non-blocking `start()`, `stop()` with epoch checks; backends implement `LlmTransport`.
+2. **Backend 1** — lazy `import('node-llama-cpp')` via injectable `tryImportNodeLlamaCpp()` + minimal `.d.ts`; GGUF in-process, `contextSize: 4096`, serialized queue, `dispose()` on stop.
+3. **Backend 2** — `ETHY_LLAMA_SERVER_BIN` or PATH; spawn `llama-server -m … --host 127.0.0.1 --port … --ctx-size 4096 --reasoning-budget 0` (`stdio: 'ignore'`); poll `/health`; wrap `FetchLlmTransport` (`openai-compatible`); clean `SIGTERM` → `SIGKILL` on stop/exit.
+4. **Backend 3** — `discoverOllamaModels` + `findOllamaBridgeModel`; no GGUF download.
+5. **Neither** — `needs-runner` phase + two-line install hint (`brew install llama.cpp` / `ollama pull qwen3.5:2b`).
+6. Map phases to pill: `Downloading N%` (+ `progressPct`), `Loading Qwen3.5-2B`, `Qwen3.5-2B` ready, `Install runner`.
+
+### 2.5 Runtime, slash commands, TUI
+
+1. **`aiRuntime.ts`** — `default` starts runner, `subscribe(listener)` with immediate replay, wires `node.llm` + `hybridEngine.setLlmTransport` on ready; `off`/`local` stop runner and clear `managedAi`.
+2. **`createSpine.ts`** — `deriveAiCapability` uses `managedAi` for default mode.
+3. **`hybridEngine.ts`** — `/ai default` → `setAiConfig({ mode: 'default' })` only; remove Ollama rewrite and onboarding reopen.
+4. **`aiOnboardingSession.ts`** + **`AiOnboardingUIComponent.ts`** — option 1 always `mode: 'default'`; update copy.
+5. **`session.ts`** — subscribe for `bootstrapNote` progress card; `startDetectiveNarrator` on ready; guard `refreshOverview` during managed phases; cleanup stops runner via runtime.
+
+### 2.6 Smoke CLI (`scripts/ai-smoke.ts`, `package.json`)
+
+1. Add `"ai:smoke": "tsx scripts/ai-smoke.ts"` (script only, no new deps).
+2. `--mock` — three synthetic scenarios (7702 surge, L2 blobs, quiet block) via `MockLlmServer`; agents/CI only.
+3. Live mode — human-only; export `runSmokeScenarios(transport)` for unit tests.
+
+### 2.7 Offline test harness
+
+1. **Layer A** — `test/helpers/mockLlmServer.ts` (+ `test/llmIntegration.spec.ts` or extend `chainDetective.spec.ts`): OpenAI + Ollama loopback, wire invariants, adversarial JSON / `think` / abort.
+2. **Layer B** — `test/managedModel.spec.ts`: `MockModelDownloadServer` with Range, resume, abort, SHA mismatch, disk guard, `--fresh` preserves `models/`.
+3. **Layer C** — same spec: fake `ETHY_LLAMA_SERVER_BIN` (`test/helpers/fakeLlamaServer.mjs`), runtime lifecycle + `ai:smoke --mock` spawn.
+4. Update tests expecting `ethy-default-v1` or `Default (WP-10d)` labels.
+
+### 2.8 Implementation order
+
+1. Types + `managedModel` pin → `modelStore` → `managedRunner` (+ node-llama adapter) → `aiRuntime` + spine deriver → hybrid/onboarding/session → mocks + specs → smoke script → gates (`tsc`, `npm test`, `spellcheck`).
 
 ---
 
 ## 3. Implementation Notes & Deviations (Implementer — Composer 2.5)
 
-*(To be filled out by Implementer — Composer 2.5 when implemented.)*
+- Shipped **`spine.managedAi`** + `deriveAiCapability` for default-mode pill/progress; **`setManagedPhase({ phase: 'ready' })`** runs before `onPhase` so capability label is not stuck on “Loading …”.
+- **`managedRunner`** chain: Ollama bridge → optional lazy `node-llama-cpp` → `ETHY_LLAMA_SERVER_BIN` child; GGUF fetch via **`modelStore.ensureManagedModel`** (Range resume, magic check, no agent download in tests).
+- **`aiRuntime`** epoch + subscribe; TUI **`bootstrapNote`** during download/warmup; `/ai default` stays **`mode: 'default'`**.
+- Offline verification: **`test/managedModel.spec.ts`**, **`MockLlmServer`**, **`fakeLlamaServer.mjs`**, **`npm run ai:smoke -- --mock`**; zero new `package.json` runtime deps.

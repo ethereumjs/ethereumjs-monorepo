@@ -13,7 +13,7 @@ import type { InvestigationJournal } from './investigationJournal.ts'
 import { probeLlmHealth } from './llmClient.ts'
 import { LocalHttpIntentEngine } from './localHttpEngine.ts'
 import { discoverAllLocalModels, matchDiscoveredModel } from './localProviders.ts'
-import { DEFAULT_MANAGED_MODEL_SPEC, findOllamaBridgeModel } from './managedModel.ts'
+import { DEFAULT_MANAGED_MODEL_SPEC } from './managedModel.ts'
 import { expandSlashCommand } from './slashComplete.ts'
 import { TurnMemoryRing } from './turnMemory.ts'
 
@@ -287,47 +287,20 @@ export class HybridIntentEngine implements IntentEngine {
     }
 
     if (sub === 'default') {
-      const models = await discoverAllLocalModels()
-      const bridge = findOllamaBridgeModel(models.map((m) => m.modelId))
-      if (bridge !== undefined) {
-        const hit = models.find((m) => m.modelId === bridge)
-        if (hit !== undefined) {
-          await runtime.setAiConfig(
-            {
-              mode: 'local',
-              localProvider: hit.provider,
-              baseUrl: hit.baseUrl,
-              model: hit.modelId,
-              memory: this.memoryMode,
-            },
-            { persist },
-          )
-          return {
-            widget: {
-              kind: 'key_value',
-              title: 'Default model (interim)',
-              entries: [
-                { key: 'Bridge', value: `${hit.label} until WP-10d embedded runner` },
-                { key: 'Spec', value: DEFAULT_MANAGED_MODEL_SPEC.displayName },
-              ],
-            },
-            stateHeader: '',
-            querySlot: req.spine.currentSlot,
-            aiLayoutRefresh: true,
-          }
-        }
-      }
-      await runtime.setAiConfig({ mode: 'default', memory: this.memoryMode }, { persist: false })
+      const prev = runtime.getConfig()
+      await runtime.setAiConfig({ ...prev, mode: 'default', memory: this.memoryMode }, { persist })
       return {
         widget: {
-          kind: 'ai_onboarding',
-          initialOption: 0,
-          statusNote:
-            'Default embedded runner lands in WP-10d — select No AI or Own local model (Ollama) for now',
+          kind: 'key_value',
+          title: 'Default model',
+          entries: [
+            { key: 'Model', value: DEFAULT_MANAGED_MODEL_SPEC.displayName },
+            { key: 'Status', value: 'Starting built-in runner (download may follow)' },
+          ],
         },
         stateHeader: '',
         querySlot: req.spine.currentSlot,
-        openOnboarding: true,
+        aiLayoutRefresh: true,
       }
     }
 

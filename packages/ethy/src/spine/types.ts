@@ -22,6 +22,25 @@ export type SyncTransport = 'unset' | 'ethy' | 'snap'
 
 export type CapabilityReadiness = 'locked' | 'partial' | 'ready'
 
+/** Default managed model lifecycle (WP-10d). */
+export type ManagedAiPhase =
+  | 'idle'
+  | 'probing'
+  | 'downloading'
+  | 'warming'
+  | 'ready'
+  | 'needs-runner'
+  | 'ollama-bridge'
+
+export interface ManagedAiState {
+  phase: ManagedAiPhase
+  progressPct?: number
+  downloadedBytes?: number
+  totalBytes?: number
+  detail?: string
+  label?: string
+}
+
 export type SnapBucketStatus = 'pending' | 'syncing' | 'verifying_proof' | 'done' | 'stalled'
 
 export interface PeerTelemetry {
@@ -157,6 +176,8 @@ export interface EthySpine {
   aiMode: EthyAiMode
   /** Opt-in RAM-only prompt sharing for Chain Detective (WP-10c). */
   sharePromptHistory?: boolean
+  /** Integrated default model runner state (`aiMode === 'default'`). */
+  managedAi?: ManagedAiState
   /** `--demo` uses {@link currentSlot} as a synthetic clock in the capability bar. */
   demoClock?: boolean
   headBlockNumber?: bigint
