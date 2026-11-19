@@ -32,7 +32,13 @@ export function reduceOnboardingKey(
   let sharePromptHistory = w.sharePromptHistory === true
   const models = w.discoveredModels ?? []
 
-  if (action.type === 'up') {
+  if (action.type === 'left') {
+    selected = (selected - 1 + 3) % 3
+    localIdx = 0
+  } else if (action.type === 'right') {
+    selected = (selected + 1) % 3
+    localIdx = 0
+  } else if (action.type === 'up') {
     if (selected === 2 && models.length > 0 && localIdx > 0) {
       localIdx -= 1
     } else {

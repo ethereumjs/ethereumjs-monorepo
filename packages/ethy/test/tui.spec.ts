@@ -686,5 +686,35 @@ describe('[Ethy/TUI]: prompt reducer', () => {
     const committed = reduceOnboardingKey(toggled.view, { type: 'enter' })!
     assert.equal(committed.committed?.mode, 'local')
     assert.equal(committed.committed?.sharePromptHistory, true)
+
+    // applyLiveSlashRefresh must never clobber an active ai_onboarding screen with /welcome
+    const { applyLiveSlashRefresh } = await import('../src/tui/viewHistory.ts')
+    const { createFlatStateManager } = await import('@ethereumjs/statemanager')
+    const refreshed = applyLiveSlashRefresh(view, spine, {
+      spine,
+      stateManager: createFlatStateManager(),
+    })
+    assert.equal(refreshed.activeWidget?.kind, 'ai_onboarding')
+
+    // Left/Right arrows move between the 3 option cards
+    const rightStep = reduceOnboardingKey(view, { type: 'right' })!
+    assert.equal(
+      rightStep.view.activeWidget?.kind === 'ai_onboarding'
+        ? rightStep.view.activeWidget.selectedOption
+        : -1,
+      0,
+    )
+
+    // Wide 3-card onboarding and compact fallback both preserve exact cols/rows geometry
+    for (const [cols, rows] of [
+      [120, 34],
+      [72, 24],
+    ] as const) {
+      const lines = renderFrame(spine, view, cols, rows)
+      assert.equal(lines.length, rows)
+      for (const ln of lines) {
+        assert.equal(visibleWidth(ln), cols)
+      }
+    }
   })
 })

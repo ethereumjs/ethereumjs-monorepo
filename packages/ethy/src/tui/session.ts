@@ -298,13 +298,15 @@ export async function runEthySession(node: EthyNode, opts?: EthySessionOpts): Pr
       }
       view = pushViewHistory(view, entry)
       node.hybridEngine?.noteIntentInflight(-1)
-    } else if (!isHelpCommand(label)) {
+    } else if (!isHelpCommand(label) && result.openOnboarding !== true) {
+      const cmdLower = label.trim().toLowerCase()
+      const isAiControl = cmdLower === '/ai' || cmdLower.startsWith('/ai ') || cmdLower === '/clear'
       const entry: InteractionHistoryEntry = {
         kind: 'slash',
         command: label,
         label,
         page: 'main',
-        frozenWidget: result.frozenSlashWidget,
+        frozenWidget: result.frozenSlashWidget ?? (isAiControl ? result.widget : undefined),
       }
       view = pushViewHistory(view, entry)
     }

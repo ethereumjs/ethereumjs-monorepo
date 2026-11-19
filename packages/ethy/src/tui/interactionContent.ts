@@ -186,7 +186,7 @@ export function interactionViewTitle(
     base = `${BOLD}Interaction${RESET}`
   }
   if (widget?.kind === 'ai_onboarding') {
-    return `${BOLD}Choose AI Mode${RESET}`
+    return `${BOLD}Welcome · Setup${RESET}`
   }
   if (widget?.kind === 'domain_help') {
     if (widget.unified === true) {
