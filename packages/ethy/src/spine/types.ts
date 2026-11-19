@@ -155,6 +155,8 @@ export interface EthySpine {
   pivotCarry?: PivotCarry
   /** Effective AI runtime mode (WP-10a). */
   aiMode: EthyAiMode
+  /** Opt-in RAM-only prompt sharing for Chain Detective (WP-10c). */
+  sharePromptHistory?: boolean
   /** `--demo` uses {@link currentSlot} as a synthetic clock in the capability bar. */
   demoClock?: boolean
   headBlockNumber?: bigint
@@ -302,11 +304,26 @@ export type InteractionHistoryEntry =
       page: InteractionPage
     }
 
+export type ChainDispatchCard = {
+  category: string
+  severity: string
+  headline: string
+  body: string
+  relatedAddress?: string
+  suggestedAction?: string
+  blockNumber?: string
+  atMs: number
+  deterministic?: boolean
+}
+
 export interface AiOverviewSections {
   state?: string
   economy?: string
   p2p?: string
   focusNote?: { domain: CapabilityId; text: string }
+  /** WP-10c Dispatch Feed (replaces 3-domain prose when set). */
+  dispatches?: ChainDispatchCard[]
+  bootstrapNote?: string
 }
 
 export type WidgetSpec =

@@ -16,9 +16,10 @@ export type AiRuntimeController = {
   refreshAiCapability(): Promise<void>
 }
 
-function applyAiModeToSpine(spine: EthySpine, mode: EthyAiMode): void {
-  spine.aiMode = mode
-  if (mode === 'off') {
+function applyAiModeToSpine(spine: EthySpine, config: EthyAiConfig): void {
+  spine.aiMode = config.mode
+  spine.sharePromptHistory = config.sharePromptHistory === true
+  if (config.mode === 'off') {
     spine.llmPulseReady = false
     spine.capabilities.ai = { status: 'locked', label: 'No AI' }
     return
@@ -68,13 +69,13 @@ export function createAiRuntimeController(opts: {
     if (config.mode === 'off') {
       opts.node.llm = undefined
       hybrid?.clearLlmTransport()
-      applyAiModeToSpine(spine, 'off')
+      applyAiModeToSpine(spine, config)
       return
     }
     if (config.mode === 'default') {
       opts.node.llm = undefined
       hybrid?.clearLlmTransport()
-      spine.aiMode = 'default'
+      applyAiModeToSpine(spine, config)
       spine.capabilities.ai = { status: 'partial', label: 'Default (WP-10d)' }
       return
     }
@@ -82,7 +83,7 @@ export function createAiRuntimeController(opts: {
     if (wired === undefined) {
       opts.node.llm = undefined
       hybrid?.clearLlmTransport()
-      applyAiModeToSpine(spine, config.mode)
+      applyAiModeToSpine(spine, config)
       return
     }
     opts.node.llm = wired

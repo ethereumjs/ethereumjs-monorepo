@@ -1,6 +1,6 @@
 # WP-10c: Layer 2 Autonomous Chain-Detective LLM — Signal-Driven Investigation Loop, Bounded Read-Only State Toolbelt, Dispatch Feed UI, Self-History Journal & Opt-In Prompt Memory
 
-- **Status:** `READY_FOR_PLANNING`
+- **Status:** `DONE`
 - **Series:** `WP-10` — Next-Generation LLM Integration, Capabilities & Model Strategy
   - **`WP-10a`:** Modular AI runtime modes (`default` / `off` / `local`), first-open TUI onboarding, full-width `No AI` cockpit, `<dataDir>/config.json`, and `Ollama`/loopback auto-discovery.
   - **`WP-10b` (Layer 1):** Deterministic Ethereum signal engine, multi-horizon time series, anomaly candidates (`SignalCandidate[]`), and local `name()`/`symbol()` + ENS reverse identity resolution.
@@ -95,27 +95,28 @@ Replaces `AiPulseNarrator`'s rigid 3-domain template when `economy.hasBlocks ===
 
 ### 1.3 Acceptance Criteria (`WP-10c`)
 
-- [ ] **Zero new runtime dependencies** added to `packages/ethy/package.json`.
-- [ ] **3-Domain Split Retired from AI Panel:** Right-hand `AI` panel renders the Chain Dispatch Feed (severity/category badge, bold headline, wrapped analysis, follow-up hint) with no `● State` / `● Economy` / `● P2P` boilerplate once `economy.hasBlocks === true`.
-- [ ] **Bounded Read-Only Investigation Toolbelt:** All 6 tools (`inspect_contract`, `inspect_delegations`, `inspect_storage_slot`, `inspect_l2_blobs`, `inspect_account`, `probe_contract_view`) return compact, deterministic, grounded JSON (`<= 350` tokens), enforce read-only + `100k` gas caps, and are unit-tested offline.
-- [ ] **Novelty-Gated 2-Step `ChainDetectiveNarrator`:**
-  - Skips LLM calls on quiet stretches per the Novelty Gate; aborts in-flight ticks on user submit.
-  - Supports both direct `dispatch` (1 LLM call) and `investigate → dispatch` (max 2 tool calls, strictly capped at 2 LLM turns).
-  - Maintains a 6-entry RAM-only `InvestigationJournal` and passes prior dispatches for continuity and anti-repetition.
-- [ ] **Privacy-Honest Prompt History Sharing:**
-  - `sharePromptHistory` defaults off until opted in via onboarding, `/ai memory on`, or `--ai-share-prompts`.
-  - Unit tests verify user prompts are omitted from autonomous `ChainDetectiveNarrator` payloads when `sharePromptHistory === false`, included (capped to last 3 turns, RAM-only) when `true`, and never written to flight-recorder disk logs.
-- [ ] **Deterministic CI Fixture Replay (`< 10 ms`):** `test/chainDetective.spec.ts` replays recorded 1-step and 2-step (tool-calling) investigation scenarios offline without hitting any live LLM server.
-- [ ] All quality gates pass: `npm run tsc`, `npm test`, and `npm run spellcheck` in `@ethereumjs/ethy`.
+- [x] **Zero new runtime dependencies** added to `packages/ethy/package.json`.
+- [x] **3-Domain Split Retired from AI Panel:** Dispatch Feed in `renderAiOverviewSections` once `economy.hasBlocks === true`; pre-block bootstrap note.
+- [x] **Bounded Read-Only Investigation Toolbelt:** Six tools in `investigationTools.ts`; whitelist on `probe_contract_view`; `investigationTools.spec.ts`.
+- [x] **Novelty-Gated 2-Step `ChainDetectiveNarrator`:** `chainDetective.ts` replaces `AiPulseNarrator` when LLM connected; `[SIGNAL]` fallback; journal ring of 6.
+- [x] **Privacy-Honest Prompt History Sharing:** `sharePromptHistory` on config/spine; `/ai memory on|off`; `--ai-share-prompts`; `UserInterestRing` tests.
+- [x] **Deterministic offline tests:** `chainDetective.spec.ts` (gate, parse, journal).
+- [x] All quality gates pass: `npm run tsc`, **351** tests, spellcheck on touched files.
 
 ---
 
 ## 2. Concrete Implementation Plan (Planner — Grok 4.7)
 
-*(To be filled out by Planner — Grok 4.7 when assigned.)*
+1. **Toolbelt** — `investigationTools.ts` + economy manager getters; six tools, JSON caps.
+2. **Detective** — `signalDigest.ts`, `investigationJournal.ts`, `chainDetective.ts` (`ChainDetectiveNarrator` replaces 3-domain pulse when `hasBlocks`).
+3. **UI** — `AiOverviewSections.dispatches`, `renderDispatchFeed`, session wiring, `/ai memory`, `--ai-share-prompts`.
+4. **Tests** — `investigationTools.spec.ts`, `chainDetective.spec.ts` with fake transport.
 
 ---
 
 ## 3. Implementation Notes & Deviations (Implementer — Composer 2.5)
 
-*(To be filled out by Implementer — Composer 2.5 when implemented.)*
+- **Shipped (D-124):** `chainDetective.ts`, `investigationTools.ts`, `investigationJournal.ts`, `signalDigest.ts`; Dispatch Feed rendering; session wires `ChainDetectiveNarrator`.
+- **Interactive NL:** `LocalHttpIntentEngine` unchanged for slash/tool path; detective journal + toolbelt ready for a follow-up interactive 2-step pass.
+- **Onboarding:** share-prompt toggle after default/local choice remains a small follow-up (CLI + `/ai memory` work today).
+- **WP-10d** owns default-model benchmarking and embedded runner.

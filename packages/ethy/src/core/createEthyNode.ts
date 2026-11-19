@@ -10,10 +10,11 @@ import { FetchLlmTransport, type LlmTransport, RecordingTransport } from '../ai/
 import type { AiMemoryMode, HybridIntentEngine } from '../ai/hybridEngine.ts'
 import { HybridIntentEngine as HybridIntentEngineClass } from '../ai/hybridEngine.ts'
 import type { IntentEngine, IntentResult } from '../ai/intentEngine.ts'
+import { InvestigationJournal, UserInterestRing } from '../ai/investigationJournal.ts'
 import { assertLlmBaseUrl, normalizeLlmBase } from '../ai/llmClient.ts'
 import { DEFAULT_OLLAMA_BASE } from '../ai/localProviders.ts'
 import { ETHEconomyDataManager } from '../economy/economyDataManager.ts'
-import { createEthySandbox } from '../evm/sandbox.ts'
+import { type EthySandbox, createEthySandbox } from '../evm/sandbox.ts'
 import { activeHardfork, advertisedForkHash, chainConfigForNetwork } from '../net/chainHardfork.ts'
 import { networkGenesisHash } from '../net/genesisStatus.ts'
 import { NoticeBoard } from '../notify/board.ts'
@@ -78,6 +79,9 @@ export interface EthyNode {
   /** Live AI mode switching (WP-10a). */
   aiRuntime?: AiRuntimeController
   dataDir?: string
+  investigationJournal: InvestigationJournal
+  userInterest: UserInterestRing
+  sandbox: EthySandbox
 }
 
 export function createEthyNode(opts: CreateEthyNodeOptions): EthyNode {
@@ -151,7 +155,10 @@ export function createEthyNode(opts: CreateEthyNodeOptions): EthyNode {
     allowRemote: opts.llmAllowRemote,
   }
   spine.aiMode = effectiveAi.mode
+  spine.sharePromptHistory = effectiveAi.sharePromptHistory === true
   deriveCapabilities(spine)
+  const investigationJournal = new InvestigationJournal()
+  const userInterest = new UserInterestRing()
 
   let llm: EthyNode['llm']
   let hybridEngine: HybridIntentEngine | undefined
@@ -229,6 +236,9 @@ export function createEthyNode(opts: CreateEthyNodeOptions): EthyNode {
 
   const node: EthyNode = {
     spine,
+    investigationJournal,
+    userInterest,
+    sandbox,
     dataDir,
     stateManager,
     notices: new NoticeBoard(),

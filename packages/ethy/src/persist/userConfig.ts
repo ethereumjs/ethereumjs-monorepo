@@ -121,8 +121,10 @@ function cliTouchesAi(cli: EthyCliArgs): boolean {
 
 function aiConfigFromCli(cli: EthyCliArgs): EthyAiConfig {
   const memory = cli.aiMemory
+  const sharePromptHistory = cli.aiSharePrompts === true ? true : undefined
+  const shareField = sharePromptHistory !== undefined ? { sharePromptHistory } : {}
   if (cli.noAi === true || cli.aiMode === 'off') {
-    return { mode: 'off', memory }
+    return { mode: 'off', memory, ...shareField }
   }
   if (cli.ollama !== undefined) {
     const model =
@@ -137,6 +139,7 @@ function aiConfigFromCli(cli: EthyCliArgs): EthyAiConfig {
       baseUrl: 'http://127.0.0.1:11434',
       model,
       memory,
+      ...shareField,
     }
   }
   if (cli.llmUrl !== undefined) {
@@ -147,6 +150,7 @@ function aiConfigFromCli(cli: EthyCliArgs): EthyAiConfig {
       model: cli.llmModel,
       allowRemote: cli.llmAllowRemote,
       memory,
+      ...shareField,
     }
   }
   if (cli.aiMode === 'local') {
@@ -154,12 +158,13 @@ function aiConfigFromCli(cli: EthyCliArgs): EthyAiConfig {
       mode: 'local',
       localProvider: 'openai-compatible',
       memory,
+      ...shareField,
     }
   }
   if (cli.aiMode === 'default') {
-    return { mode: 'default', memory }
+    return { mode: 'default', memory, ...shareField }
   }
-  return { mode: 'off', memory }
+  return { mode: 'off', memory, ...shareField }
 }
 
 export function mergeAiMemory(base: EthyAiConfig, cli: EthyCliArgs): EthyAiConfig {

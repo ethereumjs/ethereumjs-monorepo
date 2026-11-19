@@ -214,6 +214,42 @@ export class HybridIntentEngine implements IntentEngine {
       }
     }
 
+    if (sub === 'memory') {
+      const onoff = parts[2]?.toLowerCase()
+      if (runtime === undefined) {
+        return {
+          widget: {
+            kind: 'key_value',
+            title: '/ai memory',
+            entries: [{ key: 'Error', value: 'AI runtime unavailable' }],
+          },
+          stateHeader: '',
+          querySlot: req.spine.currentSlot,
+        }
+      }
+      const prev = runtime.getConfig()
+      const share =
+        onoff === 'on' ? true : onoff === 'off' ? false : (prev.sharePromptHistory ?? false)
+      if (onoff === 'on' || onoff === 'off') {
+        await runtime.setAiConfig({ ...prev, sharePromptHistory: share }, { persist })
+      }
+      return {
+        widget: {
+          kind: 'key_value',
+          title: 'Prompt history sharing',
+          entries: [
+            {
+              key: 'sharePromptHistory',
+              value: share ? 'on (RAM-only, never saved to disk)' : 'off',
+            },
+            { key: 'Toggle', value: '/ai memory on | /ai memory off' },
+          ],
+        },
+        stateHeader: '',
+        querySlot: req.spine.currentSlot,
+      }
+    }
+
     if (runtime === undefined) {
       return {
         widget: {

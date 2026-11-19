@@ -52,6 +52,10 @@ export class SlotTrendTracker {
     return undefined
   }
 
+  seriesFor(address: string, slot: string): Array<{ block: bigint; value: bigint }> | undefined {
+    return this.series.get(`${address.toLowerCase()}:${slot}`)
+  }
+
   entries(): Array<{ key: SlotSeriesKey; trend: SlotTrendKind; last: SlotWriteRow }> {
     const out: Array<{ key: SlotSeriesKey; trend: SlotTrendKind; last: SlotWriteRow }> = []
     for (const [key, arr] of this.series) {

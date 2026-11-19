@@ -219,12 +219,49 @@ function wrapSectionText(text: string, wrapW: number): string[] {
   return wrapped
 }
 
+function categoryBadge(card: { category: string; deterministic?: boolean }): string {
+  const tag = card.deterministic === true ? 'SIGNAL' : card.category.toUpperCase()
+  return `[${tag}]`
+}
+
 export function renderAiOverviewSections(
   spine: EthySpine,
   sections: AiOverviewSections | undefined,
   innerWidth: number,
   innerLines: number,
 ): string[] {
+  if (sections?.bootstrapNote !== undefined && sections.bootstrapNote.length > 0) {
+    return wrapProseCentered(sections.bootstrapNote, innerWidth, innerLines)
+  }
+  const dispatchList = sections?.dispatches
+  if (dispatchList !== undefined && dispatchList.length > 0 && spine.economy?.hasBlocks === true) {
+    const wrapW = Math.max(8, innerWidth - 4)
+    const blocks: string[] = []
+    for (const card of dispatchList.slice(0, 2)) {
+      const badge = categoryBadge(card)
+      const head = `${BOLD}${badge} ${card.headline}${RESET}`
+      const age =
+        card.blockNumber !== undefined
+          ? `${DIM}#${card.blockNumber}${RESET}`
+          : `${DIM}${Math.round((Date.now() - card.atMs) / 1000)}s ago${RESET}`
+      blocks.push(wrapSectionText(`${head}  ${age}`, wrapW).join('\n'))
+      blocks.push('')
+      blocks.push(...wrapSectionText(card.body, wrapW))
+      if (card.suggestedAction !== undefined) {
+        blocks.push(`${DIM}› ${card.suggestedAction}${RESET}`)
+      }
+      blocks.push('')
+    }
+    const body = blocks.filter((b, i, arr) => !(b === '' && arr[i + 1] === ''))
+    const topPad = Math.max(0, Math.floor((innerLines - body.length) / 2))
+    const rows: string[] = []
+    for (let i = 0; i < innerLines; i++) {
+      if (i < topPad || i >= topPad + body.length) rows.push('')
+      else rows.push(body[i - topPad] ?? '')
+    }
+    return rows
+  }
+
   const wrapW = Math.max(8, innerWidth - 7)
   const blocks: string[] = []
   const renderOne = (domain: CapabilityId, text: string) => {
@@ -238,6 +275,14 @@ export function renderAiOverviewSections(
       }
     })
   }
+  if (spine.economy?.hasBlocks === true) {
+    return wrapProseCentered(
+      'Chain detective is watching for ranked signals…',
+      innerWidth,
+      innerLines,
+    )
+  }
+
   for (const id of DOMAIN_ORDER) {
     const text =
       sections?.focusNote !== undefined && sections.focusNote.domain === id

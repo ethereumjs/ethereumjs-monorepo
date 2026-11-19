@@ -108,6 +108,18 @@ export class ETHEconomyDataManager {
     return this.contractAgg.get(address.toLowerCase())
   }
 
+  getBlockRing(): readonly BlockEconomyRecord[] {
+    return this.ring
+  }
+
+  getSlotTracker(): SlotTrendTracker {
+    return this.slotTracker
+  }
+
+  getIdentityResolver(): IdentityResolver {
+    return this.identity
+  }
+
   /** Ingest one verified block; never throws. */
   noteBundle(input: EconomyNoteInput): void {
     try {

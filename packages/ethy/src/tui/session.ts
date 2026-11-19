@@ -1,13 +1,13 @@
 import { stdin as input, stdout as output } from 'node:process'
 import readline from 'node:readline'
 
+import { ChainDetectiveNarrator, signalToDispatchCard } from '../ai/chainDetective.ts'
 import type { SlashDispatchCtx } from '../ai/deterministicEngine.ts'
 import { probeHardware } from '../ai/hardwareCheck.ts'
 import {
   buildDeterministicOverviewSections,
   clampOverviewSections,
 } from '../ai/overviewNarrator.ts'
-import { AiPulseNarrator } from '../ai/pulseNarrator.ts'
 import type { EthyNode } from '../core/createEthyNode.ts'
 import { advanceDemo } from '../demo/advanceDemo.ts'
 import { readDomainSnapshots } from '../domains/domainManagers.ts'
@@ -88,7 +88,7 @@ export async function runEthySession(node: EthyNode, opts?: EthySessionOpts): Pr
   }
   let intentGeneration = 0
   let savedOverviewSections: AiOverviewSections | undefined
-  let pulseNarrator: AiPulseNarrator | undefined
+  let detectiveNarrator: ChainDetectiveNarrator | undefined
 
   const slashCtx = (): SlashDispatchCtx => ({
     spine: node.spine,
@@ -100,6 +100,17 @@ export async function runEthySession(node: EthyNode, opts?: EthySessionOpts): Pr
   })
 
   const refreshOverview = (trigger: 'welcome' | 'pulse') => {
+    if (node.spine.economy?.hasBlocks === true) {
+      const sig = node.spine.economy.signals?.[0]
+      const sections: AiOverviewSections =
+        sig !== undefined
+          ? { dispatches: [signalToDispatchCard(sig, Date.now())] }
+          : {
+              bootstrapNote: 'Live blocks — autonomous dispatches appear here when signals rank.',
+            }
+      view = { ...view, aiOverviewSections: sections }
+      return
+    }
     const snapshots = readDomainSnapshots(node.spine)
     view = {
       ...view,
@@ -189,7 +200,7 @@ export async function runEthySession(node: EthyNode, opts?: EthySessionOpts): Pr
         lastPhase = node.spine.phase
         lastEconomyHasBlocks = hasBlocks
         lastAllBucketsDone = allBucketsDone
-        pulseNarrator?.notePhase(node.spine)
+        void detectiveNarrator
       }
     }
     view = applyLiveSlashRefresh(view, node.spine, slashCtx())
@@ -260,8 +271,8 @@ export async function runEthySession(node: EthyNode, opts?: EthySessionOpts): Pr
       })
     }
     if (result.aiLayoutRefresh === true && node.spine.aiMode === 'off') {
-      pulseNarrator?.stop()
-      pulseNarrator = undefined
+      detectiveNarrator?.stop()
+      detectiveNarrator = undefined
     }
     if (isNl) {
       const entry: InteractionHistoryEntry = {
@@ -296,7 +307,9 @@ export async function runEthySession(node: EthyNode, opts?: EthySessionOpts): Pr
       return
     }
     if (isNl && node.spine.aiMode !== 'off') {
-      pulseNarrator?.abortInFlight()
+      detectiveNarrator?.abortInFlight()
+      detectiveNarrator?.noteUserPrompt(text)
+      node.userInterest.notePrompt(text)
       if (view.aiOverviewSections?.focusNote === undefined) {
         savedOverviewSections = view.aiOverviewSections
       }
@@ -332,12 +345,19 @@ export async function runEthySession(node: EthyNode, opts?: EthySessionOpts): Pr
       })
   }
 
-  const startPulseNarrator = () => {
+  const startDetectiveNarrator = () => {
     if (node.demo || node.headless) return
     if (node.spine.aiMode === 'off' || node.llm === undefined) return
-    pulseNarrator?.stop()
-    pulseNarrator = new AiPulseNarrator({
+    detectiveNarrator?.stop()
+    const chain = chainConfigForNetwork(node.spine.network)
+    detectiveNarrator = new ChainDetectiveNarrator({
       transport: node.llm.transport,
+      economy: node.economy,
+      stateManager: node.stateManager,
+      chain,
+      sandbox: node.sandbox,
+      journal: node.investigationJournal,
+      userInterest: node.userInterest,
       onOverview: (sections) => {
         view = { ...view, aiOverviewSections: sections }
         draw()
@@ -346,11 +366,11 @@ export async function runEthySession(node: EthyNode, opts?: EthySessionOpts): Pr
         refreshOverview('pulse')
       },
     })
-    pulseNarrator.start(node.spine)
+    detectiveNarrator.start(node.spine)
   }
 
   if (llmConfigured) {
-    startPulseNarrator()
+    startDetectiveNarrator()
   }
 
   draw()
@@ -397,7 +417,7 @@ export async function runEthySession(node: EthyNode, opts?: EthySessionOpts): Pr
                 activeWidget: { kind: 'start_page' },
               }
               if (node.spine.aiMode !== 'off' && node.llm !== undefined) {
-                startPulseNarrator()
+                startDetectiveNarrator()
               }
               draw()
             })
@@ -480,7 +500,7 @@ export async function runEthySession(node: EthyNode, opts?: EthySessionOpts): Pr
       clearInterval(refreshTimer)
       output.off('resize', onResize)
       input.off('data', onData)
-      pulseNarrator?.stop()
+      detectiveNarrator?.stop()
       node.hybridEngine?.clearMemory()
       if (input.isTTY) input.setRawMode(false)
       output.write(CURSOR_SHOW)

@@ -33,6 +33,8 @@ export interface EthyCliArgs {
   aiSave?: boolean
   aiSetup?: boolean
   noSave?: boolean
+  /** `--ai-share-prompts` — opt in to RAM-only prompt steering (WP-10c). */
+  aiSharePrompts?: boolean
 }
 
 export function parseEthyArgs(argv: string[]): EthyCliArgs {
@@ -61,6 +63,7 @@ export function parseEthyArgs(argv: string[]): EthyCliArgs {
   let aiSave = false
   let aiSetup = false
   let noSave = false
+  let aiSharePrompts: boolean | undefined
 
   for (let i = 0; i < args.length; i++) {
     const a = args[i]
@@ -158,6 +161,10 @@ export function parseEthyArgs(argv: string[]): EthyCliArgs {
       aiMemory = 'off'
       continue
     }
+    if (a === '--ai-share-prompts') {
+      aiSharePrompts = true
+      continue
+    }
     if (a === '--no-ai') {
       noAi = true
       continue
@@ -237,6 +244,7 @@ export function parseEthyArgs(argv: string[]): EthyCliArgs {
     aiSave,
     aiSetup,
     noSave,
+    aiSharePrompts,
   }
 }
 
@@ -249,7 +257,7 @@ Usage:
         [--datadir PATH] [--port N] [--connect enode://...]
         [--no-ai] [--ai default|off|local] [--ollama [model]]
         [--llm-url URL] [--llm-model ID] [--llm-allow-remote]
-        [--ai-memory ephemeral|off] [--no-ai-history] [--ai-save] [--ai-setup] [--no-save]
+        [--ai-memory ephemeral|off] [--no-ai-history] [--ai-share-prompts] [--ai-save] [--ai-setup] [--no-save]
         [--record-fixture PATH]
 
 Networks: sepolia (default), mainnet, hoodi, holesky
