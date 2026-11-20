@@ -1,6 +1,6 @@
 # WP-11a: Multi-Client `ETHY/0` Swarm Simulator (`ethy-sim`) & Shared-Policy Scenario Verification Harness
 
-- **Status:** `PLANNED`
+- **Status:** `IN_PROGRESS`
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
 - **Dependencies:** `WP-06c`, `WP-06d`, `WP-06g`, `WP-07e` (`DONE`)
@@ -222,4 +222,6 @@ From `packages/ethy`: `npm run tsc`, `npm test`, `npm run spellcheck`, `npm run 
 
 ## 3. Implementation Notes & Deviations (Implementer — Composer 2.5)
 
-*(To be filled by Composer 2.5 upon completion.)*
+- Initial `ethy-sim` ships discrete-event orchestration in `world.ts` with scenario-specific physics hooks; `network.ts` / `transfer.ts` responsibilities are folded in for v1 (split optional later).
+- `legacy` preset reproduces pre–WP-11b cliffs (`2048` SNAP preference, `0xffff` BAL-blind `isUsableEthySeeder`) inside `policyAdapter.ts`; `v2` calls production modules including WP-11b hooks.
+- CI gates assert **legacy failure baselines** per §2.5, not WP-11b green targets — `v2` comparison is wired but acceptance flip awaits richer fidelity + WP-11b §1.3 checklist.
