@@ -27,6 +27,13 @@ import {
 import { setPhase } from '../spine/createSpine.ts'
 import { recordDiagnostic } from '../spine/diagnostics.ts'
 import type { EthySpine, SnapBucket, SnapRangeCursor } from '../spine/types.ts'
+
+function bucketList(opts: {
+  spine: EthySpine
+  accountBuckets?: SnapBucket[]
+}): SnapBucket[] {
+  return opts.accountBuckets ?? opts.spine.snapBuckets
+}
 import type { SnapPeerFlightTracker } from './snapFlight.ts'
 import type { SnapSchedulePeer } from './snapSchedulePolicy.ts'
 import {
@@ -108,6 +115,14 @@ export type SnapAccountSynchronizerOpts = {
   onAccountsIngested?: (entries: IngestedAccountMeta[]) => void
   onSlabCommitted?: (flight: InFlightRange, lastKey: Uint8Array) => void
   onBucketDone?: (bucketIndex: number) => void
+  /** Parallel bucket grid (WP-11b background snap-mint); default `spine.snapBuckets`. */
+  accountBuckets?: SnapBucket[]
+  /** Pivot root for SNAP requests while live spine stays on an older pivot. */
+  pivotAnchor?: { blockNumber: bigint; stateRoot: Uint8Array }
+  /** Low-priority mint: do not switch spine phase; cap global in-flight ranges. */
+  backgroundMode?: boolean
+  /** Only schedule buckets with `index <= mintBucketCap` (paced mint). */
+  mintBucketCap?: number
 }
 
 export class SnapAccountSynchronizer {
@@ -122,6 +137,10 @@ export class SnapAccountSynchronizer {
   private readonly onAccountsIngested?: (entries: IngestedAccountMeta[]) => void
   private readonly onSlabCommitted?: (flight: InFlightRange, lastKey: Uint8Array) => void
   private readonly onBucketDone?: (bucketIndex: number) => void
+  private readonly accountBuckets?: SnapBucket[]
+  private readonly pivotAnchor?: { blockNumber: bigint; stateRoot: Uint8Array }
+  private readonly backgroundMode: boolean
+  private mintBucketCap: number
   private reqId = 1n
   private nextCursorId = 256
   private inFlight = new Map<string, InFlightRange>()
@@ -152,6 +171,22 @@ export class SnapAccountSynchronizer {
     this.onAccountsIngested = opts.onAccountsIngested
     this.onSlabCommitted = opts.onSlabCommitted
     this.onBucketDone = opts.onBucketDone
+    this.accountBuckets = opts.accountBuckets
+    this.pivotAnchor = opts.pivotAnchor
+    this.backgroundMode = opts.backgroundMode === true
+    this.mintBucketCap = opts.mintBucketCap ?? 15
+  }
+
+  private buckets(): SnapBucket[] {
+    return bucketList({ spine: this.spine, accountBuckets: this.accountBuckets })
+  }
+
+  private pivotRoot(): Uint8Array | undefined {
+    return this.pivotAnchor?.stateRoot ?? this.spine.pivotStateRoot
+  }
+
+  private pivotBlock(): bigint {
+    return this.pivotAnchor?.blockNumber ?? this.spine.pivotBlockNumber ?? 0n
   }
 
   /** One-account snap cursor after BAL touched storage/code during account sync (WP-04k). */
@@ -199,19 +234,21 @@ export class SnapAccountSynchronizer {
 
   start(): void {
     if (this.detachAccountRange !== undefined) return
-    setPhase(this.spine, 'SNAP_SYNCING')
+    if (!this.backgroundMode) {
+      setPhase(this.spine, 'SNAP_SYNCING')
+    }
     this.syncStart = Date.now()
     this.lastRateAt = this.syncStart
     this.lastMinRateAt = this.syncStart
-    this.lastAccountCount = this.spine.totalAccountsSynced
+    this.lastAccountCount = this.backgroundMode ? 0 : this.spine.totalAccountsSynced
     this.minRateSamples = [
       {
         at: this.syncStart,
-        count: this.spine.totalAccountsSynced,
-        frac: computeAccountRangeFraction(this.spine.snapBuckets),
+        count: this.lastAccountCount,
+        frac: computeAccountRangeFraction(this.buckets()),
       },
     ]
-    for (const bucket of this.spine.snapBuckets) {
+    for (const bucket of this.buckets()) {
       ensureBucketSubRanges(bucket)
     }
     this.detachAccountRange = this.transport.onAccountRange((peerId, payload) => {
@@ -226,11 +263,21 @@ export class SnapAccountSynchronizer {
     this.detachAccountRange?.()
     this.detachAccountRange = undefined
     if (this.tickTimer !== undefined) clearInterval(this.tickTimer)
-    this.snapStore?.flushAll(this.spine.snapBuckets)
+    this.snapStore?.flushAll(this.buckets())
+  }
+
+  setMintBucketCap(cap: number): void {
+    this.mintBucketCap = Math.min(15, Math.max(0, cap))
+    const buckets = this.buckets()
+    for (const bucket of buckets) {
+      if (bucket.index <= this.mintBucketCap && bucket.status === 'pending') {
+        bucket.status = 'syncing'
+      }
+    }
   }
 
   private clearAllCursorFlightFlags(): void {
-    for (const bucket of this.spine.snapBuckets) {
+    for (const bucket of this.buckets()) {
       const ranges = bucket.subRanges
       if (ranges === undefined) continue
       for (const c of ranges) {
@@ -242,7 +289,7 @@ export class SnapAccountSynchronizer {
   }
 
   private findCursor(bucketIndex: number, cursorId: number): SnapRangeCursor | undefined {
-    const bucket = this.spine.snapBuckets[bucketIndex]
+    const bucket = this.buckets()[bucketIndex]
     if (bucket === undefined) return undefined
     return ensureBucketSubRanges(bucket).find((c) => c.id === cursorId)
   }
@@ -252,7 +299,7 @@ export class SnapAccountSynchronizer {
   }
 
   private allCursorsBusy(): boolean {
-    for (const bucket of this.spine.snapBuckets) {
+    for (const bucket of this.buckets()) {
       const hasRefresh = bucketHasActiveRefreshCursors(bucket)
       if (bucket.status === 'done' && !hasRefresh) continue
       if (this.bucketStalled(bucket, Date.now())) continue
@@ -268,7 +315,8 @@ export class SnapAccountSynchronizer {
 
   private listFreeCursors(now: number): SnapRangeCursor[] {
     const out: SnapRangeCursor[] = []
-    for (const bucket of this.spine.snapBuckets) {
+    for (const bucket of this.buckets()) {
+      if (bucket.index > this.mintBucketCap) continue
       const hasRefresh = bucketHasActiveRefreshCursors(bucket)
       if (bucket.status === 'done' && !hasRefresh) continue
       if (this.bucketStalled(bucket, now)) continue
@@ -293,7 +341,8 @@ export class SnapAccountSynchronizer {
     let bestSpan = MIN_SPLIT_SPAN - 1
     let bestBucket: SnapBucket | undefined
     let bestIndex = -1
-    for (const bucket of this.spine.snapBuckets) {
+    for (const bucket of this.buckets()) {
+      if (bucket.index > this.mintBucketCap) continue
       if (bucket.status === 'done') continue
       const ranges = ensureBucketSubRanges(bucket)
       for (let i = 0; i < ranges.length; i++) {
@@ -350,7 +399,7 @@ export class SnapAccountSynchronizer {
   }
 
   private dispatchCursor(peer: SnapSchedulePeer, cursor: SnapRangeCursor, now: number): boolean {
-    const bucket = this.spine.snapBuckets[cursor.bucketIndex]
+    const bucket = this.buckets()[cursor.bucketIndex]
     if (bucket === undefined) return false
     const dedupe = originDedupeKey(cursor.bucketIndex, cursor.origin)
     if (this.inFlightOrigins.has(dedupe)) return false
@@ -376,8 +425,8 @@ export class SnapAccountSynchronizer {
       timeoutMs: rangeTimeoutForPeer(peer),
       origin: sentOrigin,
       limit: sentLimit,
-      stateRoot: new Uint8Array(this.spine.pivotStateRoot!),
-      pivotBlockNumber: this.spine.pivotBlockNumber ?? 0n,
+      stateRoot: new Uint8Array(this.pivotRoot()!),
+      pivotBlockNumber: this.pivotBlock(),
     })
     if (cursor.refresh !== true) {
       bucket.status = 'syncing'
@@ -387,7 +436,7 @@ export class SnapAccountSynchronizer {
     if (row !== undefined) row.snapRequestsSent++
     const payload = encodeGetAccountRange(
       reqId,
-      this.spine.pivotStateRoot!,
+      this.pivotRoot()!,
       sentOrigin,
       sentLimit,
       responseBytesForPeer(peer),
@@ -397,14 +446,15 @@ export class SnapAccountSynchronizer {
   }
 
   private fillPeerSlots(peers: SnapSchedulePeer[], now: number): void {
-    for (const bucket of this.spine.snapBuckets) {
+    if (this.backgroundMode && this.inFlight.size > 0) return
+    for (const bucket of this.buckets()) {
       ensureBucketSubRanges(bucket)
       if (snapBucketCursorExhausted(bucket)) {
         syncBucketCursorFields(bucket)
       }
     }
     const free = () => this.listFreeCursors(now)
-    const pivotBlock = this.spine.pivotBlockNumber ?? 0n
+    const pivotBlock = this.pivotBlock()
     for (const peer of peers) {
       if (now < (this.peerRestUntil.get(peer.id) ?? 0)) continue
       // Only skip a brand-new unproven peer whose initial STATUS block is far (>32 blocks) behind our pivot;
@@ -432,23 +482,21 @@ export class SnapAccountSynchronizer {
   }
 
   private schedule(): void {
-    if (
-      this.spine.snapPaused ||
-      this.spine.pivotBridging !== undefined ||
-      this.spine.pivotStateRoot === undefined
-    ) {
-      return
-    }
+    if (this.spine.snapPaused && !this.backgroundMode) return
+    if (!this.backgroundMode && this.spine.pivotBridging !== undefined) return
+    if (this.pivotRoot() === undefined) return
     const now = Date.now()
     this.refreshAccountRate(now)
     if (
-      this.spine.snapBuckets.length > 0 &&
-      this.spine.snapBuckets.every((b) => b.status === 'done') &&
-      !spineHasActiveRefreshCursors(this.spine.snapBuckets)
+      this.buckets().length > 0 &&
+      this.buckets().every((b) => b.status === 'done') &&
+      !spineHasActiveRefreshCursors(this.buckets())
     ) {
-      this.spine.accountsPerSec = 0
-      this.spine.accountsPerMin = 0
-      this.spine.snapEtaMinutes = undefined
+      if (!this.backgroundMode) {
+        this.spine.accountsPerSec = 0
+        this.spine.accountsPerMin = 0
+        this.spine.snapEtaMinutes = undefined
+      }
       return
     }
     const peers = rankSnapPeers(
@@ -526,7 +574,7 @@ export class SnapAccountSynchronizer {
           cursor.pipelinedVerify = false
         }
       }
-      const bucket = this.spine.snapBuckets[flight.bucket]
+      const bucket = this.buckets()[flight.bucket]
       if (bucket === undefined || bucket.status === 'done') continue
       if (left) {
         bucket.lastStallReason = 'snap peer left'
@@ -651,7 +699,7 @@ export class SnapAccountSynchronizer {
 
   private async handleAccountRange(peerId: string, payload: Uint8Array): Promise<void> {
     const replyId = accountRangeRequestId(payload)
-    if (replyId === undefined || this.spine.pivotStateRoot === undefined) return
+    if (replyId === undefined || this.pivotRoot() === undefined) return
     const key = inFlightKey(peerId, replyId)
     const flight = this.inFlight.get(key)
     if (flight === undefined) return
@@ -836,7 +884,7 @@ export class SnapAccountSynchronizer {
           void this.snapStore?.appendVerifiedSlabAsync(
             flight.bucket,
             persistSlab,
-            this.spine.snapBuckets,
+            this.buckets(),
             cursor?.journal ?? 'prefix',
             proof,
           )
@@ -863,7 +911,7 @@ export class SnapAccountSynchronizer {
     syncBucketCursorFields(bucket)
     this.refreshBucketSyncStatus(bucket)
     if (bucket.status === 'done' && !wasDone) {
-      this.snapStore?.flushBuckets(this.spine.snapBuckets)
+      this.snapStore?.flushBuckets(this.buckets())
       this.onBucketDone?.(bucket.index)
     }
     this.schedule()
@@ -939,6 +987,7 @@ export class SnapAccountSynchronizer {
 
   /** Keep TUI speed honest when sync pauses; storage count stays on `totalAccountsSynced`. */
   private refreshAccountRate(now: number): void {
+    if (this.backgroundMode) return
     const dt = (now - this.lastRateAt) / 1000
     if (dt >= RATE_IDLE_SEC) {
       const delta = this.spine.totalAccountsSynced - this.lastAccountCount

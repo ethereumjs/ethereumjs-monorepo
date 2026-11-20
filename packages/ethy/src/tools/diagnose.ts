@@ -51,11 +51,47 @@ export function ethyOverviewWidget(spine: EthySpine): WidgetSpec {
     swarm?.balTailEarliest !== undefined && swarm?.balTailLatest !== undefined
       ? `#${swarm.balTailEarliest.toString()}..#${swarm.balTailLatest.toString()}${swarm.balTailContiguous === false ? ' (gap)' : ''}`
       : '—'
+  const electionDeadline =
+    swarm?.shadowRefresh?.electionDeadlineMs !== undefined
+      ? new Date(swarm.shadowRefresh.electionDeadlineMs).toISOString()
+      : '—'
+  const mintBucket =
+    swarm?.shadowRefresh?.mintBucket !== undefined
+      ? `0x${swarm.shadowRefresh.mintBucket.toString(16)}`
+      : '—'
   return {
     kind: 'table',
     title: 'ETHY/0 swarm',
     preface: [{ key: 'Local enode', value: localEnode }],
     headers: ['Field', 'Value'],
+    debugPage: [
+      {
+        title: 'Shadow refresh',
+        entries: [
+          { key: 'Mode', value: shadowMode },
+          {
+            key: 'Progress',
+            value:
+              swarm?.shadowRefresh?.progressPct !== undefined
+                ? `${swarm.shadowRefresh.progressPct}%`
+                : '—',
+          },
+          {
+            key: 'Target block',
+            value:
+              swarm?.shadowRefresh?.targetBlock !== undefined
+                ? `#${swarm.shadowRefresh.targetBlock.toString()}`
+                : '—',
+          },
+          { key: 'Election deadline (UTC)', value: electionDeadline },
+          { key: 'Mint bucket', value: mintBucket },
+          {
+            key: 'Suppressed by',
+            value: swarm?.shadowRefresh?.suppressedByPeerId ?? '—',
+          },
+        ],
+      },
+    ],
     rows: [
       ['Transport', transport],
       ['Local seed buckets', `${localBits}/16`],

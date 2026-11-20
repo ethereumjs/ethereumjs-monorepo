@@ -286,6 +286,8 @@ export type SpineSwarmSnapshot = {
     targetBlock?: bigint
     progressPct?: number
     suppressedByPeerId?: string
+    electionDeadlineMs?: number
+    mintBucket?: number
   }
 }
 

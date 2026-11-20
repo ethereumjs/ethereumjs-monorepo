@@ -132,6 +132,8 @@ export class SnapPivotStore {
   private readonly chainId: bigint
   private readonly genesisHash: string
   private activeStateRoot?: string
+  /** When set, account journal writes go to this pivot without flipping `active.json` (WP-11b snap-mint). */
+  private shadowPersistRoot?: string
   private restoredContracts: IngestedAccountMeta[] = []
   private lastBuckets?: SnapBucket[]
   private pendingMetadataFlush = false
@@ -336,6 +338,49 @@ export class SnapPivotStore {
 
   pivotDirForRoot(stateRootHex: string): string {
     return this.pivotDir(stateRootHex)
+  }
+
+  setShadowPersistRoot(stateRootHex: string | undefined): void {
+    if (!this.enabled) return
+    if (stateRootHex === undefined) {
+      this.shadowPersistRoot = undefined
+      return
+    }
+    const normalized = stateRootHex.toLowerCase().startsWith('0x')
+      ? stateRootHex
+      : `0x${stateRootHex}`
+    this.shadowPersistRoot = normalized
+    this.seedInitializedAccountFiles(normalized)
+  }
+
+  shadowPersistTarget(): string | undefined {
+    return this.shadowPersistRoot
+  }
+
+  private persistStateRoot(): string | undefined {
+    return this.shadowPersistRoot ?? this.activeStateRoot
+  }
+
+  /** Write `pivot.json` / `buckets.json` under `pivots/<root>/` without activating (WP-11b). */
+  prepareShadowPivotFromHeader(meta: {
+    blockNumber: bigint
+    blockHash: Uint8Array
+    stateRoot: Uint8Array
+  }): string {
+    if (!this.enabled) return ''
+    const stateRootHex = bytesToHex(meta.stateRoot)
+    this.beginShadowPivot(stateRootHex)
+    const dir = this.pivotDir(stateRootHex)
+    writeAtomicDoc(path.join(dir, 'pivot.json'), {
+      blockNumber: meta.blockNumber.toString(),
+      blockHash: bytesToHex(meta.blockHash),
+      stateRoot: stateRootHex,
+      anchoredAt: Date.now(),
+    } satisfies PivotMeta)
+    writeAtomicDoc(path.join(dir, 'buckets.json'), {
+      buckets: serializeBuckets(createSnapBuckets()),
+    })
+    return stateRootHex
   }
 
   minActiveBucketPivotBlock(): bigint | undefined {
@@ -1463,11 +1508,12 @@ export class SnapPivotStore {
     journal: 'prefix' | string = 'prefix',
     proof?: ChunkProofFields,
   ): Promise<void> {
-    if (!this.enabled || this.activeStateRoot === undefined || slab.length === 0) {
+    const root = this.persistStateRoot()
+    if (!this.enabled || root === undefined || slab.length === 0) {
       return Promise.resolve()
     }
     this.lastBuckets = buckets
-    const file = this.accountJournalPath(bucketIndex, this.activeStateRoot, journal)
+    const file = this.accountJournalPath(bucketIndex, root, journal)
     const needMagic = !this.initializedAccountFiles.has(file)
     if (needMagic) this.initializedAccountFiles.add(file)
     const prior = this.accountWriteChains.get(file) ?? Promise.resolve()
@@ -1506,9 +1552,10 @@ export class SnapPivotStore {
     records: Array<{ accountHash: Uint8Array; binaryAccount: Uint8Array }>,
     buckets: SnapBucket[],
   ): void {
-    if (!this.enabled || this.activeStateRoot === undefined || records.length === 0) return
+    const root = this.persistStateRoot()
+    if (!this.enabled || root === undefined || records.length === 0) return
     this.lastBuckets = buckets
-    const file = this.accountFile(bucketIndex, this.activeStateRoot)
+    const file = this.accountFile(bucketIndex, root)
     fs.mkdirSync(path.dirname(file), { recursive: true })
     const fileEmpty = !fs.existsSync(file) || fs.statSync(file).size === 0
     const batch =
@@ -1532,9 +1579,10 @@ export class SnapPivotStore {
     records: Array<{ accountHash: Uint8Array; accountRlp: Uint8Array }>,
     buckets: SnapBucket[],
   ): void {
-    if (!this.enabled || this.activeStateRoot === undefined || records.length === 0) return
+    const root = this.persistStateRoot()
+    if (!this.enabled || root === undefined || records.length === 0) return
     this.lastBuckets = buckets
-    const file = this.accountFile(bucketIndex, this.activeStateRoot)
+    const file = this.accountFile(bucketIndex, root)
     fs.mkdirSync(path.dirname(file), { recursive: true })
     const chunks: Uint8Array[] = records.map((row) => encodeAccountJournalRecord(row))
     const batch = Buffer.concat(chunks.map((c) => Buffer.from(c)))
@@ -1550,7 +1598,7 @@ export class SnapPivotStore {
   }
 
   maybeFlushMetadata(force: boolean): void {
-    if (!this.enabled || this.activeStateRoot === undefined) return
+    if (!this.enabled || this.persistStateRoot() === undefined) return
     const now = Date.now()
     if (!force && now - this.lastMetadataFlushAt < this.metadataFlushIntervalMs) return
     if (!this.pendingMetadataFlush && !force) return
@@ -1571,9 +1619,10 @@ export class SnapPivotStore {
   }
 
   private flushBucketsAsync(buckets: SnapBucket[]): Promise<void> {
-    if (!this.enabled || this.activeStateRoot === undefined) return Promise.resolve()
+    const root = this.persistStateRoot()
+    if (!this.enabled || root === undefined) return Promise.resolve()
     this.lastBuckets = buckets
-    const dir = this.pivotDir(this.activeStateRoot)
+    const dir = this.pivotDir(root)
     const filePath = path.join(dir, 'buckets.json')
     const payload = `${JSON.stringify({ buckets: serializeBuckets(buckets) }, null, 2)}\n`
     const run = async () => {
@@ -1592,10 +1641,11 @@ export class SnapPivotStore {
   }
 
   private fsyncBucketSync(bucketIndex: number): void {
-    if (this.activeStateRoot === undefined) return
+    const root = this.persistStateRoot()
+    if (root === undefined) return
     const files = [
-      this.accountFile(bucketIndex, this.activeStateRoot),
-      ...this.listSegmentJournalFiles(bucketIndex, this.activeStateRoot),
+      this.accountFile(bucketIndex, root),
+      ...this.listSegmentJournalFiles(bucketIndex, root),
     ]
     for (const file of files) {
       if (!fs.existsSync(file)) continue
@@ -1609,8 +1659,8 @@ export class SnapPivotStore {
   }
 
   private async fsyncBucketsAsync(bucketIndexes: number[]): Promise<void> {
-    if (this.activeStateRoot === undefined) return
-    const root = this.activeStateRoot
+    const root = this.persistStateRoot()
+    if (root === undefined) return
     for (const bucketIndex of bucketIndexes) {
       const file = this.accountFile(bucketIndex, root)
       try {
@@ -1628,9 +1678,10 @@ export class SnapPivotStore {
   }
 
   flushBuckets(buckets: SnapBucket[]): void {
-    if (!this.enabled || this.activeStateRoot === undefined) return
+    const root = this.persistStateRoot()
+    if (!this.enabled || root === undefined) return
     this.lastBuckets = buckets
-    const dir = this.pivotDir(this.activeStateRoot)
+    const dir = this.pivotDir(root)
     const filePath = path.join(dir, 'buckets.json')
     if (this.bucketsFlushInFlight !== undefined) {
       this.bucketsFlushInFlight = this.bucketsFlushInFlight.then(() => {

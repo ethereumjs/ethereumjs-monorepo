@@ -34,6 +34,7 @@ export function refreshSpineSwarmTelemetry(opts: {
   nodeId?: Uint8Array
   processStartedAtMs: number
   peers: readonly WorkerPeerSnapshot[]
+  electionHandle?: GenerationElectionHandle
 }): void {
   const { spine, snapStore } = opts
   const head = spine.bestPeerHead ?? spine.headBlockNumber ?? spine.pivotBlockNumber ?? 0n
@@ -90,15 +91,20 @@ export function refreshSpineSwarmTelemetry(opts: {
       generationBlock: gen,
       announcements,
     })
+    const electionDelayElapsed =
+      opts.electionHandle !== undefined && Date.now() >= opts.electionHandle.deadlineMs
     shadow.mode = pickShadowRefreshMode({
       localPivot,
       freshestSwarmPivot: freshest,
       swarmUsable: freshest !== undefined && freshest > localPivot,
       electionSuppressed: suppression.state === 'suppressed',
-      electionDelayElapsed: false,
+      electionDelayElapsed,
     })
     if (suppression.suppressorPeerId !== undefined) {
       shadow.suppressedByPeerId = suppression.suppressorPeerId
+    }
+    if (opts.electionHandle !== undefined) {
+      shadow.electionDeadlineMs = opts.electionHandle.deadlineMs
     }
     shadow.targetBlock = macroGenerationBlock(head + 1024n)
   } else {
@@ -160,9 +166,19 @@ export function armGenerationElection(opts: {
   return { generationBlock: gen, deadlineMs: Date.now() + delay }
 }
 
-/** No-op hook until shadow mint runner lands; keeps election arm out of peerCoordinator clutter. */
+/** True once the hash-lottery delay for the current macro-generation has elapsed. */
+export function electionDelayElapsed(
+  handle: GenerationElectionHandle | undefined,
+  nowMs = Date.now(),
+): boolean {
+  return handle !== undefined && nowMs >= handle.deadlineMs
+}
+
 export function tickGenerationElection(
   _client: Devp2pWorkerClient,
-  _spine: EthySpine,
-  _handle: GenerationElectionHandle | undefined,
-): void {}
+  spine: EthySpine,
+  handle: GenerationElectionHandle | undefined,
+): boolean {
+  if (spine.phase !== 'HEAD_FOLLOWING') return false
+  return electionDelayElapsed(handle)
+}

@@ -31,6 +31,7 @@ import {
   initialP2pLinkState,
   syncP2pLinkNotices,
 } from '../notify/p2pLink.ts'
+import { copyBalTailRange } from '../persist/balTailArchive.ts'
 import { resolveEthyDataDir } from '../persist/ethyDataRoot.ts'
 import {
   PEER_BOOK_STARTUP_DIALS,
@@ -86,6 +87,13 @@ import {
   pickShadowEthySeeder,
   startShadowBalTailCopy,
 } from '../sync/shadowPivotRunner.ts'
+import {
+  type ShadowSnapMintSession,
+  createShadowMintBuckets,
+  nextShadowMintBucketCap,
+  shadowSnapMintProgressPct,
+  shadowSnapMintReadyToFlip,
+} from '../sync/shadowSnapMint.ts'
 import { SnapPeerFlightTracker } from '../sync/snapFlight.ts'
 import { createLiveSnapTransport } from '../sync/snapTransport.ts'
 import { SNAP_VERIFY_POOL_MODULE_URL, SnapVerifyPool } from '../sync/snapVerifyWorker.ts'
@@ -99,6 +107,7 @@ import {
   resolveLiveNetworkHead,
   shouldReenterBalCatchUp,
 } from '../sync/startupStateMachine.ts'
+import { macroGenerationBlock } from '../sync/swarmGenerationPolicy.ts'
 import {
   type GenerationElectionHandle,
   armGenerationElection,
@@ -146,6 +155,7 @@ import {
 import { ethyCallerModuleUrl } from './workerModuleUrl.ts'
 
 const PIVOT_IN_FLIGHT_TIMEOUT_MS = 15_000
+const SHADOW_MINT_HEADER_TIMEOUT_MS = 20_000
 const VIP_RECONNECT_INTERVAL_MS = 5_000
 const RESTORED_CONTRACTS_CHUNK = 2_000
 /** Head-following peers before pausing discovery (hysteresis with DISCOVERY_HOLD_RESUME_BELOW). */
@@ -351,6 +361,7 @@ export async function startPeerCoordinator(
   })
   resourceWatchdog.start()
   const snapFlightTracker = new SnapPeerFlightTracker()
+  const shadowMintFlightTracker = new SnapPeerFlightTracker()
   let snapSync: SnapAccountSynchronizer | undefined
   let codeSync: SnapCodeAndStorageSynchronizer | undefined
   let headFollower: BalChainStreamer | undefined
@@ -440,6 +451,30 @@ export async function startPeerCoordinator(
   const processStartedAtMs = Date.now()
   let generationElection: GenerationElectionHandle | undefined
   let shadowPivotSession: ShadowPivotSession | undefined
+  let shadowSnapMintSession: ShadowSnapMintSession | undefined
+  let shadowSnapMintSync: SnapAccountSynchronizer | undefined
+  let shadowMintHeaderFlight:
+    | { peerId: string; targetBlock: bigint; ethVersion: number; startedAt: number }
+    | undefined
+
+  const finishShadowPivotFlip = (clientRef: Devp2pWorkerClient, stateRootHex: string): boolean => {
+    if (snapStore === undefined) return false
+    if (!snapStore.promoteShadowPivotToActive(stateRootHex)) return false
+    snapStore.setShadowPersistRoot(undefined)
+    syncEthyPivotServeDir(clientRef, snapStore.activePivotAccountsDir())
+    refreshEthyWorkerAdvertisement(clientRef, spine)
+    if (spine.swarm?.shadowRefresh) {
+      spine.swarm.shadowRefresh.mode = 'idle'
+      spine.swarm.shadowRefresh.progressPct = 100
+      spine.swarm.shadowRefresh.mintBucket = undefined
+    }
+    recordDiagnostic(spine, {
+      subsystem: 'ethy',
+      severity: 'info',
+      message: `Shadow pivot flip → ${stateRootHex.slice(0, 14)}…`,
+    })
+    return true
+  }
 
   const maybeShadowPivotWork = (clientRef: Devp2pWorkerClient, peers: WorkerPeerSnapshot[]) => {
     if (!shadowRefreshEnabled || snapStore === undefined) return
@@ -487,19 +522,112 @@ export async function startPeerCoordinator(
       spine.swarm.shadowRefresh.progressPct = 20
     }
     if (shadowPivotSession.stage === 'ready-to-flip') {
-      if (snapStore.promoteShadowPivotToActive(shadowPivotSession.stateRootHex)) {
-        syncEthyPivotServeDir(clientRef, snapStore.activePivotAccountsDir())
-        refreshEthyWorkerAdvertisement(clientRef, spine)
+      if (finishShadowPivotFlip(clientRef, shadowPivotSession.stateRootHex)) {
         shadowPivotSession.stage = 'done'
+      }
+    }
+  }
+
+  const shadowSnapGetPeers = () =>
+    [...spine.peers.values()]
+      .filter((p) => p.snapSession === true && (p.hasHead === true || p.snapResponsesOk > 0))
+      .map((p) => ({
+        id: p.id,
+        caps: p.caps,
+        snapResponsesOk: p.snapResponsesOk,
+        snapTimeouts: p.snapTimeouts,
+        avgLatencyMs: p.avgLatencyMs,
+        latestBlock: p.latestBlock,
+        clientFamily: clientFamilyFromClientId(p.clientName),
+      }))
+
+  const ensureShadowSnapMintSync = (clientRef: Devp2pWorkerClient) => {
+    if (shadowSnapMintSession === undefined || shadowSnapMintSync !== undefined) return
+    const rootHex = shadowSnapMintSession.stateRootHex
+    const root = hexToBytes((rootHex.startsWith('0x') ? rootHex : `0x${rootHex}`) as `0x${string}`)
+    const transport = createLiveSnapTransport(clientRef)
+    shadowSnapMintSync = new SnapAccountSynchronizer({
+      spine,
+      stateManager,
+      transport,
+      flightTracker: shadowMintFlightTracker,
+      snapStore,
+      peerBook,
+      getSnapPeers: shadowSnapGetPeers,
+      verifyPool,
+      accountBuckets: shadowSnapMintSession.buckets,
+      pivotAnchor: { blockNumber: shadowSnapMintSession.targetPivotBlock, stateRoot: root },
+      backgroundMode: true,
+      mintBucketCap: shadowSnapMintSession.mintBucketCap,
+      onBucketDone: (bucketIndex) => {
+        if (shadowSnapMintSession === undefined) return
+        const cap = nextShadowMintBucketCap(shadowSnapMintSession.buckets)
+        shadowSnapMintSession.mintBucketCap = cap
+        shadowSnapMintSync?.setMintBucketCap(cap)
         if (spine.swarm?.shadowRefresh) {
-          spine.swarm.shadowRefresh.mode = 'idle'
-          spine.swarm.shadowRefresh.progressPct = 100
+          spine.swarm.shadowRefresh.mintBucket = bucketIndex
         }
-        recordDiagnostic(spine, {
-          subsystem: 'ethy',
-          severity: 'info',
-          message: `Shadow pivot flip → ${shadowPivotSession.stateRootHex.slice(0, 14)}…`,
-        })
+      },
+    })
+    shadowSnapMintSync.start()
+  }
+
+  const maybeShadowSnapMintWork = (clientRef: Devp2pWorkerClient, peers: WorkerPeerSnapshot[]) => {
+    if (!shadowRefreshEnabled || snapStore === undefined) return
+    if (spine.phase !== 'HEAD_FOLLOWING') return
+    if (shadowPivotSession !== undefined && shadowPivotSession.stage !== 'done') return
+    const swarmMode = spine.swarm?.shadowRefresh?.mode
+    const electionReady = tickGenerationElection(client, spine, generationElection)
+    if (
+      shadowSnapMintSession === undefined &&
+      shadowMintHeaderFlight === undefined &&
+      swarmMode === 'snap-mint' &&
+      electionReady
+    ) {
+      const head = spine.bestPeerHead ?? 0n
+      const targetBlock = macroGenerationBlock(head)
+      const peer = pickBestPeer(peers, pivotBlockedPeers)
+      if (peer === undefined || peer.latestBlock === undefined) return
+      if (BigInt(peer.latestBlock) < targetBlock) return
+      const ethVersion = highestEthVersion(peer.caps)
+      shadowMintHeaderFlight = {
+        peerId: peer.id,
+        targetBlock,
+        ethVersion,
+        startedAt: Date.now(),
+      }
+      const payload = encodeGetBlockHeadersByNumberPayload(ethVersion, targetBlock)
+      client.sendEthMessage(peerIdToBytes(peer.id), EthMessageCodes.GET_BLOCK_HEADERS, payload)
+      recordDiagnostic(spine, {
+        subsystem: 'ethy',
+        severity: 'info',
+        peerId: peer.id,
+        message: `Shadow SNAP mint: header #${targetBlock.toString()}`,
+      })
+      return
+    }
+    if (
+      shadowMintHeaderFlight !== undefined &&
+      Date.now() - shadowMintHeaderFlight.startedAt > SHADOW_MINT_HEADER_TIMEOUT_MS
+    ) {
+      pivotBlockedPeers.add(shadowMintHeaderFlight.peerId)
+      shadowMintHeaderFlight = undefined
+    }
+    if (shadowSnapMintSession === undefined) return
+    ensureShadowSnapMintSync(clientRef)
+    if (spine.swarm?.shadowRefresh) {
+      spine.swarm.shadowRefresh.progressPct = shadowSnapMintProgressPct(
+        shadowSnapMintSession.buckets,
+      )
+    }
+    if (
+      shadowSnapMintReadyToFlip(shadowSnapMintSession.buckets) &&
+      shadowSnapMintSession.stage !== 'done'
+    ) {
+      shadowSnapMintSync?.stop()
+      shadowSnapMintSync = undefined
+      if (finishShadowPivotFlip(clientRef, shadowSnapMintSession.stateRootHex)) {
+        shadowSnapMintSession.stage = 'done'
       }
     }
   }
@@ -2111,6 +2239,7 @@ export async function startPeerCoordinator(
       nodeId: localNodeId,
       processStartedAtMs,
       peers: snap.peers,
+      electionHandle: generationElection,
     })
     const ethyActive = snap.peers.filter(
       (p) =>
@@ -2128,6 +2257,7 @@ export async function startPeerCoordinator(
       }) ?? generationElection
     tickGenerationElection(client, spine, generationElection)
     maybeShadowPivotWork(client, snap.peers)
+    maybeShadowSnapMintWork(client, snap.peers)
     deriveCapabilities(spine)
     maybePivotInFlightTimeout(snap.peers)
     maybePivotBundleTimeout()
@@ -2287,6 +2417,68 @@ export async function startPeerCoordinator(
     if (headFollower?.handleEthMessage(msg)) return
     if (handleBundleEthMessage(msg)) return
     if (msg.code !== EthMessageCodes.BLOCK_HEADERS) return
+    if (
+      shadowMintHeaderFlight !== undefined &&
+      msg.peerId === shadowMintHeaderFlight.peerId &&
+      snapStore !== undefined
+    ) {
+      const flight = shadowMintHeaderFlight
+      shadowMintHeaderFlight = undefined
+      const parsed = parsePivotHeaderFromBlockHeadersPayload(
+        flight.ethVersion,
+        msg.payload,
+        undefined,
+        chain,
+      )
+      if (parsed === null || parsed.number !== flight.targetBlock) {
+        recordDiagnostic(spine, {
+          subsystem: 'snap',
+          severity: 'warn',
+          peerId: flight.peerId,
+          message: 'Shadow SNAP mint header mismatch or empty',
+        })
+        pivotBlockedPeers.add(flight.peerId)
+        return
+      }
+      const hex = snapStore.prepareShadowPivotFromHeader({
+        blockNumber: parsed.number,
+        blockHash: parsed.hash,
+        stateRoot: parsed.stateRoot,
+      })
+      const activeRoot = snapStore.activePivotStateRoot()
+      const localPivot = spine.pivotBlockNumber ?? 0n
+      const lastVer = localVerifiedBlock(spine) ?? localPivot
+      const from = localPivot + 1n
+      let copied = 0
+      if (activeRoot !== undefined && lastVer >= from) {
+        copied = copyBalTailRange(
+          snapStore.pivotDirForRoot(activeRoot),
+          snapStore.pivotDirForRoot(hex),
+          from,
+          lastVer,
+        )
+      }
+      snapStore.setShadowPersistRoot(hex)
+      shadowSnapMintSession = {
+        stateRootHex: hex,
+        targetPivotBlock: parsed.number,
+        balBlocksCopied: copied,
+        mintBucketCap: 0,
+        buckets: createShadowMintBuckets(),
+        stage: 'minting',
+      }
+      if (spine.swarm?.shadowRefresh) {
+        spine.swarm.shadowRefresh.progressPct = copied > 0 ? 18 : 8
+        spine.swarm.shadowRefresh.mintBucket = 0
+      }
+      recordDiagnostic(spine, {
+        subsystem: 'ethy',
+        severity: 'info',
+        message: `Shadow SNAP mint at #${parsed.number.toString()} (BAL ${copied} blocks)`,
+      })
+      ensureShadowSnapMintSync(client)
+      return
+    }
     if (inFlightPeerId === undefined || msg.peerId !== inFlightPeerId) {
       return
     }
