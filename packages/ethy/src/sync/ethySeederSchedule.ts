@@ -1,6 +1,8 @@
 import type { Address, BALJSONBlockAccessList } from '@ethereumjs/util'
 import { equalsBytes, hexToBytes } from '@ethereumjs/util'
 
+import { ethyKeccak256 } from '../crypto/keccak.ts'
+
 import { accountHashFromAddress } from './syncedAccountHash.ts'
 
 export type EthySeederDescriptor = {
@@ -79,14 +81,51 @@ function balRangeCovers(
   return true
 }
 
+function bucketRarityCounts(seeders: EthySeederDescriptor[]): number[] {
+  const counts = Array.from({ length: 16 }, () => 0)
+  for (const s of seeders) {
+    for (let b = 0; b < 16; b++) {
+      if ((s.bucketsBitmask & (1 << b)) !== 0) counts[b]!++
+    }
+  }
+  return counts
+}
+
+function bucketTieBreakScore(localNodeId: Uint8Array, bucketIndex: number): number {
+  const buf = new Uint8Array(localNodeId.length + 1)
+  buf.set(localNodeId, 0)
+  buf[localNodeId.length] = bucketIndex
+  const hash = ethyKeccak256(buf)
+  const view = new DataView(hash.buffer, hash.byteOffset, hash.byteLength)
+  return view.getUint32(0, false)
+}
+
+/** Rarest-first bucket order with per-node tie shuffle (WP-11b). */
+export function bucketAssignmentOrder(
+  seeders: EthySeederDescriptor[],
+  localNodeId?: Uint8Array,
+): number[] {
+  const rarity = bucketRarityCounts(seeders)
+  const id = localNodeId ?? new Uint8Array(32)
+  const order = Array.from({ length: 16 }, (_, b) => b)
+  order.sort((a, b) => {
+    const ra = rarity[a]!
+    const rb = rarity[b]!
+    if (ra !== rb) return ra - rb
+    return bucketTieBreakScore(id, a) - bucketTieBreakScore(id, b)
+  })
+  return order
+}
+
 function tryAssignFromGroups(
   groupsSorted: EthySeederDescriptor[][],
   assignedLoad: Map<string, number>,
+  bucketOrder: readonly number[],
 ): AssignBucketsResult | undefined {
   const assignments = new Map<number, BucketAssignment>()
   const bucketPivotBlocks = Array.from({ length: 16 }, () => 0n)
   const bucketPivotRoots = Array.from({ length: 16 }, () => new Uint8Array(32))
-  for (let b = 0; b < 16; b++) {
+  for (const b of bucketOrder) {
     let chosen: EthySeederDescriptor | undefined
     for (const group of groupsSorted) {
       const sample = group[0]!
@@ -116,10 +155,15 @@ function tryAssignFromGroups(
   }
 }
 
+export type AssignBucketsOpts = {
+  localNodeId?: Uint8Array
+}
+
 /** Freshness-first bucket assignment with BAL coverage check (WP-06g). */
 export function assignBuckets(
   seeders: EthySeederDescriptor[],
   assignedLoad: Map<string, number> = new Map(),
+  opts: AssignBucketsOpts = {},
 ): AssignBucketsResult | undefined {
   if (seeders.length === 0) return undefined
   const groups = groupSeeders(seeders)
@@ -131,7 +175,9 @@ export function assignBuckets(
     return ba > bb ? -1 : 1
   })
 
-  const draft = tryAssignFromGroups(groupList, assignedLoad)
+  const bucketOrder = bucketAssignmentOrder(seeders, opts.localNodeId)
+
+  const draft = tryAssignFromGroups(groupList, assignedLoad, bucketOrder)
   if (draft === undefined) return undefined
 
   const involved = new Set<string>()
@@ -142,7 +188,7 @@ export function assignBuckets(
   const bMax = pivots.reduce((a, c) => (c > a ? c : a), 0n)
   if (draft.crossSnapshot && !balRangeCovers(involvedSeeders, bMin, bMax)) {
     for (const group of groupList) {
-      const single = tryAssignFromGroups([group], assignedLoad)
+      const single = tryAssignFromGroups([group], assignedLoad, bucketOrder)
       if (single !== undefined) {
         return { ...single, fallbackSingleSnapshot: true }
       }

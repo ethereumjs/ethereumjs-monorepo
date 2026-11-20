@@ -444,7 +444,7 @@ export class BalChainStreamer {
     }
     const { spine } = this.opts
     const snapStreaming = spine.phase === 'SNAP_SYNCING'
-    const persistHeal = snapStreaming
+    const persistHeal = true
     const blocks = materialized.blocks
     const batchBalJson = blocks
       .map((b) => b.balJson)
@@ -618,7 +618,7 @@ export class BalChainStreamer {
       appendHealBundle: this.opts.appendHealBundle,
       syncBuckets: snapStreaming ? spine.snapBuckets : undefined,
       deferStateApply: snapStreaming,
-      persistHeal: snapStreaming,
+      persistHeal: true,
       economy: this.opts.economy,
       onRpcBundle: this.opts.onRpcBundle,
     })

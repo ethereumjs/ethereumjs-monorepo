@@ -1,6 +1,6 @@
 # WP-11b: Amortized `O(1)` Swarm Generation Refresh, Contiguous Disk BAL Archive, Rarest-First Striping & Zero-Downtime Background Shadow Re-Seeding
 
-- **Status:** `PLANNED`
+- **Status:** `IN_PROGRESS`
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
 - **Dependencies:** `WP-06g`, `WP-07e`, `WP-07g`, `WP-11a`

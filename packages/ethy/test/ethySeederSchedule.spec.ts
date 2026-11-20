@@ -1,10 +1,12 @@
 import { createFlatStateManager } from '@ethereumjs/statemanager'
 import { Account, type BALJSONBlockAccessList, createAddressFromString } from '@ethereumjs/util'
+import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import {
   assignBuckets,
   balApplySegments,
+  bucketAssignmentOrder,
   bucketNibbleFromAddress,
   bucketPivotMinMax,
   peersOnSnapshot,
@@ -73,12 +75,25 @@ describe('[Ethy/Sync]: ethy seeder schedule', () => {
     assert.equal(pred140, undefined)
   })
 
-  it('preferCanonicalSnapOverEthy respects 2048 tail in auto', () => {
+  it('bucketAssignmentOrder tie-break differs per node id', () => {
+    const full = seeder('a', 100n, ROOT_A, 0xffff, 200n)
+    const idA = hexToBytes(`0x${'01'.repeat(32)}`)
+    const idB = hexToBytes(`0x${'02'.repeat(32)}`)
+    const oA = bucketAssignmentOrder([full], idA)
+    const oB = bucketAssignmentOrder([full], idB)
+    assert.notDeepEqual(oA, oB)
+    assert.deepEqual(
+      [...oA].sort((a, b) => a - b),
+      [...oB].sort((a, b) => a - b),
+    )
+  })
+
+  it('preferCanonicalSnapOverEthy respects 4096 tail in auto', () => {
     assert.equal(
       preferCanonicalSnapOverEthy({
         syncMode: 'auto',
         explicitConnect: false,
-        bestPeerHead: 3000n,
+        bestPeerHead: 500n + DEFAULT_MAX_SWARM_TAIL_BLOCKS + 1n,
         freshestEthyPivotBlock: 500n,
         hasSnapPeer: true,
       }),
