@@ -320,6 +320,9 @@ export class BalChainStreamer {
   /** Wake follower when consensus or P2P reports a newer execution head (WP-07g). */
   noteChainHead(blockNumber: bigint): void {
     const { spine } = this.opts
+    if (blockNumber <= 0n) return
+    raiseBestPeerHead(spine, blockNumber)
+    growBalCatchUpTarget(spine, blockNumber)
     if (
       spine.phase !== 'SNAP_SYNCING' &&
       spine.phase !== 'BAL_CATCHUP' &&
@@ -327,7 +330,6 @@ export class BalChainStreamer {
     ) {
       return
     }
-    raiseBestPeerHead(spine, blockNumber)
     void this.tick()
   }
 
@@ -353,7 +355,7 @@ export class BalChainStreamer {
     this.verifiedTipHash = last.blockHash
     spine.headBlockNumber = last.blockNumber
     spine.headStateRoot = last.stateRoot
-    raiseBestPeerHead(spine, last.blockNumber)
+    // Never call raiseBestPeerHead from disk heal bundles: bestPeerHead is strictly network-observed.
     void this.maybePivotStep()
   }
 
@@ -565,14 +567,20 @@ export class BalChainStreamer {
       return
     }
     const tip = this.verifiedTip(spine)
-    if (tip !== undefined && tip >= seq.targetHead) {
+    const effectiveTarget =
+      spine.bestPeerHead !== undefined && spine.bestPeerHead > seq.targetHead
+        ? spine.bestPeerHead
+        : seq.targetHead
+    growBalCatchUpTarget(spine, effectiveTarget)
+    if (tip !== undefined && tip >= effectiveTarget) {
       setPhase(spine, 'HEAD_FOLLOWING')
       spine.balCatchUp = undefined
-      this.opts.onSyncedToHead?.(seq.targetHead)
+      this.opts.onSyncedToHead?.(effectiveTarget)
       this.catchUp = undefined
       return
     }
-    if (tip !== undefined && tip < seq.targetHead) {
+    if (tip !== undefined && tip < effectiveTarget) {
+      seq.targetHead = effectiveTarget
       void this.tick()
     } else {
       this.catchUp = undefined
@@ -660,14 +668,20 @@ export class BalChainStreamer {
       return
     }
     const tip = this.verifiedTip(this.opts.spine)
-    if (tip !== undefined && tip >= seq.targetHead) {
+    const effectiveTarget =
+      this.opts.spine.bestPeerHead !== undefined && this.opts.spine.bestPeerHead > seq.targetHead
+        ? this.opts.spine.bestPeerHead
+        : seq.targetHead
+    growBalCatchUpTarget(this.opts.spine, effectiveTarget)
+    if (tip !== undefined && tip >= effectiveTarget) {
       setPhase(this.opts.spine, 'HEAD_FOLLOWING')
       this.opts.spine.balCatchUp = undefined
-      this.opts.onSyncedToHead?.(seq.targetHead)
+      this.opts.onSyncedToHead?.(effectiveTarget)
       this.catchUp = undefined
       return
     }
-    if (tip !== undefined && tip < seq.targetHead) {
+    if (tip !== undefined && tip < effectiveTarget) {
+      seq.targetHead = effectiveTarget
       void this.tick()
     } else {
       this.catchUp = undefined
@@ -799,6 +813,7 @@ export class BalChainStreamer {
         : spine.bestPeerHead
     if (peer === undefined || bestKnownHead === undefined) return
     const peerHead = bestKnownHead
+    growBalCatchUpTarget(spine, peerHead)
     const peerRow = spine.peers.get(peer.id)
     const fallbackAllowed =
       spine.peers.size === 0 ||
@@ -921,8 +936,19 @@ export class BalChainStreamer {
 /** @deprecated alias — prefer {@link BalChainStreamer} */
 export const HeadBlockFollower = BalChainStreamer
 
-/** Re-seed catch-up after laptop wake or handoff gap. */
+/** Extend `spine.balCatchUp.total` monotonically when network head rises during catch-up. */
+export function growBalCatchUpTarget(spine: EthySpine, liveHead: bigint): void {
+  if (spine.phase !== 'BAL_CATCHUP' || spine.balCatchUp === undefined) return
+  if (liveHead < spine.balCatchUp.fromBlock) return
+  const needed = Number(liveHead - spine.balCatchUp.fromBlock + 1n)
+  if (needed > spine.balCatchUp.total) {
+    spine.balCatchUp.total = needed
+  }
+}
+
+/** Re-seed catch-up after laptop wake or handoff gap. Requires a network-observed head (> 0n). */
 export function seedBalCatchUp(spine: EthySpine, bestPeerHead: bigint): void {
+  if (bestPeerHead <= 0n) return
   const last = spine.lastVerifiedBlockNumber ?? spine.pivotBlockNumber
   if (last === undefined) return
   if (bestPeerHead <= last) {

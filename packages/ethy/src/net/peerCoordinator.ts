@@ -42,7 +42,7 @@ import type { RpcBundleNote } from '../rpc/types.ts'
 import { enqueueProtocol } from '../runtime/lanes.ts'
 import { ResourceBudgetWatchdog } from '../runtime/resourceBudget.ts'
 import { createSnapBuckets } from '../spine/buckets.ts'
-import { raiseBestPeerHead } from '../spine/chainHead.ts'
+import { localVerifiedBlock, raiseBestPeerHead } from '../spine/chainHead.ts'
 import { deriveCapabilities, setPhase } from '../spine/createSpine.ts'
 import { recordDiagnostic } from '../spine/diagnostics.ts'
 import type { EthySpine, PeerTelemetry } from '../spine/types.ts'
@@ -51,6 +51,7 @@ import {
   BalChainStreamer,
   LAPTOP_WAKE_BLOCK_GAP,
   type VerifiedBalBlock,
+  growBalCatchUpTarget,
   replayAppliedBalBlocksForSlab,
   seedBalCatchUp,
   tryEnterBalCatchUp,
@@ -65,11 +66,7 @@ import { selectCanonicalSnapPivotTarget } from '../sync/canonicalPivotGrid.ts'
 import { SnapCodeAndStorageSynchronizer } from '../sync/codeAndStorageSync.ts'
 import { seederFromWorkerStatus } from '../sync/ethySeederSchedule.ts'
 import { EthySwarmSynchronizer } from '../sync/ethySwarmSync.ts'
-import {
-  notePivotBridgingProgress,
-  planResumeStart,
-  shouldReleaseSnapBridge,
-} from '../sync/resumeCoordinator.ts'
+import { notePivotBridgingProgress, shouldReleaseSnapBridge } from '../sync/resumeCoordinator.ts'
 import {
   type SnapResumeDecision,
   decideSnapResume,
@@ -83,6 +80,16 @@ import {
 import { SnapPeerFlightTracker } from '../sync/snapFlight.ts'
 import { createLiveSnapTransport } from '../sync/snapTransport.ts'
 import { SNAP_VERIFY_POOL_MODULE_URL, SnapVerifyPool } from '../sync/snapVerifyWorker.ts'
+import {
+  BAL_CATCHUP_STALE_WARN_GAP,
+  BAL_CATCHUP_STALE_WARN_MS,
+  classifyHydratedDiskState,
+  classifySavedDiskState,
+  planNetworkHeadResume,
+  planPostHydration,
+  resolveLiveNetworkHead,
+  shouldReenterBalCatchUp,
+} from '../sync/startupStateMachine.ts'
 import {
   type EthySeederView,
   type SyncMode,
@@ -351,10 +358,21 @@ export async function startPeerCoordinator(
   if (opts.fresh === true || discardPartialSnapForEthy) {
     snapStore?.discardPivots()
   }
+  const initialDiskResumeKind = classifySavedDiskState(savedSnapPeek, opts.fresh === true)
+  spine.diskResumeKind = initialDiskResumeKind
+  spine.diskResumeBlock =
+    savedSnapPeek !== undefined
+      ? (savedSnapPeek.lastVerifiedBlockNumber ?? savedSnapPeek.pivotBlockNumber)
+      : undefined
   /** Saved snap journals replayed from disk (head used only for stale / BAL handoff). */
   let diskHydrated = savedSnapPeek === undefined
+  spine.diskHydrated = diskHydrated
   let resumeDecided = savedSnapPeek === undefined
-  let resumeHeadHandled = false
+  let resumeHeadHandled = savedSnapPeek === undefined
+  let pendingRestoredHealBlocks: VerifiedBalBlock[] = []
+  let restoredContractsDrained = false
+  let balCatchUpStallStartedAt = 0
+  let balCatchUpStallWarned = false
   let lastSnapProgressAt = Date.now()
   let lastSnapProgressAccounts = spine.totalAccountsSynced
   let resumeHydrateStarted = false
@@ -490,6 +508,7 @@ export async function startPeerCoordinator(
             if (shouldReleaseSnapBridge(head, newPivot.blockNumber)) {
               spine.pivotBridging = undefined
               ensureSnapSync(clientRef)
+              void drainRestoredContractsIntoCodeSync()
               opts.notices?.post(
                 {
                   key: 'snap-bridge-done',
@@ -614,6 +633,7 @@ export async function startPeerCoordinator(
   const pivotBundleTimeoutMs = opts.pivotBundleTimeoutMs ?? PIVOT_BUNDLE_TIMEOUT_MS
   let lastTelemetryPeers: WorkerPeerSnapshot[] = []
   let lastDiagTs = 0
+  let seenAtLastDiagTs = new Set<string>()
   /** Peer ids we dialed via VIP redial; skip until handshake or expiry. */
   const pendingVipDials = new Map<string, number>()
   let bundleFetch: PivotBundleFetch | undefined
@@ -669,7 +689,32 @@ export async function startPeerCoordinator(
     bucketsAdvertised.clear()
     spine.snapBuckets = createSnapBuckets()
     spine.totalAccountsSynced = 0
+    spine.diskResumeKind = 'cold'
+    spine.diskResumeBlock = undefined
+    spine.diskHydrated = true
+    pendingRestoredHealBlocks = []
+    restoredContractsDrained = true
     setPhase(spine, 'P2P_WARMUP')
+  }
+
+  const drainRestoredContractsIntoCodeSync = async (): Promise<void> => {
+    if (restoredContractsDrained || snapStore === undefined || codeSync === undefined) return
+    if (spine.diskResumeKind === 'base-complete' || spine.pivotStateRoot === undefined) return
+    restoredContractsDrained = true
+    const contracts = snapStore.drainRestoredContracts()
+    for (let i = 0; i < contracts.length; i += RESTORED_CONTRACTS_CHUNK) {
+      codeSync?.noteAccounts(contracts.slice(i, i + RESTORED_CONTRACTS_CHUNK))
+      if (i + RESTORED_CONTRACTS_CHUNK < contracts.length) {
+        await new Promise<void>((resolve) => setImmediate(resolve))
+      }
+    }
+  }
+
+  const restorePendingHealBlocks = (): void => {
+    if (pendingRestoredHealBlocks.length === 0) return
+    const blocks = pendingRestoredHealBlocks
+    pendingRestoredHealBlocks = []
+    headFollower?.restoreBuffered(blocks)
   }
 
   const finishDiskResumeWithHead = (
@@ -678,14 +723,44 @@ export async function startPeerCoordinator(
   ): void => {
     if (snapStore === undefined || !diskHydrated) return
     raiseBestPeerHead(spine, headBlock)
-    if (handoffCatchup) {
-      seedBalCatchUp(spine, headBlock)
+    const kind = spine.diskResumeKind ?? (handoffCatchup ? 'base-complete' : 'cold')
+    const pivotNum = spine.pivotBlockNumber ?? savedSnapPeek?.pivotBlockNumber
+    const ethyTail =
+      pivotNum !== undefined
+        ? ethyBalTailAvailable(pivotNum, headBlock, spine.peers.values(), spine.syncTransport)
+        : false
+    const resumeAction = planNetworkHeadResume({
+      kind,
+      localVerifiedBlock: localVerifiedBlock(spine),
+      pivotBlock: pivotNum,
+      bucketsDoneCount: spine.snapBuckets.filter((b) => b.status === 'done').length,
+      liveHead: headBlock,
+      ethyBalTail: ethyTail,
+    })
+
+    if (resumeAction.action === 'anchor-fresh') {
+      deriveCapabilities(spine)
+      return
+    }
+    if (resumeAction.action === 'enter-head-following') {
+      seedBalCatchUp(spine, resumeAction.targetHead)
+      if (spine.phase === 'HEAD_FOLLOWING') {
+        populateHeadFlipSummary(resumeAction.targetHead)
+      }
       ensureHeadFollower(client)
+      headFollower?.noteChainHead(resumeAction.targetHead)
+      deriveCapabilities(spine)
+      return
+    }
+    if (resumeAction.action === 'enter-bal-catchup') {
+      seedBalCatchUp(spine, resumeAction.targetHead)
+      ensureHeadFollower(client)
+      headFollower?.noteChainHead(resumeAction.targetHead)
       opts.notices?.post(
         {
           key: 'snap-handoff',
           level: 'info',
-          text: `Resuming from #${spine.lastVerifiedBlockNumber?.toString() ?? '?'} toward head #${headBlock.toString()}`,
+          text: `Resuming from #${spine.lastVerifiedBlockNumber?.toString() ?? '?'} toward head #${resumeAction.targetHead.toString()} (+${resumeAction.gap.toString()} blk)`,
           relevantForMs: 8_000,
         },
         Date.now(),
@@ -693,51 +768,45 @@ export async function startPeerCoordinator(
       deriveCapabilities(spine)
       return
     }
-    const pivotNum = spine.pivotBlockNumber ?? savedSnapPeek?.pivotBlockNumber
-    if (pivotNum !== undefined) {
-      const ethyTail = ethyBalTailAvailable(
-        pivotNum,
-        headBlock,
-        spine.peers.values(),
-        spine.syncTransport,
-      )
-      const decision = decideSnapResume({
-        fresh: false,
-        saved: {
-          pivotBlockNumber: pivotNum,
-          baseSyncComplete: false,
-          bucketsDoneCount: spine.snapBuckets.filter((b) => b.status === 'done').length,
-        },
-        head: headBlock,
-        ethyBalTail: ethyTail,
-      })
-      if (decision === 'reset-stale') {
-        abandonStaleSnapPivot(headBlock, peers, pivotNum)
-        return
-      }
-      const plan = planResumeStart(decision, pivotNum, headBlock)
-      if (plan.pivotBridging !== undefined) {
-        spine.pivotBridging = plan.pivotBridging
-        const gap = plan.pivotBridging.targetBlock - plan.pivotBridging.fromBlock
-        opts.notices?.post(
-          {
-            key: 'snap-bridge',
-            level: 'info',
-            text: `Bridging snap pivot #${pivotNum.toString()} toward #${plan.pivotBridging.targetBlock.toString()} (+${gap.toString()} BALs)`,
-            relevantForMs: 10_000,
-          },
-          Date.now(),
-        )
-      } else {
-        spine.pivotBridging = undefined
-      }
-      if (plan.startBal) {
-        ensureHeadFollower(client)
-      }
-      if (plan.startSnap) {
-        ensureSnapSync(client)
-      }
+    if (resumeAction.action === 'reset-stale') {
+      abandonStaleSnapPivot(headBlock, peers, resumeAction.savedPivot)
+      return
     }
+    if (resumeAction.action === 'bridge-pivot') {
+      spine.pivotBridging = resumeAction.pivotBridging
+      setPhase(spine, 'SNAP_SYNCING')
+      const gap = resumeAction.pivotBridging.targetBlock - resumeAction.pivotBridging.fromBlock
+      opts.notices?.post(
+        {
+          key: 'snap-bridge',
+          level: 'info',
+          text: `Bridging snap pivot #${pivotNum?.toString() ?? '?'} toward #${resumeAction.pivotBridging.targetBlock.toString()} (+${gap.toString()} BALs)`,
+          relevantForMs: 10_000,
+        },
+        Date.now(),
+      )
+      ensureHeadFollower(client)
+      restorePendingHealBlocks()
+      deriveCapabilities(spine)
+      return
+    }
+    // resumeAction.action === 'resume-snap'
+    spine.pivotBridging = undefined
+    setPhase(spine, 'SNAP_SYNCING')
+    const pct = snapResumeProgressPct(savedSnapPeek)
+    opts.notices?.post(
+      {
+        key: 'snap-resume',
+        level: 'info',
+        text: `Resuming snap sync at #${spine.pivotBlockNumber?.toString() ?? '?'} (${pct}% complete)`,
+        relevantForMs: 8_000,
+      },
+      Date.now(),
+    )
+    ensureHeadFollower(client)
+    restorePendingHealBlocks()
+    ensureSnapSync(client)
+    void drainRestoredContractsIntoCodeSync()
     deriveCapabilities(spine)
   }
 
@@ -902,6 +971,7 @@ export async function startPeerCoordinator(
     peek: NonNullable<ReturnType<SnapPivotStore['peekActive']>>,
   ) => {
     diskHydrated = true
+    spine.diskHydrated = true
     resumeDecided = true
     if (snapStore !== undefined) {
       const mask =
@@ -920,8 +990,32 @@ export async function startPeerCoordinator(
       spine.storageAccountsTotal = contractProgress.storageAccountsTotal
       spine.storageSlotsSynced = contractProgress.storageSlotsSynced
     }
-    if (peek.baseSyncComplete || !snapBucketsUnfinished(spine.snapBuckets)) {
-      handoffCatchup = true
+
+    const hydratedKind = classifyHydratedDiskState(peek, spine.snapBuckets)
+    spine.diskResumeKind = hydratedKind
+    spine.diskResumeBlock = spine.lastVerifiedBlockNumber ?? spine.pivotBlockNumber
+
+    const liveNetworkHead = resolveLiveNetworkHead({
+      bestPeerHead: spine.bestPeerHead,
+      clOptimisticBlockNumber: spine.clOptimisticBlockNumber,
+      pendingResumeHead,
+      peerLatestBlocks: lastTelemetryPeers.map((p) =>
+        p.latestBlock !== undefined ? BigInt(p.latestBlock) : undefined,
+      ),
+      ethyLatestBlocks: lastTelemetryPeers.map((p) =>
+        p.ethyStatus?.balLatestBlock !== undefined && p.ethyStatus.balLatestBlock.length > 0
+          ? BigInt(p.ethyStatus.balLatestBlock)
+          : undefined,
+      ),
+    })
+
+    const postHydrate = planPostHydration({
+      kind: hydratedKind,
+      liveNetworkHead,
+    })
+    handoffCatchup = postHydrate.handoffCatchup
+
+    if (hydratedKind === 'base-complete') {
       if (spine.syncTransport === 'unset') {
         spine.syncTransport = (spine.ethyBucketsBitmask ?? 0) > 0 ? 'ethy' : 'snap'
       }
@@ -929,69 +1023,28 @@ export async function startPeerCoordinator(
         recordDiagnostic(spine, {
           subsystem: 'snap',
           severity: 'info',
-          message: `Restored ${restored.toLocaleString('en-US')} accounts from disk (base sync complete)`,
+          message: `Restored ${restored.toLocaleString('en-US')} accounts from disk (base sync complete at #${(spine.lastVerifiedBlockNumber ?? spine.pivotBlockNumber ?? 0n).toString()} — awaiting network head)`,
         })
       }
-      const resumedHead =
-        spine.bestPeerHead ?? spine.lastVerifiedBlockNumber ?? spine.pivotBlockNumber
-      if (resumedHead !== undefined && resumedHead > 0n) {
-        seedBalCatchUp(spine, resumedHead)
-        if (spine.phase === 'HEAD_FOLLOWING') {
-          populateHeadFlipSummary(resumedHead)
-        }
-      }
+      // Stay in P2P_WARMUP until a live network head verifies whether we are at head or behind.
+      setPhase(spine, postHydrate.phase)
       ensureHeadFollower(client)
     } else {
-      setPhase(spine, 'SNAP_SYNCING')
+      setPhase(spine, postHydrate.phase)
       if (restored > 0) {
         recordDiagnostic(spine, {
           subsystem: 'snap',
           severity: 'info',
-          message: `Restored ${restored.toLocaleString('en-US')} accounts from disk`,
+          message: `Restored ${restored.toLocaleString('en-US')} accounts from disk (${hydratedKind === 'partial-contracts' ? 'awaiting head to finish contracts' : 'awaiting head to resume snap'})`,
         })
       }
-      const pct = snapResumeProgressPct(peek)
-      opts.notices?.post(
-        {
-          key: 'snap-resume',
-          level: 'info',
-          text: `Resuming snap sync at #${spine.pivotBlockNumber?.toString() ?? '?'} (${pct}% complete)`,
-          relevantForMs: 8_000,
-        },
-        Date.now(),
-      )
-      const blocks = snapStore!.takeRestoredHealBlocks()
-      ensureHeadFollower(client)
-      headFollower?.restoreBuffered(blocks)
+      pendingRestoredHealBlocks = snapStore!.takeRestoredHealBlocks()
     }
     deriveCapabilities(spine)
-    if (!resumeHeadHandled) {
-      const best = pickBestPeer(lastTelemetryPeers, pivotBlockedPeers)
-      let ethyHead: bigint | undefined
-      for (const p of lastTelemetryPeers) {
-        const raw = p.ethyStatus?.balLatestBlock
-        if (raw !== undefined && raw.length > 0) {
-          const b = BigInt(raw)
-          if (ethyHead === undefined || b > ethyHead) ethyHead = b
-        }
-      }
-      const headBlock =
-        best?.latestBlock !== undefined
-          ? BigInt(best.latestBlock)
-          : (pendingResumeHead ?? spine.bestPeerHead ?? ethyHead)
-      if (headBlock !== undefined && headBlock > 0n) {
-        resumeHeadHandled = true
-        finishDiskResumeWithHead(headBlock, lastTelemetryPeers)
-      }
-    }
-    if (!peek.baseSyncComplete && spine.pivotStateRoot !== undefined) {
-      const contracts = snapStore!.drainRestoredContracts()
-      for (let i = 0; i < contracts.length; i += RESTORED_CONTRACTS_CHUNK) {
-        codeSync?.noteAccounts(contracts.slice(i, i + RESTORED_CONTRACTS_CHUNK))
-        if (i + RESTORED_CONTRACTS_CHUNK < contracts.length) {
-          await new Promise<void>((resolve) => setImmediate(resolve))
-        }
-      }
+
+    if (!resumeHeadHandled && postHydrate.readyForHeadTransition && liveNetworkHead !== undefined) {
+      resumeHeadHandled = true
+      finishDiskResumeWithHead(liveNetworkHead, lastTelemetryPeers)
     }
   }
 
@@ -1000,13 +1053,19 @@ export async function startPeerCoordinator(
       handoffCatchup ||
       baseSyncCompletePosted ||
       markingBaseSyncComplete ||
-      snapStore === undefined
+      snapStore === undefined ||
+      !diskHydrated ||
+      (!resumeHeadHandled && savedSnapPeek !== undefined)
     ) {
       return
     }
     if (snapBucketsUnfinished(spine.snapBuckets)) return
     if (spine.syncTransport === 'ethy' && ethySwarm?.isActive()) return
-    if (spine.syncTransport !== 'ethy' && codeSync !== undefined && !codeSync.pendingDone()) return
+    if (spine.syncTransport !== 'ethy') {
+      // If we resumed a partial-contracts state, codeSync must run and finish before marking complete.
+      if (codeSync === undefined) return
+      if (!codeSync.pendingDone()) return
+    }
     if (spine.pivotBlockNumber === undefined) return
     markingBaseSyncComplete = true
     void (async () => {
@@ -1020,6 +1079,8 @@ export async function startPeerCoordinator(
             : pivot
         snapStore.markBaseSyncComplete(verified)
         baseSyncCompletePosted = true
+        handoffCatchup = true
+        spine.diskResumeKind = 'base-complete'
         opts.notices?.post(
           {
             key: 'snap-base-done',
@@ -1029,10 +1090,22 @@ export async function startPeerCoordinator(
           },
           Date.now(),
         )
-        const best = pickBestPeer(lastTelemetryPeers, pivotBlockedPeers)
-        const peerHead =
-          best?.latestBlock !== undefined ? BigInt(best.latestBlock) : (spine.bestPeerHead ?? pivot)
-        const bestHead = peerHead > pivot ? peerHead : pivot
+        const liveHead = resolveLiveNetworkHead({
+          bestPeerHead: spine.bestPeerHead,
+          clOptimisticBlockNumber: spine.clOptimisticBlockNumber,
+          peerLatestBlocks: lastTelemetryPeers.map((p) =>
+            p.latestBlock !== undefined ? BigInt(p.latestBlock) : undefined,
+          ),
+        })
+        if (liveHead === undefined) {
+          // Do not claim HEAD_FOLLOWING if no live network head has been observed.
+          setPhase(spine, 'P2P_WARMUP')
+          resumeHeadHandled = false
+          ensureHeadFollower(client)
+          deriveCapabilities(spine)
+          return
+        }
+        const bestHead = liveHead > pivot ? liveHead : pivot
         raiseBestPeerHead(spine, bestHead)
         const flipped = tryEnterBalCatchUp(spine, snapSync, codeSync, bestHead)
         ensureHeadFollower(client)
@@ -1070,7 +1143,8 @@ export async function startPeerCoordinator(
       : countSnapPeersTowardVipTarget(peerList)
     if (!shouldVipReconnect({ snapPeersTowardTarget: towardTarget, target })) return
     const connected = new Set(spine.peers.keys())
-    const maxBatch = peerList.length < 3 ? 4 : 2
+    // At 0 peers, keep 4 of RLPx's 6 pending dial slots open for fresh DNS/discv4 discovery peers.
+    const maxBatch = peerList.length === 0 ? 2 : peerList.length < 3 ? 3 : 2
     const need = Math.min(maxBatch, target - towardTarget)
     let dialed = 0
     for (const peer of peerBook.vipDialCandidates(now, 64)) {
@@ -1583,13 +1657,22 @@ export async function startPeerCoordinator(
         }
         maybeMarkBaseSyncComplete()
         handoffCatchup = true
-        const headNow =
-          spine.bestPeerHead ?? spine.lastVerifiedBlockNumber ?? spine.pivotBlockNumber
-        if (headNow !== undefined && headNow > 0n) {
-          seedBalCatchUp(spine, headNow)
+        spine.diskResumeKind = 'base-complete'
+        const liveHead = resolveLiveNetworkHead({
+          bestPeerHead: spine.bestPeerHead,
+          clOptimisticBlockNumber: spine.clOptimisticBlockNumber,
+          peerLatestBlocks: lastTelemetryPeers.map((p) =>
+            p.latestBlock !== undefined ? BigInt(p.latestBlock) : undefined,
+          ),
+        })
+        if (liveHead !== undefined) {
+          seedBalCatchUp(spine, liveHead)
           if (spine.phase === 'HEAD_FOLLOWING') {
-            populateHeadFlipSummary(headNow)
+            populateHeadFlipSummary(liveHead)
           }
+        } else {
+          setPhase(spine, 'P2P_WARMUP')
+          resumeHeadHandled = false
         }
         ensureHeadFollower(client)
         ensureSnapSync(client)
@@ -1657,7 +1740,7 @@ export async function startPeerCoordinator(
   const explicitConnectPeerIds = new Set(explicitConnectPeers.map((p) => p.idHex))
 
   const tryLockSyncTransport = (peers: WorkerPeerSnapshot[]) => {
-    if (handoffCatchup || !snapBucketsUnfinished(spine.snapBuckets)) {
+    if (handoffCatchup) {
       if (spine.syncTransport === 'unset') {
         spine.syncTransport = (spine.ethyBucketsBitmask ?? 0) > 0 ? 'ethy' : 'snap'
       }
@@ -1682,6 +1765,12 @@ export async function startPeerCoordinator(
           headFollower = undefined
           startEthySwarmSync(peers)
         }
+      }
+      return
+    }
+    if (!snapBucketsUnfinished(spine.snapBuckets)) {
+      if (spine.syncTransport === 'unset') {
+        spine.syncTransport = (spine.ethyBucketsBitmask ?? 0) > 0 ? 'ethy' : 'snap'
       }
       return
     }
@@ -1801,6 +1890,9 @@ export async function startPeerCoordinator(
     const now = Date.now()
     peerBook.pruneOnStart(now)
     for (const peer of peerBook.dialCandidates(now)) {
+      const id = bytesToUnprefixedHex(peer.id as Uint8Array).toLowerCase()
+      peerBook.noteDialAttempt(id, now)
+      pendingVipDials.set(id, now + VIP_RECONNECT_INTERVAL_MS)
       client.connectPeer(peer)
     }
   }
@@ -1844,8 +1936,15 @@ export async function startPeerCoordinator(
       refreshEthyWorkerAdvertisement(client, spine)
     }
     for (const d of snap.diagnostics) {
-      if (d.timestamp <= lastDiagTs) continue
-      lastDiagTs = d.timestamp
+      if (d.timestamp < lastDiagTs) continue
+      const key = `${d.peerId ?? ''}:${d.message}`
+      if (d.timestamp === lastDiagTs) {
+        if (seenAtLastDiagTs.has(key)) continue
+        seenAtLastDiagTs.add(key)
+      } else {
+        lastDiagTs = d.timestamp
+        seenAtLastDiagTs = new Set([key])
+      }
       recordDiagnostic(spine, {
         subsystem: 'devp2p',
         severity: d.severity === 'error' ? 'error' : d.severity === 'warn' ? 'warn' : 'info',
@@ -1866,17 +1965,53 @@ export async function startPeerCoordinator(
     maybeRefreshUnservedPivot(snap.peers)
     const bestPeer = pickBestPeer(snap.peers, pivotBlockedPeers)
     if (bestPeer?.latestBlock !== undefined) {
-      raiseBestPeerHead(spine, BigInt(bestPeer.latestBlock))
+      const liveHead = BigInt(bestPeer.latestBlock)
+      raiseBestPeerHead(spine, liveHead)
       const peerHead = spine.bestPeerHead
-      if (
-        spine.phase === 'HEAD_FOLLOWING' &&
-        spine.headBlockNumber !== undefined &&
-        peerHead !== undefined &&
-        peerHead > spine.headBlockNumber + LAPTOP_WAKE_BLOCK_GAP
-      ) {
-        seedBalCatchUp(spine, peerHead)
-        ensureHeadFollower(client)
+      if (peerHead !== undefined) {
+        growBalCatchUpTarget(spine, peerHead)
       }
+      if (
+        shouldReenterBalCatchUp({
+          phase: spine.phase,
+          localVerifiedBlock: localVerifiedBlock(spine),
+          liveHead: peerHead,
+          wakeGapBlocks: LAPTOP_WAKE_BLOCK_GAP,
+        })
+      ) {
+        seedBalCatchUp(spine, peerHead!)
+        ensureHeadFollower(client)
+        headFollower?.noteChainHead(peerHead!)
+      }
+    }
+    if (spine.phase === 'BAL_CATCHUP' && spine.balCatchUp !== undefined) {
+      const hasHeadPeers = snap.peers.some((p) => p.latestBlock !== undefined)
+      const gap = BigInt(Math.max(0, spine.balCatchUp.total - spine.balCatchUp.applied))
+      if (spine.balCatchUp.applied > 0 || !hasHeadPeers || gap <= BAL_CATCHUP_STALE_WARN_GAP) {
+        balCatchUpStallStartedAt = 0
+      } else {
+        const now = Date.now()
+        if (balCatchUpStallStartedAt === 0) {
+          balCatchUpStallStartedAt = now
+        } else if (
+          !balCatchUpStallWarned &&
+          now - balCatchUpStallStartedAt >= BAL_CATCHUP_STALE_WARN_MS
+        ) {
+          balCatchUpStallWarned = true
+          opts.notices?.post(
+            {
+              key: 'bal-catchup-stale',
+              level: 'warn',
+              text: `State is +${gap.toLocaleString('en-US')} blocks behind and peers are not serving old BALs — run with --fresh to re-sync`,
+              relevantForMs: 30_000,
+            },
+            now,
+          )
+        }
+      }
+    } else {
+      balCatchUpStallStartedAt = 0
+      balCatchUpStallWarned = false
     }
     noteRemoteEthyPeers(snap.peers)
     tryLockSyncTransport(snap.peers)
@@ -2101,10 +2236,22 @@ export async function startPeerCoordinator(
       client.disconnectPeer(peerIdToBytes(peerId))
     },
     noteChainHead: (blockNumber: bigint) => {
+      if (blockNumber <= 0n) return
       raiseBestPeerHead(spine, blockNumber)
+      growBalCatchUpTarget(spine, blockNumber)
       if (!resumeHeadHandled && diskHydrated) {
         resumeHeadHandled = true
         finishDiskResumeWithHead(blockNumber, lastTelemetryPeers)
+      } else if (
+        shouldReenterBalCatchUp({
+          phase: spine.phase,
+          localVerifiedBlock: localVerifiedBlock(spine),
+          liveHead: spine.bestPeerHead,
+          wakeGapBlocks: LAPTOP_WAKE_BLOCK_GAP,
+        })
+      ) {
+        seedBalCatchUp(spine, spine.bestPeerHead!)
+        ensureHeadFollower(client)
       }
       if (handoffCatchup) {
         ensureHeadFollower(client)

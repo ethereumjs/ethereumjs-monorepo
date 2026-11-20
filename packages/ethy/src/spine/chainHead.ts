@@ -57,9 +57,20 @@ export function localVerifiedBlock(spine: EthySpine): bigint | undefined {
   return spine.headBlockNumber ?? spine.lastVerifiedBlockNumber
 }
 
-/** True when Ethy is in `HEAD_FOLLOWING` within `<= 2` blocks of the canonical chain head. */
+/** True when a live network head (peer or CL) has been observed, or in `--demo` mode. */
+export function hasObservedNetworkHead(spine: EthySpine): boolean {
+  if (spine.demoClock === true) return true
+  if (spine.bestPeerHead !== undefined && spine.bestPeerHead > 0n) return true
+  if (spine.clOptimisticBlockNumber !== undefined && spine.clOptimisticBlockNumber > 0n) {
+    return true
+  }
+  return false
+}
+
+/** True when Ethy is in `HEAD_FOLLOWING` within `<= 2` blocks of a verified canonical chain head. */
 export function isNodeAtChainHead(spine: EthySpine): boolean {
   if (spine.phase !== 'HEAD_FOLLOWING') return false
+  if (!hasObservedNetworkHead(spine)) return false
   const clock = resolveChainHeadClock(spine)
   const local = localVerifiedBlock(spine)
   if (clock === undefined || local === undefined) return false

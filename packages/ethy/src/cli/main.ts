@@ -167,6 +167,12 @@ async function main(): Promise<void> {
       .then((handle) => {
         bindPeerCoordinator(handle)
         noteChainHead = handle.noteChainHead
+        if (
+          node.spine.clOptimisticBlockNumber !== undefined &&
+          node.spine.clOptimisticBlockNumber > 0n
+        ) {
+          handle.noteChainHead(node.spine.clOptimisticBlockNumber)
+        }
         node.submitRawTransaction = handle.submitRawTransaction
         node.hybridEngine?.setSubmitRawTransaction((hex) =>
           handle

@@ -7,10 +7,12 @@ import { assert, describe, it } from 'vitest'
 import { createEthyNode } from '../src/core/createEthyNode.ts'
 import {
   PEER_STALE_SUCCESS_MS,
+  PEER_TOO_MANY_PEERS_HOLD_MAX_MS,
   type PeerBookRow,
   PeerBookStore,
   peerBookFilePath,
   rankPeerRows,
+  timeoutHoldMs,
   tooManyPeersHoldMs,
 } from '../src/persist/peerBook.ts'
 
@@ -309,5 +311,73 @@ describe('[Ethy/Persist]: peer book', () => {
     assert.isDefined(book.getRow(helloSnapId))
     assert.equal(book.getRow(helloSnapId)?.tooManyPeersStreak, 0)
     assert.equal(book.vipDialCandidates(now + 200, 10).length, 2)
+  })
+
+  it('backs off dead VIP peers exponentially on Connection timeout and demotes them behind live peers', () => {
+    const dir = tempDir()
+    const book = openBook(dir)
+    const now = 2_000_000
+    const deadVip = 'aa'.repeat(32)
+    const liveVip = 'bb'.repeat(32)
+    const unproven = 'cc'.repeat(32)
+
+    assert.equal(timeoutHoldMs(0), 30_000)
+    assert.equal(timeoutHoldMs(1), 60_000)
+    assert.equal(timeoutHoldMs(2), 120_000)
+    assert.equal(timeoutHoldMs(3), PEER_TOO_MANY_PEERS_HOLD_MAX_MS)
+
+    book.putRow(
+      sampleRow({
+        id: deadVip,
+        clientFamily: 'Nethermind',
+        lastStatusAt: now - 10_000,
+        lastSnapSuccessAt: now - 10_000,
+        snapResponsesOk: 25_000,
+        snapCapable: true,
+      }),
+    )
+    book.putRow(
+      sampleRow({
+        id: liveVip,
+        clientFamily: 'Nethermind',
+        lastStatusAt: now - 10_000,
+        lastSnapSuccessAt: now - 10_000,
+        snapResponsesOk: 100,
+        snapCapable: true,
+      }),
+    )
+    book.putRow(
+      sampleRow({
+        id: unproven,
+        lastStatusAt: now - 10_000,
+        snapResponsesOk: 0,
+      }),
+    )
+
+    // Before timeout, deadVip ranks #1 because of 25k snapResponsesOk
+    assert.equal((book.vipDialCandidates(now, 10)[0]!.id as Uint8Array)[0], 0xaa)
+
+    // First Connection timeout backs deadVip off by 30s and bumps resetStreak
+    book.noteDisconnect(deadVip, 'Connection timeout', now)
+    assert.equal(book.getRow(deadVip)?.resetStreak, 1)
+    assert.equal(book.getRow(deadVip)?.dialAfter, now + 30_000)
+    // liveVip is now dialed first instead of hammering deadVip
+    assert.equal((book.vipDialCandidates(now + 1_000, 10)[0]!.id as Uint8Array)[0], 0xbb)
+
+    // After backoff expires, deadVip still ranks behind liveVip due to resetStreak penalty
+    assert.equal((book.vipDialCandidates(now + 35_000, 10)[0]!.id as Uint8Array)[0], 0xbb)
+
+    // 4th consecutive timeout hits the full 5-minute cap without deleting proven VIP peer
+    book.noteDisconnect(deadVip, 'Connection timeout', now + 40_000)
+    book.noteDisconnect(deadVip, 'Connection timeout', now + 110_000)
+    book.noteDisconnect(deadVip, 'Connection timeout', now + 240_000)
+    assert.isDefined(book.getRow(deadVip))
+    assert.equal(book.getRow(deadVip)?.dialAfter, now + 240_000 + PEER_TOO_MANY_PEERS_HOLD_MAX_MS)
+
+    // Unproven non-snap peer is removed after 3 consecutive Connection timeouts
+    book.noteDisconnect(unproven, 'Connection timeout', now)
+    book.noteDisconnect(unproven, 'Connection timeout', now + 35_000)
+    book.noteDisconnect(unproven, 'Connection timeout', now + 100_000)
+    assert.isUndefined(book.getRow(unproven))
   })
 })

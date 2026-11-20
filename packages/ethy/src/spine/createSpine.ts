@@ -9,7 +9,11 @@ function deriveStateCapability(spine: EthySpine): void {
     return
   }
   if (phase === 'P2P_WARMUP') {
-    if (totalAccountsSynced > 0 || pivotBlockNumber !== undefined) {
+    if (
+      totalAccountsSynced > 0 ||
+      pivotBlockNumber !== undefined ||
+      (spine.diskResumeKind !== undefined && spine.diskResumeKind !== 'cold')
+    ) {
       spine.capabilities.state = { status: 'partial', label: 'Warming' }
     } else {
       spine.capabilities.state = { status: 'locked', label: 'Waiting' }

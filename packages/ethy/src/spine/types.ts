@@ -5,6 +5,7 @@ import type { HardwareSnapshot } from '../ai/hardwareCheck.ts'
 import type { DiscoveredLocalModel } from '../ai/localProviders.ts'
 import type { EconomySnapshot } from '../economy/types.ts'
 import type { EthyAiMode } from '../persist/userConfig.ts'
+import type { DiskResumeKind } from '../sync/startupStateMachine.ts'
 
 export type CapabilityId = 'state' | 'economy' | 'p2p'
 
@@ -161,6 +162,12 @@ export interface EthySpine {
   phase: EthyPhase
   /** Locked base-state download path (WP-06c). Phase stays `SNAP_SYNCING` for both. */
   syncTransport?: SyncTransport
+  /** Classification of local disk state at startup (`cold` when fresh/empty). */
+  diskResumeKind?: DiskResumeKind
+  /** Local block number peeked from disk before/during hydrate (display only; never a network head). */
+  diskResumeBlock?: bigint
+  /** False while on-disk journals are still being replayed into memory. */
+  diskHydrated?: boolean
   /** Local servable ETHY/0 account buckets (`1 << nibble`). */
   ethyBucketsBitmask?: number
   currentSlot: number
