@@ -1,6 +1,6 @@
 # WP-11a: Multi-Client `ETHY/0` Swarm Simulator (`ethy-sim`) & Shared-Policy Scenario Verification Harness
 
-- **Status:** `READY_FOR_PLANNING`
+- **Status:** `PLANNED`
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
 - **Dependencies:** `WP-06c`, `WP-06d`, `WP-06g`, `WP-07e` (`DONE`)
@@ -114,7 +114,109 @@ Every scenario has deterministic parameters, a clear protocol question, and expl
 
 ## 2. Concrete Implementation Plan (Planner — Grok 4.7)
 
-*(To be filled by Grok 4.7 when assigned.)*
+**D-130:** Event-driven discrete-event clock (not per-node per-slot scanning), `legacy`/`v2` adapter hooks where `v2` delegates to `legacy` until `WP-11b`, CI gates assert **known legacy failure baselines** (not `WP-11b` green targets), integer-only KPI JSON for bit-identical reruns, and `RAM_BAL_BLOCKS = 64` mirroring `@ethereumjs/devp2p` `RollingBlockStore` default without importing devp2p.
+
+### 2.1 Scope & production policy surface
+
+Discrete-event simulator under `packages/ethy/src/sim/` with `N` virtual nodes and a virtual clock. It calls real policy functions only through `SwarmPolicyAdapter`:
+
+| Module | Symbols |
+| --- | --- |
+| `syncSourceSelector.ts` | `isUsableEthySeeder`, `pickAllUsableEthySeeders`, `freshestEthyPivot`, `preferCanonicalSnapOverEthy`, `shouldLockSnapAfterGrace`, `ETHY_DISCOVERY_GRACE_MS` (2,500), `DEFAULT_MAX_SWARM_TAIL_BLOCKS` (2,048), `MAX_ETHY_BAL_TAIL_BLOCKS` (64,800) |
+| `canonicalPivotGrid.ts` | `selectCanonicalSnapPivotTarget`, `nextCanonicalPivotBlock` |
+| `ethySeederSchedule.ts` | `assignBuckets` (fixed `0..15` order in `tryAssignFromGroups`) |
+| `startupStateMachine.ts` | `classifySavedDiskState`, `planNetworkHeadResume` |
+| `resumePolicy.ts` | gap constants only via the functions above (`90`, `900`, `64,800`) — never duplicated |
+
+The simulator **also** counts BAL holes when `bucketsBitmask === 0xffff` because `isUsableEthySeeder` skips `balEarliestBlock <= basePivotBlock + 1` in that case today (`syncSourceSelector.ts:31`).
+
+Guardrails: zero new npm dependencies; no sockets or filesystem I/O; do **not** export from `src/index.ts`; no `node:*` under `src/sim/` (CLI in `scripts/` only).
+
+### 2.2 File tree & responsibilities
+
+| Path | Role |
+| --- | --- |
+| `src/sim/rng.ts` | `createSeededRng(seed)` — Mulberry32, bit-identical sequence per seed |
+| `src/sim/types.ts` | Profiles, phases, `SimNode`, `SimConfig`, `ScenarioId`, physics constants, `PolicyPreset = 'legacy' \| 'v2'` |
+| `src/sim/policyAdapter.ts` | **Only** file importing `src/sync/*` |
+| `src/sim/network.ts` | Sparse overlay, DHT draws, PEX, `minEthyPeers` slot field |
+| `src/sim/transfer.ts` | Backbone SNAP queue + ETHY bucket upload sharing |
+| `src/sim/world.ts` | Event queue, node lifecycle, BAL RAM window |
+| `src/sim/scenarios.ts` | Ten scenarios × `ci` and `demo` scales |
+| `src/sim/metrics.ts` | Integer KPI accumulation + canonical JSON |
+| `src/sim/runSim.ts` | `runScenario`, `runAll`, `comparePresets` |
+| `src/sim/formatReport.ts` | Pure ASCII table (no I/O) |
+| `scripts/sim-swarm.ts` | argv → stdout |
+| `test/swarmSimulator.spec.ts` | Vitest (picked up by `test:node`) |
+| `package.json` | `"sim:swarm": "tsx scripts/sim-swarm.ts"` |
+
+### 2.3 Clock, backbone, profiles
+
+- **Clock:** `SLOT_MS = 12_000`; discovery samples every `DISCOVERY_SAMPLE_MS = 1_000`. Head: `startHead + floor(virtualMs / SLOT_MS)`. Event queue jumps to next wake/sleep, discovery tick, transfer completion, grace expiry, or cliff (`pivot + RAM_BAL_BLOCKS`, `pivot + 2,048`). Target: 500 nodes × 7 virtual days in **&lt; 3s** wall CPU.
+- **Backbone:** `M` non-Ethy Geth-style peers; 128-block SNAP state window; BAL retention default 8,192 blocks; concurrent SNAP cap. One healthy 16-bucket SNAP sync = `SNAP_SYNC_BLOCKS_HEALTHY = 150` slots when `concurrent <= cap`, else `150 * max(1, ceil(concurrent / cap))` slots (one completion event per sync).
+- **Profiles:** `always-on` (public, 200 Mb/s), `desktop` (NAT, 8h/day, 50 Mb/s), `laptop` (1–3h every 48–72h, disk persists), `burst-joiner`, `byzantine` (`fake-minter`, `black-hole-seeder`, `stale-liar`). Only `always-on` nodes accept inbound DHT dials.
+
+**Node state:** `phase`, `syncTransport`, `basePivotBlock`, shared 32-byte pivot root (derived from pivot block number, no keccak), `bucketsBitmask`, `balEarliestBlock`, `balLatestBlock`, `lastVerifiedBlock`, disk snapshot across sleep, `shadowRefresh: { active: false }`.
+
+**Legacy BAL (`RAM_BAL_BLOCKS = 64`):** On `HEAD_FOLLOWING`, `balLatest = lastVerified`, `balEarliest = max(basePivot + 1, lastVerified - 63)` once past pivot + 64. Laptop sleep drops RAM tail; disk keeps pivot, bitmask, `lastVerified`. Wake: `classifySavedDiskState` + `planNetworkHeadResume`. `HEAD_FOLLOWING` only after 16 buckets **and** covered BAL catch-up; else `BAL_CATCHUP` (stalled if uncovered).
+
+**Overlay:** `maxPeers = 25`, `minEthyPeers = 0` (field for `WP-11b`). DHT hit rate `onlinePublicEthy / (onlinePublicEthy + backboneDhtSize)`; PEX cap 32 after 100ms; laptops try peer cache once.
+
+**ETHY transfers:** One bucket per slot at 50 Mb/s reference; joiners take lowest missing nibble first (`0..15`); upload shared across active joiners; byte conservation (download total = upload total).
+
+**Transport lock order (each discovery tick until set):** (1) resume path if disk exists; (2) build `EthySeederView` from peers; (3) `preferCanonicalSnapOverEthy` / `shouldLockSnapAfterGrace` → SNAP + `selectCanonicalSnapPivotTarget`; (4) else usable seeders → ETHY + `assignBuckets`; (5) `bucketsBitmask === 0` never usable.
+
+### 2.4 `SwarmPolicyAdapter`
+
+```ts
+type SwarmPolicyAdapter = {
+  preset: 'legacy' | 'v2'
+  selectSyncSource(input): { transport: 'ethy' | 'snap' | 'unset'; seeders: EthySeederView[] }
+  selectSnapPivot(head: bigint): CanonicalSnapPivotTarget
+  assignBuckets(seeders: EthySeederDescriptor[]): AssignBucketsResult | undefined
+  classifyResume(saved, liveHead, ethyBalTail: boolean): NetworkHeadResumeAction
+  evaluateGenerationRefresh(): { action: 'hold' }
+  evaluateBalRetention(): { mode: 'ram'; windowBlocks: 64 }
+  shouldPreemptSnapForEthy(): false
+}
+```
+
+`v2` uses the same production calls; three hooks stay `hold` / `ram-64` / `false` until `WP-11b` replaces them.
+
+### 2.5 Scenarios & legacy CI gates
+
+Default seed `1`. Tests use `ci` scale; CLI `--nodes` / `--days` override **demo** only; `--scale ci` for compact `sim:swarm`.
+
+| Scenario ID | CI shape (summary) | Legacy gate (baseline, not WP-11b target) |
+| --- | --- | --- |
+| `thundering-herd-age-cliff` | 1 seeder + 24 joiners, SNAP cap 4, stop `pivot + 2,200` | `snapMintersPerGeneration` max ≥ 12; `peakConcurrentSnapSyncs` ≥ 4 |
+| `laptop-every-3-days` | 4 always-on + 16 laptops, 4 days, 2h / 60h | `balGapIncidents` ≥ 1; `gappedButStillUsable` ≥ 1 |
+| `flash-crowd-launch` | 50 Mb/s seeder; N=8 vs N=16 | `p95(N=16)/p95(N=8)` ≥ 1.6 |
+| `low-density-dht-bootstrap` | 6 Ethy in DHT 600; 16 joiners | ≥ 12/16 lock SNAP after 2.5s grace |
+| `minter-crash-failover` | Partial G1 seeder dies; G0 past 2,048; no minter election in legacy | `stalledNodeCount` ≥ 1; `falseSyncedCount === 0` |
+| `fake-minter-suppression` | 5 fake `bucketsBitmask=0` at head | 0 assignments to fakes; SNAP minters ≥ 80% joiners |
+| `cross-snapshot-churn` | Mixed pivots / partial masks | `fallbackSingleSnapshot` seen; assignment succeeds; `falseSyncedCount === 0` |
+| `total-swarm-hibernation` | 20 nodes, 28,800 blocks offline | SNAP count = node count; `falseSyncedCount === 0` |
+| `seeder-bandwidth-cap` | 20 Mb/s seeder, 12 fast joiners | `swarmAmplificationFactor` &lt; 2.5; byte conservation |
+| `long-horizon-soak` | 20 nodes, 2 days, 10/20/70 mix | `falseSyncedCount === 0`; one generation; deterministic JSON repeat |
+
+Demo scales match §1.2 table (200 joiners, 14-day laptops, etc.).
+
+### 2.6 CLI & tests
+
+- `npm run sim:swarm -- --scenario all` (demo unless `--scale ci`)
+- `npm run sim:swarm -- --scenario thundering-herd-age-cliff --nodes 500 --days 7 --seed 42 --policy legacy --json`
+- `--compare`: `legacy` vs `v2` on same seed — expect **zero delta** until `WP-11b`
+
+`swarmSimulator.spec.ts`: RNG stability; all 10 CI scenarios determinism + conservation + legacy gates; compare delta zero; optional 500×7-day perf smoke &lt; 3s.
+
+### 2.7 Implementer finish gates
+
+From `packages/ethy`: `npm run tsc`, `npm test`, `npm run spellcheck`, `npm run biome`, `npm run sim:swarm -- --scenario all --scale ci`.
+
+### 2.8 Out of scope (this WP)
+
+`balRetentionPolicy.ts`, `swarmGenerationPolicy.ts`, disk BAL segments, rarest-first striping, shadow refresh, devp2p PEX changes, TUI, live P2P, production sync behavior changes.
 
 ---
 
