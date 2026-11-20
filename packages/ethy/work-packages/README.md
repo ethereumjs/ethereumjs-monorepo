@@ -305,6 +305,29 @@ Every Work Package delivers a **runnable, observable, and live-testable incremen
                                           │ WP-10e..10g: Optional Eval Bake-Off,    │
                                           │         ~30 MB LoRA Diffset + KV-Cache, │
                                           │         Zero-CPU Watch Rules & Lenses   │
+                                          └───────────────────┬─────────────────────┘
+                                                              │
+                                                              ▼ (Swarm Production Readiness)
+                                          ┌─────────────────────────────────────────┐
+                                          │ WP-11a: Multi-Client Swarm Simulator    │
+                                          │         (ethy-sim), Shared-Policy Hooks │
+                                          │         & 10-Scenario Stress Harness    │
+                                          └───────────────────┬─────────────────────┘
+                                                              │
+                                                              ▼
+                                          ┌─────────────────────────────────────────┐
+                                          │ WP-11b: Amortized O(1) Generation       │
+                                          │         Election, Contiguous Disk BAL   │
+                                          │         Archive, Rarest-First Striping  │
+                                          │         & Background Shadow Re-Seeding  │
+                                          └───────────────────┬─────────────────────┘
+                                                              │
+                                                              ▼ (Curiosity-First AI Experience)
+                                          ┌─────────────────────────────────────────┐
+                                          │ WP-12: Chain Storyteller — Uncaged Prose│
+                                          │        Engine, Curated Ethereum Lore &  │
+                                          │        Threat Grounding, Editorial TUI  │
+                                          │        & Conversational Deep-Dives      │
                                           └─────────────────────────────────────────┘
 ```
 
