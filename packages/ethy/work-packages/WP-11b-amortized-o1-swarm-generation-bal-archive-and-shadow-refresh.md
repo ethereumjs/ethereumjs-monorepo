@@ -1,6 +1,6 @@
 # WP-11b: Amortized `O(1)` Swarm Generation Refresh, Contiguous Disk BAL Archive, Rarest-First Striping & Zero-Downtime Background Shadow Re-Seeding
 
-- **Status:** `READY_FOR_PLANNING`
+- **Status:** `PLANNED`
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
 - **Dependencies:** `WP-06g`, `WP-07e`, `WP-07g`, `WP-11a`
@@ -135,7 +135,172 @@ All 10 `WP-11a` scenarios must pass under the `v2` (new production) policy prese
 
 ## 2. Concrete Implementation Plan (Planner — Grok 4.7)
 
-*(To be filled by Grok 4.7 after `WP-11a` is `DONE`.)*
+**D-131:** Two-tier horizons (`1536` / `4096`), hash-lottery election with explicit `W_min`/`W_max`, live suppression heartbeat for partial minters, segmented `bal-tail/` archive, shadow pivot flip without touching live `FlatStateManager`, and devp2p changes in a **separate commit** before `packages/ethy`.
+
+### 2.0 Sequencing & commit discipline
+
+- `packages/ethy/src/sim/` does **not** exist yet (`WP-11a` is `PLANNED`, not implemented). Composer ships **pure policy modules** + disk/devp2p behavior + unit/loopback tests first.
+- When `src/sim/policyAdapter.ts` exists, wire `v2` hooks to `balRetentionPolicy.ts`, `swarmGenerationPolicy.ts`, `shadowRefresh.ts`, and flip the ten `ethy-sim` CI gates. If `WP-11a` is still absent, stop after production tests; leave §1.3 unchecked gates as the handoff checklist. **Do not** build a second simulator inside `WP-11b`.
+- **Commit order:** (1) `@ethereumjs/devp2p` upstream hardening; (2) `@ethereumjs/ethy`. Log both in `PROGRESS.md` *Upstream Library Touch Queue*.
+- **Wire / deps:** `ETHY/0` messages `0x00`–`0x0a` unchanged (`ETHY-0-SPEC.md` §7–§8 already `v0.2`). Zero new npm dependencies.
+
+### 2.1 Design locks (see also § Design Refinements)
+
+| Constant | Value | Role |
+| --- | --- | --- |
+| `MACRO_GENERATION_GRID_BLOCKS` | `1024n` | `B_gen = (head / 1024n) * 1024n` |
+| `SOFT_REFRESH_AGE_BLOCKS` | `1536n` | Joiners still prefer `ETHY/0`; online nodes start refresh/election |
+| `HARD_PREFER_SNAP_AGE_BLOCKS` | `4096n` | `DEFAULT_MAX_SWARM_TAIL_BLOCKS` becomes alias; retires `2048` cliff |
+| `MAX_ETHY_BAL_TAIL_BLOCKS` | `64800n` | Unchanged hard unusable cap in `auto` |
+| `MAX_SERVABLE_BAL_TAIL_BLOCKS` | `8192n` | Disk retention budget (~27.3 h) |
+| `BAL_SEGMENT_BLOCKS` | `256n` | Segment file size |
+| `LAMBDA_TARGET` | `1.5` | Expected `1–2` minters per generation |
+| `T_TARGET_MS` | `60_000` | Election time scale |
+| `W_MIN_MS` / `W_MAX_MS` | `5_000` / `180_000` | Delay clamps |
+| `MINT_LIVENESS_TIMEOUT_MS` | `300_000` | Fake / stalled minter suppression expiry |
+| `ETHY_DISCOVERY_GRACE_MS` | `2_500` | Base grace (unchanged) |
+| `ETHY_DISCOVERY_EXTENDED_GRACE_MS` | `10_000` | When ethy ENR / peer-book dials in flight |
+| `minEthyPeers` (Ethy only) | `4` | devp2p default `0` |
+| `maxConcurrentChunkReads` | `4` | Fair upload cap per seeder |
+
+**Election score:** `u = (uint64be(keccak256(nodeId ‖ bigIntToBytes(B_gen))[0..8]) + 1) / 2^64` ∈ `(0, 1]`. `N_hat = max(1, knownActiveEthyPeers + 1)`. Delay:
+
+`clamp(W_min + (-ln(1-u)) * (N_hat * T_target / lambda) * w, W_min, W_max)`.
+
+**Weight `w` (then clamp `[0.25, 4]`):** public + uptime ≥ 6h + ≥ 2 snap peers → `0.35`; public + uptime ≥ 6h → `0.5`; public otherwise → `1`; NAT + uptime &lt; 30min → `3.5`; NAT otherwise → `2`; if `knownActiveEthyPeers < 2`, multiply by `1.5` before clamp.
+
+**Suppression heartbeat:** `mask === 0` + verified header → suppress ≤ 5 min. `0 < mask < 0xffff` → suppress only while peer connected **and** manifest/chunk answered within last 5 min (crash at `0x3` lifts). `mask === 0xffff` → permanent for that `B_gen`. PEX-only `mask === 0` → no suppress. If local deadline passed when suppression lifts, add backup stagger `15_000–90_000` ms from `keccak256(nodeId ‖ B_gen ‖ "backup")` (deadlines not re-rolled).
+
+**Elected shadow mint:** Complete bucket `0x0` first; advertise `basePivotBlock = B_gen`, `mask = 0` immediately; set bit 0 when proven; pace buckets `0x1..0xf`.
+
+**Prune floor:** Never delete BAL bundles below `min(active bucket chunkBlockNumber) + 1` while that pivot serves. `peerCoordinator` `onPivotStep` must pass that floor, **not** `newPivot.blockNumber` alone.
+
+### 2.2 Part A — contiguous BAL archive
+
+**New file** [`src/sync/balRetentionPolicy.ts`](../../src/sync/balRetentionPolicy.ts) (pure):
+
+- `segmentStart(block)`, `contiguousRange(presentBlocks, pivot)`, `pruneFloor(minChunkBlock, lastVerified, shadowDisabled)`
+
+**Disk layout** under active pivot (`snapStore.appendHealBundle` keeps call shape):
+
+- `bal-tail/manifest.bin`: magic `BALT`, version `1`, segment size `256`, `earliest`/`latest` uint64 BE
+- `bal-tail/seg-<start>.bin`: segment header magic (4 bytes, distinct from manifest), 256 slots `(payloadOff, headerLen, balLen)` uint32 BE, append-only header + BAL payloads
+- Read fallback: legacy `heal/<n>.bundle.rlp` when segment slot empty; **new writes** only to segments
+
+**[`balSync.ts`](../../src/sync/balSync.ts):** `persistHeal = true` for verified bundles in `SNAP_SYNCING`, `BAL_CATCHUP`, and `HEAD_FOLLOWING` (today only `snapStreaming`). Skip empty BAL RLP unchanged.
+
+**[`syncSourceSelector.ts`](../../src/sync/syncSourceSelector.ts):** `isUsableEthySeeder` — **every** non-zero mask (including `0xffff`) requires `balEarliestBlock <= basePivotBlock + 1n` unless `basePivotBlock >= bestPeerHead` or `bridgeCovered` (optional arg: another peer covers `[pivot+1 .. earliest-1]`).
+
+**Upstream [`ethyChunkStore.ts`](../../../devp2p/src/serve/ethyChunkStore.ts):** segment-aware `getDiskHealWindow` / `getBalBundleFromDisk`; contiguous suffix, not min/max filenames with hole.
+
+**Upstream [`host.ts`](../../../devp2p/src/worker/host.ts) `_ethyStatusFieldsForSend`:** union segment window + `RollingBlockStore`; never synthesize `basePivotBlock + 1` when archive starts later; empty archive may use pivot block only.
+
+### 2.3 Part B — generation election
+
+**New file** [`src/sync/swarmGenerationPolicy.ts`](../../src/sync/swarmGenerationPolicy.ts) (pure, clock injected):
+
+- `macroGenerationBlock(head)`
+- `computeElectionDelayMs({ nodeId, generationBlock, knownActiveEthyPeers, weight })`
+- `electionWeight({ publicEndpoint, uptimeMs, snapPeerCount, knownActiveEthyPeers })`
+- `evaluateMinterSuppression({ nowMs, generationBlock, bestVerifiedHead, announcements })` → `clear | suppressed | stalled`
+- Move / extend `preferCanonicalSnapOverEthy`: age cliff `4096n`; ignore `bucketsBitmask === 0` for “freshest completed”; optional verified in-flight mint bypasses hard snap preference
+
+**[`peerCoordinator.ts`](../../src/net/peerCoordinator.ts):** one `setTimeout` per `B_gen` from RLPx node id; arm on `HEAD_FOLLOWING` when age ≥ soft horizon; refresh suppression on each `ETHY/0 STATUS`. No TUI import.
+
+### 2.4 Part C — shadow re-seed
+
+**New file** [`src/sync/shadowRefresh.ts`](../../src/sync/shadowRefresh.ts) (pure decisions):
+
+- `shouldStartShadowRefresh({ phase, freeBytes, pivotBytes, head, localPivot, balEarliest, enabled })` — requires `HEAD_FOLLOWING`, `freeBytes >= max(2 * pivotBytes, 2 GiB)` from a Node filesystem free-space probe, and (`head - localPivot >= 1536` or BAL hole)
+- Mode: `ethy-shadow` when usable seeder `basePivotBlock >= local + 1024` + continuous tail; else `waiting-election` → `snap-mint`
+
+**[`snapStore.ts`](../../src/persist/snapStore.ts):** `beginShadowPivot(newRoot)` → `pivots/<newRoot>/` without touching `active.json` or live arena.
+
+**Runner in `peerCoordinator`:** Path 1 — reuse `EthySwarmSynchronizer` into shadow dir; copy/link BAL tail `[G_new+1 .. lastVerified]`. Path 2 — low-priority SNAP at `B_gen` into shadow dir (bucket `0` first). Atomic flip: `active.json` → `setEthyPivotAccountsDir` → repeat `ETHY/0 STATUS` → async `rm` old pivot.
+
+**CLI [`args.ts`](../../src/cli/args.ts):** `--no-shadow-refresh` (default enabled when disk allows).
+
+**[`startupStateMachine.ts`](../../src/sync/startupStateMachine.ts):** extend `NetworkHeadResumeAction` with `{ action: 'anchor-ethy' }` when gap exceeds peer BAL coverage but fresh usable `ETHY/0` generation exists (`discardPivots` keep `peers.json`). Otherwise existing resume paths.
+
+```mermaid
+flowchart TD
+  headFollow[HEAD_FOLLOWING]
+  headFollow --> age{head minus localPivot}
+  age -->|under 1536 and tail continuous| hold[idle]
+  age -->|1536 or gap| newer{usable ETHY gen at least 1024 newer}
+  newer -->|yes| ethyShadow[ethy-shadow into pivots/newRoot]
+  newer -->|no| lottery[hash lottery]
+  lottery --> suppressed{verified minter alive}
+  suppressed -->|yes| wait[waiting-election]
+  suppressed -->|no and delay elapsed| snapMint[snap-mint bucket 0 first]
+  ethyShadow --> swap[atomic active.json flip]
+  snapMint --> swap
+  swap --> deleteOld[async delete old pivot dir]
+```
+
+### 2.5 Part D — striping, grace, devp2p
+
+**[`ethySeederSchedule.ts`](../../src/sync/ethySeederSchedule.ts):** `assignBuckets(seeders, load, { localNodeId })` — sort buckets by ascending seeder rarity; tie-break `uint32(keccak256(localNodeId ‖ bucketIndex))`; missing id → 32 zero bytes. Keep cross-snapshot BAL coverage logic.
+
+**[`syncSourceSelector.ts`](../../src/sync/syncSourceSelector.ts):** `shouldLockSnapAfterGrace(..., ethyDialInFlight)` → `10_000` ms when true. Diagnostic only: `Waiting for ETHY/0 swarm peer…`.
+
+**[`peerCoordinator.ts`](../../src/net/peerCoordinator.ts) preemption:** tighten existing early SNAP preempt: zero **done** buckets, account progress &lt; 5% (unknown total = early), new seeder contiguous and `head - basePivot <= 1536`.
+
+**Upstream devp2p (separate commit):**
+
+| File | Change |
+| --- | --- |
+| [`ethyPex.ts`](../../../devp2p/src/worker/ethyPex.ts) | export `selectEthyPexPeers(rows, maxPeers, rng)` — 75% freshest pivot + mask + `lastSeenSec`, 25% random remainder |
+| [`ethyServer.ts`](../../../devp2p/src/serve/ethyServer.ts) | `GET_ETHY_PEERS` uses selector |
+| [`rlpx.ts`](../../../devp2p/src/rlpx/rlpx.ts) | optional `minEthyPeers` (default `0`); Ethy worker passes `4`; evict non-ETHY when full if ethy count &lt; reserve; keep ≥ 1 non-ETHY for head/snap |
+| [`host.ts`](../../../devp2p/src/worker/host.ts) | chunk read queue `maxConcurrentChunkReads = 4`, round-robin across peers |
+
+### 2.6 Part E — telemetry
+
+**[`spine/types.ts`](../../src/spine/types.ts):** optional `spine.swarm`: `generationAgeBlocks`, `balTailContiguous`, `balTailEarliest`, `balTailLatest`, `shadowRefresh` (`idle | ethy-shadow | snap-mint | waiting-election`, `targetBlock`, `progressPct`, `suppressedByPeerId`).
+
+**[`diagnose.ts`](../../src/tools/diagnose.ts)** `/ethy` widget + `/diag` debug page; mirror fields on `ethy_status` RPC if present. **No** new cockpit rows.
+
+### 2.7 `WP-11a` policy adapter (when simulator lands)
+
+Extend `SwarmPolicyAdapter` `v2` hooks:
+
+```ts
+evaluateGenerationRefresh() // swarmGenerationPolicy + shadowRefresh mode
+evaluateBalRetention()      // { mode: 'disk'; maxBlocks: 8192 } vs legacy ram-64
+shouldPreemptSnapForEthy()  // syncSourceSelector + SOFT horizon
+```
+
+`assignBuckets` / `isUsableEthySeeder` / `preferCanonicalSnapOverEthy` call updated exports directly.
+
+### 2.8 Tests (default `npm test`; not 200-node / 14-day sim)
+
+| Spec | Locks |
+| --- | --- |
+| `test/swarmGenerationPolicy.spec.ts` | delay determinism, clamps, weights, suppression TTL, backup stagger |
+| `test/balRetentionPolicy.spec.ts` + snapStore temp-dir | 100 `HEAD_FOLLOWING` bundles, restart continuity, hole reporting, prune floor, legacy heal read |
+| `test/syncSourceSelector.spec.ts` | `0xffff` gap rejected, bridge peer, cliff at `4096` |
+| `test/ethySeederSchedule.spec.ts` | rarest-first + per-node permutation |
+| shadow / resume | atomic flip; `anchor-ethy` on long gap + fresh seeder |
+| `devp2p` | PEX 75/25, `minEthyPeers` default `0` unchanged, chunk cap |
+
+**`ethy-sim` `v2` CI gates (when `WP-11a` ships):** thundering-herd `snapMintersPerGeneration <= 2`, `peakConcurrentSnapSyncs <= 4`; laptop `balGapIncidents === 0`, `stalledNodeCount === 0`; flash-crowd `swarmAmplificationFactor >= 2` at CI scale (`>= 4` demo only); low-density `snapOffloadRatio >= 0.85`; minter-crash / fake-minter `stalledNodeCount === 0`; scenarios 7–10 `falseSyncedCount === 0`, `p95BalTailBlocks <= 4096`.
+
+### 2.9 Implementer finish gates
+
+From `packages/ethy`: `npm run tsc`, `npm test`, `npm run spellcheck`, `npm run biome`. From `packages/devp2p` (if touched): same minus ethy `sim:swarm`. When `WP-11a` exists: `npm run sim:swarm -- --scenario all --scale ci --policy v2`.
+
+### 2.10 Out of scope
+
+Wire-format changes, new cockpit rows, new npm deps, building `ethy-sim`, WP-12, rewriting `ETHY-0-SPEC`.
+
+### Design Refinements (D-131)
+
+1. **`2048` → `4096` for auto SNAP preference only** — `MAX_ETHY_BAL_TAIL_BLOCKS` and bridge caps unchanged; joiners stay on `ETHY/0` longer; election handles refresh before hard fallback.
+2. **Partial minter suppression is liveness-based** — not permanent at `mask > 0` until proven or 5 min timeout; fixes scenario 5 without weakening fake-minter defense.
+3. **Segmented `bal-tail/`** — avoids 10k `heal/*.bundle.rlp` files and gives O(1) segment lookup; legacy heal kept read-only for resume.
+4. **Shadow pivot never shares `FlatStateManager` with live HEAD_FOLLOWING** — swap is metadata + serve dir only; Plaza/RPC unchanged during download.
+5. **`minEthyPeers` default `0` in devp2p** — Ethy opts in with `4`; library consumers unaffected.
 
 ---
 
