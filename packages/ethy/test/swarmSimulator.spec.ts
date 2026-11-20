@@ -9,6 +9,7 @@ import {
   runAllScenarios,
   runScenario,
 } from '../src/sim/runSim.ts'
+import { assertV2ScenarioGates } from '../src/sim/v2Gates.ts'
 
 describe('[Ethy/Sim]: ethy-sim swarm harness', () => {
   it('Mulberry32 is stable for a fixed seed', () => {
@@ -42,13 +43,21 @@ describe('[Ethy/Sim]: ethy-sim swarm harness', () => {
     }
   })
 
-  it('v2 differs from legacy only where WP-11b applies (thundering herd)', () => {
+  it('v2 CI scenarios satisfy WP-11b compact gates', () => {
+    const rows = runAllScenarios({ seed: 1, policy: 'v2', scale: 'ci' })
+    for (const row of rows) {
+      assertV2ScenarioGates(row)
+    }
+  })
+
+  it('v2 reduces SNAP stampede vs legacy on thundering herd', () => {
     const cmp = comparePresets({
       scenarioId: 'thundering-herd-age-cliff',
       seed: 1,
       scale: 'ci',
     })
-    expect(cmp.legacy.snapSyncStarts).toBeGreaterThan(0)
+    expect(cmp.legacy.snapMintersMax).toBeGreaterThan(cmp.v2.snapMintersMax)
+    expect(cmp.v2.snapMintersMax).toBeLessThanOrEqual(2)
     expect(cmp.v2.falseSyncedCount).toBe(0)
   })
 

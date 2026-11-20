@@ -4,6 +4,7 @@ import { formatMetricsAscii, formatMetricsTable } from '../src/sim/formatReport.
 import { metricsToCanonicalJson, runAllScenarios, runScenario, comparePresets, ALL_SCENARIO_IDS } from '../src/sim/runSim.ts'
 import type { PolicyPreset, ScenarioId, SimScale } from '../src/sim/types.ts'
 import { assertLegacyScenarioGates } from '../src/sim/legacyGates.ts'
+import { assertV2ScenarioGates } from '../src/sim/v2Gates.ts'
 
 function parseArg(name: string): string | undefined {
   const i = process.argv.indexOf(`--${name}`)
@@ -36,9 +37,10 @@ function main(): void {
     } else {
       process.stdout.write(`${formatMetricsTable(rows)}\n`)
     }
-    if (resolvedScale === 'ci' && policy === 'legacy') {
+    if (resolvedScale === 'ci') {
       for (const r of rows) {
-        assertLegacyScenarioGates(r)
+        if (policy === 'legacy') assertLegacyScenarioGates(r)
+        else assertV2ScenarioGates(r)
       }
     }
     return
@@ -54,8 +56,9 @@ function main(): void {
   } else {
     process.stdout.write(`${formatMetricsAscii(row)}\n`)
   }
-  if (resolvedScale === 'ci' && policy === 'legacy') {
-    assertLegacyScenarioGates(row)
+  if (resolvedScale === 'ci') {
+    if (policy === 'legacy') assertLegacyScenarioGates(row)
+    else assertV2ScenarioGates(row)
   }
 }
 

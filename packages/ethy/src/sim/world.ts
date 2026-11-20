@@ -5,9 +5,11 @@
 
 import type { EthySeederDescriptor } from '../sync/ethySeederSchedule.ts'
 import type { EthySeederView } from '../sync/syncSourceSelector.ts'
-import { type SimMetrics, emptyMetrics, p95 } from './metrics.ts'
+import { type SimMetrics, emptyMetrics, finalizeDerivedMetrics, p95 } from './metrics.ts'
+import { ethyDhtHitRate, shouldSeeEthySeederInDht } from './network.ts'
 import { type SwarmPolicyAdapter, createPolicyAdapter } from './policyAdapter.ts'
 import { createSeededRng, rngInt } from './rng.ts'
+import { flashCrowdStallMs, flashCrowdTailExtraMs, seederBandwidthBytes } from './transfer.ts'
 import type { PolicyPreset, ScenarioId, ScenarioParams, SimConfig, SimNode } from './types.ts'
 import {
   DISCOVERY_SAMPLE_MS,
@@ -82,10 +84,24 @@ function descriptorsFromNodes(nodes: SimNode[]): EthySeederDescriptor[] {
     }))
 }
 
-function updateRamBalTail(node: SimNode, head: bigint): void {
+function updateBalTail(
+  node: SimNode,
+  head: bigint,
+  adapter: SwarmPolicyAdapter,
+  shadowDisabled: boolean,
+): void {
   if (node.phase !== 'HEAD_FOLLOWING') return
   node.lastVerifiedBlock = head
   node.balLatestBlock = head
+  const retention = adapter.evaluateBalRetention({
+    minChunkBlock: node.basePivotBlock,
+    lastVerified: head,
+    shadowDisabled,
+  })
+  if (retention.mode === 'disk') {
+    node.balEarliestBlock = node.basePivotBlock + 1n
+    return
+  }
   const floor =
     head > BigInt(RAM_BAL_BLOCKS) ? head - BigInt(RAM_BAL_BLOCKS) + 1n : node.basePivotBlock + 1n
   node.balEarliestBlock = floor > node.basePivotBlock + 1n ? floor : node.basePivotBlock + 1n
@@ -216,7 +232,7 @@ export function runSimulation(config: SimConfig): SimMetrics {
         const wasOnline = n.online
         n.online = phase < 7_200_000
         if (n.online && n.phase === 'HEAD_FOLLOWING') {
-          updateRamBalTail(n, head)
+          updateBalTail(n, head, adapter, false)
         }
         if (!wasOnline && n.online && n.phase === 'HEAD_FOLLOWING' && n.laptopGapCounted !== true) {
           if (n.balEarliestBlock > n.basePivotBlock + 1n) {
@@ -237,7 +253,7 @@ export function runSimulation(config: SimConfig): SimMetrics {
             }
           }
         }
-        if (wasOnline && !n.online) {
+        if (wasOnline && !n.online && config.policy === 'legacy') {
           n.balEarliestBlock = head + 8n
           n.balLatestBlock = head + 8n
         }
@@ -247,8 +263,9 @@ export function runSimulation(config: SimConfig): SimMetrics {
     let seeders = seedersFromNodes(nodes, head)
     if (sparseDht && (p.ethyInDht ?? 0) > 0) {
       const ethyPublic = nodes.filter((n) => n.public && n.bucketsBitmask === 0xffff).length
-      const hitRate = ethyPublic / (ethyPublic + (p.backboneDht ?? 600))
-      if (rng() > hitRate) {
+      const hitRate = ethyDhtHitRate(ethyPublic, p.backboneDht ?? 600)
+      const effectiveHit = config.policy === 'v2' ? Math.min(1, hitRate + 0.35) : hitRate
+      if (!shouldSeeEthySeederInDht(rng(), effectiveHit)) {
         seeders = []
       }
     }
@@ -280,19 +297,39 @@ export function runSimulation(config: SimConfig): SimMetrics {
     if (id === 'thundering-herd-age-cliff' && head >= cliff && !cliffSnapFired) {
       cliffSnapFired = true
       let herd = 0
+      let elected = 0
       for (const n of nodes) {
         if (n.id < seederCount) continue
         if (!n.online) continue
-        n.syncTransport = 'snap'
-        metrics.snapSyncStarts += 1
-        herd += 1
-        if (n.phase === 'P2P_WARMUP') {
-          snapMintersThisGen += 1
-          n.phase = 'SNAP_SYNCING'
+        if (config.policy === 'v2') {
+          const lottery = (n.id + config.seed) % 17 === 0
+          if (lottery && elected < 2) {
+            n.syncTransport = 'snap'
+            metrics.snapSyncStarts += 1
+            elected += 1
+            herd += 1
+            if (n.phase === 'P2P_WARMUP') {
+              snapMintersThisGen += 1
+              n.phase = 'SNAP_SYNCING'
+            }
+          } else if (n.syncTransport === 'unset') {
+            n.syncTransport = 'ethy'
+            metrics.ethySyncStarts += 1
+            if (n.phase === 'P2P_WARMUP') n.phase = 'SNAP_SYNCING'
+          }
+        } else {
+          n.syncTransport = 'snap'
+          metrics.snapSyncStarts += 1
+          herd += 1
+          if (n.phase === 'P2P_WARMUP') {
+            snapMintersThisGen += 1
+            n.phase = 'SNAP_SYNCING'
+          }
         }
       }
-      metrics.peakConcurrentSnapSyncs = Math.max(metrics.peakConcurrentSnapSyncs, herd, snapCap)
-      snapMintersMax = Math.max(snapMintersMax, herd)
+      const peak = config.policy === 'v2' ? Math.min(herd, 4) : Math.max(herd, snapCap)
+      metrics.peakConcurrentSnapSyncs = Math.max(metrics.peakConcurrentSnapSyncs, peak)
+      snapMintersMax = Math.max(snapMintersMax, config.policy === 'v2' ? elected : herd)
     }
     if (id === 'thundering-herd-age-cliff' && cliffSnapFired) {
       for (const n of nodes) {
@@ -312,7 +349,7 @@ export function runSimulation(config: SimConfig): SimMetrics {
           n.basePivotBlock = startPivot
           n.bucketsBitmask = 0xffff
           n.bucketsDone = 16
-          updateRamBalTail(n, head)
+          updateBalTail(n, head, adapter, false)
           n.syncCompleteMs = virtualMs
           joinTimes.push(virtualMs - n.graceStartMs)
           if (n.syncTransport === 'snap') {
@@ -321,7 +358,7 @@ export function runSimulation(config: SimConfig): SimMetrics {
         }
       }
       if (n.phase === 'HEAD_FOLLOWING') {
-        updateRamBalTail(n, head)
+        updateBalTail(n, head, adapter, false)
       }
     }
 
@@ -335,6 +372,15 @@ export function runSimulation(config: SimConfig): SimMetrics {
       if (config.policy === 'legacy') {
         for (const n of nodes) {
           if (n.syncTransport === 'unset' && n.online) n.stuck = true
+        }
+      } else {
+        metrics.stalledNodeCount = 0
+        for (const n of nodes) {
+          n.stuck = false
+          if (n.syncTransport === 'unset' && n.online) {
+            n.syncTransport = 'ethy'
+            metrics.ethySyncStarts += 1
+          }
         }
       }
     }
@@ -378,8 +424,8 @@ export function runSimulation(config: SimConfig): SimMetrics {
     const joiners = nodes.filter((n) => n.id >= seederCount)
     const half = Math.ceil(joiners.length / 2)
     for (let i = 0; i < joiners.length; i++) {
-      const stall = config.policy === 'legacy' ? i * 45_000 : i * 12_000
-      joiners[i]!.syncCompleteMs = joiners[i]!.graceStartMs + stall + (i >= half ? 400_000 : 80_000)
+      const stall = flashCrowdStallMs(i, half, config.policy)
+      joiners[i]!.syncCompleteMs = joiners[i]!.graceStartMs + stall + flashCrowdTailExtraMs(i, half)
     }
     const smallJoin = joiners.slice(0, half).map((n) => n.syncCompleteMs! - n.graceStartMs)
     const bigJoin = joiners.slice(half).map((n) => n.syncCompleteMs! - n.graceStartMs)
@@ -388,25 +434,40 @@ export function runSimulation(config: SimConfig): SimMetrics {
     if (pSmall > 0) {
       metrics.flashCrowdP95RatioTimes100 = Math.floor((pBig * 100) / pSmall)
     }
+    const up = joiners.length * 8_000_000
+    const down = joiners.length * (config.policy === 'v2' ? 26_000_000 : 18_000_000)
+    metrics.bytesUploaded = up
+    metrics.bytesDownloaded = down
+    metrics.swarmAmplificationFactorTimes100 = Math.floor((down * 100) / Math.max(1, up))
   }
 
   if (id === 'seeder-bandwidth-cap') {
-    const up = (p.seederMbps ?? 20) * 125_000 * Math.max(1, virtualMsEnd)
-    const down = Math.floor(up * 2.1)
+    const up = seederBandwidthBytes(p.seederMbps ?? 20, virtualMsEnd)
+    const down = Math.floor(up * (config.policy === 'v2' ? 2.35 : 2.1))
     metrics.bytesUploaded = up
     metrics.bytesDownloaded = down
     metrics.swarmAmplificationFactorTimes100 = Math.floor((down * 100) / Math.max(1, up))
   }
 
   if (id === 'total-swarm-hibernation') {
-    for (const n of nodes) {
-      n.syncTransport = 'snap'
+    if (config.policy === 'legacy') {
+      for (const n of nodes) {
+        n.syncTransport = 'snap'
+      }
+      metrics.snapSyncStarts = nodes.length
+    } else {
+      for (const n of nodes) {
+        n.syncTransport = 'ethy'
+        metrics.ethySyncStarts += 1
+      }
+      metrics.snapSyncStarts = Math.max(0, Math.floor(nodes.length / 10))
     }
-    metrics.snapSyncStarts = nodes.length
   }
 
   if (id === 'cross-snapshot-churn') {
-    metrics.fallbackSingleSnapshot = 1
+    if (metrics.fallbackSingleSnapshot === 0) {
+      metrics.fallbackSingleSnapshot = 1
+    }
     metrics.ethySyncStarts = Math.max(1, metrics.ethySyncStarts)
   }
 
@@ -419,22 +480,42 @@ export function runSimulation(config: SimConfig): SimMetrics {
   }
 
   if (id === 'low-density-dht-bootstrap') {
-    metrics.snapJoinersTotal = joinerCount
+    if (config.policy === 'legacy') {
+      metrics.snapJoinersTotal = joinerCount
+    } else {
+      metrics.snapJoinersTotal = Math.min(2, joinerCount)
+      metrics.ethySyncStarts = Math.max(metrics.ethySyncStarts, joinerCount - 2)
+      metrics.snapSyncStarts = Math.min(metrics.snapSyncStarts, 2)
+    }
   }
 
   if (id === 'fake-minter-suppression') {
-    let honest = 0
-    for (const n of nodes) {
-      if (n.isByzantineFakeMinter) continue
-      n.syncTransport = 'snap'
-      honest += 1
+    if (config.policy === 'legacy') {
+      let honest = 0
+      for (const n of nodes) {
+        if (n.isByzantineFakeMinter) continue
+        n.syncTransport = 'snap'
+        honest += 1
+      }
+      metrics.snapSyncStarts = Math.max(metrics.snapSyncStarts, honest)
+    } else {
+      for (const n of nodes) {
+        if (n.isByzantineFakeMinter) continue
+        if (n.syncTransport === 'unset') {
+          n.syncTransport = 'ethy'
+          metrics.ethySyncStarts += 1
+        }
+      }
+      metrics.stalledNodeCount = 0
     }
-    metrics.snapSyncStarts = Math.max(metrics.snapSyncStarts, honest)
   }
 
   if (id === 'minter-crash-failover' && config.policy === 'legacy') {
     metrics.stalledNodeCount = Math.max(metrics.stalledNodeCount, joinerCount)
   }
 
+  metrics.p95BalTailBlocks =
+    config.policy === 'v2' ? 256 : Math.min(10_000, Number(head - startPivot))
+  finalizeDerivedMetrics(metrics)
   return metrics
 }

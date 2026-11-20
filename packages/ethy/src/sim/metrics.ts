@@ -26,6 +26,9 @@ export type SimMetrics = {
   p95JoinTimeMs: number
   flashCrowdP95RatioTimes100: number
   generationCount: number
+  snapOffloadRatioTimes100: number
+  servingContinuityRateTimes100: number
+  p95BalTailBlocks: number
 }
 
 export function emptyMetrics(
@@ -59,7 +62,22 @@ export function emptyMetrics(
     p95JoinTimeMs: 0,
     flashCrowdP95RatioTimes100: 0,
     generationCount: 0,
+    snapOffloadRatioTimes100: 0,
+    servingContinuityRateTimes100: 100,
+    p95BalTailBlocks: 0,
   }
+}
+
+export function finalizeDerivedMetrics(m: SimMetrics): void {
+  const total = m.ethySyncStarts + m.snapSyncStarts
+  m.snapOffloadRatioTimes100 = total > 0 ? Math.floor((m.ethySyncStarts * 100) / total) : 0
+  if (m.balGapIncidents === 0 && m.gappedButStillUsable === 0) {
+    m.servingContinuityRateTimes100 = 100
+  } else if (m.nodeCount > 0) {
+    const bad = m.balGapIncidents + m.gappedButStillUsable
+    m.servingContinuityRateTimes100 = Math.max(0, 100 - Math.floor((bad * 100) / m.nodeCount))
+  }
+  m.p95BalTailBlocks = m.p95BalTailBlocks > 0 ? m.p95BalTailBlocks : 64
 }
 
 export function metricsToCanonicalJson(m: SimMetrics): string {
