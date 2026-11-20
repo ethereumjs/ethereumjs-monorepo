@@ -96,6 +96,17 @@ export function ethyOverviewWidget(spine: EthySpine): WidgetSpec {
                 ? `0x${swarm.shadowRefresh.partialMinterMask.toString(16)}`
                 : '—',
           },
+          {
+            key: 'Suppression state',
+            value: swarm?.shadowRefresh?.suppressionState ?? '—',
+          },
+          {
+            key: 'Stalled minters',
+            value:
+              swarm?.shadowRefresh?.stalledMinterPeerIds !== undefined
+                ? swarm.shadowRefresh.stalledMinterPeerIds.join(', ')
+                : '—',
+          },
         ],
       },
     ],

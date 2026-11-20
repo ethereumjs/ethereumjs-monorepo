@@ -289,6 +289,8 @@ export type SpineSwarmSnapshot = {
     electionDeadlineMs?: number
     mintBucket?: number
     partialMinterMask?: number
+    suppressionState?: 'clear' | 'suppressed' | 'stalled'
+    stalledMinterPeerIds?: string[]
   }
 }
 

@@ -88,6 +88,8 @@ export type MinterAnnouncement = {
   pexOnly?: boolean
   /** Last manifest or chunk response (ms) */
   lastServeAtMs?: number
+  /** First time we saw `bucketsBitmask === 0` at/above `generationBlock` (ms). */
+  firstZeroMaskAtMs?: number
   connected: boolean
   headerVerified: boolean
 }
@@ -98,29 +100,41 @@ export function evaluateMinterSuppression(opts: {
   nowMs: number
   generationBlock: bigint
   announcements: readonly MinterAnnouncement[]
-}): { state: MinterSuppressionState; suppressorPeerId?: string } {
+}): {
+  state: MinterSuppressionState
+  suppressorPeerId?: string
+  stalledPeerIds: string[]
+} {
+  const stalledPeerIds: string[] = []
   for (const a of opts.announcements) {
     if (a.basePivotBlock < opts.generationBlock) continue
     if (!a.headerVerified) continue
     if (a.pexOnly && a.bucketsBitmask === 0) continue
     if (a.bucketsBitmask === 0xffff) {
-      return { state: 'suppressed', suppressorPeerId: a.peerId }
+      return { state: 'suppressed', suppressorPeerId: a.peerId, stalledPeerIds }
     }
     if (a.bucketsBitmask === 0) {
-      return { state: 'suppressed', suppressorPeerId: a.peerId }
+      const since = a.firstZeroMaskAtMs ?? opts.nowMs
+      if (opts.nowMs - since <= MINT_LIVENESS_TIMEOUT_MS) {
+        return { state: 'suppressed', suppressorPeerId: a.peerId, stalledPeerIds }
+      }
+      stalledPeerIds.push(a.peerId)
+      continue
     }
     if (a.bucketsBitmask > 0 && a.bucketsBitmask < 0xffff) {
-      if (
-        a.connected &&
-        a.lastServeAtMs !== undefined &&
-        opts.nowMs - a.lastServeAtMs <= MINT_LIVENESS_TIMEOUT_MS
-      ) {
-        return { state: 'suppressed', suppressorPeerId: a.peerId }
+      if (!a.connected) continue
+      if (a.lastServeAtMs === undefined) continue
+      if (opts.nowMs - a.lastServeAtMs <= MINT_LIVENESS_TIMEOUT_MS) {
+        return { state: 'suppressed', suppressorPeerId: a.peerId, stalledPeerIds }
       }
+      stalledPeerIds.push(a.peerId)
       continue
     }
   }
-  return { state: 'clear' }
+  if (stalledPeerIds.length > 0) {
+    return { state: 'stalled', stalledPeerIds }
+  }
+  return { state: 'clear', stalledPeerIds }
 }
 
 export function backupElectionStaggerMs(nodeId: Uint8Array, generationBlock: bigint): number {

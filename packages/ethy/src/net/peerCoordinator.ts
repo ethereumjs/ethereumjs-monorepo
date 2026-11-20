@@ -3,6 +3,7 @@ import * as path from 'node:path'
 
 import {
   type Devp2pWorkerClient,
+  EthyMessageCodes,
   type WorkerChainId,
   type WorkerPeerSnapshot,
   type WorkerTelemetrySnapshot,
@@ -70,6 +71,7 @@ import { SnapCodeAndStorageSynchronizer } from '../sync/codeAndStorageSync.ts'
 import { pickEthyAnchorForStaleResume } from '../sync/ethyAnchorResume.ts'
 import { seederFromWorkerStatus } from '../sync/ethySeederSchedule.ts'
 import { EthySwarmSynchronizer } from '../sync/ethySwarmSync.ts'
+import { createMinterLivenessBook, noteMinterEthyServe } from '../sync/minterLiveness.ts'
 import { notePivotBridgingProgress, shouldReleaseSnapBridge } from '../sync/resumeCoordinator.ts'
 import {
   type SnapResumeDecision,
@@ -112,7 +114,9 @@ import {
 import { macroGenerationBlock } from '../sync/swarmGenerationPolicy.ts'
 import {
   type GenerationElectionHandle,
+  applyBackupElectionStaggerOnSuppressionLift,
   armGenerationElection,
+  ensureGenerationElectionArmed,
   minHealPruneBlock,
   refreshSpineSwarmTelemetry,
   tickGenerationElection,
@@ -464,6 +468,7 @@ export async function startPeerCoordinator(
   const shadowRefreshEnabled = opts.shadowRefreshEnabled !== false
   const processStartedAtMs = Date.now()
   let generationElection: GenerationElectionHandle | undefined
+  const minterLiveness = createMinterLivenessBook()
   let shadowPivotSession: ShadowPivotSession | undefined
   let shadowSnapMintSession: ShadowSnapMintSession | undefined
   let shadowSnapMintSync: SnapAccountSynchronizer | undefined
@@ -2351,6 +2356,23 @@ export async function startPeerCoordinator(
       noteDiscovery(d.message)
     }
     syncLink()
+    const ethyActive = snap.peers.filter(
+      (p) =>
+        p.ethySession === true && p.ethyStatus !== undefined && p.ethyStatus.bucketsBitmask !== '0',
+    ).length
+    const nowTelemetry = Date.now()
+    generationElection = ensureGenerationElectionArmed(
+      generationElection,
+      armGenerationElection({
+        spine,
+        nodeId: localNodeId,
+        bestHead: spine.bestPeerHead ?? 0n,
+        knownActiveEthyPeers: ethyActive,
+        publicEndpoint: (opts.listenPort ?? 0) > 0,
+        snapPeerCount: snap.peers.filter((p) => p.snapSession === true).length,
+        uptimeMs: nowTelemetry - processStartedAtMs,
+      }),
+    )
     refreshSpineSwarmTelemetry({
       spine,
       snapStore,
@@ -2359,21 +2381,18 @@ export async function startPeerCoordinator(
       processStartedAtMs,
       peers: snap.peers,
       electionHandle: generationElection,
+      minterLiveness,
+      nowMs: nowTelemetry,
     })
-    const ethyActive = snap.peers.filter(
-      (p) =>
-        p.ethySession === true && p.ethyStatus !== undefined && p.ethyStatus.bucketsBitmask !== '0',
-    ).length
-    generationElection =
-      armGenerationElection({
-        spine,
+    const suppressionState = spine.swarm?.shadowRefresh?.suppressionState
+    if (generationElection !== undefined && suppressionState !== undefined) {
+      generationElection = applyBackupElectionStaggerOnSuppressionLift({
+        handle: generationElection,
         nodeId: localNodeId,
-        bestHead: spine.bestPeerHead ?? 0n,
-        knownActiveEthyPeers: ethyActive,
-        publicEndpoint: (opts.listenPort ?? 0) > 0,
-        snapPeerCount: snap.peers.filter((p) => p.snapSession === true).length,
-        uptimeMs: Date.now() - processStartedAtMs,
-      }) ?? generationElection
+        suppressionState,
+        nowMs: nowTelemetry,
+      })
+    }
     tickGenerationElection(client, spine, generationElection)
     maybeShadowPivotWork(client, snap.peers)
     maybeShadowSnapMintWork(client, snap.peers)
@@ -2529,6 +2548,13 @@ export async function startPeerCoordinator(
 
   client.events.on('protocol', (msg) => {
     if (msg.protocol === 'ethy') {
+      if (
+        msg.code === EthyMessageCodes.BUCKET_MANIFEST ||
+        msg.code === EthyMessageCodes.PROVEN_ACCOUNT_CHUNK ||
+        msg.code === EthyMessageCodes.BAL_RANGE
+      ) {
+        noteMinterEthyServe(minterLiveness, msg.peerId, Date.now())
+      }
       shadowEthySwarm?.handleMessage(msg.peerId, msg.code, msg.payload)
       ethySwarm?.handleMessage(msg.peerId, msg.code, msg.payload)
       return

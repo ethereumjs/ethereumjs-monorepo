@@ -8,9 +8,17 @@ import { readBalTailManifest } from '../persist/balTailArchive.ts'
 import type { SnapPivotStore } from '../persist/snapStore.ts'
 import type { EthySpine, SpineSwarmSnapshot } from '../spine/types.ts'
 import { seederFromWorkerStatus } from './ethySeederSchedule.ts'
+import {
+  type MinterLivenessBook,
+  minterLastServeAt,
+  minterZeroMaskSince,
+  noteMinterStatus,
+} from './minterLiveness.ts'
 import { pickShadowRefreshMode, shouldStartShadowRefresh } from './shadowRefresh.ts'
 import {
   type MinterAnnouncement,
+  type MinterSuppressionState,
+  backupElectionStaggerMs,
   computeElectionDelayMs,
   electionWeight,
   evaluateMinterSuppression,
@@ -35,7 +43,10 @@ export function refreshSpineSwarmTelemetry(opts: {
   processStartedAtMs: number
   peers: readonly WorkerPeerSnapshot[]
   electionHandle?: GenerationElectionHandle
+  minterLiveness?: MinterLivenessBook
+  nowMs?: number
 }): void {
+  const nowMs = opts.nowMs ?? Date.now()
   const { spine, snapStore } = opts
   const head = spine.bestPeerHead ?? spine.headBlockNumber ?? spine.pivotBlockNumber ?? 0n
   const localPivot = spine.pivotBlockNumber ?? 0n
@@ -84,10 +95,10 @@ export function refreshSpineSwarmTelemetry(opts: {
         bucketsBitmask: s.bucketsBitmask,
       })),
     )
-    const announcements = buildMinterAnnouncements(opts.peers)
     const gen = macroGenerationBlock(head)
+    const announcements = buildMinterAnnouncements(opts.peers, opts.minterLiveness, gen, nowMs)
     const suppression = evaluateMinterSuppression({
-      nowMs: Date.now(),
+      nowMs,
       generationBlock: gen,
       announcements,
     })
@@ -100,8 +111,16 @@ export function refreshSpineSwarmTelemetry(opts: {
       electionSuppressed: suppression.state === 'suppressed',
       electionDelayElapsed,
     })
+    shadow.suppressionState = suppression.state
     if (suppression.suppressorPeerId !== undefined) {
       shadow.suppressedByPeerId = suppression.suppressorPeerId
+    } else {
+      shadow.suppressedByPeerId = undefined
+    }
+    if (suppression.stalledPeerIds.length > 0) {
+      shadow.stalledMinterPeerIds = suppression.stalledPeerIds
+    } else {
+      shadow.stalledMinterPeerIds = undefined
     }
     if (opts.electionHandle !== undefined) {
       shadow.electionDeadlineMs = opts.electionHandle.deadlineMs
@@ -114,20 +133,34 @@ export function refreshSpineSwarmTelemetry(opts: {
   spine.swarm = snap
 }
 
-function buildMinterAnnouncements(peers: readonly WorkerPeerSnapshot[]): MinterAnnouncement[] {
+export function buildMinterAnnouncements(
+  peers: readonly WorkerPeerSnapshot[],
+  book?: MinterLivenessBook,
+  generationBlock?: bigint,
+  nowMs = Date.now(),
+): MinterAnnouncement[] {
   const out: MinterAnnouncement[] = []
+  const gen = generationBlock ?? 0n
   for (const p of peers) {
     const st = p.ethyStatus
     if (st === undefined) continue
     const mask = st.bucketsBitmask.startsWith('0x')
       ? Number.parseInt(st.bucketsBitmask, 16)
       : Number.parseInt(st.bucketsBitmask, 10)
+    const basePivotBlock = BigInt(st.basePivotBlock)
+    if (book !== undefined && generationBlock !== undefined) {
+      noteMinterStatus(book, p.id, basePivotBlock, mask, gen, nowMs)
+    }
+    const id = p.id.toLowerCase()
     out.push({
       peerId: p.id,
-      basePivotBlock: BigInt(st.basePivotBlock),
+      basePivotBlock,
       bucketsBitmask: mask,
-      connected: true,
+      pexOnly: p.ethySession !== true,
+      connected: p.ethySession === true,
       headerVerified: st.latestBlockHash !== undefined && st.latestBlockHash.length > 0,
+      lastServeAtMs: book !== undefined ? minterLastServeAt(book, id) : undefined,
+      firstZeroMaskAtMs: book !== undefined ? minterZeroMaskSince(book, id) : undefined,
     })
   }
   return out
@@ -136,6 +169,55 @@ function buildMinterAnnouncements(peers: readonly WorkerPeerSnapshot[]): MinterA
 export type GenerationElectionHandle = {
   generationBlock: bigint
   deadlineMs: number
+  backupStaggerApplied?: boolean
+  suppressionWasActive?: boolean
+}
+
+/** Arm once per macro-generation; keep deadline across telemetry ticks (WP-11b). */
+export function ensureGenerationElectionArmed(
+  prev: GenerationElectionHandle | undefined,
+  next: GenerationElectionHandle | undefined,
+): GenerationElectionHandle | undefined {
+  if (next === undefined) return prev
+  if (prev === undefined || prev.generationBlock !== next.generationBlock) {
+    return next
+  }
+  return {
+    ...next,
+    deadlineMs: Math.max(prev.deadlineMs, next.deadlineMs),
+    backupStaggerApplied: prev.backupStaggerApplied,
+    suppressionWasActive: prev.suppressionWasActive,
+  }
+}
+
+/** When suppression lifts after a blocked lottery window, add backup stagger once. */
+export function applyBackupElectionStaggerOnSuppressionLift(opts: {
+  handle: GenerationElectionHandle
+  nodeId: Uint8Array
+  suppressionState: MinterSuppressionState
+  nowMs: number
+}): GenerationElectionHandle {
+  const { handle, suppressionState, nowMs } = opts
+  if (suppressionState === 'suppressed') {
+    return { ...handle, suppressionWasActive: true }
+  }
+  if (
+    handle.suppressionWasActive === true &&
+    nowMs >= handle.deadlineMs &&
+    handle.backupStaggerApplied !== true
+  ) {
+    const stagger = backupElectionStaggerMs(opts.nodeId, handle.generationBlock)
+    return {
+      ...handle,
+      deadlineMs: nowMs + stagger,
+      backupStaggerApplied: true,
+      suppressionWasActive: false,
+    }
+  }
+  if (suppressionState === 'clear' || suppressionState === 'stalled') {
+    return { ...handle, suppressionWasActive: false }
+  }
+  return handle
 }
 
 export function armGenerationElection(opts: {

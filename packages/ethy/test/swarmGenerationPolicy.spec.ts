@@ -59,6 +59,7 @@ describe('[Ethy/Sync]: swarm generation policy', () => {
     })
     assert.equal(r.state, 'suppressed')
     assert.equal(r.suppressorPeerId, 'a')
+    assert.deepEqual(r.stalledPeerIds, [])
   })
 
   it('backup stagger sits in 15s..90s band', () => {
