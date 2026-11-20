@@ -24,6 +24,26 @@ export function refreshEthyWorkerAdvertisement(client: Devp2pWorkerClient, spine
   })
 }
 
+/** Partial-generation minter heartbeat while shadow refresh mints (WP-11b). */
+export function refreshShadowMinterAdvertisement(
+  client: Devp2pWorkerClient,
+  opts: {
+    pivotBlock: bigint
+    stateRoot: Uint8Array
+    bucketsMask: number
+    balEarliest: bigint
+    balLatest: bigint
+  },
+): void {
+  client.setEthyStatus({
+    basePivotBlock: opts.pivotBlock.toString(),
+    basePivotStateRoot: bytesToUnprefixedHex(opts.stateRoot),
+    bucketsBitmask: opts.bucketsMask === 0 ? '0' : `0x${opts.bucketsMask.toString(16)}`,
+    balEarliestBlock: opts.balEarliest.toString(),
+    balLatestBlock: opts.balLatest.toString(),
+  })
+}
+
 export function syncEthyPivotServeDir(
   client: Devp2pWorkerClient,
   accountsDir: string | undefined,

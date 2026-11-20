@@ -19,7 +19,7 @@ import type { SnapPivotStore } from '../persist/snapStore.ts'
 import { computeAccountRangeFraction, syncBucketCursorFields } from '../spine/buckets.ts'
 import { setPhase } from '../spine/createSpine.ts'
 import { recordDiagnostic } from '../spine/diagnostics.ts'
-import type { EthySpine } from '../spine/types.ts'
+import type { EthySpine, SnapBucket } from '../spine/types.ts'
 import type { IngestedAccountMeta } from './accountSync.ts'
 import { applyBlockBal, extractBlockAccessListHashFromHeaderRlp, pushBalWindow } from './balSync.ts'
 import { headFieldsFromHeaderRlp } from './blockBundle.ts'
@@ -64,6 +64,11 @@ export type EthySwarmSyncOpts = {
   onAccountsComplete?: () => void
   onSwarmComplete?: () => void
   economy?: ETHEconomyDataManager
+  /** Disk-only ETHY fetch into `snapStore` shadow persist root (WP-11b). */
+  backgroundMode?: boolean
+  skipBalCatchUp?: boolean
+  persistBuckets?: SnapBucket[]
+  backgroundMaxChunksInFlight?: number
 }
 
 type ManifestEntry = {
@@ -288,9 +293,14 @@ export class EthySwarmSynchronizer {
   private lastRateAt = Date.now()
   private lastAccountCount = 0
   private readonly rateSamples: Array<{ at: number; count: number }> = []
+  private readonly maxChunksInFlight: number
 
   constructor(opts: EthySwarmSyncOpts) {
     this.opts = opts
+    this.maxChunksInFlight =
+      opts.backgroundMode === true
+        ? (opts.backgroundMaxChunksInFlight ?? 4)
+        : MAX_TOTAL_CHUNKS_IN_FLIGHT
     const anchor = opts.pivotBlockNumber ?? 0n
     this.balNext =
       opts.spine.lastVerifiedBlockNumber !== undefined &&
@@ -357,6 +367,10 @@ export class EthySwarmSynchronizer {
 
   getBucketPivotBlocks(): readonly bigint[] {
     return this.bucketPivotBlocks
+  }
+
+  private persistBuckets(): SnapBucket[] {
+    return this.opts.persistBuckets ?? this.opts.spine.snapBuckets
   }
 
   getAnchorPivotBlock(): bigint {
@@ -540,7 +554,7 @@ export class EthySwarmSynchronizer {
 
   private pumpChunks(bucketIndex: number): boolean {
     if (this.stopped || this.bucketsDone.has(bucketIndex)) return false
-    if (this.chunkFlights.size >= MAX_TOTAL_CHUNKS_IN_FLIGHT) return false
+    if (this.chunkFlights.size >= this.maxChunksInFlight) return false
     const all = this.manifestOrigins.get(bucketIndex)
     if (all === undefined || all.length === 0) return false
     let inFlight = 0
@@ -553,7 +567,7 @@ export class EthySwarmSynchronizer {
     const retries = this.retryQueue.get(bucketIndex)
     while (
       inFlight < this.maxPipelineForBucket(bucketIndex) &&
-      this.chunkFlights.size < MAX_TOTAL_CHUNKS_IN_FLIGHT &&
+      this.chunkFlights.size < this.maxChunksInFlight &&
       retries !== undefined &&
       retries.length > 0
     ) {
@@ -571,7 +585,7 @@ export class EthySwarmSynchronizer {
     let cursor = this.nextOriginCursor.get(bucketIndex) ?? 0
     while (
       inFlight < this.maxPipelineForBucket(bucketIndex) &&
-      this.chunkFlights.size < MAX_TOTAL_CHUNKS_IN_FLIGHT &&
+      this.chunkFlights.size < this.maxChunksInFlight &&
       cursor < all.length
     ) {
       const originIndex = cursor
@@ -620,7 +634,7 @@ export class EthySwarmSynchronizer {
     if (this.stopped || this.accountsPassComplete) return
     for (let pass = 0; pass < 2; pass++) {
       for (let step = 0; step < 16; step++) {
-        if (this.chunkFlights.size >= MAX_TOTAL_CHUNKS_IN_FLIGHT) return
+        if (this.chunkFlights.size >= this.maxChunksInFlight) return
         const b = (this.roundRobinBucket + step) & 0x0f
         if ((this.seedMaskUnion() & (1 << b)) === 0) continue
         if (this.bucketsDone.has(b)) continue
@@ -781,7 +795,8 @@ export class EthySwarmSynchronizer {
       lastKey,
       hasRight,
     } = item
-    if (bucketSlab.length > 0) {
+    const ingestLive = this.opts.backgroundMode !== true
+    if (bucketSlab.length > 0 && ingestLive) {
       if (
         this.opts.snapStore !== undefined &&
         this.opts.snapStore.enabled &&
@@ -795,10 +810,13 @@ export class EthySwarmSynchronizer {
       }
       this.opts.onAccountsIngested?.(ingestedMetaFromBinarySlab(bucketSlab))
     }
-    const bucket = this.opts.spine.snapBuckets[bucketIndex]
+    const buckets = this.persistBuckets()
+    const bucket = buckets[bucketIndex]
     if (bucket !== undefined) {
       bucket.accountsLoaded += bucketCount
-      this.opts.spine.totalAccountsSynced += bucketCount
+      if (ingestLive) {
+        this.opts.spine.totalAccountsSynced += bucketCount
+      }
       const lastInBucket =
         bucketSlab.length >= ACCOUNT_SLAB_STRIDE
           ? bucketSlab.subarray(
@@ -815,7 +833,7 @@ export class EthySwarmSynchronizer {
     }
     const now = Date.now()
     const dt = (now - this.lastRateAt) / 1000
-    if (dt >= 0.5) {
+    if (ingestLive && dt >= 0.5) {
       this.rateSamples.push({ at: now, count: this.opts.spine.totalAccountsSynced })
       const cutoff = now - RATE_WINDOW_MS
       while (this.rateSamples.length > 2 && this.rateSamples[1]!.at <= cutoff) {
@@ -862,7 +880,7 @@ export class EthySwarmSynchronizer {
       void this.opts.snapStore?.appendVerifiedSlabAsync(
         bucketIndex,
         bucketSlab,
-        this.opts.spine.snapBuckets,
+        buckets,
         'prefix',
         proof,
       )
@@ -936,6 +954,19 @@ export class EthySwarmSynchronizer {
       if (!this.bucketsDone.has(b)) return
     }
     this.accountsPassComplete = true
+    if (this.opts.backgroundMode === true) {
+      recordDiagnostic(this.opts.spine, {
+        subsystem: 'ethy',
+        severity: 'info',
+        message: 'Shadow ETHY accounts pass complete',
+      })
+      this.opts.onAccountsComplete?.()
+      if (this.opts.skipBalCatchUp === true) {
+        this.balNext = this.opts.balThroughBlock + 1n
+        this.opts.onSwarmComplete?.()
+      }
+      return
+    }
     this.opts.spine.accountsPerSec = 0
     this.opts.spine.snapEtaMinutes = undefined
     recordDiagnostic(this.opts.spine, {

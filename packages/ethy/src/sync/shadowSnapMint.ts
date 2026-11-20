@@ -43,3 +43,11 @@ export function shadowSnapMintProgressPct(buckets: readonly SnapBucket[]): numbe
 export function shadowSnapMintReadyToFlip(buckets: readonly SnapBucket[]): boolean {
   return buckets.every((b) => b.status === 'done')
 }
+
+export function computePartialMinterMask(buckets: readonly SnapBucket[]): number {
+  let mask = 0
+  for (const b of buckets) {
+    if (b.status === 'done') mask |= 1 << b.index
+  }
+  return mask
+}

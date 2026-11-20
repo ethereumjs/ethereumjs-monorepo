@@ -362,6 +362,18 @@ export class SnapPivotStore {
   }
 
   /** Write `pivot.json` / `buckets.json` under `pivots/<root>/` without activating (WP-11b). */
+  prepareShadowPivotFromSeeder(meta: {
+    blockNumber: bigint
+    stateRoot: Uint8Array
+    blockHash?: Uint8Array
+  }): string {
+    return this.prepareShadowPivotFromHeader({
+      blockNumber: meta.blockNumber,
+      blockHash: meta.blockHash ?? new Uint8Array(32),
+      stateRoot: meta.stateRoot,
+    })
+  }
+
   prepareShadowPivotFromHeader(meta: {
     blockNumber: bigint
     blockHash: Uint8Array

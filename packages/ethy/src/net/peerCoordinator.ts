@@ -85,10 +85,12 @@ import {
   type ShadowPivotSession,
   advanceShadowPivotSession,
   pickShadowEthySeeder,
+  shadowEthySeedMaskSatisfied,
   startShadowBalTailCopy,
 } from '../sync/shadowPivotRunner.ts'
 import {
   type ShadowSnapMintSession,
+  computePartialMinterMask,
   createShadowMintBuckets,
   nextShadowMintBucketCap,
   shadowSnapMintProgressPct,
@@ -134,7 +136,11 @@ import {
   shouldVipReconnect,
   wantSnapDiscoveryHold,
 } from './discoveryHold.ts'
-import { refreshEthyWorkerAdvertisement, syncEthyPivotServeDir } from './ethyAdvertise.ts'
+import {
+  refreshEthyWorkerAdvertisement,
+  refreshShadowMinterAdvertisement,
+  syncEthyPivotServeDir,
+} from './ethyAdvertise.ts'
 import { p2pHandshakeStatusFields } from './genesisStatus.ts'
 import { parseEnodeUrl } from './parseEnode.ts'
 import {
@@ -162,6 +168,14 @@ const RESTORED_CONTRACTS_CHUNK = 2_000
 const DISCOVERY_HOLD_PAUSE_AT = 4
 const DISCOVERY_HOLD_RESUME_BELOW = 2
 /** RLPx table during snap. Wide tables get the client dropped for too many peers. */
+function countEthyBucketBits(mask: number): number {
+  let n = 0
+  for (let b = 0; b < 16; b++) {
+    if ((mask & (1 << b)) !== 0) n++
+  }
+  return n
+}
+
 const SYNC_MAX_PEERS = 20
 const SYNC_MAX_INBOUND_PEERS = 4
 /** Leave discovery off until the table has fallen well below the cap. */
@@ -456,6 +470,31 @@ export async function startPeerCoordinator(
   let shadowMintHeaderFlight:
     | { peerId: string; targetBlock: bigint; ethVersion: number; startedAt: number }
     | undefined
+  let shadowEthySwarm: EthySwarmSynchronizer | undefined
+  let shadowEthyBuckets: import('../spine/types.ts').SnapBucket[] = []
+  const shadowEthyBucketsDone = new Set<number>()
+
+  const advertisePartialMinter = (
+    clientRef: Devp2pWorkerClient,
+    targetBlock: bigint,
+    stateRootHex: string,
+    bucketsMask: number,
+  ) => {
+    if (spine.swarm?.shadowRefresh !== undefined) {
+      spine.swarm.shadowRefresh.partialMinterMask = bucketsMask
+    }
+    const root = hexToBytes(
+      (stateRootHex.startsWith('0x') ? stateRootHex : `0x${stateRootHex}`) as `0x${string}`,
+    )
+    const balLatest = spine.lastVerifiedBlockNumber ?? targetBlock
+    refreshShadowMinterAdvertisement(clientRef, {
+      pivotBlock: targetBlock,
+      stateRoot: root,
+      bucketsMask,
+      balEarliest: targetBlock + 1n,
+      balLatest,
+    })
+  }
 
   const finishShadowPivotFlip = (clientRef: Devp2pWorkerClient, stateRootHex: string): boolean => {
     if (snapStore === undefined) return false
@@ -463,10 +502,13 @@ export async function startPeerCoordinator(
     snapStore.setShadowPersistRoot(undefined)
     syncEthyPivotServeDir(clientRef, snapStore.activePivotAccountsDir())
     refreshEthyWorkerAdvertisement(clientRef, spine)
+    shadowEthySwarm?.stop()
+    shadowEthySwarm = undefined
     if (spine.swarm?.shadowRefresh) {
       spine.swarm.shadowRefresh.mode = 'idle'
       spine.swarm.shadowRefresh.progressPct = 100
       spine.swarm.shadowRefresh.mintBucket = undefined
+      spine.swarm.shadowRefresh.partialMinterMask = undefined
     }
     recordDiagnostic(spine, {
       subsystem: 'ethy',
@@ -488,6 +530,12 @@ export async function startPeerCoordinator(
     if (shadowPivotSession === undefined) {
       const target = pickShadowEthySeeder(peers, head, localPivot)
       if (target === undefined) return
+      const peerRow = peers.find((p) => p.id === target.peerId)
+      const seeder =
+        peerRow?.ethyStatus !== undefined
+          ? seederFromWorkerStatus(peerRow.id, peerRow.ethyStatus)
+          : undefined
+      if (seeder === undefined) return
       const lastVer = localVerifiedBlock(spine) ?? localPivot
       const from = localPivot + 1n
       const copied =
@@ -500,11 +548,22 @@ export async function startPeerCoordinator(
               throughBlock: lastVer,
             })
           : 0
+      snapStore.prepareShadowPivotFromSeeder({
+        blockNumber: target.basePivotBlock,
+        stateRoot: seeder.basePivotRoot,
+      })
+      snapStore.setShadowPersistRoot(target.stateRootHex)
+      shadowEthyBuckets = createSnapBuckets()
+      shadowEthyBucketsDone.clear()
       shadowPivotSession = {
         stateRootHex: target.stateRootHex,
         targetPivotBlock: target.basePivotBlock,
         balBlocksCopied: copied,
-        stage: 'bal-copy',
+        seederPeerId: target.peerId,
+        bucketsBitmask: target.bucketsBitmask,
+        bucketsDone: 0,
+        accountsComplete: false,
+        stage: 'await-accounts',
       }
       if (spine.swarm?.shadowRefresh) {
         spine.swarm.shadowRefresh.progressPct = copied > 0 ? 35 : 12
@@ -515,17 +574,70 @@ export async function startPeerCoordinator(
         peerId: target.peerId,
         message: `Shadow BAL copy: ${copied} blocks into pivot ${target.stateRootHex.slice(0, 10)}…`,
       })
+      startShadowEthySwarm(clientRef, seeder)
     }
     if (shadowPivotSession.stage === 'done') return
     advanceShadowPivotSession({ snapStore, session: shadowPivotSession })
     if (shadowPivotSession.stage === 'await-accounts' && spine.swarm?.shadowRefresh) {
-      spine.swarm.shadowRefresh.progressPct = 20
+      const doneBits = shadowEthyBucketsDone.size
+      const need = countEthyBucketBits(shadowPivotSession.bucketsBitmask)
+      spine.swarm.shadowRefresh.progressPct = Math.min(
+        85,
+        22 + Math.round((doneBits / Math.max(1, need)) * 55),
+      )
     }
     if (shadowPivotSession.stage === 'ready-to-flip') {
       if (finishShadowPivotFlip(clientRef, shadowPivotSession.stateRootHex)) {
         shadowPivotSession.stage = 'done'
       }
     }
+  }
+
+  const startShadowEthySwarm = (
+    clientRef: Devp2pWorkerClient,
+    seeder: import('../sync/ethySeederSchedule.ts').EthySeederDescriptor,
+  ) => {
+    if (shadowPivotSession === undefined) return
+    shadowEthySwarm?.stop()
+    const pivotBlock = shadowPivotSession.targetPivotBlock
+    shadowEthySwarm = new EthySwarmSynchronizer({
+      spine,
+      stateManager,
+      client: clientRef,
+      snapStore,
+      verifyPool,
+      pivotBlockNumber: pivotBlock,
+      initialSeeders: [seeder],
+      balThroughBlock: pivotBlock,
+      backgroundMode: true,
+      skipBalCatchUp: true,
+      persistBuckets: shadowEthyBuckets,
+      backgroundMaxChunksInFlight: 4,
+      onBucketDone: (idx) => {
+        if (shadowPivotSession === undefined) return
+        shadowEthyBucketsDone.add(idx)
+        shadowPivotSession.bucketsDone = shadowEthyBucketsDone.size
+        const partial = computePartialMinterMask(shadowEthyBuckets)
+        advertisePartialMinter(clientRef, pivotBlock, shadowPivotSession.stateRootHex, partial)
+        if (shadowEthySeedMaskSatisfied(shadowPivotSession.bucketsBitmask, shadowEthyBucketsDone)) {
+          shadowPivotSession.accountsComplete = true
+        }
+      },
+      onSwarmComplete: () => {
+        if (shadowPivotSession !== undefined) {
+          shadowPivotSession.accountsComplete = true
+        }
+        shadowEthySwarm?.stop()
+        shadowEthySwarm = undefined
+      },
+    })
+    shadowEthySwarm.start()
+    recordDiagnostic(spine, {
+      subsystem: 'ethy',
+      severity: 'info',
+      peerId: seeder.peerId,
+      message: `Shadow ETHY swarm sync → ${shadowPivotSession.stateRootHex.slice(0, 12)}…`,
+    })
   }
 
   const shadowSnapGetPeers = () =>
@@ -567,6 +679,13 @@ export async function startPeerCoordinator(
         if (spine.swarm?.shadowRefresh) {
           spine.swarm.shadowRefresh.mintBucket = bucketIndex
         }
+        const partial = computePartialMinterMask(shadowSnapMintSession.buckets)
+        advertisePartialMinter(
+          clientRef,
+          shadowSnapMintSession.targetPivotBlock,
+          shadowSnapMintSession.stateRootHex,
+          partial,
+        )
       },
     })
     shadowSnapMintSync.start()
@@ -2410,6 +2529,7 @@ export async function startPeerCoordinator(
 
   client.events.on('protocol', (msg) => {
     if (msg.protocol === 'ethy') {
+      shadowEthySwarm?.handleMessage(msg.peerId, msg.code, msg.payload)
       ethySwarm?.handleMessage(msg.peerId, msg.code, msg.payload)
       return
     }

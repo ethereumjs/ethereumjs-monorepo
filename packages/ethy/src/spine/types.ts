@@ -288,6 +288,7 @@ export type SpineSwarmSnapshot = {
     suppressedByPeerId?: string
     electionDeadlineMs?: number
     mintBucket?: number
+    partialMinterMask?: number
   }
 }
 
