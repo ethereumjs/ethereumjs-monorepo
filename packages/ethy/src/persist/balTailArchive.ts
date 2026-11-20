@@ -113,6 +113,24 @@ export function appendBalTailBundle(
   writeManifest(pivotRootDir, newEarliest, latest)
 }
 
+/** Copy a contiguous BAL tail block range between pivot roots (WP-11b shadow prep). */
+export function copyBalTailRange(
+  sourcePivotRootDir: string,
+  destPivotRootDir: string,
+  fromBlock: bigint,
+  throughBlock: bigint,
+): number {
+  if (throughBlock < fromBlock) return 0
+  let copied = 0
+  for (let b = fromBlock; b <= throughBlock; b += 1n) {
+    const bundle = readBalTailBundle(sourcePivotRootDir, b)
+    if (bundle === undefined) continue
+    appendBalTailBundle(destPivotRootDir, b, bundle.headerRlp, bundle.balRlp)
+    copied += 1
+  }
+  return copied
+}
+
 export function readBalTailBundle(
   pivotRootDir: string,
   blockNumber: bigint,

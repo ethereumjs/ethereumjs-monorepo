@@ -367,6 +367,8 @@ export interface RLPxOptions {
    * Must be strictly less than {@link maxPeers}. Default: floor(0.8 * maxPeers).
    */
   discoveryLowWaterMark?: number
+  /** Reserve ETHY/0 sessions when at {@link maxPeers} (default `0`; Ethy worker passes `4`). */
+  minEthyPeers?: number
 
   discoveryMetrics?: import('./discovery/metrics.ts').DiscoveryMetrics
 }

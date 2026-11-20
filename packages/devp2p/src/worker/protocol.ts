@@ -46,6 +46,8 @@ export interface ThreadedNetworkInitOptions {
   nodeStorePath?: string
   /** Read-only pivot dir for `accounts/*.proof.idx` (optional). */
   ethyPivotDir?: string
+  /** ETHY/0 RLPx slot reserve when the Ethy worker is serving (default `0`). */
+  minEthyPeers?: number
 }
 
 /** Remote ETHY/0 STATUS fields exposed on worker telemetry. */

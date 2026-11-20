@@ -599,6 +599,15 @@ export async function dispatchRpcMethod(
           peersCount: ctx.spine.peers.size,
           localEnode: ctx.spine.discovery?.localEnode,
           rpcUrl: ctx.spine.rpc?.url,
+          swarm: ctx.spine.swarm
+            ? {
+                generationAgeBlocks: ctx.spine.swarm.generationAgeBlocks?.toString(),
+                balTailEarliest: ctx.spine.swarm.balTailEarliest?.toString(),
+                balTailLatest: ctx.spine.swarm.balTailLatest?.toString(),
+                balTailContiguous: ctx.spine.swarm.balTailContiguous,
+                shadowRefresh: ctx.spine.swarm.shadowRefresh,
+              }
+            : undefined,
         },
       }
     }

@@ -366,6 +366,7 @@ export class Devp2pWorkerHost {
       capabilities: caps,
       maxPeers: opts.maxPeers ?? 10,
       maxInboundPeers: opts.maxInboundPeers,
+      minEthyPeers: ethyEnabled ? (opts.minEthyPeers ?? 4) : 0,
       listenPort,
       clientId: opts.clientId ?? utf8ToBytes('ethereumjs-devp2p/threaded'),
       throttleDiscovery: opts.throttleDiscovery ?? true,

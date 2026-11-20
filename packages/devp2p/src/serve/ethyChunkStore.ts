@@ -74,6 +74,8 @@ export class EthyChunkStore {
   private _pivotAccountsDir?: string
   private readonly _diskCache = new Map<number, BucketDiskCache>()
   private readonly _journalFds = new Map<string, number>()
+  private _chunkReadsInFlight = 0
+  private static readonly MAX_CONCURRENT_CHUNK_READS = 4
   private _healWindowCache?: {
     accountsDir: string
     mtimeMs: number
@@ -163,6 +165,22 @@ export class EthyChunkStore {
   }
 
   private readJournalSliceCached(
+    journalPath: string,
+    byteOffset: number,
+    byteLength: number,
+  ): Uint8Array {
+    if (this._chunkReadsInFlight >= EthyChunkStore.MAX_CONCURRENT_CHUNK_READS) {
+      return readSlabSlice(journalPath, byteOffset, byteLength)
+    }
+    this._chunkReadsInFlight++
+    try {
+      return this.readJournalSliceCachedInner(journalPath, byteOffset, byteLength)
+    } finally {
+      this._chunkReadsInFlight--
+    }
+  }
+
+  private readJournalSliceCachedInner(
     journalPath: string,
     byteOffset: number,
     byteLength: number,

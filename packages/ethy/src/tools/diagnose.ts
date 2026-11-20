@@ -43,6 +43,14 @@ export function ethyOverviewWidget(spine: EthySpine): WidgetSpec {
       ? `#${BigInt(s.earliestBlock).toLocaleString('en-US')}..#${BigInt(s.latestBlock).toLocaleString('en-US')} (${servableCount} block${servableCount === 1 ? '' : 's'})`
       : '—'
   const localEnode = spine.discovery?.localEnode ?? '—'
+  const swarm = spine.swarm
+  const shadowMode = swarm?.shadowRefresh?.mode ?? '—'
+  const genAge =
+    swarm?.generationAgeBlocks !== undefined ? swarm.generationAgeBlocks.toString() : '—'
+  const balTail =
+    swarm?.balTailEarliest !== undefined && swarm?.balTailLatest !== undefined
+      ? `#${swarm.balTailEarliest.toString()}..#${swarm.balTailLatest.toString()}${swarm.balTailContiguous === false ? ' (gap)' : ''}`
+      : '—'
   return {
     kind: 'table',
     title: 'ETHY/0 swarm',
@@ -53,6 +61,9 @@ export function ethyOverviewWidget(spine: EthySpine): WidgetSpec {
       ['Local seed buckets', `${localBits}/16`],
       ['ETHY sessions', String(ethyPeers)],
       ['Pivot', pivot],
+      ['Generation age (blocks)', genAge],
+      ['Disk BAL tail', balTail],
+      ['Shadow refresh', shadowMode],
       ['Servable head window (eth)', servableWindow],
       ['Headers served (eth)', String(s?.headersServed ?? 0)],
       ['Bodies served (eth)', String(s?.bodiesServed ?? 0)],

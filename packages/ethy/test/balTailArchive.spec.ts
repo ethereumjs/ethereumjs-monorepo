@@ -6,6 +6,7 @@ import { assert, describe, it } from 'vitest'
 
 import {
   appendBalTailBundle,
+  copyBalTailRange,
   readBalTailBundle,
   readBalTailManifest,
 } from '../src/persist/balTailArchive.ts'
@@ -21,6 +22,11 @@ describe('[Ethy/Persist]: bal tail archive', () => {
     assert.deepEqual(got?.balRlp, bal)
     const man = readBalTailManifest(root)
     assert.deepEqual(man, { earliest: 100n, latest: 100n })
+    const root2 = fs.mkdtempSync(path.join(os.tmpdir(), 'bal-tail-dst-'))
+    copyBalTailRange(root, root2, 100n, 100n)
+    const got2 = readBalTailBundle(root2, 100n)
+    assert.deepEqual(got2?.balRlp, bal)
     fs.rmSync(root, { recursive: true, force: true })
+    fs.rmSync(root2, { recursive: true, force: true })
   })
 })

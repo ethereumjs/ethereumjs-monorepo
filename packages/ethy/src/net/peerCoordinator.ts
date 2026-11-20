@@ -80,6 +80,12 @@ import {
   shouldRefreshStaleSnapPivot,
   snapResumeProgressPct,
 } from '../sync/resumePolicy.ts'
+import {
+  type ShadowPivotSession,
+  advanceShadowPivotSession,
+  pickShadowEthySeeder,
+  startShadowBalTailCopy,
+} from '../sync/shadowPivotRunner.ts'
 import { SnapPeerFlightTracker } from '../sync/snapFlight.ts'
 import { createLiveSnapTransport } from '../sync/snapTransport.ts'
 import { SNAP_VERIFY_POOL_MODULE_URL, SnapVerifyPool } from '../sync/snapVerifyWorker.ts'
@@ -433,6 +439,70 @@ export async function startPeerCoordinator(
   const shadowRefreshEnabled = opts.shadowRefreshEnabled !== false
   const processStartedAtMs = Date.now()
   let generationElection: GenerationElectionHandle | undefined
+  let shadowPivotSession: ShadowPivotSession | undefined
+
+  const maybeShadowPivotWork = (clientRef: Devp2pWorkerClient, peers: WorkerPeerSnapshot[]) => {
+    if (!shadowRefreshEnabled || snapStore === undefined) return
+    if (spine.phase !== 'HEAD_FOLLOWING') return
+    const mode = spine.swarm?.shadowRefresh?.mode
+    if (mode !== 'ethy-shadow') return
+    const head = spine.bestPeerHead ?? 0n
+    const localPivot = spine.pivotBlockNumber ?? 0n
+    const activeRoot = snapStore.activePivotStateRoot()
+    if (activeRoot === undefined) return
+    if (shadowPivotSession === undefined) {
+      const target = pickShadowEthySeeder(peers, head, localPivot)
+      if (target === undefined) return
+      const lastVer = localVerifiedBlock(spine) ?? localPivot
+      const from = localPivot + 1n
+      const copied =
+        lastVer >= from
+          ? startShadowBalTailCopy({
+              snapStore,
+              sourceStateRootHex: activeRoot,
+              shadowStateRootHex: target.stateRootHex,
+              fromBlock: from,
+              throughBlock: lastVer,
+            })
+          : 0
+      shadowPivotSession = {
+        stateRootHex: target.stateRootHex,
+        targetPivotBlock: target.basePivotBlock,
+        balBlocksCopied: copied,
+        stage: 'bal-copy',
+      }
+      if (spine.swarm?.shadowRefresh) {
+        spine.swarm.shadowRefresh.progressPct = copied > 0 ? 35 : 12
+      }
+      recordDiagnostic(spine, {
+        subsystem: 'ethy',
+        severity: 'info',
+        peerId: target.peerId,
+        message: `Shadow BAL copy: ${copied} blocks into pivot ${target.stateRootHex.slice(0, 10)}…`,
+      })
+    }
+    if (shadowPivotSession.stage === 'done') return
+    advanceShadowPivotSession({ snapStore, session: shadowPivotSession })
+    if (shadowPivotSession.stage === 'await-accounts' && spine.swarm?.shadowRefresh) {
+      spine.swarm.shadowRefresh.progressPct = 20
+    }
+    if (shadowPivotSession.stage === 'ready-to-flip') {
+      if (snapStore.promoteShadowPivotToActive(shadowPivotSession.stateRootHex)) {
+        syncEthyPivotServeDir(clientRef, snapStore.activePivotAccountsDir())
+        refreshEthyWorkerAdvertisement(clientRef, spine)
+        shadowPivotSession.stage = 'done'
+        if (spine.swarm?.shadowRefresh) {
+          spine.swarm.shadowRefresh.mode = 'idle'
+          spine.swarm.shadowRefresh.progressPct = 100
+        }
+        recordDiagnostic(spine, {
+          subsystem: 'ethy',
+          severity: 'info',
+          message: `Shadow pivot flip → ${shadowPivotSession.stateRootHex.slice(0, 14)}…`,
+        })
+      }
+    }
+  }
 
   const ensureHeadFollower = (clientRef: Devp2pWorkerClient) => {
     if (spine.pivotStateRoot === undefined) return
@@ -1655,6 +1725,7 @@ export async function startPeerCoordinator(
       status,
       endpoint: { address: '0.0.0.0', udpPort: 0, tcpPort: opts.listenPort ?? 0 },
       throttleDiscovery: true,
+      minEthyPeers: 4,
       nodeStorePath: discoveryNodeStorePath(dataDir, network),
       ethyPivotDir: snapStore?.activePivotAccountsDir(),
     },
@@ -2056,6 +2127,7 @@ export async function startPeerCoordinator(
         uptimeMs: Date.now() - processStartedAtMs,
       }) ?? generationElection
     tickGenerationElection(client, spine, generationElection)
+    maybeShadowPivotWork(client, snap.peers)
     deriveCapabilities(spine)
     maybePivotInFlightTimeout(snap.peers)
     maybePivotBundleTimeout()

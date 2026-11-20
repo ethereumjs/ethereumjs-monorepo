@@ -334,6 +334,10 @@ export class SnapPivotStore {
     return this.pivotDir(this.activeStateRoot)
   }
 
+  pivotDirForRoot(stateRootHex: string): string {
+    return this.pivotDir(stateRootHex)
+  }
+
   minActiveBucketPivotBlock(): bigint | undefined {
     const rows = this.getBucketPivotBlocks()
     if (rows === undefined) return undefined
@@ -365,6 +369,57 @@ export class SnapPivotStore {
     fs.mkdirSync(path.join(root, 'accounts'), { recursive: true })
     fs.mkdirSync(path.join(root, 'bal-tail'), { recursive: true })
     fs.mkdirSync(path.join(root, 'heal'), { recursive: true })
+  }
+
+  shadowPivotHasPivotMeta(stateRootHex: string): boolean {
+    if (!this.enabled) return false
+    return fs.existsSync(path.join(this.pivotDir(stateRootHex), 'pivot.json'))
+  }
+
+  /**
+   * Atomically point `active.json` at a prepared shadow pivot with `pivot.json`.
+   * Keeps the prior root as `previousStateRoot` and defers deleting older pivots.
+   */
+  promoteShadowPivotToActive(shadowStateRootHex: string): boolean {
+    if (!this.enabled) return false
+    if (!this.shadowPivotHasPivotMeta(shadowStateRootHex)) return false
+    const prior = this.readActive()
+    const nextRoot = shadowStateRootHex.toLowerCase().startsWith('0x')
+      ? shadowStateRootHex
+      : `0x${shadowStateRootHex}`
+    const previousStateRoot = prior?.stateRoot ?? null
+    if (prior !== undefined && prior.stateRoot.toLowerCase() === nextRoot.toLowerCase()) {
+      return true
+    }
+    writeAtomicDoc(path.join(this.networkDir, 'active.json'), {
+      stateRoot: nextRoot,
+      previousStateRoot,
+      baseSyncComplete: prior?.baseSyncComplete,
+      lastVerifiedBlockNumber: prior?.lastVerifiedBlockNumber,
+      bucketPivotBlocks: prior?.bucketPivotBlocks,
+    } satisfies ActiveMeta)
+    this.activeStateRoot = nextRoot
+    this.seedInitializedAccountFiles(nextRoot)
+    const keep = new Set<string>([nextRoot.toLowerCase()])
+    if (previousStateRoot !== null && previousStateRoot !== undefined) {
+      keep.add(previousStateRoot.toLowerCase())
+    }
+    const pivotRoot = path.join(this.networkDir, 'pivots')
+    if (fs.existsSync(pivotRoot)) {
+      for (const name of fs.readdirSync(pivotRoot)) {
+        const hex = name.startsWith('0x') ? name : `0x${name}`
+        if (keep.has(hex.toLowerCase())) continue
+        const doomed = path.join(pivotRoot, name)
+        setImmediate(() => {
+          try {
+            fs.rmSync(doomed, { recursive: true, force: true })
+          } catch {
+            // retry on next maintenance
+          }
+        })
+      }
+    }
+    return true
   }
 
   estimateActivePivotBytes(): bigint {
