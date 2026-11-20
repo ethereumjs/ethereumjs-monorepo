@@ -29,7 +29,7 @@ import { pruneFloor } from '../sync/balRetentionPolicy.ts'
 import type { VerifiedBalBlock } from '../sync/balSync.ts'
 import type { SnapResumeSaved } from '../sync/resumePolicy.ts'
 import { incrementKey32 } from '../sync/syntheticPeer.ts'
-import { appendBalTailBundle } from './balTailArchive.ts'
+import { appendBalTailBundle, enforceBalTailRetention } from './balTailArchive.ts'
 import { decodeHealBundleRlp, encodeHealBundleRlp } from './healBundle.ts'
 import {
   BINARY_ACCOUNT_JOURNAL_MAGIC,
@@ -1773,12 +1773,19 @@ export class SnapPivotStore {
       balRlp: entry.balRlp,
     })
     fs.writeFileSync(file, body)
-    appendBalTailBundle(
-      this.pivotDir(this.activeStateRoot),
-      entry.blockNumber,
-      entry.headerRlp,
-      entry.balRlp,
-    )
+    const pivotRoot = this.pivotDir(this.activeStateRoot)
+    appendBalTailBundle(pivotRoot, entry.blockNumber, entry.headerRlp, entry.balRlp)
+    let minEarliest: bigint | undefined
+    const pivotPath = path.join(pivotRoot, 'pivot.json')
+    if (fs.existsSync(pivotPath)) {
+      try {
+        const pivot = JSON.parse(fs.readFileSync(pivotPath, 'utf8')) as { blockNumber: string }
+        minEarliest = BigInt(pivot.blockNumber) + 1n
+      } catch {
+        // ignore malformed pivot metadata
+      }
+    }
+    enforceBalTailRetention(pivotRoot, { minEarliest })
   }
 
   pruneHealBundlesUpTo(blockNumber: bigint): void {

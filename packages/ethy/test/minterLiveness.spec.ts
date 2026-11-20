@@ -106,9 +106,21 @@ describe('[Ethy/Sync]: minter liveness & suppression', () => {
         },
       },
     ]
-    buildMinterAnnouncements(peers, book, 1024n, 1_000)
+    buildMinterAnnouncements({
+      peers,
+      book,
+      generationBlock: 1024n,
+      bestVerifiedHead: 3000n,
+      nowMs: 1_000,
+    })
     noteMinterEthyServe(book, 'abc', 2_000)
-    const row = buildMinterAnnouncements(peers, book, 1024n, 2_500)[0]
+    const row = buildMinterAnnouncements({
+      peers,
+      book,
+      generationBlock: 1024n,
+      bestVerifiedHead: 3000n,
+      nowMs: 2_500,
+    })[0]
     assert.equal(row?.firstZeroMaskAtMs, 1_000)
     assert.equal(row?.lastServeAtMs, 2_000)
   })

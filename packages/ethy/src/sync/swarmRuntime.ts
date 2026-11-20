@@ -8,6 +8,7 @@ import { readBalTailManifest } from '../persist/balTailArchive.ts'
 import type { SnapPivotStore } from '../persist/snapStore.ts'
 import type { EthySpine, SpineSwarmSnapshot } from '../spine/types.ts'
 import { seederFromWorkerStatus } from './ethySeederSchedule.ts'
+import { type MinterHeaderBook, minterHeaderMatchesStatus } from './minterHeaderBook.ts'
 import {
   type MinterLivenessBook,
   minterLastServeAt,
@@ -44,6 +45,8 @@ export function refreshSpineSwarmTelemetry(opts: {
   peers: readonly WorkerPeerSnapshot[]
   electionHandle?: GenerationElectionHandle
   minterLiveness?: MinterLivenessBook
+  minterHeaders?: MinterHeaderBook
+  bestVerifiedHead?: bigint
   nowMs?: number
 }): void {
   const nowMs = opts.nowMs ?? Date.now()
@@ -96,10 +99,19 @@ export function refreshSpineSwarmTelemetry(opts: {
       })),
     )
     const gen = macroGenerationBlock(head)
-    const announcements = buildMinterAnnouncements(opts.peers, opts.minterLiveness, gen, nowMs)
+    const bestVerifiedHead = opts.bestVerifiedHead ?? head
+    const announcements = buildMinterAnnouncements({
+      peers: opts.peers,
+      book: opts.minterLiveness,
+      headerBook: opts.minterHeaders,
+      generationBlock: gen,
+      bestVerifiedHead,
+      nowMs,
+    })
     const suppression = evaluateMinterSuppression({
       nowMs,
       generationBlock: gen,
+      bestVerifiedHead,
       announcements,
     })
     const electionDelayElapsed =
@@ -133,34 +145,43 @@ export function refreshSpineSwarmTelemetry(opts: {
   spine.swarm = snap
 }
 
-export function buildMinterAnnouncements(
-  peers: readonly WorkerPeerSnapshot[],
-  book?: MinterLivenessBook,
-  generationBlock?: bigint,
-  nowMs = Date.now(),
-): MinterAnnouncement[] {
+export function buildMinterAnnouncements(opts: {
+  peers: readonly WorkerPeerSnapshot[]
+  book?: MinterLivenessBook
+  headerBook?: MinterHeaderBook
+  generationBlock?: bigint
+  bestVerifiedHead?: bigint
+  nowMs?: number
+}): MinterAnnouncement[] {
+  const nowMs = opts.nowMs ?? Date.now()
   const out: MinterAnnouncement[] = []
-  const gen = generationBlock ?? 0n
-  for (const p of peers) {
+  const gen = opts.generationBlock ?? 0n
+  for (const p of opts.peers) {
     const st = p.ethyStatus
     if (st === undefined) continue
     const mask = st.bucketsBitmask.startsWith('0x')
       ? Number.parseInt(st.bucketsBitmask, 16)
       : Number.parseInt(st.bucketsBitmask, 10)
     const basePivotBlock = BigInt(st.basePivotBlock)
-    if (book !== undefined && generationBlock !== undefined) {
-      noteMinterStatus(book, p.id, basePivotBlock, mask, gen, nowMs)
+    if (opts.book !== undefined && opts.generationBlock !== undefined) {
+      noteMinterStatus(opts.book, p.id, basePivotBlock, mask, gen, nowMs)
     }
     const id = p.id.toLowerCase()
+    const headerTrusted =
+      minterHeaderMatchesStatus(opts.headerBook, p.id, basePivotBlock, st.basePivotStateRoot) ||
+      (opts.bestVerifiedHead !== undefined &&
+        basePivotBlock <= opts.bestVerifiedHead &&
+        st.latestBlockHash !== undefined &&
+        st.latestBlockHash.length > 0)
     out.push({
       peerId: p.id,
       basePivotBlock,
       bucketsBitmask: mask,
       pexOnly: p.ethySession !== true,
       connected: p.ethySession === true,
-      headerVerified: st.latestBlockHash !== undefined && st.latestBlockHash.length > 0,
-      lastServeAtMs: book !== undefined ? minterLastServeAt(book, id) : undefined,
-      firstZeroMaskAtMs: book !== undefined ? minterZeroMaskSince(book, id) : undefined,
+      headerVerified: headerTrusted,
+      lastServeAtMs: opts.book !== undefined ? minterLastServeAt(opts.book, id) : undefined,
+      firstZeroMaskAtMs: opts.book !== undefined ? minterZeroMaskSince(opts.book, id) : undefined,
     })
   }
   return out

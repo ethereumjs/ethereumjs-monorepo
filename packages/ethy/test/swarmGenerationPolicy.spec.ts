@@ -62,6 +62,24 @@ describe('[Ethy/Sync]: swarm generation policy', () => {
     assert.deepEqual(r.stalledPeerIds, [])
   })
 
+  it('ignores minters advertising pivots beyond verified head', () => {
+    const r = evaluateMinterSuppression({
+      nowMs: 1_000_000,
+      generationBlock: 1024n,
+      bestVerifiedHead: 1050n,
+      announcements: [
+        {
+          peerId: 'future',
+          basePivotBlock: 1100n,
+          bucketsBitmask: 0xffff,
+          connected: true,
+          headerVerified: true,
+        },
+      ],
+    })
+    assert.equal(r.state, 'clear')
+  })
+
   it('backup stagger sits in 15s..90s band', () => {
     const id = hexToBytes(`0x${'cd'.repeat(32)}`)
     const ms = backupElectionStaggerMs(id, 2048n)

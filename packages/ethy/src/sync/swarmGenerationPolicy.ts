@@ -99,6 +99,8 @@ export type MinterSuppressionState = 'clear' | 'suppressed' | 'stalled'
 export function evaluateMinterSuppression(opts: {
   nowMs: number
   generationBlock: bigint
+  /** Best locally verified EL head — ignore minters advertising pivots beyond this. */
+  bestVerifiedHead?: bigint
   announcements: readonly MinterAnnouncement[]
 }): {
   state: MinterSuppressionState
@@ -106,8 +108,10 @@ export function evaluateMinterSuppression(opts: {
   stalledPeerIds: string[]
 } {
   const stalledPeerIds: string[] = []
+  const headCap = opts.bestVerifiedHead
   for (const a of opts.announcements) {
     if (a.basePivotBlock < opts.generationBlock) continue
+    if (headCap !== undefined && a.basePivotBlock > headCap) continue
     if (!a.headerVerified) continue
     if (a.pexOnly && a.bucketsBitmask === 0) continue
     if (a.bucketsBitmask === 0xffff) {

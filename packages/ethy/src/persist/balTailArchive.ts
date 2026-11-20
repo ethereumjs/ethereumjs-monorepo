@@ -1,7 +1,11 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
-import { BAL_SEGMENT_BLOCKS, segmentStart } from '../sync/balRetentionPolicy.ts'
+import {
+  BAL_SEGMENT_BLOCKS,
+  MAX_SERVABLE_BAL_TAIL_BLOCKS,
+  segmentStart,
+} from '../sync/balRetentionPolicy.ts'
 
 const MANIFEST_MAGIC = Buffer.from('BALT')
 const SEGMENT_MAGIC = Buffer.from('BTSG')
@@ -111,6 +115,76 @@ export function appendBalTailBundle(
   const latest = prev === undefined || blockNumber > prev.latest ? blockNumber : prev.latest
   const newEarliest = blockNumber < earliest ? blockNumber : earliest
   writeManifest(pivotRootDir, newEarliest, latest)
+}
+
+function clearBalTailSlot(pivotRootDir: string, blockNumber: bigint): void {
+  const segStart = segmentStart(blockNumber)
+  const index = Number(blockNumber - segStart)
+  if (index < 0 || index >= 256) return
+  const segPath = path.join(balTailDir(pivotRootDir), `seg-${segStart.toString()}.bin`)
+  if (!fs.existsSync(segPath)) return
+  try {
+    const { fd, slots } = ensureSegmentFile(segPath)
+    if (slots[index]!.headerLen === 0) {
+      fs.closeSync(fd)
+      return
+    }
+    const slotOff = 4 + index * 12
+    fs.writeSync(fd, Buffer.alloc(12, 0), 0, 12, slotOff)
+    fs.closeSync(fd)
+  } catch {
+    // best effort
+  }
+}
+
+/**
+ * Drop oldest BAL tail blocks so at most `maxBlocks` contiguous entries remain
+ * (never pruning below `minEarliest` when set — active pivot + 1).
+ */
+export function enforceBalTailRetention(
+  pivotRootDir: string,
+  opts: { maxBlocks?: bigint; minEarliest?: bigint } = {},
+): void {
+  const maxBlocks = opts.maxBlocks ?? MAX_SERVABLE_BAL_TAIL_BLOCKS
+  const man = readBalTailManifest(pivotRootDir)
+  if (man === undefined) return
+  const span = man.latest - man.earliest + 1n
+  if (span <= maxBlocks) return
+  let floor = man.latest - maxBlocks + 1n
+  if (opts.minEarliest !== undefined && floor < opts.minEarliest) {
+    floor = opts.minEarliest
+  }
+  if (floor <= man.earliest) return
+  for (let b = man.earliest; b < floor; b += 1n) {
+    clearBalTailSlot(pivotRootDir, b)
+  }
+  let newEarliest = floor
+  while (newEarliest <= man.latest && readBalTailBundle(pivotRootDir, newEarliest) === undefined) {
+    newEarliest += 1n
+  }
+  if (newEarliest > man.latest) {
+    const tailDir = balTailDir(pivotRootDir)
+    if (fs.existsSync(tailDir)) {
+      for (const name of fs.readdirSync(tailDir)) {
+        if (name.startsWith('seg-')) {
+          fs.rmSync(path.join(tailDir, name), { force: true })
+        }
+      }
+      fs.rmSync(path.join(tailDir, 'manifest.bin'), { force: true })
+    }
+    return
+  }
+  writeManifest(pivotRootDir, newEarliest, man.latest)
+  const tailDir = balTailDir(pivotRootDir)
+  if (fs.existsSync(tailDir)) {
+    for (const name of fs.readdirSync(tailDir)) {
+      if (!name.startsWith('seg-')) continue
+      const num = BigInt(name.replace('seg-', '').replace('.bin', ''))
+      if (num + BAL_SEGMENT_BLOCKS - 1n < newEarliest) {
+        fs.rmSync(path.join(tailDir, name), { force: true })
+      }
+    }
+  }
 }
 
 /** Copy a contiguous BAL tail block range between pivot roots (WP-11b shadow prep). */

@@ -71,6 +71,7 @@ import { SnapCodeAndStorageSynchronizer } from '../sync/codeAndStorageSync.ts'
 import { pickEthyAnchorForStaleResume } from '../sync/ethyAnchorResume.ts'
 import { seederFromWorkerStatus } from '../sync/ethySeederSchedule.ts'
 import { EthySwarmSynchronizer } from '../sync/ethySwarmSync.ts'
+import { createMinterHeaderBook, noteMinterHeaderVerified } from '../sync/minterHeaderBook.ts'
 import { createMinterLivenessBook, noteMinterEthyServe } from '../sync/minterLiveness.ts'
 import { notePivotBridgingProgress, shouldReleaseSnapBridge } from '../sync/resumeCoordinator.ts'
 import {
@@ -469,6 +470,7 @@ export async function startPeerCoordinator(
   const processStartedAtMs = Date.now()
   let generationElection: GenerationElectionHandle | undefined
   const minterLiveness = createMinterLivenessBook()
+  const minterHeaderBook = createMinterHeaderBook()
   let shadowPivotSession: ShadowPivotSession | undefined
   let shadowSnapMintSession: ShadowSnapMintSession | undefined
   let shadowSnapMintSync: SnapAccountSynchronizer | undefined
@@ -2373,6 +2375,8 @@ export async function startPeerCoordinator(
         uptimeMs: nowTelemetry - processStartedAtMs,
       }),
     )
+    const bestVerifiedHead =
+      spine.lastVerifiedBlockNumber ?? spine.headBlockNumber ?? spine.bestPeerHead
     refreshSpineSwarmTelemetry({
       spine,
       snapStore,
@@ -2382,6 +2386,8 @@ export async function startPeerCoordinator(
       peers: snap.peers,
       electionHandle: generationElection,
       minterLiveness,
+      minterHeaders: minterHeaderBook,
+      bestVerifiedHead,
       nowMs: nowTelemetry,
     })
     const suppressionState = spine.swarm?.shadowRefresh?.suppressionState
@@ -2659,6 +2665,12 @@ export async function startPeerCoordinator(
         skipServableBundle: true,
         firstAnchor: true,
       })
+      noteMinterHeaderVerified(
+        minterHeaderBook,
+        successPeerId,
+        parsed.number,
+        bytesToUnprefixedHex(parsed.stateRoot),
+      )
       startEthySwarmSync(lastTelemetryPeers)
       return
     }

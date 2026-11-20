@@ -43,6 +43,7 @@ describe('[Ethy/Persist]: shadow pivot promotion', () => {
     copyBalTailRange(store.pivotDirForRoot(hexA), store.pivotDirForRoot(hexB), 101n, 101n)
     assert.equal(store.promoteShadowPivotToActive(hexB), true)
     assert.equal(store.activePivotStateRoot()?.toLowerCase(), hexB.toLowerCase())
+    assert.isTrue(fs.existsSync(store.pivotDirForRoot(hexA)))
     fs.rmSync(root, { recursive: true, force: true })
   })
 })
