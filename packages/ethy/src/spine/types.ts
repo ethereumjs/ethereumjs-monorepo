@@ -266,12 +266,27 @@ export interface EthySpine {
   /** Finalized EL block hash from BLS-verified light client header. */
   clFinalizedBlockHash?: Uint8Array
   clEndpoint?: string
+  /** Swarm generation / BAL tail / shadow refresh telemetry (WP-11b). */
+  swarm?: SpineSwarmSnapshot
   /** Optional sink hook for the persistent Flight Recorder log files. */
   onDiagnosticRecorded?: (entry: DiagnosticEvent) => void
   /** Active logs directory path (`~/.ethy/networks/<net>/logs`). */
   logsDirPath?: string
   /** Loopback JSON-RPC 2.0 telemetry (WP-08a). */
   rpc?: RpcTelemetry
+}
+
+export type SpineSwarmSnapshot = {
+  generationAgeBlocks?: bigint
+  balTailContiguous?: boolean
+  balTailEarliest?: bigint
+  balTailLatest?: bigint
+  shadowRefresh?: {
+    mode: 'idle' | 'ethy-shadow' | 'snap-mint' | 'waiting-election'
+    targetBlock?: bigint
+    progressPct?: number
+    suppressedByPeerId?: string
+  }
 }
 
 export type RpcMethodStat = {

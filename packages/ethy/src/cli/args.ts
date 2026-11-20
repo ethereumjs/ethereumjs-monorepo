@@ -37,6 +37,8 @@ export interface EthyCliArgs {
   noSave?: boolean
   /** `--ai-share-prompts` — opt in to RAM-only prompt steering (WP-10c). */
   aiSharePrompts?: boolean
+  /** Background shadow pivot refresh (WP-11b); off with `--no-shadow-refresh`. */
+  shadowRefreshEnabled: boolean
 }
 
 export function parseEthyArgs(argv: string[]): EthyCliArgs {
@@ -67,6 +69,7 @@ export function parseEthyArgs(argv: string[]): EthyCliArgs {
   let aiSetup = false
   let noSave = false
   let aiSharePrompts: boolean | undefined
+  let shadowRefreshEnabled = true
 
   for (let i = 0; i < args.length; i++) {
     const a = args[i]
@@ -206,6 +209,10 @@ export function parseEthyArgs(argv: string[]): EthyCliArgs {
       noSave = true
       continue
     }
+    if (a === '--no-shadow-refresh') {
+      shadowRefreshEnabled = false
+      continue
+    }
     if (a === '--record-fixture') {
       const next = args[++i]
       if (next === undefined) throw new Error('--record-fixture requires a path')
@@ -251,6 +258,7 @@ export function parseEthyArgs(argv: string[]): EthyCliArgs {
     aiSetup,
     noSave,
     aiSharePrompts,
+    shadowRefreshEnabled,
   }
 }
 
@@ -263,7 +271,7 @@ Usage:
         [--datadir PATH] [--port N] [--connect enode://...]
         [--no-ai] [--ai default|off|local] [--ollama [model]]
         [--llm-url URL] [--llm-model ID] [--llm-allow-remote]
-        [--ai-memory ephemeral|off] [--no-ai-history] [--ai-share-prompts] [--ai-save] [--ai-setup] [--no-save]
+        [--ai-memory ephemeral|off] [--no-ai-history] [--ai-share-prompts] [--no-shadow-refresh] [--ai-save] [--ai-setup] [--no-save]
         [--record-fixture PATH]
 
 Networks: sepolia (default), mainnet, hoodi, holesky

@@ -160,6 +160,7 @@ async function main(): Promise<void> {
       listenPort: cli.listenPort,
       connectEnodeUrls: cli.connectEnodeUrls.length > 0 ? cli.connectEnodeUrls : undefined,
       syncMode: cli.syncMode,
+      shadowRefreshEnabled: cli.shadowRefreshEnabled,
       witnessExecutionHeader,
       economy: node.economy,
       onRpcBundle: (note) => rpcHandle?.noteBundle(note),

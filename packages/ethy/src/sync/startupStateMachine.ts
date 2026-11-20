@@ -98,6 +98,7 @@ export function planPostHydration(opts: {
 
 export type NetworkHeadResumeAction =
   | { action: 'anchor-fresh' }
+  | { action: 'anchor-ethy'; peerId: string; targetPivot: bigint; savedPivot: bigint }
   | { action: 'enter-head-following'; targetHead: bigint }
   | { action: 'enter-bal-catchup'; fromBlock: bigint; targetHead: bigint; gap: bigint }
   | { action: 'resume-snap'; startSnap: true; startBal: true; drainContracts: true }
@@ -120,6 +121,8 @@ export function planNetworkHeadResume(opts: {
   bucketsDoneCount: number
   liveHead: bigint
   ethyBalTail: boolean
+  ethyAnchorPeerId?: string
+  ethyAnchorPivot?: bigint
 }): NetworkHeadResumeAction {
   if (opts.kind === 'cold') {
     return { action: 'anchor-fresh' }
@@ -152,6 +155,18 @@ export function planNetworkHeadResume(opts: {
     ethyBalTail: opts.ethyBalTail,
   })
   if (decision === 'reset-stale') {
+    if (
+      opts.ethyAnchorPeerId !== undefined &&
+      opts.ethyAnchorPivot !== undefined &&
+      opts.ethyAnchorPivot > pivot
+    ) {
+      return {
+        action: 'anchor-ethy',
+        peerId: opts.ethyAnchorPeerId,
+        targetPivot: opts.ethyAnchorPivot,
+        savedPivot: pivot,
+      }
+    }
     const gap = opts.liveHead > pivot ? opts.liveHead - pivot : 0n
     return { action: 'reset-stale', savedPivot: pivot, gap }
   }

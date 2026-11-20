@@ -7,7 +7,7 @@ import {
 } from '@ethereumjs/util'
 
 import { EthyMessageCodes } from '../protocol/ethy/codes.ts'
-import type { EthyKnownPeerRow } from '../worker/ethyPex.ts'
+import { type EthyKnownPeerRow, selectEthyPexPeers } from '../worker/ethyPex.ts'
 import type { EthyChunkStore } from './ethyChunkStore.ts'
 import type { RollingBlockStore } from './rollingBlockStore.ts'
 
@@ -166,11 +166,15 @@ export function tryServeEthyGet(
     const now = Math.floor(Date.now() / 1000)
     const excludeHex = excludePeerId !== undefined ? bytesToUnprefixedHex(excludePeerId) : undefined
     const localHex = bytesToUnprefixedHex(localNodeId)
-    const rows: unknown[] = []
-    for (const p of knownPeers) {
+    const candidates = knownPeers.filter((p) => {
       const idHex = bytesToUnprefixedHex(p.peerId)
-      if (idHex === localHex) continue
-      if (excludeHex !== undefined && idHex === excludeHex) continue
+      if (idHex === localHex) return false
+      if (excludeHex !== undefined && idHex === excludeHex) return false
+      return true
+    })
+    const selected = selectEthyPexPeers(candidates, maxPeers)
+    const rows: unknown[] = []
+    for (const p of selected) {
       rows.push([
         p.peerId,
         new TextEncoder().encode(p.address),
@@ -180,7 +184,6 @@ export function tryServeEthyGet(
         intToUnpaddedBytes(p.bucketsBitmask),
         intToUnpaddedBytes(Math.max(0, now - p.lastSeenSec)),
       ])
-      if (rows.length >= maxPeers) break
     }
     return {
       code: EthyMessageCodes.ETHY_PEERS,

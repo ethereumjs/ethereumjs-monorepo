@@ -3,6 +3,7 @@ import * as path from 'node:path'
 import { RLP } from '@ethereumjs/rlp'
 import { bytesToUnprefixedHex, equalsBytes } from '@ethereumjs/util'
 
+import { contiguousBalTailWindow, readBalTailBundle } from './balTailDisk.ts'
 import {
   type DiskChunkProofRecord,
   journalPathForProofSidecar,
@@ -100,49 +101,41 @@ export class EthyChunkStore {
     return this._pivotAccountsDir !== undefined && this._pivotAccountsDir.length > 0
   }
 
-  /** Return the contiguous `(earliest, latest)` heal bundle range on disk in `../heal/`. */
+  /** Return the contiguous `(earliest, latest)` heal bundle range under the active pivot root. */
   getDiskHealWindow(): { earliest: bigint; latest: bigint } | undefined {
     const accountsDir = this._pivotAccountsDir
     if (accountsDir === undefined) return undefined
-    const healDir = path.join(path.dirname(accountsDir), 'heal')
-    let stat: fs.Stats
+    const pivotRoot = path.dirname(accountsDir)
+    let mtimeMs = 0
     try {
-      stat = fs.statSync(healDir)
+      const healDir = path.join(pivotRoot, 'heal')
+      const tailDir = path.join(pivotRoot, 'bal-tail')
+      mtimeMs = Math.max(
+        fs.existsSync(healDir) ? fs.statSync(healDir).mtimeMs : 0,
+        fs.existsSync(tailDir) ? fs.statSync(tailDir).mtimeMs : 0,
+      )
     } catch {
       return undefined
     }
     if (
       this._healWindowCache !== undefined &&
       this._healWindowCache.accountsDir === accountsDir &&
-      this._healWindowCache.mtimeMs === stat.mtimeMs
+      this._healWindowCache.mtimeMs === mtimeMs
     ) {
       return {
         earliest: this._healWindowCache.earliest,
         latest: this._healWindowCache.latest,
       }
     }
-    try {
-      let earliest: bigint | undefined
-      let latest: bigint | undefined
-      for (const name of fs.readdirSync(healDir)) {
-        if (!name.endsWith('.bundle.rlp')) continue
-        const prefix = name.slice(0, -'.bundle.rlp'.length)
-        if (!/^\d+$/.test(prefix)) continue
-        const n = BigInt(prefix)
-        if (earliest === undefined || n < earliest) earliest = n
-        if (latest === undefined || n > latest) latest = n
-      }
-      if (earliest === undefined || latest === undefined) return undefined
-      this._healWindowCache = {
-        accountsDir,
-        mtimeMs: stat.mtimeMs,
-        earliest,
-        latest,
-      }
-      return { earliest, latest }
-    } catch {
-      return undefined
+    const window = contiguousBalTailWindow(pivotRoot)
+    if (window === undefined) return undefined
+    this._healWindowCache = {
+      accountsDir,
+      mtimeMs,
+      earliest: window.earliest,
+      latest: window.latest,
     }
+    return window
   }
 
   /** Read a persisted `(headerRlp, balRlp)` bundle from `../heal/<n>.bundle.rlp` on disk. */
@@ -151,11 +144,10 @@ export class EthyChunkStore {
   ): { headerRlp: Uint8Array; balRlp: Uint8Array } | undefined {
     const accountsDir = this._pivotAccountsDir
     if (accountsDir === undefined) return undefined
-    const healFile = path.join(
-      path.dirname(accountsDir),
-      'heal',
-      `${blockNumber.toString()}.bundle.rlp`,
-    )
+    const pivotRoot = path.dirname(accountsDir)
+    const fromTail = readBalTailBundle(pivotRoot, blockNumber)
+    if (fromTail !== undefined) return fromTail
+    const healFile = path.join(pivotRoot, 'heal', `${blockNumber.toString()}.bundle.rlp`)
     if (!fs.existsSync(healFile)) return undefined
     try {
       const raw = new Uint8Array(fs.readFileSync(healFile))

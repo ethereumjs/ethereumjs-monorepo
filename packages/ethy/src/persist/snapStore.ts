@@ -25,6 +25,7 @@ import {
 } from '../spine/buckets.ts'
 import type { EthySpine, SnapBucket, SnapBucketStatus, SnapRangeCursor } from '../spine/types.ts'
 import type { IngestedAccountMeta } from '../sync/accountSync.ts'
+import { pruneFloor } from '../sync/balRetentionPolicy.ts'
 import type { VerifiedBalBlock } from '../sync/balSync.ts'
 import type { SnapResumeSaved } from '../sync/resumePolicy.ts'
 import { incrementKey32 } from '../sync/syntheticPeer.ts'
@@ -316,6 +317,77 @@ export class SnapPivotStore {
   getBucketPivotBlocks(): Record<string, string> | undefined {
     if (!this.enabled) return undefined
     return this.readActive()?.bucketPivotBlocks
+  }
+
+  /** Filesystem data root for the active network (WP-11b shadow refresh). */
+  dataRoot(): string {
+    return this.networkDir
+  }
+
+  activePivotStateRoot(): string | undefined {
+    return this.activeStateRoot
+  }
+
+  /** Active pivot filesystem root (`pivots/<stateRoot>/`). */
+  activePivotRootDir(): string | undefined {
+    if (this.activeStateRoot === undefined) return undefined
+    return this.pivotDir(this.activeStateRoot)
+  }
+
+  minActiveBucketPivotBlock(): bigint | undefined {
+    const rows = this.getBucketPivotBlocks()
+    if (rows === undefined) return undefined
+    let min: bigint | undefined
+    for (const v of Object.values(rows)) {
+      const n = BigInt(v)
+      if (n === 0n) continue
+      if (min === undefined || n < min) min = n
+    }
+    return min
+  }
+
+  healPruneCapForPivotStep(newPivotBlock: bigint, shadowRefreshDisabled: boolean): bigint {
+    const active = this.readActive()
+    const lastVerified =
+      active?.lastVerifiedBlockNumber !== undefined
+        ? BigInt(active.lastVerifiedBlockNumber)
+        : undefined
+    const floor = pruneFloor(this.minActiveBucketPivotBlock(), lastVerified, shadowRefreshDisabled)
+    if (floor === undefined || floor <= 0n) return newPivotBlock
+    const maxDelete = floor - 1n
+    return maxDelete < newPivotBlock ? maxDelete : newPivotBlock
+  }
+
+  /** Prepare parallel pivot directory without flipping `active.json` (WP-11b). */
+  beginShadowPivot(stateRootHex: string): void {
+    if (!this.enabled) return
+    const root = this.pivotDir(stateRootHex)
+    fs.mkdirSync(path.join(root, 'accounts'), { recursive: true })
+    fs.mkdirSync(path.join(root, 'bal-tail'), { recursive: true })
+    fs.mkdirSync(path.join(root, 'heal'), { recursive: true })
+  }
+
+  estimateActivePivotBytes(): bigint {
+    if (!this.enabled || this.activeStateRoot === undefined) return 0n
+    const root = this.pivotDir(this.activeStateRoot)
+    if (!fs.existsSync(root)) return 0n
+    let total = 0n
+    const stack = [root]
+    while (stack.length > 0) {
+      const dir = stack.pop()!
+      for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
+        const full = path.join(dir, ent.name)
+        if (ent.isDirectory()) stack.push(full)
+        else {
+          try {
+            total += BigInt(fs.statSync(full).size)
+          } catch {
+            // skip
+          }
+        }
+      }
+    }
+    return total
   }
 
   markBaseSyncComplete(pivotBlock: bigint): void {

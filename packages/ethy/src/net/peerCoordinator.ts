@@ -8,6 +8,7 @@ import {
   type WorkerTelemetrySnapshot,
   createThreadedNetwork,
   genPrivateKey,
+  pk2id,
   resolveThreadedNetworkModuleUrl,
 } from '@ethereumjs/devp2p'
 import { RLP } from '@ethereumjs/rlp'
@@ -20,6 +21,7 @@ import {
   intToUnpaddedBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
+import { secp256k1 } from '@noble/curves/secp256k1.js'
 
 import { getEthyClientVersion } from '../clientMeta.ts'
 import type { ETHEconomyDataManager } from '../economy/economyDataManager.ts'
@@ -64,6 +66,7 @@ import {
 } from '../sync/blockBundle.ts'
 import { selectCanonicalSnapPivotTarget } from '../sync/canonicalPivotGrid.ts'
 import { SnapCodeAndStorageSynchronizer } from '../sync/codeAndStorageSync.ts'
+import { pickEthyAnchorForStaleResume } from '../sync/ethyAnchorResume.ts'
 import { seederFromWorkerStatus } from '../sync/ethySeederSchedule.ts'
 import { EthySwarmSynchronizer } from '../sync/ethySwarmSync.ts'
 import { notePivotBridgingProgress, shouldReleaseSnapBridge } from '../sync/resumeCoordinator.ts'
@@ -91,9 +94,17 @@ import {
   shouldReenterBalCatchUp,
 } from '../sync/startupStateMachine.ts'
 import {
+  type GenerationElectionHandle,
+  armGenerationElection,
+  minHealPruneBlock,
+  refreshSpineSwarmTelemetry,
+  tickGenerationElection,
+} from '../sync/swarmRuntime.ts'
+import {
   type EthySeederView,
   type SyncMode,
   freshestEthyPivot,
+  isFreshEthyPreemptCandidate,
   pickAllUsableEthySeeders,
   pickUsableEthySeeder,
   preferCanonicalSnapOverEthy,
@@ -183,6 +194,8 @@ export type StartPeerCoordinatorOptions = {
   onRpcBundle?: (note: RpcBundleNote) => void
   /** Base-state download preference (WP-06c). */
   syncMode?: SyncMode
+  /** Background shadow pivot refresh (WP-11b). */
+  shadowRefreshEnabled?: boolean
 }
 
 export type PeerCoordinatorHandle = {
@@ -416,6 +429,10 @@ export async function startPeerCoordinator(
       return genPrivateKey()
     }
   })()
+  const localNodeId = pk2id(secp256k1.getPublicKey(privateKey, false))
+  const shadowRefreshEnabled = opts.shadowRefreshEnabled !== false
+  const processStartedAtMs = Date.now()
+  let generationElection: GenerationElectionHandle | undefined
 
   const ensureHeadFollower = (clientRef: Devp2pWorkerClient) => {
     if (spine.pivotStateRoot === undefined) return
@@ -493,7 +510,9 @@ export async function startPeerCoordinator(
             blockHash: newPivot.blockHash,
             stateRoot: newPivot.stateRoot,
           })
-          snapStore?.pruneHealBundlesUpTo(newPivot.blockNumber)
+          snapStore?.pruneHealBundlesUpTo(
+            minHealPruneBlock(snapStore, newPivot.blockNumber, !shadowRefreshEnabled),
+          )
           lastBalProgressAt = Date.now()
           if (spine.pivotBridging !== undefined) {
             spine.pivotBridging = notePivotBridgingProgress(
@@ -729,6 +748,10 @@ export async function startPeerCoordinator(
       pivotNum !== undefined
         ? ethyBalTailAvailable(pivotNum, headBlock, spine.peers.values(), spine.syncTransport)
         : false
+    const ethyAnchor =
+      pivotNum !== undefined && kind !== 'base-complete'
+        ? pickEthyAnchorForStaleResume(peers, headBlock, pivotNum, syncMode)
+        : undefined
     const resumeAction = planNetworkHeadResume({
       kind,
       localVerifiedBlock: localVerifiedBlock(spine),
@@ -736,10 +759,16 @@ export async function startPeerCoordinator(
       bucketsDoneCount: spine.snapBuckets.filter((b) => b.status === 'done').length,
       liveHead: headBlock,
       ethyBalTail: ethyTail,
+      ethyAnchorPeerId: ethyAnchor?.peerId,
+      ethyAnchorPivot: ethyAnchor?.basePivotBlock,
     })
 
     if (resumeAction.action === 'anchor-fresh') {
       deriveCapabilities(spine)
+      return
+    }
+    if (resumeAction.action === 'anchor-ethy') {
+      anchorEthyStaleResume(headBlock, peers, resumeAction)
       return
     }
     if (resumeAction.action === 'enter-head-following') {
@@ -834,6 +863,43 @@ export async function startPeerCoordinator(
     )
   }
 
+  const anchorEthyStaleResume = (
+    headBlock: bigint,
+    peers: WorkerPeerSnapshot[],
+    action: Extract<
+      import('../sync/startupStateMachine.ts').NetworkHeadResumeAction,
+      { action: 'anchor-ethy' }
+    >,
+  ): void => {
+    const gap = headBlock - action.savedPivot
+    snapStore?.discardPivots()
+    clearSpinePivotForFreshAnchor()
+    diskHydrated = true
+    resumeHeadHandled = true
+    lastSnapProgressAt = Date.now()
+    lastSnapProgressAccounts = spine.totalAccountsSynced
+    opts.notices?.post(
+      {
+        key: 'snap-ethy-anchor',
+        level: 'info',
+        text: `Stale partial snap (+${gap.toString()} blk) — anchoring ETHY/0 at #${action.targetPivot.toString()}`,
+        relevantForMs: 10_000,
+      },
+      Date.now(),
+    )
+    recordDiagnostic(spine, {
+      subsystem: 'ethy',
+      severity: 'info',
+      peerId: action.peerId,
+      message: `anchor-ethy resume: pivot #${action.savedPivot.toString()} → ETHY #${action.targetPivot.toString()}`,
+    })
+    spine.syncTransport = 'ethy'
+    ethySeederPeerId = action.peerId
+    const row = peers.find((p) => p.id === action.peerId)
+    if (row !== undefined) anchorEthyPivotFromStatus(row)
+    deriveCapabilities(spine)
+  }
+
   const abandonStaleSnapPivot = (
     headBlock: bigint,
     peers: WorkerPeerSnapshot[],
@@ -899,6 +965,16 @@ export async function startPeerCoordinator(
     })
     resumeDecided = true
     if (decision === 'reset-stale' && !resumeHydrateStarted) {
+      const anchor = pickEthyAnchorForStaleResume(peers, headBlock, peek.pivotBlockNumber, syncMode)
+      if (anchor !== undefined) {
+        anchorEthyStaleResume(headBlock, peers, {
+          action: 'anchor-ethy',
+          peerId: anchor.peerId,
+          targetPivot: anchor.basePivotBlock,
+          savedPivot: peek.pivotBlockNumber,
+        })
+        return
+      }
       abandonStaleSnapPivot(headBlock, peers, peek.pivotBlockNumber)
       return
     }
@@ -1775,13 +1851,15 @@ export async function startPeerCoordinator(
       return
     }
     const bucketsDone = spine.snapBuckets.filter((b) => b.status === 'done').length
+    const earlySnapProgress =
+      bucketsDone === 0 || (savedSnapPeek !== undefined && snapResumeProgressPct(savedSnapPeek) < 5)
     const canPreemptSnapForEthy =
       spine.syncTransport === 'snap' &&
       syncMode !== 'snap' &&
       !handoffCatchup &&
       spine.phase !== 'HEAD_FOLLOWING' &&
       spine.phase !== 'BAL_CATCHUP' &&
-      bucketsDone < 4
+      earlySnapProgress
     if (spine.syncTransport !== 'unset' && !canPreemptSnapForEthy) return
     if (!diskHydrated && spine.pivotStateRoot === undefined) return
     if (syncMode === 'snap') {
@@ -1822,7 +1900,7 @@ export async function startPeerCoordinator(
         ? pickUsableEthySeeder(explicitSeeders, head, 'ethy')
         : pickUsableEthySeeder(seeders, head, syncMode)
     if (pick !== undefined) {
-      if (canPreemptSnapForEthy) {
+      if (canPreemptSnapForEthy && isFreshEthyPreemptCandidate(pick.seeder, head)) {
         snapSync?.stop()
         snapSync = undefined
         codeSync?.stop()
@@ -1955,6 +2033,29 @@ export async function startPeerCoordinator(
       noteDiscovery(d.message)
     }
     syncLink()
+    refreshSpineSwarmTelemetry({
+      spine,
+      snapStore,
+      shadowRefreshEnabled,
+      nodeId: localNodeId,
+      processStartedAtMs,
+      peers: snap.peers,
+    })
+    const ethyActive = snap.peers.filter(
+      (p) =>
+        p.ethySession === true && p.ethyStatus !== undefined && p.ethyStatus.bucketsBitmask !== '0',
+    ).length
+    generationElection =
+      armGenerationElection({
+        spine,
+        nodeId: localNodeId,
+        bestHead: spine.bestPeerHead ?? 0n,
+        knownActiveEthyPeers: ethyActive,
+        publicEndpoint: (opts.listenPort ?? 0) > 0,
+        snapPeerCount: snap.peers.filter((p) => p.snapSession === true).length,
+        uptimeMs: Date.now() - processStartedAtMs,
+      }) ?? generationElection
+    tickGenerationElection(client, spine, generationElection)
     deriveCapabilities(spine)
     maybePivotInFlightTimeout(snap.peers)
     maybePivotBundleTimeout()
