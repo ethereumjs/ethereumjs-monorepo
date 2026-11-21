@@ -13,6 +13,13 @@ describe('[Util]: formatBigDecimal', function () {
     [BigInt('111103797739275696858'), BigInt('1000000000000000000'), BigInt('100000'), '111.10379'],
     [BigInt('111103797739275696858'), BigInt('1000000000000000000'), BigInt('1000'), '111.103'],
     [BigInt('1037977392756'), BigInt('1000000000000000000'), BigInt('100000'), '0.00000'],
+    [-12345n, 100n, 100n, '-123.45'],
+    [-1n, 8n, 1000n, '-0.125'],
+    [1n, -8n, 1000n, '-0.125'],
+    [-1n, -8n, 1000n, '0.125'],
+    [0n, -8n, 1000n, '0.000'],
+    [12345n, 100n, 1n, '123'],
+    [-12345n, 100n, 1n, '-123'],
   ]
   for (const [numerator, denominator, decimalFactor, expectedString] of testCases) {
     it(`format ${numerator} / ${denominator} correctly to ${expectedString}`, () => {

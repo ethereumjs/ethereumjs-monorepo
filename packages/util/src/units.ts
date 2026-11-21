@@ -20,12 +20,20 @@ export function formatBigDecimal(
     denominator = BIGINT_1
   }
 
+  const negative = numerator < BIGINT_0 !== denominator < BIGINT_0
+  const sign = numerator !== BIGINT_0 && negative ? '-' : ''
+  numerator = numerator < BIGINT_0 ? -numerator : numerator
+  denominator = denominator < BIGINT_0 ? -denominator : denominator
+
   const full = numerator / denominator
+  if (maxDecimalFactor === BIGINT_1) {
+    return `${sign}${full}`
+  }
   const fraction = ((numerator - full * denominator) * maxDecimalFactor) / denominator
 
   // zeros to be added post decimal are number of zeros in maxDecimalFactor - number of digits in fraction
   const zerosPostDecimal = String(maxDecimalFactor).length - 1 - String(fraction).length
-  return `${full}.${'0'.repeat(zerosPostDecimal)}${fraction}`
+  return `${sign}${full}.${'0'.repeat(zerosPostDecimal)}${fraction}`
 }
 
 /** Helpers for converting between ether, gwei, and wei denominations. */
