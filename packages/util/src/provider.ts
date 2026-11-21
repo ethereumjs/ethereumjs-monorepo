@@ -1,4 +1,4 @@
-import { EthereumJSErrorWithoutCode } from './errors.ts'
+import { EthereumJSError, EthereumJSErrorWithoutCode } from './errors.ts'
 
 type rpcParams = {
   method: string
@@ -79,7 +79,12 @@ export const fetchFromProvider = async (
     )
   }
   const json = await res.json()
-  // TODO we should check json.error here
+  if (json.error !== undefined) {
+    throw new EthereumJSError(
+      { code: 'ETHEREUMJS_JSON_RPC_ERROR' },
+      `JSONRPCError: ${JSON.stringify({ method: params.method, error: json.error }, null, 2)}`,
+    )
+  }
   return json.result
 }
 
