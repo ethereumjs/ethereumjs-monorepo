@@ -128,6 +128,9 @@ export class BlockLevelAccessList {
   // Track original code at the start of each blockAccessIndex for each address
   // Key format: `${address}-${blockAccessIndex}`
   private originalCodesAtIndex: Map<string, Uint8Array> = new Map()
+  /** Immutable wire RLP when built via {@link createBlockLevelAccessListFromRLP}. */
+  private cachedRlp?: Uint8Array
+
   constructor(accesses: Accesses = {}) {
     this.accesses = accesses
     this.blockAccessIndex = 0
@@ -139,6 +142,9 @@ export class BlockLevelAccessList {
    * @remarks Experimental (Amsterdam): may change on patch releases.
    */
   public serialize(): Uint8Array {
+    if (this.cachedRlp !== undefined) {
+      return this.cachedRlp
+    }
     return RLP.encode(this.raw())
   }
 
@@ -147,8 +153,15 @@ export class BlockLevelAccessList {
    *
    * @remarks Experimental (Amsterdam): may change on patch releases.
    */
-  public hash(): Uint8Array {
-    return keccak_256(this.serialize())
+  public hash(keccak256Fn: (data: Uint8Array) => Uint8Array = keccak_256): Uint8Array {
+    if (this.cachedRlp !== undefined) {
+      return keccak256Fn(this.cachedRlp)
+    }
+    return keccak256Fn(this.serialize())
+  }
+
+  private invalidateCachedRlp(): void {
+    this.cachedRlp = undefined
   }
 
   public checkpoint(): void {
@@ -165,6 +178,7 @@ export class BlockLevelAccessList {
   }
 
   public revert(): void {
+    this.invalidateCachedRlp()
     const snapshot = this.checkpoints.pop()
     if (!snapshot) {
       return
@@ -301,6 +315,7 @@ export class BlockLevelAccessList {
   }
 
   public addAddress(address: BALAddressHex): void {
+    this.invalidateCachedRlp()
     if (this.accesses[address] !== undefined) {
       return
     }
@@ -320,6 +335,7 @@ export class BlockLevelAccessList {
     blockAccessIndex: BALAccessIndexNumber,
     originalValue?: BALStorageValueBytes,
   ): void {
+    this.invalidateCachedRlp()
     const strippedKey = normalizeStorageKeyHex(bytesToHex(stripLeadingZeros(storageKey)))
     const strippedValue = stripLeadingZeros(value)
     const strippedOriginal = originalValue ? stripLeadingZeros(originalValue) : undefined
@@ -380,6 +396,7 @@ export class BlockLevelAccessList {
   }
 
   public addStorageRead(address: BALAddressHex, storageKey: BALStorageKeyBytes): void {
+    this.invalidateCachedRlp()
     if (this.accesses[address] === undefined) {
       this.addAddress(address)
     }
@@ -397,6 +414,7 @@ export class BlockLevelAccessList {
     blockAccessIndex: BALAccessIndexNumber,
     originalBalance?: BALBalanceBigInt,
   ): void {
+    this.invalidateCachedRlp()
     if (this.accesses[address] === undefined) {
       this.addAddress(address)
     }
@@ -419,6 +437,7 @@ export class BlockLevelAccessList {
    * Call this at the end of each transaction to clean up net-zero balance changes.
    */
   public cleanupNetZeroBalanceChanges(): void {
+    this.invalidateCachedRlp()
     for (const address of Object.keys(this.accesses) as BALAddressHex[]) {
       const access = this.accesses[address]
       if (access === undefined) continue
@@ -456,6 +475,7 @@ export class BlockLevelAccessList {
     nonce: BALNonceBigInt,
     blockAccessIndex: BALAccessIndexNumber,
   ): void {
+    this.invalidateCachedRlp()
     if (this.accesses[address] === undefined) {
       this.addAddress(address)
     }
@@ -468,6 +488,7 @@ export class BlockLevelAccessList {
     blockAccessIndex: BALAccessIndexNumber,
     originalCode?: BALByteCodeBytes,
   ): void {
+    this.invalidateCachedRlp()
     if (this.accesses[address] === undefined) {
       this.addAddress(address)
     }
@@ -582,6 +603,7 @@ export class BlockLevelAccessList {
     addresses: Array<BALAddressHex>,
     finalBalances?: Map<BALAddressHex, bigint>,
   ): void {
+    this.invalidateCachedRlp()
     for (const address of addresses) {
       const access = this.accesses[address]
       if (access === undefined) {
@@ -705,6 +727,7 @@ function normalizeQuantityHexForRLP(hex: PrefixedHexString): PrefixedHexString {
  * @remarks Experimental (Amsterdam): may change on patch releases.
  */
 export function createBlockLevelAccessListFromRLP(rlp: Uint8Array): BlockLevelAccessList {
+  const bal = new BlockLevelAccessList()
   const decoded = RLP.decode(rlp) as Array<
     [
       Uint8Array, // address
@@ -715,8 +738,6 @@ export function createBlockLevelAccessListFromRLP(rlp: Uint8Array): BlockLevelAc
       Array<[Uint8Array, Uint8Array]>, // code changes
     ]
   >
-
-  const bal = new BlockLevelAccessList()
 
   for (const account of decoded) {
     const [
@@ -764,17 +785,27 @@ export function createBlockLevelAccessListFromRLP(rlp: Uint8Array): BlockLevelAc
     }
   }
 
+  attachWireRlpToBal(bal, rlp)
   return bal
 }
 
-function stripLeadingZeros(bytes: Uint8Array): Uint8Array {
-  let first = bytes[0]
-  while (bytes.length > 0 && first.toString() === '0') {
-    bytes = bytes.slice(1)
-    first = bytes[0]
-  }
-  return bytes
+function attachWireRlpToBal(bal: BlockLevelAccessList, rlp: Uint8Array): void {
+  ;(bal as unknown as { cachedRlp?: Uint8Array }).cachedRlp = rlp
 }
+
+function stripLeadingZeros(bytes: Uint8Array): Uint8Array {
+  let i = 0
+  while (i < bytes.length && bytes[i] === 0) i++
+  if (i === 0) return bytes
+  if (i === bytes.length) return new Uint8Array(0)
+  return bytes.subarray(i)
+}
+
+export {
+  hashBlockAccessListRLP,
+  validateBlockAccessListHashFromRLP,
+} from './validation.ts'
+export * from './binary.ts'
 
 function padToEvenHex(hex: PrefixedHexString): PrefixedHexString {
   return `0x${padToEven(hex.slice(2))}`
