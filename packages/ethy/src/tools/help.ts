@@ -21,6 +21,7 @@ function economySections(): { sections: DomainHelpSection[]; aiExamples: string[
           { command: '/live · /plaza', detail: 'Ethereum Plaza observatory' },
           { command: '/economy', detail: '64-block gas, TPS & volume' },
           { command: '/signals · /si', detail: 'Ranked Layer 1 anomaly signals' },
+          { command: '/story · /st', detail: 'Field historian stories & journal' },
           { command: '/contract', detail: 'Hot contract #1 microscope' },
           { command: '/contract <N>', detail: 'Inspect leaderboard #1..10' },
           { command: '/contract <0x>', detail: 'Bytecode, proxy & ABI lens' },
@@ -96,6 +97,8 @@ function p2pSections(): { sections: DomainHelpSection[]; aiExamples: string[] } 
 }
 
 const UNIFIED_AI_EXAMPLES = [
+  'Could that contract be a trap?',
+  'Tell me the story of the last 10 blocks',
   'How is base fee trending?',
   'Explain the hottest contract',
   'What changed in the latest BAL?',
@@ -227,6 +230,7 @@ export function buildHelpWidget(spine: EthySpine): WidgetSpec {
         { command: '/live · /plaza', detail: 'Ethereum Plaza observatory' },
         { command: '/economy', detail: '64-block gas, TPS & volume' },
         { command: '/signals · /si', detail: 'Ranked Layer 1 anomaly signals' },
+        { command: '/story · /st', detail: 'Historian stories, /story new, list' },
         { command: '/contract [N|0x]', detail: 'Contract & ABI microscope' },
       ],
     },

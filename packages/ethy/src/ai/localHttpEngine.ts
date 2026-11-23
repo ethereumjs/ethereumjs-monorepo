@@ -18,6 +18,7 @@ import {
 import { parseLlmJSONObject } from './llmClient.ts'
 import { MAX_AI_OVERVIEW_CHARS } from './overviewNarrator.ts'
 import { formatEthyStateHeader } from './stateHeader.ts'
+import { synthesizeInteractiveStory } from './storyNarrator.ts'
 import { buildToolCatalog, isToolAllowed, toolIdToSlash } from './toolCatalog.ts'
 import type { TurnRecord } from './turnMemory.ts'
 import { ETHY_USAGE_PLAYBOOK } from './usagePlaybook.ts'
@@ -34,11 +35,12 @@ const INTENT_SCHEMA = `Respond with JSON only:
   "viewTitle": "short title for the interaction box",
   "overviewNote": "optional <=280 char note for AI overview",
   "action": { "type": "tool", "name": "<toolId>", "args": "optional slash args" }
-           | { "type": "investigate", "calls": [{ "tool": "${INVESTIGATION_TOOL_NAMES.join('|')}", "args": {} }] }
+           | { "type": "investigate", "calls": [{ "tool": "${INVESTIGATION_TOOL_NAMES.join('|')}", "args": {} }], "followUpProse": true }
+           | { "type": "explain", "lens"?: "detective|security|economics|lore|history" }
            | { "type": "compose", "dataset": "peers|peersByClient|buckets|economy|topContracts|diag", "minWrites": number }
            | { "type": "literal", "table": { "headers": [], "rows": [] }, "keyValue": [{ "key": "", "value": "" }] }
 }
-Use tool ids from the catalog or read-only investigation tools. Prefer tool, investigate, or compose over literal.`
+Use tool ids from the catalog or read-only investigation tools. Prefer tool, investigate with followUpProse, or explain for story questions.`
 
 function safeJSON(obj: unknown): string {
   return JSON.stringify(obj, (_key, val) => (typeof val === 'bigint' ? val.toString() : val))
@@ -150,7 +152,7 @@ export class LocalHttpIntentEngine implements IntentEngine {
                 x !== undefined,
             )
           if (calls.length > 0) {
-            const entries: Array<{ key: string; value: string }> = []
+            const toolResults: Array<{ tool: string; result: string }> = []
             for (const call of calls) {
               const out = await runInvestigationToolAsync(call.tool, call.args, {
                 economy: this.economy,
@@ -159,13 +161,61 @@ export class LocalHttpIntentEngine implements IntentEngine {
                 sandbox: this.sandbox,
                 spine,
               })
-              entries.push({ key: call.tool, value: out })
+              toolResults.push({ tool: call.tool, result: out })
+            }
+            if (act.followUpProse === true && this.journal !== undefined) {
+              const synth = await synthesizeInteractiveStory({
+                transport: this.transport,
+                spine,
+                economy: this.economy,
+                journal: this.journal,
+                toolResults,
+                userQuestion: req.text.trim(),
+              })
+              if (synth !== undefined) {
+                return {
+                  widget: {
+                    kind: 'story',
+                    story: synth.story,
+                    debugPage: synth.debugPage,
+                  },
+                  stateHeader,
+                  querySlot,
+                  viewTitle,
+                  overviewNote,
+                }
+              }
             }
             return {
               widget: {
                 kind: 'key_value',
                 title: viewTitle,
-                entries,
+                entries: toolResults.map((t) => ({ key: t.tool, value: t.result })),
+              },
+              stateHeader,
+              querySlot,
+              viewTitle,
+              overviewNote,
+            }
+          }
+        }
+        if (act.type === 'explain' && this.economy !== undefined && this.journal !== undefined) {
+          const lensHint = typeof act.lens === 'string' ? act.lens : undefined
+          const synth = await synthesizeInteractiveStory({
+            transport: this.transport,
+            spine,
+            economy: this.economy,
+            journal: this.journal,
+            toolResults: [],
+            lensHint,
+            userQuestion: req.text.trim(),
+          })
+          if (synth !== undefined) {
+            return {
+              widget: {
+                kind: 'story',
+                story: synth.story,
+                debugPage: synth.debugPage,
               },
               stateHeader,
               querySlot,
@@ -192,6 +242,7 @@ export class LocalHttpIntentEngine implements IntentEngine {
             disconnectPeer: this.disconnectPeer,
             economy: this.economy,
             chain: this.chain,
+            journal: this.journal,
           })
           return {
             widget,

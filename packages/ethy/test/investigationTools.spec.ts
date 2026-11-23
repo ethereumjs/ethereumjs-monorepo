@@ -101,4 +101,94 @@ describe('investigationTools', () => {
     expect(out.fn).toBe('totalSupply')
     expect(out.value).toBe('1000')
   })
+
+  it('inspect_recent_moments filters kinds and clamps limit', () => {
+    const spine = createSpine('mainnet', 1n)
+    spine.economy = {
+      hasBlocks: true,
+      moments: [
+        {
+          id: 'm1',
+          kind: 'birth',
+          blockNumber: '1',
+          headline: 'born',
+          timestampSec: 1,
+          badge: ' birth',
+        },
+        {
+          id: 'm2',
+          kind: 'revert',
+          blockNumber: '2',
+          headline: 'revert',
+          timestampSec: 2,
+          badge: ' reverts',
+        },
+      ],
+      topContracts: [],
+      recentBlocks: [],
+    }
+    const chain = Mainnet
+    const common = new Common({ chain, hardfork: Hardfork.Cancun })
+    const stateManager = createFlatStateManager({ common })
+    const economy = new ETHEconomyDataManager({
+      spine,
+      chain,
+      hardfork: Hardfork.Cancun,
+      stateManager,
+    })
+    const bornOnly = JSON.parse(
+      runInvestigationTool(
+        'inspect_recent_moments',
+        { kind: 'birth', limit: 99 },
+        {
+          economy,
+          stateManager,
+          chain,
+          spine,
+        },
+      ),
+    ) as { moments: Array<{ kind: string }> }
+    expect(bornOnly.moments).toHaveLength(1)
+    expect(bornOnly.moments[0]?.kind).toBe('birth')
+    const badKind = JSON.parse(
+      runInvestigationTool(
+        'inspect_recent_moments',
+        { kind: 'not_a_kind' },
+        {
+          economy,
+          stateManager,
+          chain,
+          spine,
+        },
+      ),
+    ) as { moments: unknown[] }
+    expect(badKind.moments).toHaveLength(0)
+  })
+
+  it('inspect_block_activity clamps blockOffset', () => {
+    const spine = createSpine('mainnet', 1n)
+    spine.economy = { hasBlocks: true, topContracts: [], recentBlocks: [] }
+    const chain = Mainnet
+    const common = new Common({ chain, hardfork: Hardfork.Cancun })
+    const stateManager = createFlatStateManager({ common })
+    const economy = new ETHEconomyDataManager({
+      spine,
+      chain,
+      hardfork: Hardfork.Cancun,
+      stateManager,
+    })
+    const far = JSON.parse(
+      runInvestigationTool(
+        'inspect_block_activity',
+        { blockOffset: 99 },
+        {
+          economy,
+          stateManager,
+          chain,
+          spine,
+        },
+      ),
+    ) as { blockOffset?: number; error?: string }
+    expect(far.error).toBe('block_not_in_window')
+  })
 })

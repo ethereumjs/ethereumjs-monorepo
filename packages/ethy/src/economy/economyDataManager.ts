@@ -112,6 +112,11 @@ export class ETHEconomyDataManager {
     return this.ring
   }
 
+  /** Active decode hardfork label for AI briefs. */
+  getHardfork(): string {
+    return this.hardfork
+  }
+
   getSlotTracker(): SlotTrendTracker {
     return this.slotTracker
   }

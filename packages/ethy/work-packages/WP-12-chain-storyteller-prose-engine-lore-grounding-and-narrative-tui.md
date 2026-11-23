@@ -1,6 +1,6 @@
 # WP-12: Chain Storyteller — Uncaged Prose Engine, Curated Ethereum Lore & Threat Grounding, Editorial Reading TUI & Conversational Deep-Dives
 
-- **Status:** `READY_FOR_PLANNING`
+- **Status:** `DONE`
 - **Series:** `WP-12` — Next-Generation Chain Storytelling & Curious AI Experience
 - **Dependencies:** `WP-10a`, `WP-10b`, `WP-10c`, `WP-10d` (`DONE`)
 - **Planner:** Grok 4.7
@@ -246,7 +246,13 @@ Transform Ethy's AI mode from a passive alert ticker into a **live Ethereum Fiel
 
 ## 2. Concrete Implementation Plan (Planner — Grok 4.7)
 
-*(To be filled out by Grok 4.7 before implementation begins.)*
+1. **Transport** — `llmClient` + `fixtureEngine`: `kind: 'story'`, `responseMode` text/json, timeouts 18s/28s, token budgets; `modelTier.ts` compact vs rich.
+2. **StoryBrief + tools** — `storyBrief.ts`, `getHardfork()` on economy manager; `ethereumLore.ts` (14 cards), `storyDirector.ts`; extend `investigationTools` with `inspect_recent_moments` / `inspect_block_activity`.
+3. **Prose path** — `parseStoryOutput.ts`, `storyFallback.ts`, `storyNarrator.ts`; upgrade `chainDetective.ts` (scout JSON → storyteller text, dwell/interval, `triggerNow`, non-destructive retention).
+4. **Types + TUI** — extend `ChainDispatchCard` / `WidgetSpec` `story`; `StoryUIComponent.ts`; editorial `renderAiOverviewSections`; `storyTools.ts` + `/story` registration.
+5. **Intent** — `localHttpEngine` `followUpProse` + `explain` → `kind: 'story'`; `smokeScenarios` four scenarios; Vitest coverage; session `onUnhealthy` fix.
+
+**D-132 refinements:** reuse `InvestigationJournal`; keep `buildSignalDigest`; retire `Layer 1 signal` fallback body; no new deps.
 
 ---
 

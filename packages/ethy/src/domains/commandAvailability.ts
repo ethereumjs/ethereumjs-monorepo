@@ -78,6 +78,8 @@ export function getCommandAvailability(
     case '/e':
     case '/signals':
     case '/si':
+    case '/story':
+    case '/st':
       return economyReady(spine)
     case '/contract':
     case '/co':

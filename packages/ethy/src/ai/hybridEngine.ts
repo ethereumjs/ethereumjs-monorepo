@@ -70,6 +70,7 @@ export class HybridIntentEngine implements IntentEngine {
       economy: opts.economy,
       chain: opts.chain,
       sandbox: opts.sandbox,
+      journal: opts.journal,
     })
     this.llmBase = opts.llmBase
     this.llmProvider = opts.llmProvider

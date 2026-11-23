@@ -23,6 +23,8 @@ export const SLASH_COMMANDS = [
   '/contract ',
   '/clear',
   '/ai ',
+  '/story',
+  '/st ',
 ] as const
 
 const PLAZA_ALIASES = new Set(['/plaza', '/head'])
@@ -40,6 +42,7 @@ const SHORT_EXPAND: Record<string, string> = {
   '/a': '/account ',
   '/s': '/simulate',
   '/h': '/help',
+  '/st': '/story',
 }
 
 /** Longest matching command for Tab completion, or null if ambiguous / no match. */

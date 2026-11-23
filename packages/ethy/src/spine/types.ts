@@ -354,6 +354,8 @@ export type InteractionHistoryEntry =
       page: InteractionPage
     }
 
+export type StoryAngleKind = 'history' | 'security' | 'question' | 'lens'
+
 export type ChainDispatchCard = {
   category: string
   severity: string
@@ -364,6 +366,18 @@ export type ChainDispatchCard = {
   blockNumber?: string
   atMs: number
   deterministic?: boolean
+  lens?: 'detective' | 'security' | 'economics' | 'lore'
+  network?: string
+  angle?: string
+  angleKind?: StoryAngleKind
+  curiosityQuestion?: string
+  evidence?: Array<{ label: string; value: string }>
+  loreCardId?: string
+  modelLabel?: string
+  latencyMs?: number
+  toolsUsed?: string[]
+  subjectKey?: string
+  signalScore?: number
 }
 
 export interface AiOverviewSections {
@@ -373,6 +387,8 @@ export interface AiOverviewSections {
   focusNote?: { domain: CapabilityId; text: string }
   /** WP-10c Dispatch Feed (replaces 3-domain prose when set). */
   dispatches?: ChainDispatchCard[]
+  storyIndex?: number
+  storyCount?: number
   bootstrapNote?: string
 }
 
@@ -432,6 +448,11 @@ export type WidgetSpec =
       discoveredModels?: DiscoveredLocalModel[]
       hardware?: HardwareSnapshot
       statusNote?: string
+      debugPage?: DebugSectionSpec[]
+    }
+  | {
+      kind: 'story'
+      story: ChainDispatchCard
       debugPage?: DebugSectionSpec[]
     }
 

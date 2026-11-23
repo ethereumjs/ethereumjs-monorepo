@@ -6,6 +6,7 @@ import type { SignalCandidate } from '../economy/types.ts'
 import type { EthySandbox } from '../evm/sandbox.ts'
 import { deriveCapabilities } from '../spine/createSpine.ts'
 import type { AiOverviewSections, ChainDispatchCard, EthySpine } from '../spine/types.ts'
+import { selectLoreCards } from './ethereumLore.ts'
 import type { LlmTransport } from './fixtureEngine.ts'
 import { InvestigationJournal, UserInterestRing } from './investigationJournal.ts'
 import {
@@ -15,20 +16,28 @@ import {
   runInvestigationToolAsync,
 } from './investigationTools.ts'
 import { parseLlmJSONObject } from './llmClient.ts'
-import { AI_PULSE_INTERVAL_MS } from './pulseNarrator.ts'
-import { buildSignalDigest, digestForPrompt } from './signalDigest.ts'
-import { ETHY_USAGE_PLAYBOOK } from './usagePlaybook.ts'
+import { type ModelTier, inferModelTier, maxLoreCards } from './modelTier.ts'
+import { parseStoryOutput } from './parseStoryOutput.ts'
+import { briefForPrompt, buildStoryBrief } from './storyBrief.ts'
+import {
+  type StoryLens,
+  directStory,
+  headlineSnippet,
+  parseLensOverride,
+  recentLoreIds,
+} from './storyDirector.ts'
+import { buildDeterministicFieldNote } from './storyFallback.ts'
+import { buildScoutSystem, buildStorytellerSystem, cardFromProse } from './storyNarrator.ts'
 
-export const DETECTIVE_INTERVAL_MS = AI_PULSE_INTERVAL_MS
-
-const TURN1_SCHEMA = `JSON only. Either { "mode": "investigate", "calls": [{ "tool": "<name>", "args": {} }] } (1-2 tools) OR { "mode": "dispatch", "category": "surge|7702|l2|fee|flow|contract|watch", "severity": "calm|notable|surge", "headline": "<=72 chars", "body": "<=360 chars", "relatedAddress"?: "0x...", "suggestedAction"?: "..." }. Tools: ${INVESTIGATION_TOOL_NAMES.join(', ')}.`
-const TURN2_SCHEMA = `JSON only: { "mode": "dispatch", "category", "severity", "headline", "body", "relatedAddress"?, "suggestedAction"? }`
+export const DETECTIVE_INTERVAL_MS = 75_000
+export const STORY_DWELL_MS = 45_000
 
 export type DetectiveTriage =
   | {
       mode: 'investigate'
       calls: Array<{ tool: InvestigationToolName; args: Record<string, unknown> }>
     }
+  | { mode: 'tell_story'; focus: string }
   | { mode: 'dispatch'; card: ChainDispatchCard }
 
 export function noveltyShouldSkip(opts: {
@@ -57,13 +66,15 @@ export function signalToDispatchCard(signal: SignalCandidate, atMs: number): Cha
     category,
     severity: signal.severity,
     headline: signal.headline.slice(0, 72),
-    body: `Layer 1 signal (${signal.kind}, score ${signal.noveltyScore}).`,
+    body: `${signal.headline} — live ranked anomaly in the rolling window.`,
     relatedAddress: signal.address,
     suggestedAction: signal.address !== undefined ? `/contract ${signal.address}` : '/signals',
     blockNumber:
       typeof signal.metrics.block === 'number' ? String(signal.metrics.block) : undefined,
     atMs,
     deterministic: true,
+    subjectKey: `signal:${signal.id}`,
+    signalScore: signal.noveltyScore,
   }
 }
 
@@ -88,6 +99,9 @@ export function parseDetectiveTriage(obj: Record<string, unknown>): DetectiveTri
     if (calls.length === 0) return undefined
     return { mode: 'investigate', calls }
   }
+  if (mode === 'tell_story' && typeof obj.focus === 'string') {
+    return { mode: 'tell_story', focus: obj.focus.trim() }
+  }
   if (mode === 'dispatch') {
     const card = dispatchCardFromRecord(obj)
     return card !== undefined ? { mode: 'dispatch', card } : undefined
@@ -96,17 +110,18 @@ export function parseDetectiveTriage(obj: Record<string, unknown>): DetectiveTri
 }
 
 function dispatchCardFromRecord(obj: Record<string, unknown>): ChainDispatchCard | undefined {
-  const headline = typeof obj.headline === 'string' ? obj.headline.trim().slice(0, 72) : ''
-  const body = typeof obj.body === 'string' ? obj.body.trim().slice(0, 360) : ''
+  const headline = typeof obj.headline === 'string' ? obj.headline.trim().slice(0, 84) : ''
+  const body = typeof obj.body === 'string' ? obj.body.trim() : ''
   if (headline.length === 0 || body.length === 0) return undefined
   return {
     category: typeof obj.category === 'string' ? obj.category : 'watch',
     severity: typeof obj.severity === 'string' ? obj.severity : 'notable',
     headline,
-    body,
+    body: body.slice(0, 2000),
     relatedAddress: typeof obj.relatedAddress === 'string' ? obj.relatedAddress : undefined,
     suggestedAction: typeof obj.suggestedAction === 'string' ? obj.suggestedAction : undefined,
     atMs: Date.now(),
+    deterministic: false,
   }
 }
 
@@ -136,6 +151,8 @@ export class ChainDetectiveNarrator {
   private lastDispatchMs = 0
   private lastDispatchBlock = 0n
   private userFocusBump = false
+  private lensOverride?: StoryLens
+  private pendingManual = false
   spineRef?: EthySpine
 
   constructor(opts: ChainDetectiveNarratorOpts) {
@@ -181,6 +198,17 @@ export class ChainDetectiveNarrator {
     this.abort?.abort()
   }
 
+  async triggerNow(lensOverride?: StoryLens): Promise<void> {
+    this.lensOverride = lensOverride
+    this.pendingManual = true
+    this.abortInFlight()
+    if (this.spineRef !== undefined) {
+      await this.runCycle('manual')
+    }
+    this.pendingManual = false
+    this.lensOverride = undefined
+  }
+
   private setLlmPulseReady(spine: EthySpine, ready: boolean): void {
     spine.llmPulseReady = ready
     deriveCapabilities(spine)
@@ -188,8 +216,7 @@ export class ChainDetectiveNarrator {
 
   private publishBootstrap(spine: EthySpine): void {
     this.onOverview({
-      bootstrapNote:
-        'Syncing live blocks — on-chain detective dispatches start once economy data arrives.',
+      bootstrapNote: 'Syncing live blocks — field stories start once economy data arrives.',
     })
   }
 
@@ -201,13 +228,77 @@ export class ChainDetectiveNarrator {
     }
   }
 
-  private publishDispatches(cards: ChainDispatchCard[]): void {
-    const fromJournal = this.journal.snapshot(2)
-    const dispatches = fromJournal.length > 0 ? [...fromJournal] : cards.slice(0, 2)
-    this.onOverview({ dispatches })
+  private publishStory(card: ChainDispatchCard): void {
+    const count = this.journal.snapshot(6).length
+    this.onOverview({
+      dispatches: [card],
+      storyIndex: 1,
+      storyCount: Math.max(1, count),
+    })
   }
 
-  private async runCycle(trigger: 'welcome' | 'pulse'): Promise<void> {
+  private modelTier(spine: EthySpine): ModelTier {
+    return inferModelTier(spine.managedAi?.label)
+  }
+
+  private async runStorytellerTurn(
+    brief: ReturnType<typeof buildStoryBrief>,
+    lead: ReturnType<typeof directStory>,
+    toolResults: Array<{ tool: string; result: string }>,
+    tier: ModelTier,
+    startedMs: number,
+  ): Promise<ChainDispatchCard | undefined> {
+    if (brief === undefined) return undefined
+    const loreCards = selectLoreCards(
+      brief,
+      lead.lens,
+      recentLoreIds(this.journal),
+      maxLoreCards(tier),
+    )
+    const system = buildStorytellerSystem(lead.lens, loreCards, tier)
+    const userPayload = {
+      brief: briefForPrompt(brief),
+      lead,
+      toolResults,
+      focus: lead.lead,
+    }
+    const raw = await this.transport.complete(
+      {
+        kind: 'story',
+        messages: [
+          { role: 'system', content: system },
+          { role: 'user', content: JSON.stringify(userPayload) },
+        ],
+        overrides: { modelTier: tier, responseMode: 'text' },
+      },
+      this.abort?.signal,
+    )
+    const parsed = parseStoryOutput(raw)
+    if (parsed === undefined) return undefined
+    return cardFromProse({
+      parsed,
+      brief,
+      lead,
+      loreCardId: loreCards[0]?.id,
+      toolsUsed: toolResults.map((t) => t.tool),
+      modelLabel: this.spineRef?.managedAi?.label,
+      latencyMs: Date.now() - startedMs,
+      atMs: Date.now(),
+    })
+  }
+
+  private publishFallback(
+    brief: NonNullable<ReturnType<typeof buildStoryBrief>>,
+    lens: StoryLens,
+  ): void {
+    const lore = selectLoreCards(brief, lens, recentLoreIds(this.journal), 1)[0]
+    if (lore === undefined) return
+    const card = buildDeterministicFieldNote(brief, lens, lore, Date.now())
+    this.journal.push(card)
+    this.publishStory(card)
+  }
+
+  private async runCycle(trigger: 'welcome' | 'pulse' | 'manual'): Promise<void> {
     const spine = this.spineRef
     if (spine === undefined || this.inFlight) return
     this.ctx.spine = spine
@@ -217,16 +308,22 @@ export class ChainDetectiveNarrator {
       return
     }
 
-    const digest = buildSignalDigest(snap)
-    if (digest === undefined) return
+    const brief = buildStoryBrief(spine, this.economy, this.modelTier(spine))
+    if (brief === undefined) return
 
     const head = snap.latestBlockNumber !== undefined ? BigInt(snap.latestBlockNumber) : 0n
     const blocksSince = this.lastDispatchBlock > 0n ? Number(head - this.lastDispatchBlock) : 99
-    const topScore = digest.signals[0]?.noveltyScore ?? 0
+    const topScore = brief.signals[0]?.noveltyScore ?? 0
     const msSince = Date.now() - this.lastDispatchMs
+
+    if (trigger === 'pulse' && msSince < STORY_DWELL_MS && this.journal.latest() !== undefined) {
+      this.publishStory(this.journal.latest()!)
+      return
+    }
 
     if (
       trigger === 'pulse' &&
+      !this.pendingManual &&
       noveltyShouldSkip({
         blocksSinceLast: blocksSince,
         topScore,
@@ -235,93 +332,79 @@ export class ChainDetectiveNarrator {
       })
     ) {
       const latest = this.journal.latest()
-      if (latest !== undefined) this.publishDispatches([latest])
+      if (latest !== undefined) this.publishStory(latest)
       return
     }
 
     this.inFlight = true
     this.abort?.abort()
     this.abort = new AbortController()
-    const signal = this.abort.signal
     this.userFocusBump = false
-
-    const journalSnippet = this.journal.snapshot(5)
-    const userCues = spine.sharePromptHistory === true ? this.userInterest.snapshot() : []
-    const userPayload = {
-      digest: digestForPrompt(digest),
-      journal: journalSnippet,
-      userCues,
-      trigger,
-    }
+    const tier = this.modelTier(spine)
+    const lead = directStory(brief, this.journal, this.lensOverride)
+    const journalHeadlines = this.journal.snapshot(5).map(headlineSnippet)
+    const startedMs = Date.now()
 
     try {
       const raw1 = await this.transport.complete(
         {
           kind: 'pulse',
           messages: [
-            { role: 'system', content: `${ETHY_USAGE_PLAYBOOK}\n\n${TURN1_SCHEMA}` },
-            { role: 'user', content: JSON.stringify(userPayload) },
+            { role: 'system', content: buildScoutSystem(INVESTIGATION_TOOL_NAMES.join(', ')) },
+            {
+              role: 'user',
+              content: JSON.stringify({
+                brief: briefForPrompt(brief),
+                lead,
+                journalHeadlines,
+                trigger,
+              }),
+            },
           ],
+          overrides: { responseMode: 'json', modelTier: tier },
         },
-        signal,
+        this.abort.signal,
       )
       const triage = parseDetectiveTriage(parseLlmJSONObject(raw1))
       let card: ChainDispatchCard | undefined
+      const toolResults: Array<{ tool: string; result: string }> = []
 
       if (triage?.mode === 'dispatch') {
         card = triage.card
+        card.blockNumber = snap.latestBlockNumber
+        card.lens = lead.lens
+        card.network = brief.network
+        card.subjectKey = lead.subjectKey
       } else if (triage?.mode === 'investigate') {
-        const toolResults: Array<{ tool: string; result: string }> = []
         for (const call of triage.calls) {
           toolResults.push({
             tool: call.tool,
             result: await runInvestigationToolAsync(call.tool, call.args, this.ctx),
           })
         }
-        const raw2 = await this.transport.complete(
-          {
-            kind: 'pulse',
-            messages: [
-              { role: 'system', content: `${ETHY_USAGE_PLAYBOOK}\n\n${TURN2_SCHEMA}` },
-              {
-                role: 'user',
-                content: JSON.stringify({
-                  digest: userPayload.digest,
-                  toolResults,
-                  journalSnippet,
-                }),
-              },
-            ],
-          },
-          signal,
-        )
-        card = dispatchCardFromRecord(parseLlmJSONObject(raw2))
-      }
-
-      if (card === undefined) {
-        const sig = digest.signals[0]
-        if (sig !== undefined) {
-          card = signalToDispatchCard(sig, Date.now())
-        }
+        card = await this.runStorytellerTurn(brief, lead, toolResults, tier, startedMs)
+      } else if (triage?.mode === 'tell_story' || triage === undefined) {
+        card = await this.runStorytellerTurn(brief, lead, toolResults, tier, startedMs)
       }
 
       if (card !== undefined) {
-        card.blockNumber = snap.latestBlockNumber
+        card.blockNumber = card.blockNumber ?? snap.latestBlockNumber
         this.journal.push(card)
         this.lastDispatchMs = Date.now()
         this.lastDispatchBlock = head
-        this.publishDispatches([card])
+        this.publishStory(card)
         this.consecutiveFailures = 0
         this.setLlmPulseReady(spine, true)
+        return
       }
+      throw new Error('empty_story')
     } catch {
       this.consecutiveFailures += 1
-      const sig = digest.signals[0]
-      if (sig !== undefined) {
-        const card = signalToDispatchCard(sig, Date.now())
-        card.blockNumber = snap.latestBlockNumber
-        this.journal.push(card)
-        this.publishDispatches([card])
+      const latest = this.journal.latest()
+      if (latest !== undefined && latest.deterministic !== true) {
+        this.publishStory(latest)
+      } else {
+        this.publishFallback(brief, lead.lens)
       }
       if (this.consecutiveFailures >= 2) {
         this.setLlmPulseReady(spine, false)
@@ -330,5 +413,9 @@ export class ChainDetectiveNarrator {
     } finally {
       this.inFlight = false
     }
+  }
+
+  private get economy(): ETHEconomyDataManager {
+    return this.ctx.economy
   }
 }

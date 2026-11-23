@@ -70,6 +70,8 @@ describe('parseDetectiveTriage', () => {
       body: 'Base inbox leads blob count in the macro window.',
     })
     expect(disp?.mode).toBe('dispatch')
+    const tell = parseDetectiveTriage({ mode: 'tell_story', focus: 'quiet blocks' })
+    expect(tell?.mode).toBe('tell_story')
   })
 })
 
@@ -78,6 +80,7 @@ describe('signalToDispatchCard', () => {
     const card = signalToDispatchCard(sampleSignal, 1_000)
     expect(card.deterministic).toBe(true)
     expect(card.category).toBe('7702')
+    expect(card.body).not.toMatch(/Layer 1 signal/)
   })
 })
 
@@ -135,13 +138,11 @@ describe('ChainDetectiveNarrator end-to-end replay', () => {
         mode: 'investigate',
         calls: [{ tool: 'inspect_l2_blobs', args: {} }],
       }),
-      JSON.stringify({
-        mode: 'dispatch',
-        category: 'l2',
-        severity: 'notable',
-        headline: 'Base leads blob spend',
-        body: 'Base Batcher posted 8 blobs with rising fees.',
-      }),
+      `HEADLINE: Base batch pressure climbs
+STORY: Base Batcher posted 8 blobs while blob fees trend up.
+ANGLE: EIP-4844 split blob demand from execution gas in 2024.
+CURIOSITY: Will blob fees cool if batching pauses?
+COMMAND: /signals`,
     ])
     const economy = new ETHEconomyDataManager({ spine, chain, hardfork, stateManager })
     const journal = new InvestigationJournal()
@@ -162,6 +163,6 @@ describe('ChainDetectiveNarrator end-to-end replay', () => {
 
     const last = updates[updates.length - 1]
     expect(last?.dispatches?.length).toBe(1)
-    expect(last?.dispatches?.[0]?.headline).toBe('Base leads blob spend')
+    expect(last?.dispatches?.[0]?.headline).toContain('Base batch')
   })
 })

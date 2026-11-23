@@ -25,8 +25,10 @@ import { inspectRawAccountRange, sampleSyncedAccounts } from '../tools/range.ts'
 import { rpcMicroscopeWidget } from '../tools/rpcTools.ts'
 import { signalsDeepViewWidget } from '../tools/signalTools.ts'
 import { sendTxWidget, simulateMicroscopeWidget } from '../tools/simulateTools.ts'
+import { dispatchStorySlash } from '../tools/storyTools.ts'
 import { renderCommandUnavailableWidget } from '../tui/components/CommandUnavailableUIComponent.ts'
 import type { IntentEngine, IntentRequest, IntentResult } from './intentEngine.ts'
+import type { InvestigationJournal } from './investigationJournal.ts'
 import { expandSlashCommand } from './slashComplete.ts'
 import { formatEthyStateHeader } from './stateHeader.ts'
 
@@ -46,6 +48,7 @@ export type DeterministicIntentEngineOpts = {
   economy?: ETHEconomyDataManager
   chain?: ChainConfig
   sandbox?: EthySandbox
+  journal?: InvestigationJournal
 }
 
 type RawTxSubmitter = (hex: string) => Promise<{ result: string } | { error: { message: string } }>
@@ -58,6 +61,7 @@ export type SlashDispatchCtx = {
   disconnectPeer?: (peerId: string) => void
   economy?: ETHEconomyDataManager
   chain?: ChainConfig
+  journal?: InvestigationJournal
 }
 
 function slashIfLocked(
@@ -169,6 +173,17 @@ export function dispatchSlashWidget(line: string, ctx: SlashDispatchCtx): Widget
       if (locked !== undefined) return locked
       return signalsDeepViewWidget(spine)
     }
+    case '/story':
+    case '/st': {
+      if (ctx.journal === undefined) {
+        return {
+          kind: 'key_value',
+          title: '/story',
+          entries: [{ key: 'Error', value: 'Story journal unavailable' }],
+        }
+      }
+      return dispatchStorySlash(line, ctx.journal)
+    }
     case '/contract':
     case '/co': {
       const arg = parts.slice(1).join(' ')
@@ -221,6 +236,7 @@ export class DeterministicIntentEngine implements IntentEngine {
   private readonly economy?: ETHEconomyDataManager
   private readonly chain?: ChainConfig
   private readonly sandbox?: EthySandbox
+  private readonly journal?: InvestigationJournal
   private disconnectPeer?: (peerId: string) => void
   private submitRawTransaction?: RawTxSubmitter
 
@@ -230,6 +246,7 @@ export class DeterministicIntentEngine implements IntentEngine {
     this.economy = opts.economy
     this.chain = opts.chain
     this.sandbox = opts.sandbox
+    this.journal = opts.journal
     this.disconnectPeer = opts.disconnectPeer
   }
 
@@ -288,6 +305,7 @@ export class DeterministicIntentEngine implements IntentEngine {
           disconnectPeer: this.disconnectPeer,
           economy: this.economy,
           chain: this.chain,
+          journal: this.journal,
         })
       }
     } else if (

@@ -16,6 +16,8 @@ import {
 } from '../contracts/signatureCatalog.ts'
 import { ethyKeccak256 } from '../crypto/keccak.ts'
 import type { ETHEconomyDataManager } from '../economy/economyDataManager.ts'
+import { formatEthFromWei } from '../economy/format.ts'
+import type { BlockMomentKind } from '../economy/types.ts'
 import type { EthySandbox } from '../evm/sandbox.ts'
 import { quantityHex } from '../rpc/quantities.ts'
 import type { EthySpine } from '../spine/types.ts'
@@ -27,6 +29,8 @@ export type InvestigationToolName =
   | 'inspect_l2_blobs'
   | 'inspect_account'
   | 'probe_contract_view'
+  | 'inspect_recent_moments'
+  | 'inspect_block_activity'
 
 const MAX_JSON_CHARS = 1400
 const LIST_CAP = 6
@@ -63,6 +67,8 @@ export const INVESTIGATION_TOOL_NAMES: readonly InvestigationToolName[] = [
   'inspect_l2_blobs',
   'inspect_account',
   'probe_contract_view',
+  'inspect_recent_moments',
+  'inspect_block_activity',
 ]
 
 function safeJSONStringify(obj: unknown): string {
@@ -160,8 +166,77 @@ export function runInvestigationTool(
       return trimPayload(inspectAccount(String(args.address ?? ''), ctx))
     case 'probe_contract_view':
       return trimPayload(probeContractView(String(args.address ?? ''), String(args.fn ?? ''), ctx))
+    case 'inspect_recent_moments':
+      return trimPayload(inspectRecentMoments(ctx, args))
+    case 'inspect_block_activity':
+      return trimPayload(inspectBlockActivity(ctx, args))
     default:
       return trimPayload({ error: 'unknown_tool' })
+  }
+}
+
+function inspectRecentMoments(
+  ctx: InvestigationContext,
+  args: Record<string, unknown>,
+): Record<string, unknown> {
+  const kindFilter =
+    typeof args.kind === 'string' ? (args.kind.trim() as BlockMomentKind) : undefined
+  const limit = Math.min(6, Math.max(1, Number(args.limit ?? 6) || 6))
+  const moments = (ctx.spine.economy?.moments ?? []).filter(
+    (m) => kindFilter === undefined || m.kind === kindFilter,
+  )
+  const rows = moments.slice(0, limit).map((m) => {
+    const row: Record<string, unknown> = {
+      id: m.id,
+      kind: m.kind,
+      blockNumber: m.blockNumber,
+      headline: m.headline,
+      address: m.address,
+    }
+    if (m.address !== undefined) {
+      const agg = ctx.economy.getContractAgg(m.address)
+      if (agg !== undefined) {
+        row.callPreviews = agg.callPreviews.slice(0, 2)
+        row.eventPreviews = agg.eventPreviews.slice(0, 2)
+      }
+    }
+    return row
+  })
+  return { moments: rows, count: rows.length }
+}
+
+function inspectBlockActivity(
+  ctx: InvestigationContext,
+  args: Record<string, unknown>,
+): Record<string, unknown> {
+  let offset = Number(args.blockOffset ?? 0)
+  if (!Number.isFinite(offset)) offset = 0
+  offset = Math.min(15, Math.max(0, Math.floor(offset)))
+  const ring = ctx.economy.getBlockRing()
+  const block = ring[offset]
+  if (block === undefined) return { error: 'block_not_in_window', blockOffset: offset }
+  const largestEth =
+    block.largestTransferWei > 0n ? formatEthFromWei(block.largestTransferWei) : undefined
+  const topGas = (block.gasUsedByContract ?? [])
+    .slice()
+    .sort((a, b) => (a.gasUsed > b.gasUsed ? -1 : 1))
+    .slice(0, 4)
+    .map((g) => ({ address: g.address, gasUsed: g.gasUsed.toString() }))
+  const topReverts = (block.revertsByContract ?? [])
+    .slice()
+    .sort((a, b) => b.reverts - a.reverts)
+    .slice(0, 4)
+  return {
+    blockNumber: block.blockNumber.toString(),
+    proposerGraffiti: block.extraDataAscii,
+    gasFullPct: block.gasFullPct,
+    txTypeSplit: block.txTypeSplit,
+    largestTransferEth: largestEth,
+    largestTransferTo: block.largestTransferTo,
+    topGasContracts: topGas,
+    topRevertingContracts: topReverts,
+    newDeployments: block.newDeployments,
+    txCount: block.txCount,
   }
 }
 

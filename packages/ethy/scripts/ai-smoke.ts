@@ -23,14 +23,14 @@ async function runLive(): Promise<void> {
       provider: 'ollama',
       model: ollamaModel,
     })
-    console.log(`Running 3 Chain-Detective scenarios against Ollama (${ollamaModel})…`)
+    console.log(`Running 4 Chain-Detective scenarios against Ollama (${ollamaModel})…`)
     const results = await runSmokeScenarios(transport)
     for (const r of results) {
       console.log(
         `[${r.validJSON ? 'OK' : 'FAIL'}] ${r.name} (${r.ms}ms) tools=[${r.tools.join(',')}]`,
       )
       console.log(`  headline: ${r.headline ?? '-'}`)
-      if (r.body !== undefined) console.log(`  body:     ${r.body}`)
+      if (r.story !== undefined) console.log(`  story:    ${r.story}`)
     }
     if (results.some((r) => !r.validJSON)) process.exit(1)
     return
@@ -67,14 +67,14 @@ async function runLive(): Promise<void> {
       )
       process.exit(1)
     }
-    console.log('Running 3 Chain-Detective scenarios against Qwen3.5-2B…')
+    console.log('Running 4 Chain-Detective scenarios against Qwen3.5-2B…')
     const results = await runSmokeScenarios(transport)
     for (const r of results) {
       console.log(
         `[${r.validJSON ? 'OK' : 'FAIL'}] ${r.name} (${r.ms}ms) tools=[${r.tools.join(',')}]`,
       )
       console.log(`  headline: ${r.headline ?? '-'}`)
-      if (r.body !== undefined) console.log(`  body:     ${r.body}`)
+      if (r.story !== undefined) console.log(`  story:    ${r.story}`)
     }
     if (results.some((r) => !r.validJSON)) process.exit(1)
   } finally {

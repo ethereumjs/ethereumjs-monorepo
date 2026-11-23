@@ -1,10 +1,11 @@
 import type { LocalLlmProviderKind } from '../persist/userConfig.ts'
-import type { ChatMessage, LlmCompletionKind } from './llmClient.ts'
+import type { ChatMessage, LlmCompletionKind, LlmRequestOverrides } from './llmClient.ts'
 import { postChatCompletion } from './llmClient.ts'
 
 export type LlmTransportRequest = {
   kind: LlmCompletionKind
   messages: ChatMessage[]
+  overrides?: LlmRequestOverrides
 }
 
 export interface LlmTransport {
@@ -31,6 +32,7 @@ export class FetchLlmTransport implements LlmTransport {
     return postChatCompletion(this.base, req.kind, req.messages, signal, {
       model: this.model,
       provider: this.provider,
+      overrides: req.overrides,
     })
   }
 }

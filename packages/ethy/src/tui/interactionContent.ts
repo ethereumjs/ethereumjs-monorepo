@@ -19,6 +19,7 @@ import {
 import { renderKeyValueUIComponent } from './components/KeyValueUIComponent.ts'
 import { renderLiveHeadPlazaUIComponent } from './components/LiveHeadPlazaUIComponent.ts'
 import { renderStartPageUIComponent } from './components/StartPageUIComponent.ts'
+import { renderStoryUIComponent } from './components/StoryUIComponent.ts'
 import { renderTableUIComponent } from './components/TableUIComponent.ts'
 import { composeFixedRow, fixedLine } from './layout.ts'
 import type { SuggestionMarks } from './widgets.ts'
@@ -140,6 +141,9 @@ export function renderInteractionWidgetBody(
     case 'ai_onboarding':
       pushLines(renderAiOnboardingUIComponent(widget, w, budget))
       break
+    case 'story':
+      pushLines(renderStoryUIComponent(widget.story, w, budget))
+      break
   }
 
   return lines
@@ -182,6 +186,8 @@ export function interactionViewTitle(
     base = `${BOLD}${widget.title}${RESET}`
   } else if (widget.kind === 'key_value' && widget.title) {
     base = `${BOLD}${widget.title}${RESET}`
+  } else if (widget.kind === 'story') {
+    base = `${BOLD}${widget.story.headline.slice(0, 56)}${RESET}`
   } else {
     base = `${BOLD}Interaction${RESET}`
   }
@@ -219,9 +225,31 @@ function wrapSectionText(text: string, wrapW: number): string[] {
   return wrapped
 }
 
-function categoryBadge(card: { category: string; deterministic?: boolean }): string {
-  const tag = card.deterministic === true ? 'SIGNAL' : card.category.toUpperCase()
-  return `[${tag}]`
+function storyEyebrow(card: {
+  lens?: string
+  category: string
+  deterministic?: boolean
+  network?: string
+  blockNumber?: string
+  atMs: number
+}): string {
+  const badge =
+    card.deterministic === true
+      ? '[LIVE NOTE]'
+      : `[STORY · ${(card.lens ?? card.category).toUpperCase()}]`
+  const net = (card.network ?? 'mainnet').toUpperCase()
+  const block = card.blockNumber !== undefined ? ` · #${card.blockNumber}` : ''
+  const age = `${Math.round((Date.now() - card.atMs) / 1000)}s ago`
+  return `${badge}  ${DIM}${net}${block} · ${age}${RESET}`
+}
+
+function angleTagForCard(card: {
+  angleKind?: string
+  lens?: string
+}): string {
+  if (card.angleKind === 'history') return 'Echo'
+  if (card.angleKind === 'security') return 'What if'
+  return 'Lens'
 }
 
 export function renderAiOverviewSections(
@@ -233,39 +261,65 @@ export function renderAiOverviewSections(
   if (sections?.bootstrapNote !== undefined && sections.bootstrapNote.length > 0) {
     return wrapProseCentered(sections.bootstrapNote, innerWidth, innerLines)
   }
-  const dispatchList = sections?.dispatches
-  if (dispatchList !== undefined && dispatchList.length > 0 && spine.economy?.hasBlocks === true) {
+  const card = sections?.dispatches?.[0]
+  if (card !== undefined && spine.economy?.hasBlocks === true) {
     const padCols = 2
     const wrapW = Math.max(8, innerWidth - padCols * 2)
     const pad = ' '.repeat(padCols)
-    const blocks: string[] = []
-    for (const card of dispatchList.slice(0, 2)) {
-      const badge = categoryBadge(card)
-      const head = `${BOLD}${badge} ${card.headline}${RESET}`
-      const age =
-        card.blockNumber !== undefined
-          ? `${DIM}#${card.blockNumber}${RESET}`
-          : `${DIM}${Math.round((Date.now() - card.atMs) / 1000)}s ago${RESET}`
-      for (const ln of wrapSectionText(`${head}  ${age}`, wrapW)) {
-        blocks.push(`${pad}${ln}`)
-      }
+    const blocks: string[] = ['']
+    const journalPos =
+      sections?.storyCount !== undefined && sections?.storyIndex !== undefined
+        ? ` ${DIM}(${sections.storyIndex}/${sections.storyCount})${RESET}`
+        : ''
+    for (const ln of wrapSectionText(`${storyEyebrow(card)}${journalPos}`, wrapW)) {
+      blocks.push(`${pad}${ln}`)
+    }
+    blocks.push('')
+    for (const ln of wrapSectionText(`${BOLD}${card.headline}${RESET}`, wrapW)) {
+      blocks.push(`${pad}${ln}`)
+    }
+    blocks.push('')
+    const paras = card.body.split(/\n\n+/).filter((p) => p.trim().length > 0)
+    if (paras.length === 0) {
       for (const ln of wrapSectionText(card.body, wrapW)) {
         blocks.push(`${pad}${ln}`)
       }
-      if (card.suggestedAction !== undefined) {
-        for (const ln of wrapSectionText(`› ${card.suggestedAction}`, wrapW)) {
-          blocks.push(`${pad}${DIM}${ln}${RESET}`)
+    } else {
+      for (const p of paras) {
+        for (const ln of wrapSectionText(p.trim(), wrapW)) {
+          blocks.push(`${pad}${ln}`)
         }
+        blocks.push('')
+      }
+    }
+    if (card.angle !== undefined && card.angle.length > 0) {
+      blocks.push(`${pad}${DIM}│${RESET} ${BOLD}${angleTagForCard(card)}${RESET}`)
+      for (const ln of wrapSectionText(card.angle, wrapW - 2)) {
+        blocks.push(`${pad}${DIM}│${RESET} ${ln}`)
       }
       blocks.push('')
     }
-    const body = blocks.filter((b, i, arr) => !(b === '' && arr[i + 1] === ''))
-    if (body[body.length - 1] === '') body.pop()
-    const topPad = Math.max(0, Math.floor((innerLines - body.length) / 2))
+    if (card.curiosityQuestion !== undefined) {
+      blocks.push(`${pad}${DIM}› Ask: "${card.curiosityQuestion}"${RESET}`)
+    }
+    blocks.push(`${pad}${DIM}› /story full · /story new${RESET}`)
+    const overflowHint = `${pad}${DIM}› /story to read full story${RESET}`
+    const topPad = 1
+    let used = 0
     const rows: string[] = []
     for (let i = 0; i < innerLines; i++) {
-      if (i < topPad || i >= topPad + body.length) rows.push('')
-      else rows.push(body[i - topPad] ?? '')
+      if (i < topPad) {
+        rows.push('')
+        continue
+      }
+      if (i === innerLines - 1 && used < blocks.length) {
+        rows.push(overflowHint)
+      } else if (used < blocks.length) {
+        rows.push(blocks[used] ?? '')
+        used += 1
+      } else {
+        rows.push('')
+      }
     }
     return rows
   }

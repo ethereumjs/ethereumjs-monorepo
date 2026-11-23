@@ -1,21 +1,28 @@
 import { stdin as input, stdout as output } from 'node:process'
 import readline from 'node:readline'
 
-import { ChainDetectiveNarrator, signalToDispatchCard } from '../ai/chainDetective.ts'
+import { ChainDetectiveNarrator } from '../ai/chainDetective.ts'
 import type { SlashDispatchCtx } from '../ai/deterministicEngine.ts'
+import { selectLoreCards } from '../ai/ethereumLore.ts'
 import { probeHardware } from '../ai/hardwareCheck.ts'
 import { managedPhaseBlocksOverview } from '../ai/managedAiUi.ts'
+import { inferModelTier, maxLoreCards } from '../ai/modelTier.ts'
 import {
   buildDeterministicOverviewSections,
   clampOverviewSections,
 } from '../ai/overviewNarrator.ts'
+import { buildStoryBrief } from '../ai/storyBrief.ts'
+import { directStory, recentLoreIds } from '../ai/storyDirector.ts'
+import { buildDeterministicFieldNote } from '../ai/storyFallback.ts'
 import type { EthyNode } from '../core/createEthyNode.ts'
 import { advanceDemo } from '../demo/advanceDemo.ts'
 import { readDomainSnapshots } from '../domains/domainManagers.ts'
 import { chainConfigForNetwork } from '../net/chainHardfork.ts'
 import { describeNotice } from '../notify/board.ts'
+import { deriveCapabilities } from '../spine/createSpine.ts'
 import type { AiOverviewSections, InteractionHistoryEntry, TuiViewState } from '../spine/types.ts'
 import { parseHelpDomainArg } from '../tools/help.ts'
+import { parseStorySlashTrigger } from '../tools/storyTools.ts'
 import {
   applyOnboardingCommit,
   buildOnboardingWidget,
@@ -99,6 +106,7 @@ export async function runEthySession(node: EthyNode, opts?: EthySessionOpts): Pr
     disconnectPeer: node.disconnectPeer,
     economy: node.economy,
     chain: chainConfigForNetwork(node.spine.network),
+    journal: node.investigationJournal,
   })
 
   const refreshOverview = (trigger: 'welcome' | 'pulse') => {
@@ -106,14 +114,34 @@ export async function runEthySession(node: EthyNode, opts?: EthySessionOpts): Pr
       return
     }
     if (node.spine.economy?.hasBlocks === true) {
-      const sig = node.spine.economy.signals?.[0]
-      const sections: AiOverviewSections =
-        sig !== undefined
-          ? { dispatches: [signalToDispatchCard(sig, Date.now())] }
-          : {
-              bootstrapNote: 'Live blocks — autonomous dispatches appear here when signals rank.',
-            }
-      view = { ...view, aiOverviewSections: sections }
+      const tier = inferModelTier(node.spine.managedAi?.label)
+      const brief = buildStoryBrief(node.spine, node.economy, tier)
+      if (brief !== undefined) {
+        const lead = directStory(brief, node.investigationJournal)
+        const lore = selectLoreCards(
+          brief,
+          lead.lens,
+          recentLoreIds(node.investigationJournal),
+          maxLoreCards(tier),
+        )[0]
+        if (lore !== undefined) {
+          view = {
+            ...view,
+            aiOverviewSections: {
+              dispatches: [buildDeterministicFieldNote(brief, lead.lens, lore, Date.now())],
+              storyIndex: 1,
+              storyCount: 1,
+            },
+          }
+          return
+        }
+      }
+      view = {
+        ...view,
+        aiOverviewSections: {
+          bootstrapNote: 'Live blocks — field stories arrive once the historian cycles.',
+        },
+      }
       return
     }
     const snapshots = readDomainSnapshots(node.spine)
@@ -320,6 +348,10 @@ export async function runEthySession(node: EthyNode, opts?: EthySessionOpts): Pr
   }
 
   const runIntent = (text: string, gen: number, isNl: boolean) => {
+    const storyTrigger = parseStorySlashTrigger(text)
+    if (storyTrigger?.action === 'new') {
+      void detectiveNarrator?.triggerNow(storyTrigger.lens)
+    }
     if (isHelpCommand(text)) {
       const parts = text.split(/\s+/)
       const domain = parseHelpDomainArg(parts)
@@ -385,7 +417,8 @@ export async function runEthySession(node: EthyNode, opts?: EthySessionOpts): Pr
         draw()
       },
       onUnhealthy: () => {
-        refreshOverview('pulse')
+        deriveCapabilities(node.spine)
+        draw()
       },
     })
     detectiveNarrator.start(node.spine)

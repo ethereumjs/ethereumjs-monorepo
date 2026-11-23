@@ -26,6 +26,7 @@ const READ_COMMANDS = [
   '/contract',
   '/clear',
   '/ai',
+  '/story',
 ] as const
 
 const WRITE_COMMANDS = ['/drop', '/reassign', '/pause', '/resume', '/send'] as const
