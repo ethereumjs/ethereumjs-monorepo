@@ -14,6 +14,10 @@ import {
   createAddressFromString,
   decodeBALToBinary,
   equalsBytes,
+  getBinaryAccountBalance,
+  getBinaryAccountCodeHash,
+  getBinaryAccountNonce,
+  getBinaryAccountStorageRoot,
   hexToBigInt,
   hexToBytes,
   mergeBALsBinary,
@@ -664,17 +668,8 @@ export class FlatStateManager implements StateManagerInterface {
     }
   }
 
-  private async prefetchColdForCompact(compact: CompactBinaryBAL): Promise<void> {
-    this._batchColdMisses.clear()
-    if (this._coldAccountBatchLookup === undefined || compact.length === 0) return
-    const hashes: Uint8Array[] = []
-    for (const row of compact) {
-      const h = this._keccak(row.address)
-      const key = bytesToUnprefixedHex(h)
-      if (this.slotShard(key).has(key)) continue
-      hashes.push(h)
-    }
-    if (hashes.length === 0) return
+  private async prefetchColdHashes(hashes: Uint8Array[]): Promise<void> {
+    if (this._coldAccountBatchLookup === undefined || hashes.length === 0) return
     const resolved = await this._coldAccountBatchLookup(hashes)
     for (const [key, binary] of resolved) {
       if (binary === undefined) {
@@ -689,77 +684,109 @@ export class FlatStateManager implements StateManagerInterface {
     compact: CompactBinaryBAL,
     shouldApply?: (address: Address) => boolean,
   ): Promise<void> {
-    await this.prefetchColdForCompact(compact)
-    const scratch = this._binaryAccountScratch
+    if (compact.length === 0) return
+    const prepared: Array<{
+      acc: CompactBinaryBAL[number]
+      address: Address
+      ah: string
+      needsAccountRead: boolean
+    }> = []
+    const coldHashes: Uint8Array[] = []
+    const seenCold = new Set<string>()
+
     for (const acc of compact) {
-      const address = createAddressFromString(bytesToHex(acc.address))
+      const address = new Address(acc.address)
       if (shouldApply !== undefined && !shouldApply(address)) continue
-      const ah = bytesToUnprefixedHex(this._keccak(acc.address))
-      this._hashToAddress.set(ah, address)
-
-      if (acc.code !== undefined && acc.code.length > 0) {
-        const newCodeHash = this._keccak(acc.code)
-        this.writeCodeKey(bytesToUnprefixedHex(newCodeHash), acc.code)
-      }
-
-      const balance =
-        acc.balance !== undefined
-          ? acc.balance.length === 0
-            ? 0n
-            : bytesToBigInt(acc.balance)
-          : undefined
-      const nonce =
-        acc.nonce !== undefined
-          ? acc.nonce.length === 0
-            ? 0n
-            : bytesToBigInt(acc.nonce)
-          : undefined
-      let newCodeHash: Uint8Array | undefined
-      if (acc.code !== undefined && acc.code.length > 0) {
-        newCodeHash = this._keccak(acc.code)
-      }
-
-      if (
-        balance !== undefined ||
-        nonce !== undefined ||
-        newCodeHash !== undefined ||
+      const ahBytes = this._keccak(acc.address)
+      const ah = bytesToUnprefixedHex(ahBytes)
+      const needsAccountRead =
+        acc.balance !== undefined ||
+        acc.nonce !== undefined ||
+        acc.code !== undefined ||
         acc.storageChanges.length === 0
+      prepared.push({ acc, address, ah, needsAccountRead })
+      if (
+        needsAccountRead &&
+        this._coldAccountBatchLookup !== undefined &&
+        !this.slotShard(ah).has(ah) &&
+        !this._batchColdMisses.has(ah) &&
+        !seenCold.has(ah)
       ) {
-        this.pinKey(ah)
-        const existingBinary = this.readBinaryAccountKey(ah)
-        const existing = existingBinary ? binaryAccountToAccount(existingBinary) : undefined
-        const finalBalance = balance ?? existing?.balance ?? 0n
-        const finalNonce = nonce ?? existing?.nonce ?? 0n
-        const finalCodeHash = newCodeHash ?? existing?.codeHash ?? KECCAK256_NULL
-        const finalStorageRoot = existing?.storageRoot ?? KECCAK256_RLP
-        if (
-          finalBalance === 0n &&
-          finalNonce === 0n &&
-          equalsBytes(finalCodeHash, KECCAK256_NULL) &&
-          acc.storageChanges.length === 0
-        ) {
-          this._pinnedKeys.delete(ah)
-          this.writeBinaryAccountKey(ah, undefined, false)
-          continue
-        }
-        setBinaryAccountNonce(scratch, finalNonce)
-        setBinaryAccountBalance(scratch, finalBalance)
-        setBinaryAccountStorageRoot(scratch, finalStorageRoot)
-        setBinaryAccountCodeHash(scratch, finalCodeHash)
-        this.writeBinaryAccountKey(ah, new Uint8Array(scratch), false)
-      } else if (this._coldAccountLookup === undefined && !this.slotShard(ah).has(ah)) {
-        this.pinKey(ah)
-        this.writeBinaryAccountKey(ah, accountToBinaryAccount(new Account()), false)
-      }
-
-      for (const [slotKey, slotVal] of acc.storageChanges) {
-        const slotKey32 = setLengthLeft(slotKey, 32)
-        const slotVal32 = setLengthLeft(slotVal, 32)
-        const sk = this.storageKey(ah, this.slotHashHex(slotKey32))
-        this.writeStorageKey(sk, slotVal32.length === 0 ? undefined : slotVal32)
+        seenCold.add(ah)
+        coldHashes.push(ahBytes)
       }
     }
-    this._batchColdMisses.clear()
+
+    try {
+      await this.prefetchColdHashes(coldHashes)
+      const scratch = this._binaryAccountScratch
+      for (const { acc, address, ah, needsAccountRead } of prepared) {
+        this._hashToAddress.set(ah, address)
+
+        let newCodeHash: Uint8Array | undefined
+        if (acc.code !== undefined) {
+          if (acc.code.length === 0) {
+            newCodeHash = KECCAK256_NULL
+          } else {
+            newCodeHash = this._keccak(acc.code)
+            this.writeCodeKey(bytesToUnprefixedHex(newCodeHash), acc.code)
+          }
+        }
+
+        const balance =
+          acc.balance !== undefined
+            ? acc.balance.length === 0
+              ? 0n
+              : bytesToBigInt(acc.balance)
+            : undefined
+        const nonce =
+          acc.nonce !== undefined
+            ? acc.nonce.length === 0
+              ? 0n
+              : bytesToBigInt(acc.nonce)
+            : undefined
+
+        if (needsAccountRead) {
+          this.pinKey(ah)
+          const existingBinary = this.readBinaryAccountKey(ah)
+          const finalBalance =
+            balance ?? (existingBinary ? getBinaryAccountBalance(existingBinary) : 0n)
+          const finalNonce = nonce ?? (existingBinary ? getBinaryAccountNonce(existingBinary) : 0n)
+          const finalCodeHash =
+            newCodeHash ??
+            (existingBinary ? getBinaryAccountCodeHash(existingBinary) : KECCAK256_NULL)
+          const finalStorageRoot = existingBinary
+            ? getBinaryAccountStorageRoot(existingBinary)
+            : KECCAK256_RLP
+          if (
+            finalBalance === 0n &&
+            finalNonce === 0n &&
+            equalsBytes(finalCodeHash, KECCAK256_NULL) &&
+            acc.storageChanges.length === 0
+          ) {
+            this._pinnedKeys.delete(ah)
+            this.writeBinaryAccountKey(ah, undefined, false)
+            continue
+          }
+          setBinaryAccountNonce(scratch, finalNonce)
+          setBinaryAccountBalance(scratch, finalBalance)
+          setBinaryAccountStorageRoot(scratch, finalStorageRoot)
+          setBinaryAccountCodeHash(scratch, finalCodeHash)
+          this.writeBinaryAccountKey(ah, new Uint8Array(scratch), false)
+        } else if (this._coldAccountLookup === undefined && !this.slotShard(ah).has(ah)) {
+          this.pinKey(ah)
+          this.writeBinaryAccountKey(ah, accountToBinaryAccount(new Account()), false)
+        }
+
+        for (const [slotKey, slotVal] of acc.storageChanges) {
+          const slotKey32 = setLengthLeft(slotKey, 32)
+          const sk = this.storageKey(ah, this.slotHashHex(slotKey32))
+          this.writeStorageKey(sk, slotVal.length === 0 ? undefined : setLengthLeft(slotVal, 32))
+        }
+      }
+    } finally {
+      this._batchColdMisses.clear()
+    }
   }
 
   async consumeBAL(

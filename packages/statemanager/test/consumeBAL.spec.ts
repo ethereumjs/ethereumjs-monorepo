@@ -1,6 +1,9 @@
+import { RLP } from '@ethereumjs/rlp'
 import { balSimpleJSON } from '@ethereumjs/testdata'
 import type { BALJSONBlockAccessList, PrefixedHexString } from '@ethereumjs/util'
 import {
+  KECCAK256_NULL,
+  bytesToUnprefixedHex,
   createAccount,
   createAddressFromString,
   equalsBytes,
@@ -8,6 +11,7 @@ import {
   hexToBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 import { assert, describe, it } from 'vitest'
 
 import {
@@ -302,5 +306,99 @@ describe('[StateManager/consumeBAL]: apply block access list', () => {
     } catch (e: unknown) {
       assert.match((e as Error).message, /Expected state root/)
     }
+  })
+
+  it('FlatStateManager.consumeBALBatch() clears codeHash to KECCAK256_NULL on empty codeChanges (EIP-7702) and deletes zeroed storage slots', async () => {
+    const sm = new FlatStateManager()
+    const address = createAddressFromString('0x0000000000000000000000000000000000007702')
+    const slotKey = setLengthLeft(hexToBytes('0x07'), 32)
+    const setRlp = RLP.encode([
+      [
+        address.bytes,
+        [[slotKey, [[new Uint8Array([1]), hexToBytes('0x42')]]]],
+        [],
+        [[new Uint8Array([1]), hexToBytes('0x0a')]],
+        [[new Uint8Array([1]), hexToBytes('0x01')]],
+        [[new Uint8Array([1]), hexToBytes('0xef0100112233')]],
+      ],
+    ])
+    await sm.consumeBAL(setRlp)
+    const afterSet = await sm.getAccount(address)
+    assert.isDefined(afterSet)
+    assert.isFalse(equalsBytes(afterSet!.codeHash, KECCAK256_NULL))
+    assert.isTrue(
+      equalsBytes(await sm.getStorage(address, slotKey), setLengthLeft(hexToBytes('0x42'), 32)),
+    )
+
+    const clearRlp = RLP.encode([
+      [
+        address.bytes,
+        [[slotKey, [[new Uint8Array([1]), new Uint8Array(0)]]]],
+        [],
+        [],
+        [],
+        [[new Uint8Array([1]), new Uint8Array(0)]],
+      ],
+    ])
+    await sm.consumeBALBatch([setRlp, clearRlp])
+    const afterClear = await sm.getAccount(address)
+    assert.isDefined(afterClear)
+    assert.isTrue(equalsBytes(afterClear!.codeHash, KECCAK256_NULL))
+    assert.equal((await sm.getStorage(address, slotKey)).length, 0)
+  })
+
+  it('FlatStateManager.consumeBALBatch() skips storage-only cold lookups and preserves hydrated cold misses', async () => {
+    const lookedUp: string[] = []
+    const sm = new FlatStateManager({
+      coldAccountLookup: () => undefined,
+      coldAccountBatchLookup: async (hashes) => {
+        const out = new Map<string, Uint8Array | undefined>()
+        for (const h of hashes) {
+          const hex = bytesToUnprefixedHex(h)
+          lookedUp.push(hex)
+          out.set(hex, undefined)
+        }
+        return out
+      },
+    })
+    const mutatedAddr = createAddressFromString('0x0000000000000000000000000000000000000011')
+    const storageOnlyAddr = createAddressFromString('0x0000000000000000000000000000000000000022')
+    const preHydratedAddr = createAddressFromString('0x0000000000000000000000000000000000000033')
+    const preHydratedHash = keccak_256(preHydratedAddr.bytes)
+    sm.hydrateColdAccountsBatch(new Map([[bytesToUnprefixedHex(preHydratedHash), undefined]]))
+
+    await sm.consumeBAL([
+      {
+        address: mutatedAddr.toString() as PrefixedHexString,
+        balanceChanges: [{ blockAccessIndex: '0x00', postBalance: '0x01' }],
+        nonceChanges: [],
+        codeChanges: [],
+        storageChanges: [],
+        storageReads: [],
+      },
+      {
+        address: storageOnlyAddr.toString() as PrefixedHexString,
+        balanceChanges: [],
+        nonceChanges: [],
+        codeChanges: [],
+        storageChanges: [
+          {
+            slot: '0x01' as PrefixedHexString,
+            slotChanges: [{ blockAccessIndex: '0x00', postValue: '0x99' }],
+          },
+        ],
+        storageReads: [],
+      },
+      {
+        address: preHydratedAddr.toString() as PrefixedHexString,
+        balanceChanges: [{ blockAccessIndex: '0x00', postBalance: '0x02' }],
+        nonceChanges: [],
+        codeChanges: [],
+        storageChanges: [],
+        storageReads: [],
+      },
+    ])
+
+    assert.deepEqual(lookedUp, [bytesToUnprefixedHex(keccak_256(mutatedAddr.bytes))])
   })
 })

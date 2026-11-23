@@ -1,6 +1,8 @@
+import { RLP } from '@ethereumjs/rlp'
 import { balSimpleRLP } from '@ethereumjs/testdata'
 import { assert, describe, it } from 'vitest'
 import {
+  compactBinaryToJSON,
   createBlockLevelAccessListFromRLP,
   decodeBALToBinary,
   extractBALMutatedAddresses,
@@ -103,5 +105,54 @@ describe('[Util/BAL]: mergeBALsBinary', () => {
       ],
     ])
     assert.equal(addresses.length, 1)
+  })
+
+  it('preserves empty codeChanges (EIP-7702 delegation clear) across RLP, JSON, and merge', () => {
+    const addrBytes = hexToBytes(addr)
+    const setCodeRlp = RLP.encode([
+      [addrBytes, [], [], [], [], [[new Uint8Array([1]), hexToBytes('0xef0100112233')]]],
+    ])
+    const clearCodeRlp = RLP.encode([
+      [addrBytes, [], [], [], [], [[new Uint8Array([1]), new Uint8Array(0)]]],
+    ])
+
+    const decodedClear = decodeBALToBinary(clearCodeRlp)
+    assert.equal(decodedClear.length, 1)
+    assert.isDefined(decodedClear[0]!.code)
+    assert.equal(decodedClear[0]!.code!.length, 0)
+
+    const mergedRlp = mergeBALsBinary([setCodeRlp, clearCodeRlp])
+    assert.equal(mergedRlp.length, 1)
+    assert.isDefined(mergedRlp[0]!.code)
+    assert.equal(mergedRlp[0]!.code!.length, 0)
+
+    const jsonBack = compactBinaryToJSON(mergedRlp)
+    assert.equal(jsonBack[0]!.codeChanges.length, 1)
+    assert.equal(jsonBack[0]!.codeChanges[0]!.newCode, '0x')
+
+    const mergedJSON = mergeBALsBinary([
+      [
+        {
+          address: addr,
+          balanceChanges: [],
+          nonceChanges: [],
+          codeChanges: [{ blockAccessIndex: '0x01', newCode: '0xef0100112233' }],
+          storageChanges: [],
+          storageReads: [],
+        },
+      ],
+      [
+        {
+          address: addr,
+          balanceChanges: [],
+          nonceChanges: [],
+          codeChanges: [{ blockAccessIndex: '0x01', newCode: '0x' }],
+          storageChanges: [],
+          storageReads: [],
+        },
+      ],
+    ])
+    assert.isDefined(mergedJSON[0]!.code)
+    assert.equal(mergedJSON[0]!.code!.length, 0)
   })
 })

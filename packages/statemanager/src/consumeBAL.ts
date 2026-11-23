@@ -135,10 +135,10 @@ export async function consumeBALBatch(
       Array.isArray(a) &&
       (a.length === 0 || (typeof a[0] === 'object' && a[0] !== null && 'address' in a[0])),
   )
-  const mergedJson = jsonOnly
+  const mergedJSON = jsonOnly
     ? mergeBALs(accessLists as BALJSONBlockAccessList[])
     : compactBinaryToJSON(mergeBALsBinary(accessLists))
-  await consumeBAL(stateManager, mergedJson, optsOrExpectedStateRoot)
+  await consumeBAL(stateManager, mergedJSON, optsOrExpectedStateRoot)
 }
 
 function normalizeConsumeBALOpts(

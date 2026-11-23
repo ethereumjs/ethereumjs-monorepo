@@ -48,7 +48,7 @@ type MergeBinAcc = {
   balance?: Uint8Array
   nonce?: Uint8Array
   code?: Uint8Array
-  slots: Map<string, Uint8Array>
+  slots: Map<string, [slot: Uint8Array, value: Uint8Array]>
 }
 
 function mergeRowTriggersEip161EmptyBin(acc: MergeBinAcc, row: CompactBinaryBALAccount): boolean {
@@ -104,7 +104,7 @@ function decodeRlpAccountRow(
   const lastNonce = nonceChangesRaw.at(-1)?.[1]
   if (lastNonce !== undefined) row.nonce = stripLeadingZeros(lastNonce)
   const lastCode = codeChangesRaw.at(-1)?.[1]
-  if (lastCode !== undefined && lastCode.length > 0) row.code = lastCode
+  if (lastCode !== undefined) row.code = lastCode
   for (const [slotBytes, slotChangesRaw] of storageChangesRaw) {
     const lastVal = slotChangesRaw.at(-1)?.[1]
     if (lastVal !== undefined) {
@@ -156,7 +156,7 @@ function compactFromJSONRow(row: BALJSONAccountChanges): CompactBinaryBALAccount
     entry.nonce = stripLeadingZeros(hexToBytes(lastNonce))
   }
   const lastCode = row.codeChanges.at(-1)?.newCode
-  if (lastCode !== undefined && lastCode !== '0x' && lastCode.length > 2) {
+  if (lastCode !== undefined) {
     entry.code = hexToBytes(lastCode)
   }
   for (const sc of row.storageChanges) {
@@ -222,7 +222,7 @@ export function mergeBALsBinary(inputs: BALInput[]): CompactBinaryBAL {
       if (row.nonce !== undefined) acc.nonce = row.nonce
       if (row.code !== undefined) acc.code = row.code
       for (const [slot, val] of row.storageChanges) {
-        acc.slots.set(addrKey(slot), val)
+        acc.slots.set(addrKey(slot), [slot, val])
       }
       if (mergeRowTriggersEip161EmptyBin(acc, row)) {
         acc.slots.clear()
@@ -237,20 +237,12 @@ export function mergeBALsBinary(inputs: BALInput[]): CompactBinaryBAL {
       balance: acc.balance,
       nonce: acc.nonce,
       code: acc.code,
-      storageChanges: [...acc.slots.entries()].map(([slotHex, val]) => [
-        hexToBytes(slotHex as PrefixedHexString),
-        val,
-      ]),
+      storageChanges: [...acc.slots.values()],
     })
   }
   return out
 }
 
-/**
- * Deduplicated 20-byte addresses with at least one mutation across the input(s).
- *
- * @remarks Experimental (Amsterdam): may change on patch releases.
- */
 const MERGED_IDX = '0x00' as PrefixedHexString
 
 /**
@@ -272,7 +264,7 @@ export function compactBinaryToJSON(compact: CompactBinaryBAL): BALJSONBlockAcce
           ? [{ blockAccessIndex: MERGED_IDX, postNonce: bytesToHex(row.nonce) }]
           : [],
       codeChanges:
-        row.code !== undefined && row.code.length > 0
+        row.code !== undefined
           ? [{ blockAccessIndex: MERGED_IDX, newCode: bytesToHex(row.code) }]
           : [],
       storageChanges: row.storageChanges.map(([slot, value]) => ({
@@ -285,7 +277,7 @@ export function compactBinaryToJSON(compact: CompactBinaryBAL): BALJSONBlockAcce
   return out
 }
 
-function isJsonBlockAccessList(input: BALInput): input is BALJSONBlockAccessList {
+function isJSONBlockAccessList(input: BALInput): input is BALJSONBlockAccessList {
   if (!Array.isArray(input)) return false
   if (input.length === 0) return true
   const first = input[0]
@@ -298,10 +290,15 @@ function isJsonBlockAccessList(input: BALInput): input is BALJSONBlockAccessList
  * @remarks Experimental (Amsterdam): may change on patch releases.
  */
 export function balInputToJSON(input: BALInput): BALJSONBlockAccessList {
-  if (isJsonBlockAccessList(input)) return input
+  if (isJSONBlockAccessList(input)) return input
   return compactBinaryToJSON(decodeBALToBinary(input))
 }
 
+/**
+ * Deduplicated 20-byte addresses with at least one mutation across the input(s).
+ *
+ * @remarks Experimental (Amsterdam): may change on patch releases.
+ */
 export function extractBALMutatedAddresses(inputs: BALInput[]): Uint8Array[] {
   const seen = new Set<string>()
   const out: Uint8Array[] = []
