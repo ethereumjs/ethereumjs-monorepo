@@ -1,6 +1,6 @@
 # WP-13: The Machine — Unified Sync & Network Lifecycle Orchestrator, Dynamic Subprotocol Planes (`SNAP/1` / `ETHY/0` / `Discovery` / `CL`) & Cockpit Observability
 
-- **Status:** `READY_FOR_PLANNING`
+- **Status:** `DONE`
 - **Series:** `WP-13` — Network Citizenship, Anticipatory Lifecycle & Machine Oversight
 - **Dependencies:** `WP-05b`, `WP-07g`, `WP-08a`, `WP-11a`, `WP-11b` (`DONE`)
 - **Planner:** Grok 4.7
@@ -194,10 +194,21 @@ Respects all `ethy-tui.mdc` craft laws (8-row cockpit boxes, 4 content rows, sha
 
 ## 2. Concrete Implementation Plan (Planner — Grok 4.7)
 
-*(To be filled out by Grok 4.7 before implementation begins.)*
+**D-134 design locks:** Keep `EthyPhase`; derive `MachineOperatingMode`. Single `NetworkProfile` API (no `setDiscoveryPaused` shim). Pure `evaluateMachinePlan`; dwell + last profile in `PeerCoordinator`. `spine.machine` feeds TUI only. `ethy` `standby` keeps `ethy0` in HELLO; `snap` `off` drops `snap1`. Eviction uses `lastRttMs` from pong; unwanted inbound snap GET → `CLIENT_QUITTING`.
+
+**Constants:** `ETHY_PREWARM_LEAD_MS = 900_000`, `SNAP_PREWARM_LEAD_MS = 180_000`, discovery dwell `30_000` ms, snap on dwell `60_000` ms, CL `12_000` / `60_000` ms, transition log cap `24`.
+
+**Commit 1 — `@ethereumjs/devp2p`:** `NetworkProfile` + `DiscoveryMode` in `types.ts`; `RLPx.applyNetworkProfile` (dynamic caps, trim, `preferEthyDiscovery`); `DPT.setDiscoveryMode` / `setEthyDiscoveryTag`; worker `setNetworkProfile`; snapshot ground truth; snap off-ramp disconnect; tests.
+
+**Commit 2 — `@ethereumjs/ethy`:** `machineOrchestrator.ts` (10 modes, 5 planes, serving matrix, schedule); reconciler in `peerCoordinator.ts`; honest `ethyAdvertise.ts`; `consensusTracker.setPollIntervalMs`; cockpit `Refresh` + `Planes` rows; `/machine` (`/sync`); `ethy_status.machine`; `machineOrchestrator.spec.ts` + devp2p/ethy gates.
+
+**Out of scope:** new deps, wire changes, new `EthyPhase`, multi-day sim CI.
 
 ---
 
 ## 3. Implementation Notes & Deviations (Implementer — Composer 2.5)
 
-*(To be filled out by Composer 2.5 upon completion.)*
+- Shipped breaking `@ethereumjs/devp2p` `NetworkProfile` / `setNetworkProfile` (worker snapshot, `CLIENT_QUITTING` snap off-ramp, surplus trim, `lastRttMs`).
+- Pure `evaluateMachinePlan` in `src/sync/machineOrchestrator.ts`; `PeerCoordinator.reconcileMachine` on each telemetry tick writes `spine.machine` and applies profile + CL poll cadence.
+- Cockpit: `Refresh` row, P2P `Planes` row; `/machine` and `/sync`; `ethy_status.machine`.
+- Gates: `npm run tsc` + `npm test` green in `packages/devp2p` and `packages/ethy`; repo spellcheck clean.

@@ -268,12 +268,34 @@ export interface EthySpine {
   clEndpoint?: string
   /** Swarm generation / BAL tail / shadow refresh telemetry (WP-11b). */
   swarm?: SpineSwarmSnapshot
+  /** WP-13 machine plan snapshot (telemetry tick; TUI reads only). */
+  machine?: MachineSpineSnapshot
   /** Optional sink hook for the persistent Flight Recorder log files. */
   onDiagnosticRecorded?: (entry: DiagnosticEvent) => void
   /** Active logs directory path (`~/.ethy/networks/<net>/logs`). */
   logsDirPath?: string
   /** Loopback JSON-RPC 2.0 telemetry (WP-08a). */
   rpc?: RpcTelemetry
+}
+
+export type MachinePlaneStatus = 'active' | 'prewarming' | 'standby' | 'off'
+
+export type MachineSpineSnapshot = {
+  mode: string
+  modeReason: string
+  nextEventSummary: string
+  planes: {
+    eth: MachinePlaneStatus
+    ethy: MachinePlaneStatus
+    snap: MachinePlaneStatus
+    discovery: MachinePlaneStatus
+    cl: MachinePlaneStatus
+  }
+  servingEthy: string
+  ethyDiscoveryTag: boolean
+  transitions: string[]
+  vipTarget: number
+  discoveryMode: string
 }
 
 export type SpineSwarmSnapshot = {

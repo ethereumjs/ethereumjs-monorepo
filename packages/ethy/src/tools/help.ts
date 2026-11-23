@@ -79,6 +79,7 @@ function p2pSections(): { sections: DomainHelpSection[]; aiExamples: string[] } 
         rows: [
           { command: '/peers', detail: 'Client table, caps & RTT' },
           { command: '/ethy', detail: 'ETHY/0 swarm & serve stats' },
+          { command: '/machine', detail: 'Sync planes, serving honesty, schedule' },
           { command: '/rpc', detail: 'JSON-RPC status & methods' },
           { command: '/diag', detail: 'Diagnostic ring buffer' },
           { command: '/drop <peerId>', detail: 'Disconnect peer session' },
@@ -255,6 +256,7 @@ export function buildHelpWidget(spine: EthySpine): WidgetSpec {
       rows: [
         { command: '/peers', detail: 'Client table, caps & RTT' },
         { command: '/ethy', detail: 'ETHY/0 swarm & serve stats' },
+        { command: '/machine', detail: 'Sync planes, serving honesty, schedule' },
         { command: '/rpc', detail: 'JSON-RPC status & methods' },
         { command: '/diag', detail: 'Diagnostic ring buffer' },
         { command: '/send <txHex> · /drop <id>', detail: 'Broadcast tx or drop peer' },

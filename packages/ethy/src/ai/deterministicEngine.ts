@@ -21,6 +21,7 @@ import { economyDeepViewWidget } from '../tools/economyTools.ts'
 import { inspectAccount, inspectLatestBAL } from '../tools/headTools.ts'
 import { buildDomainHelpWidget, buildHelpWidget, parseHelpDomainArg } from '../tools/help.ts'
 import { livePlazaWidget } from '../tools/livePlaza.ts'
+import { machineMicroscopeWidget } from '../tools/machineTools.ts'
 import { inspectRawAccountRange, sampleSyncedAccounts } from '../tools/range.ts'
 import { rpcMicroscopeWidget } from '../tools/rpcTools.ts'
 import { signalsDeepViewWidget } from '../tools/signalTools.ts'
@@ -86,6 +87,9 @@ export function dispatchSlashWidget(line: string, ctx: SlashDispatchCtx): Widget
       return peersTableWidget(spine)
     case '/ethy':
       return ethyOverviewWidget(spine)
+    case '/machine':
+    case '/sync':
+      return machineMicroscopeWidget(spine)
     case '/rpc':
       return rpcMicroscopeWidget(spine)
     case '/buckets':

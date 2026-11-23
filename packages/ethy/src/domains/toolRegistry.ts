@@ -10,6 +10,8 @@ const READ_COMMANDS = [
   '/live',
   '/peers',
   '/ethy',
+  '/machine',
+  '/sync',
   '/rpc',
   '/buckets',
   '/snap',

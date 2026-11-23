@@ -608,6 +608,14 @@ export async function dispatchRpcMethod(
                 shadowRefresh: ctx.spine.swarm.shadowRefresh,
               }
             : undefined,
+          machine: ctx.spine.machine
+            ? {
+                mode: ctx.spine.machine.mode,
+                planes: ctx.spine.machine.planes,
+                serving: { ethy: ctx.spine.machine.servingEthy },
+                nextEventSummary: ctx.spine.machine.nextEventSummary,
+              }
+            : undefined,
         },
       }
     }

@@ -163,6 +163,7 @@ async function main(): Promise<void> {
       syncMode: cli.syncMode,
       shadowRefreshEnabled: cli.shadowRefreshEnabled,
       witnessExecutionHeader,
+      setConsensusPollInterval: consensus.setPollIntervalMs,
       economy: node.economy,
       onRpcBundle: (note) => rpcHandle?.noteBundle(note),
     })

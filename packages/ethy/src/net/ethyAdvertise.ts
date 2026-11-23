@@ -7,10 +7,20 @@ export function refreshEthyWorkerAdvertisement(client: Devp2pWorkerClient, spine
   if (spine.pivotBlockNumber === undefined || spine.pivotStateRoot === undefined) return
   const mask = spine.ethyBucketsBitmask ?? 0
   const pivotStr = spine.pivotBlockNumber.toString()
-  const earliest =
-    mask === 0xffff
-      ? (spine.pivotBlockNumber + 1n).toString()
-      : (spine.serving?.earliestBlock ?? pivotStr)
+  const servingEthy = spine.machine?.servingEthy
+  const pausedServing =
+    servingEthy === 'paused-catching-up' ||
+    servingEthy === 'paused-stale' ||
+    servingEthy === 'paused-bal-gap'
+  const tailEarliest = spine.swarm?.balTailEarliest
+  let earliest: string
+  if (tailEarliest !== undefined) {
+    earliest = tailEarliest.toString()
+  } else if (pausedServing) {
+    earliest = spine.serving?.earliestBlock ?? pivotStr
+  } else {
+    earliest = spine.serving?.earliestBlock ?? pivotStr
+  }
   const latest =
     spine.lastVerifiedBlockNumber !== undefined
       ? spine.lastVerifiedBlockNumber.toString()

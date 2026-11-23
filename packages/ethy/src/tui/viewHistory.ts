@@ -184,6 +184,8 @@ export function inferDomainForCommandOrPrompt(
     cmd === '/peers' ||
     cmd === '/p' ||
     cmd === '/ethy' ||
+    cmd === '/machine' ||
+    cmd === '/sync' ||
     cmd === '/rpc' ||
     cmd === '/send' ||
     cmd === '/diag' ||

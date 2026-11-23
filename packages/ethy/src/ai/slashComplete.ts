@@ -2,6 +2,8 @@ export const SLASH_COMMANDS = [
   '/live',
   '/peers',
   '/ethy',
+  '/machine',
+  '/sync',
   '/rpc',
   '/buckets',
   '/snap',

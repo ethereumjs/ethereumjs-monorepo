@@ -9,6 +9,7 @@ import {
   type WorkerTelemetrySnapshot,
   createThreadedNetwork,
   genPrivateKey,
+  networkProfilesEqual,
   pk2id,
   resolveThreadedNetworkModuleUrl,
 } from '@ethereumjs/devp2p'
@@ -71,6 +72,15 @@ import { SnapCodeAndStorageSynchronizer } from '../sync/codeAndStorageSync.ts'
 import { pickEthyAnchorForStaleResume } from '../sync/ethyAnchorResume.ts'
 import { seederFromWorkerStatus } from '../sync/ethySeederSchedule.ts'
 import { EthySwarmSynchronizer } from '../sync/ethySwarmSync.ts'
+import {
+  MACHINE_TRANSITION_LOG_CAP,
+  type MachinePlan,
+  type PlaneDwell,
+  type PlaneId,
+  bootNetworkProfile,
+  buildMachineObservation,
+  evaluateMachinePlan,
+} from '../sync/machineOrchestrator.ts'
 import { createMinterHeaderBook, noteMinterHeaderVerified } from '../sync/minterHeaderBook.ts'
 import { createMinterLivenessBook, noteMinterEthyServe } from '../sync/minterLiveness.ts'
 import { notePivotBridgingProgress, shouldReleaseSnapBridge } from '../sync/resumeCoordinator.ts'
@@ -169,9 +179,6 @@ const PIVOT_IN_FLIGHT_TIMEOUT_MS = 15_000
 const SHADOW_MINT_HEADER_TIMEOUT_MS = 20_000
 const VIP_RECONNECT_INTERVAL_MS = 5_000
 const RESTORED_CONTRACTS_CHUNK = 2_000
-/** Head-following peers before pausing discovery (hysteresis with DISCOVERY_HOLD_RESUME_BELOW). */
-const DISCOVERY_HOLD_PAUSE_AT = 4
-const DISCOVERY_HOLD_RESUME_BELOW = 2
 /** RLPx table during snap. Wide tables get the client dropped for too many peers. */
 function countEthyBucketBits(mask: number): number {
   let n = 0
@@ -231,6 +238,8 @@ export type StartPeerCoordinatorOptions = {
   syncMode?: SyncMode
   /** Background shadow pivot refresh (WP-11b). */
   shadowRefreshEnabled?: boolean
+  /** CL poll cadence from the machine reconciler (WP-13). */
+  setConsensusPollInterval?: (ms: number) => void
 }
 
 export type PeerCoordinatorHandle = {
@@ -1008,6 +1017,12 @@ export async function startPeerCoordinator(
   let link = initialP2pLinkState()
   const linkStartedAt = Date.now()
   let discoveryHoldActive: boolean | undefined
+  let lastAppliedProfile = bootNetworkProfile()
+  let planeDwell: Partial<Record<PlaneId, PlaneDwell>> = {}
+  let discoveryBurstStartedMs: number | undefined
+  const machineTransitions: string[] = []
+  let lastMachinePlan: MachinePlan | undefined
+  let lastClPollMs: number | undefined
 
   const noteDiscovery = (message: string) => {
     if (discoveryLooksBlocked(message)) dnsTimedOut = true
@@ -1558,9 +1573,13 @@ export async function startPeerCoordinator(
       if (until <= now) pendingVipDials.delete(id)
     }
     const peerList = [...spine.peers.values()]
+    if (lastMachinePlan?.mode === 'live-calm') {
+      const healthy = peerList.filter((p) => p.hasHead === true).length
+      if (healthy >= 3) return
+    }
     const inHeadOrCatchup =
       spine.phase === 'HEAD_FOLLOWING' || spine.phase === 'BAL_CATCHUP' || handoffCatchup
-    const target = inHeadOrCatchup ? 6 : VIP_SNAP_PEER_TARGET
+    const target = lastMachinePlan?.vipTarget ?? (inHeadOrCatchup ? 6 : VIP_SNAP_PEER_TARGET)
     const towardTarget = inHeadOrCatchup
       ? peerList.filter((p) => p.hasHead === true).length
       : countSnapPeersTowardVipTarget(peerList)
@@ -2008,6 +2027,7 @@ export async function startPeerCoordinator(
     },
     workerModuleUrl,
   )
+  client.setNetworkProfile(lastAppliedProfile)
 
   txPool = createEthyTxPool({
     stateManager,
@@ -2331,6 +2351,121 @@ export async function startPeerCoordinator(
     startResumeHydrate()
   }
 
+  const reconcileMachine = (
+    clientRef: Devp2pWorkerClient,
+    snap: WorkerTelemetrySnapshot,
+    nowMs: number,
+  ) => {
+    let snapDiscoveryHold = false
+    if (spine.phase === 'SNAP_SYNCING') {
+      const snapSessions = snap.peers.filter((p) => p.snapSession === true).length
+      const servingSnapPeers = snap.peers.filter(
+        (p) => p.snapSession === true && (spine.peers.get(p.id)?.snapResponsesOk ?? 0) > 0,
+      ).length
+      snapDiscoveryHold = wantSnapDiscoveryHold({
+        snapSessions,
+        servingSnapPeers,
+        held: discoveryHoldActive === true,
+      })
+      discoveryHoldActive = snapDiscoveryHold
+    } else {
+      discoveryHoldActive = false
+    }
+
+    const head = spine.bestPeerHead ?? spine.lastVerifiedBlockNumber ?? 0n
+    const hasGNew = pickUsableEthySeeder(ethySeederRows(snap.peers), head, syncMode) !== undefined
+
+    const obs = buildMachineObservation({
+      spine,
+      peerSnapshots: snap.peers,
+      syncMode,
+      shadowRefreshEnabled,
+      nowMs,
+      snapDiscoveryHold,
+      ethySwarmActive:
+        (spine.syncTransport === 'ethy' && (ethySwarm?.isActive() ?? false)) ||
+        (ethySwarm?.isActive() ?? false),
+      degradedStall: balCatchUpStallWarned,
+      dwell: planeDwell,
+      discoveryBurstStartedMs,
+      vipTarget:
+        lastMachinePlan?.vipTarget ??
+        (spine.phase === 'HEAD_FOLLOWING' || spine.phase === 'BAL_CATCHUP' ? 3 : 6),
+      hasUsableEthyGNew: hasGNew,
+      uptimeMs: nowMs - processStartedAtMs,
+    })
+    const plan = evaluateMachinePlan(obs)
+    lastMachinePlan = plan
+
+    for (const id of ['eth', 'ethy', 'snap', 'discovery', 'cl'] as const) {
+      const nextStatus = plan.planes[id].status
+      const prev = planeDwell[id]
+      if (prev?.status !== nextStatus) {
+        if (prev !== undefined) {
+          machineTransitions.push(
+            `${new Date(nowMs).toISOString().slice(11, 19)} ${id} ${prev.status}→${nextStatus}`,
+          )
+          while (machineTransitions.length > MACHINE_TRANSITION_LOG_CAP) {
+            machineTransitions.shift()
+          }
+        }
+        planeDwell[id] = { status: nextStatus, sinceMs: nowMs }
+      }
+    }
+    if (
+      plan.planes.discovery.status === 'prewarming' &&
+      obs.dwell.discovery?.status !== 'prewarming'
+    ) {
+      discoveryBurstStartedMs = nowMs
+    }
+    if (
+      (plan.planes.discovery.status === 'off' || plan.planes.discovery.status === 'active') &&
+      plan.mode !== 'prewarm-ethy' &&
+      plan.mode !== 'prewarm-snap-mint'
+    ) {
+      discoveryBurstStartedMs = undefined
+    }
+
+    if (!networkProfilesEqual(lastAppliedProfile, plan.profile)) {
+      clientRef.setNetworkProfile(plan.profile)
+      lastAppliedProfile = {
+        ...plan.profile,
+        capabilities: [...plan.profile.capabilities],
+      }
+      recordDiagnostic(spine, {
+        subsystem: 'devp2p',
+        severity: 'info',
+        message: `Network profile ${plan.mode} (${plan.profile.discoveryMode})`,
+      })
+    }
+
+    if (opts.setConsensusPollInterval !== undefined && spine.clStatus !== 'p2p_only') {
+      const pollMs = plan.planes.cl.status === 'active' ? 12_000 : 60_000
+      if (plan.planes.cl.status !== 'off' && lastClPollMs !== pollMs) {
+        opts.setConsensusPollInterval(pollMs)
+        lastClPollMs = pollMs
+      }
+    }
+
+    spine.machine = {
+      mode: plan.mode,
+      modeReason: plan.modeReason,
+      nextEventSummary: plan.schedule.nextEventSummary,
+      planes: {
+        eth: plan.planes.eth.status,
+        ethy: plan.planes.ethy.status,
+        snap: plan.planes.snap.status,
+        discovery: plan.planes.discovery.status,
+        cl: plan.planes.cl.status,
+      },
+      servingEthy: plan.serving.ethy,
+      ethyDiscoveryTag: plan.profile.ethyDiscoveryTag,
+      transitions: [...machineTransitions],
+      vipTarget: plan.vipTarget,
+      discoveryMode: plan.profile.discoveryMode,
+    }
+  }
+
   let pendingTelemetry: WorkerTelemetrySnapshot | undefined
   let telemetryQueued = false
   client.events.on('telemetry', (snap) => {
@@ -2507,76 +2642,10 @@ export async function startPeerCoordinator(
         maybeRequestCanonicalSnapPivot(bestPeer, snap.peers)
       }
     }
-    syncDiscoveryHold(client)
+    reconcileMachine(client, snap, nowTelemetry)
     ensureSnapSync(client)
     maybeMarkBaseSyncComplete()
     maybeEnableRollingStatus()
-  }
-
-  function syncDiscoveryHold(clientRef: Devp2pWorkerClient): void {
-    if (spine.phase === 'P2P_WARMUP' || spine.phase === 'BOOTING') {
-      if (discoveryHoldActive === true) {
-        clientRef.setDiscoveryPaused(false)
-        discoveryHoldActive = false
-      }
-      return
-    }
-    let proven = 0
-    if (spine.phase === 'SNAP_SYNCING') {
-      if (spine.syncTransport === 'ethy' && ethySwarm?.isActive()) {
-        if (discoveryHoldActive !== true) {
-          clientRef.setDiscoveryPaused(true)
-          discoveryHoldActive = true
-          recordDiagnostic(spine, {
-            subsystem: 'devp2p',
-            severity: 'info',
-            message: 'Discovery paused (ETHY swarm sync active)',
-          })
-        }
-        return
-      }
-      const peers = [...spine.peers.values()]
-      const snapSessions = peers.filter((p) => p.snapSession === true).length
-      const servingSnapPeers = peers.filter(
-        (p) => p.snapSession === true && p.snapResponsesOk > 0,
-      ).length
-      const wantHold = wantSnapDiscoveryHold({
-        snapSessions,
-        servingSnapPeers,
-        held: discoveryHoldActive === true,
-      })
-      if (wantHold === discoveryHoldActive) return
-      clientRef.setDiscoveryPaused(wantHold)
-      discoveryHoldActive = wantHold
-      recordDiagnostic(spine, {
-        subsystem: 'devp2p',
-        severity: 'info',
-        message: wantHold ? 'Discovery paused (snap peer serving)' : 'Discovery resumed',
-      })
-      return
-    } else if (spine.phase === 'HEAD_FOLLOWING' || spine.phase === 'BAL_CATCHUP') {
-      proven = lastTelemetryPeers.filter((p) => p.latestBlock !== undefined).length
-    } else {
-      if (discoveryHoldActive === true) {
-        clientRef.setDiscoveryPaused(false)
-        discoveryHoldActive = false
-      }
-      return
-    }
-    const wantHold =
-      proven >= DISCOVERY_HOLD_PAUSE_AT
-        ? true
-        : proven < DISCOVERY_HOLD_RESUME_BELOW
-          ? false
-          : (discoveryHoldActive ?? false)
-    if (wantHold === discoveryHoldActive) return
-    clientRef.setDiscoveryPaused(wantHold)
-    discoveryHoldActive = wantHold
-    recordDiagnostic(spine, {
-      subsystem: 'devp2p',
-      severity: 'info',
-      message: wantHold ? 'Discovery paused (enough sync peers)' : 'Discovery resumed',
-    })
   }
 
   client.events.on('protocol', (msg) => {

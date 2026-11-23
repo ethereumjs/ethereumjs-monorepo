@@ -107,11 +107,30 @@ describe('[Ethy/TUI]: renderFrame', () => {
     setPhase(spine, 'HEAD_FOLLOWING')
     spine.headBlockNumber = 125n
     spine.bestPeerHead = 125n
+    spine.machine = {
+      mode: 'live-calm',
+      modeReason: 'test',
+      nextEventSummary: 'Off (--no-shadow-refresh)',
+      planes: {
+        eth: 'active',
+        ethy: 'standby',
+        snap: 'off',
+        discovery: 'off',
+        cl: 'active',
+      },
+      servingEthy: 'serving',
+      ethyDiscoveryTag: true,
+      transitions: [],
+      vipTarget: 3,
+      discoveryMode: 'off',
+    }
     const head = stripAnsi(renderFrame(spine, view, 160, 30).join('\n'))
     assert.include(head, '★ Head Following · Live')
     assert.include(head, '#125')
     assert.include(head, '(live)')
-    assert.include(head, '100%')
+    assert.include(head, 'Refresh')
+    assert.include(head, 'Planes')
+    assert.include(head, 'eth ●')
   })
 
   it('renderFrame() at 100x30 respects column width', () => {

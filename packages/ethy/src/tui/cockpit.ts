@@ -6,7 +6,7 @@ import {
   snapBucketsDoneCount,
 } from '../spine/buckets.ts'
 import { localVerifiedBlock, resolveChainHeadClock } from '../spine/chainHead.ts'
-import type { CapabilityId, EthySpine, TuiViewState } from '../spine/types.ts'
+import type { CapabilityId, EthySpine, MachinePlaneStatus, TuiViewState } from '../spine/types.ts'
 import { BOLD, RESET } from './ansi.ts'
 import { capabilityMark } from './capabilityMark.ts'
 import { economyForCockpitDisplay } from './economyCockpitBuffer.ts'
@@ -271,17 +271,32 @@ function nodePulsePairs(spine: EthySpine): TwoColumnPair[] {
         : spine.clStatus === 'p2p_only'
           ? 'p2p only'
           : (spine.clStatus ?? '—')
+    const ethyServe = spine.machine?.servingEthy
+    const bucketBits = countBits16(spine.ethyBucketsBitmask ?? 0)
+    let serveSuffix = `serve ${bucketBits}/16`
+    if (ethyServe === 'paused-catching-up') serveSuffix = 'paused · catching up'
+    else if (ethyServe === 'paused-bal-gap') serveSuffix = 'BAL gap — refresh queued'
+    else if (ethyServe === 'paused-stale') serveSuffix = 'paused · stale generation'
     const stateValue =
       codeCount > 0
-        ? `${acc} acc · ${formatCompactCount(codeCount)} code · ${balCount.toLocaleString('en-US')} BALs`
-        : `${acc} acc · ${balCount.toLocaleString('en-US')} BALs · CL ${clLabel}`
+        ? `${acc} acc · ${formatCompactCount(codeCount)} code · ${serveSuffix}`
+        : `${acc} acc · ${balCount.toLocaleString('en-US')} BALs · CL ${clLabel} · ${serveSuffix}`
+    let stage = '★ Head Following · Live'
+    const mode = spine.machine?.mode
+    if (mode === 'shadow-ethy-refresh' && spine.swarm?.shadowRefresh?.progressPct !== undefined) {
+      stage += ` · Shadow ETHY ${Math.round(spine.swarm.shadowRefresh.progressPct)}%`
+    }
+    if (mode === 'shadow-snap-mint' && spine.swarm?.shadowRefresh?.mintBucket !== undefined) {
+      stage += ` · SNAP Mint ${spine.swarm.shadowRefresh.mintBucket}/16`
+    }
+    const refresh = spine.machine?.nextEventSummary ?? '—'
     return [
-      { label: 'Stage', value: '★ Head Following · Live' },
+      { label: 'Stage', value: stage },
       {
         label: 'Target',
         value: head !== undefined ? `${formatBlockNum(head)} ${targetSuffix}` : '—',
       },
-      { label: 'Progress', value: `${formatProgressBar(100)} (synced)` },
+      { label: 'Refresh', value: refresh },
       { label: 'State', value: stateValue },
     ]
   }
@@ -308,11 +323,25 @@ function clientFamilies(spine: EthySpine): string {
     .join(' · ')
 }
 
-function avgLatency(spine: EthySpine): string {
+function rmsLatencyMs(spine: EthySpine): number | undefined {
   const peers = [...spine.peers.values()]
-  if (peers.length === 0) return '—'
-  const sum = peers.reduce((a, p) => a + p.avgLatencyMs, 0)
-  return `${Math.round(sum / peers.length)} ms avg`
+  if (peers.length === 0) return undefined
+  const sumSq = peers.reduce((a, p) => a + p.avgLatencyMs * p.avgLatencyMs, 0)
+  return Math.sqrt(sumSq / peers.length)
+}
+
+function ethHeadPeerCount(spine: EthySpine): number {
+  let n = 0
+  for (const p of spine.peers.values()) {
+    if (p.hasHead === true) n++
+  }
+  return n
+}
+
+function planeGlyph(status: MachinePlaneStatus | undefined): string {
+  if (status === 'active') return '●'
+  if (status === 'prewarming' || status === 'standby') return '◐'
+  return '○'
 }
 
 function snapSessionCount(spine: EthySpine): number {
@@ -349,7 +378,11 @@ function servedMetric(spine: EthySpine): string {
   const s = spine.serving
   const ethBlocks = s?.blocksStored ?? 0
   const ethyBuckets = countBits16(spine.ethyBucketsBitmask ?? 0)
-  const engineTag = `(eth ${ethBlocks}b · ethy ${ethyBuckets}/16)`
+  const ethyServe = spine.machine?.servingEthy
+  let engineTag = `(eth ${ethBlocks}b · ethy ${ethyBuckets}/16)`
+  if (ethyServe === 'paused-catching-up') engineTag = 'paused · catching up'
+  else if (ethyServe === 'paused-bal-gap') engineTag = 'paused · BAL gap'
+  else if (ethyServe === 'partial-minting') engineTag = `minting · ${ethyBuckets}/16`
   if (s === undefined) return `0 replies ${engineTag}`
   if (s.totalRequestsServed > 0) {
     return `${s.totalRequestsServed} replies · ${formatServeBytes(s.totalBytesServed)} ${engineTag}`
@@ -361,13 +394,23 @@ function servedMetric(spine: EthySpine): string {
 }
 
 function p2pMetricsPairs(spine: EthySpine): TwoColumnPair[] {
+  const rms = rmsLatencyMs(spine)
+  const rttText = rms !== undefined ? `${Math.round(rms)}ms` : '—'
+  const ethy = ethySessionCount(spine)
+  const ethHead = ethHeadPeerCount(spine)
+  const snapN = snapSessionCount(spine)
+  const planes = spine.machine?.planes
+  const showSnap = planes?.snap === 'active' || planes?.snap === 'prewarming' || snapN > 0
+  let peersValue = `${spine.peers.size} conn · ${rttText} (${ethy} ethy · ${ethHead} eth)`
+  if (showSnap) peersValue += ` · ${snapN} snap`
+  const planeRow =
+    planes !== undefined
+      ? `eth ${planeGlyph(planes.eth)} · ethy ${planeGlyph(planes.ethy)} · snap ${planeGlyph(planes.snap)} · disc ${planeGlyph(planes.discovery)}`
+      : '—'
   return [
-    {
-      label: 'Peers',
-      value: `${spine.peers.size} connected (${ethySessionCount(spine)} ethy · ${snapSessionCount(spine)} snap)`,
-    },
+    { label: 'Peers', value: peersValue },
     { label: 'Served', value: servedMetric(spine) },
-    { label: 'Latency', value: avgLatency(spine) },
+    { label: 'Planes', value: planeRow },
     { label: 'Clients', value: clientFamilies(spine) },
   ]
 }

@@ -7,6 +7,11 @@ import {
   type EthySeederDescriptor,
   assignBuckets,
 } from '../sync/ethySeederSchedule.ts'
+import {
+  type MachineObservation,
+  evaluateMachinePlan,
+  machinePlanesOff,
+} from '../sync/machineOrchestrator.ts'
 import { shouldStartShadowRefresh } from '../sync/shadowRefresh.ts'
 import type { NetworkHeadResumeAction } from '../sync/startupStateMachine.ts'
 import { classifySavedDiskState, planNetworkHeadResume } from '../sync/startupStateMachine.ts'
@@ -75,6 +80,11 @@ export type SwarmPolicyAdapter = {
   evaluateMinterSuppression(
     opts: Parameters<typeof evaluateMinterSuppression>[0],
   ): ReturnType<typeof evaluateMinterSuppression>
+  /** WP-13: v2 network plane verdict from a machine observation (sim hook). */
+  evaluateNetworkPlanes?(observation: MachineObservation): {
+    snapOff: boolean
+    discoveryOff: boolean
+  }
 }
 
 function preferCanonicalSnapLegacy(opts: {
@@ -210,6 +220,10 @@ export function createPolicyAdapter(preset: PolicyPreset): SwarmPolicyAdapter {
     computeElectionDelayMs,
     electionWeight,
     evaluateMinterSuppression,
+    evaluateNetworkPlanes:
+      isLegacy === false
+        ? (observation: MachineObservation) => machinePlanesOff(evaluateMachinePlan(observation))
+        : undefined,
   }
 }
 
