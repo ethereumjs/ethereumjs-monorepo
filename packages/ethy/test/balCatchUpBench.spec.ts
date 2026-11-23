@@ -195,7 +195,7 @@ describe('[Ethy/Bench]: BAL catch-up stage baseline (WP-14)', () => {
     const sm = createFlatStateManager({ common })
     const tConsume0 = performance.now()
     await sm.consumeBALBatch(balJsonList)
-    const tConsumeJsonMs = performance.now() - tConsume0
+    const tConsumeJSONMs = performance.now() - tConsume0
 
     const smRlp = createFlatStateManager({ common })
     const tConsumeRlp0 = performance.now()
@@ -206,7 +206,7 @@ describe('[Ethy/Bench]: BAL catch-up stage baseline (WP-14)', () => {
       hashBlockAccessListRLP(rlp, ethyKeccak256)
     }
     const tWireHashMs = performance.now() - tWireHash0
-    const legacyMaterializeMs = tCreate + tHashObj + tToJson + tConsumeJsonMs
+    const legacyMaterializeMs = tCreate + tHashObj + tToJson + tConsumeJSONMs
     const optimizedPipelineMs = tWireHashMs + tConsumeRlpMs
     assert.isAbove(
       legacyMaterializeMs / Math.max(optimizedPipelineMs, 0.001),
@@ -301,7 +301,7 @@ describe('[Ethy/Bench]: BAL catch-up stage baseline (WP-14)', () => {
           [
             `[WP-14 bench] 32-blk synthetic Sepolia batch (avg ${(avgBytes / 1024).toFixed(1)} KB/blk):`,
             `  createBAL=${tCreate.toFixed(1)}ms | bal.hash()=${tHashObj.toFixed(1)}ms (direct WASM=${tDirectWasmHash.toFixed(1)}ms) | toJSON=${tToJson.toFixed(1)}ms`,
-            `  consumeBALBatch(JSON)=${tConsumeJsonMs.toFixed(1)}ms | consumeBALBatch(RLP)=${tConsumeRlpMs.toFixed(1)}ms`,
+            `  consumeBALBatch(JSON)=${tConsumeJSONMs.toFixed(1)}ms | consumeBALBatch(RLP)=${tConsumeRlpMs.toFixed(1)}ms`,
             `  disk(per-block)=${tDiskPerBlockMs.toFixed(1)}ms vs disk(batched)=${tDiskBatchMs.toFixed(1)}ms`,
           ].join('\n'),
         )
@@ -350,13 +350,22 @@ describe('[Ethy/Bench]: BAL catch-up stage baseline (WP-14)', () => {
         if (h[0]! >> 4 === 0) queries.push({ hash: h, expectedHit: false })
       }
 
-      // Baseline SnapPivotStore.lookupBinaryAccountByHash
+      // Baseline SnapPivotStore.lookupBinaryAccountByHash + true async batch lookup
       let baselineHits = 0
       const tCur0 = performance.now()
       for (const q of queries) {
         if (store.lookupBinaryAccountByHash(q.hash) !== undefined) baselineHits++
       }
       const tCurMs = performance.now() - tCur0
+
+      const asyncMap = await store.lookupBinaryAccountsBatchAsync(queries.map((q) => q.hash))
+      let asyncHits = 0
+      for (const q of queries) {
+        const hit = asyncMap.get(Buffer.from(q.hash).toString('hex'))
+        assert.strictEqual(hit !== undefined, q.expectedHit)
+        if (hit !== undefined) asyncHits++
+      }
+      assert.strictEqual(asyncHits, 256)
 
       // Interpolation search with 64-row tail window read
       const fd = fs.openSync(journalPath, 'r')

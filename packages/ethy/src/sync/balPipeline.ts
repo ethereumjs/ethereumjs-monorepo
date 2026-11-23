@@ -1,13 +1,15 @@
+import { highestEthVersion } from '../net/pivotHeader.ts'
 import type { EthySpine } from '../spine/types.ts'
 import { BAL_BATCH_MIN_GAP, SERVING_TAIL_BLOCKS } from './balBatch.ts'
 
 export const MAX_READY_BAL_BATCHES = 8
 export const MAX_CONCURRENT_BAL_FLIGHTS = 6
+export const MAX_FLIGHTS_PER_PEER = 2
 export const BAL_HEADER_PREFETCH_COUNT = 192
 export const BAL_HEADER_QUEUE_TARGET = 256
 
 export function maxConcurrentBalFlights(healthyPeerCount: number): number {
-  return Math.min(Math.max(1, healthyPeerCount) * 2, MAX_CONCURRENT_BAL_FLIGHTS)
+  return Math.min(Math.max(1, healthyPeerCount) * MAX_FLIGHTS_PER_PEER, MAX_CONCURRENT_BAL_FLIGHTS)
 }
 
 export function countHealthyBalCatchUpPeers(
@@ -15,14 +17,17 @@ export function countHealthyBalCatchUpPeers(
   peerRestUntil: ReadonlyMap<string, number>,
   now = Date.now(),
 ): number {
-  let n = 0
+  let bal71 = 0
+  let eth69 = 0
   for (const p of spine.peers.values()) {
     if (p.hasHead !== true || p.latestBlock === undefined) continue
     const restUntil = peerRestUntil.get(p.id)
     if (restUntil !== undefined && restUntil > now) continue
-    n += 1
+    const ver = highestEthVersion(p.caps)
+    if (ver >= 71) bal71 += 1
+    else if (ver >= 69) eth69 += 1
   }
-  return n
+  return bal71 > 0 ? bal71 : eth69
 }
 
 /** Historical catch-up (not snap, not within 64-block serving tail, gap large enough). */
@@ -43,6 +48,7 @@ type BlockRange = { lo: bigint; hi: bigint }
 export function occupiedBalBlockRanges(
   inFlight: Iterable<{ startBlock: bigint; count: number }>,
   ready: Iterable<{ startBlock: bigint; blockCount: number }>,
+  committing?: { startBlock: bigint; blockCount: number },
 ): BlockRange[] {
   const ranges: BlockRange[] = []
   for (const b of inFlight) {
@@ -52,6 +58,12 @@ export function occupiedBalBlockRanges(
   for (const r of ready) {
     if (r.blockCount <= 0) continue
     ranges.push({ lo: r.startBlock, hi: r.startBlock + BigInt(r.blockCount) - 1n })
+  }
+  if (committing !== undefined && committing.blockCount > 0) {
+    ranges.push({
+      lo: committing.startBlock,
+      hi: committing.startBlock + BigInt(committing.blockCount) - 1n,
+    })
   }
   return ranges
 }

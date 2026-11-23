@@ -63,6 +63,10 @@ export function pickBalCatchUpPeer(
   peerRestUntil: ReadonlyMap<string, number>,
   minBlock?: bigint,
   now = Date.now(),
+  opts?: {
+    inFlightByPeer?: ReadonlyMap<string, number>
+    maxPerPeer?: number
+  },
 ): { id: string; ethVersion: number; latestBlock: bigint } | undefined {
   let targetHead = 0n
   for (const p of spine.peers.values()) {
@@ -70,12 +74,21 @@ export function pickBalCatchUpPeer(
     if (p.latestBlock > targetHead) targetHead = p.latestBlock
   }
   if (targetHead === 0n) return undefined
+  const inFlightByPeer = opts?.inFlightByPeer
+  const maxPerPeer = opts?.maxPerPeer
   const filterCandidates = (minEthVersion: number, allowRollingEthy: boolean): PeerTelemetry[] => {
     const out: PeerTelemetry[] = []
     for (const p of spine.peers.values()) {
       if (p.hasHead !== true || p.latestBlock === undefined) continue
       if (highestEthVersion(p.caps) < minEthVersion) continue
       if (minBlock !== undefined && p.latestBlock < minBlock) continue
+      if (
+        inFlightByPeer !== undefined &&
+        maxPerPeer !== undefined &&
+        (inFlightByPeer.get(p.id) ?? 0) >= maxPerPeer
+      ) {
+        continue
+      }
       if (
         p.ethySession === true &&
         minBlock !== undefined &&
@@ -110,9 +123,13 @@ export function pickBalCatchUpPeer(
   if (candidates.length === 0) candidates = filterCandidates(69, true)
   if (candidates.length === 0) return undefined
   const effectiveRtt = (p: PeerTelemetry): number => (p.avgLatencyMs > 0 ? p.avgLatencyMs : 250)
+  const peerLoad = (p: PeerTelemetry): number => inFlightByPeer?.get(p.id) ?? 0
   let best = candidates[0]!
   for (const p of candidates) {
-    if (effectiveRtt(p) < effectiveRtt(best)) best = p
+    const loadDiff = peerLoad(p) - peerLoad(best)
+    if (loadDiff < 0 || (loadDiff === 0 && effectiveRtt(p) < effectiveRtt(best))) {
+      best = p
+    }
   }
   return {
     id: best.id,

@@ -32,6 +32,7 @@ import {
   startBalBatch,
 } from './balBatch.ts'
 import {
+  MAX_FLIGHTS_PER_PEER,
   MAX_READY_BAL_BATCHES,
   balPipelineActive,
   countHealthyBalCatchUpPeers,
@@ -299,6 +300,8 @@ type BalCatchUpPipeline = {
   nextCommitBlock: bigint
   inFlight: Map<string, InFlightBalBatch>
   ready: Map<string, ReadyBalBatch>
+  draining: boolean
+  committing?: { startBlock: bigint; blockCount: number }
 }
 
 type HeadCatchUp = {
@@ -395,6 +398,13 @@ export class BalChainStreamer {
       let handled = false
       for (const [key, batch] of pipeline.inFlight) {
         if (msg.peerId !== batch.peerId) continue
+        // Only the head-of-line flight anchors directly to `this.verifiedTipHash`;
+        // lookahead flights verify internal parent continuity on arrival and cross-batch
+        // continuity against `this.verifiedTipHash` in `drainBalPipeline()` at commit time.
+        const expectedParentHash =
+          batch.startBlock === pipeline.nextCommitBlock && pipeline.committing === undefined
+            ? this.verifiedTipHash
+            : undefined
         const result = advanceBalBatchEthMessage(
           this.opts.chain,
           batch,
@@ -402,15 +412,18 @@ export class BalChainStreamer {
           (peerId, code, payload) => {
             this.opts.sendEthMessage(peerId, code, payload)
           },
-          this.verifiedTipHash,
+          expectedParentHash,
           this.nextEthRequestId,
         )
         if (result === 'ignore') continue
         handled = true
         if (result === 'failed') {
           restBalCatchUpPeer(this.peerRestUntil, batch.peerId)
-          this.verifiedTipHash = undefined
+          if (batch.startBlock === pipeline.nextCommitBlock) {
+            this.verifiedTipHash = undefined
+          }
           pipeline.inFlight.delete(key)
+          this.syncPipelineTelemetry()
           queueMicrotask(() => this.tick())
           return true
         }
@@ -423,7 +436,9 @@ export class BalChainStreamer {
         this.syncPipelineTelemetry()
         if (!materialized.ok) {
           restBalCatchUpPeer(this.peerRestUntil, batch.peerId)
-          this.verifiedTipHash = undefined
+          if (batch.startBlock === pipeline.nextCommitBlock) {
+            this.verifiedTipHash = undefined
+          }
           queueMicrotask(() => this.tick())
           return true
         }
@@ -435,6 +450,8 @@ export class BalChainStreamer {
           ethVersion: batch.ethVersion,
         })
         void this.drainBalPipeline()
+        // Refill freed pipeline slot right away while commit drains in parallel.
+        queueMicrotask(() => this.tick())
         return true
       }
       if (handled) return true
@@ -541,26 +558,41 @@ export class BalChainStreamer {
         nextCommitBlock: nextCommit,
         inFlight: new Map(),
         ready: new Map(),
+        draining: false,
       }
     }
     return seq.pipeline
   }
 
-  private dispatchBalFlights(seq: HeadCatchUp, nextBlock: bigint, gap: bigint): void {
+  private dispatchBalFlights(seq: HeadCatchUp, nextBlock: bigint, _gap: bigint): void {
     const { spine } = this.opts
     const pipe = this.ensureBalPipeline(seq, seq.pipeline?.nextCommitBlock ?? nextBlock)
     const maxK = maxConcurrentBalFlights(countHealthyBalCatchUpPeers(spine, this.peerRestUntil))
     if (pipe.ready.size >= MAX_READY_BAL_BATCHES) return
+    const inFlightByPeer = new Map<string, number>()
+    for (const flight of pipe.inFlight.values()) {
+      inFlightByPeer.set(flight.peerId, (inFlightByPeer.get(flight.peerId) ?? 0) + 1)
+    }
     while (pipe.inFlight.size < maxK && pipe.ready.size < MAX_READY_BAL_BATCHES) {
-      const ranges = occupiedBalBlockRanges(pipe.inFlight.values(), readyAsRanges(pipe.ready))
+      const ranges = occupiedBalBlockRanges(
+        pipe.inFlight.values(),
+        readyAsRanges(pipe.ready),
+        pipe.committing,
+      )
       const start = nextBalFlightStartBlock(pipe.nextCommitBlock, seq.targetHead, ranges)
       if (start === undefined) break
       const localGap = balGapBlocks(start - 1n, seq.targetHead)
       const plan = planBalBatch(start, seq.targetHead, localGap)
       if (plan === undefined || plan.mode !== 'fast') break
+      const peerOpts = { inFlightByPeer, maxPerPeer: MAX_FLIGHTS_PER_PEER }
       const batchPeer =
-        pickBalCatchUpPeer(spine, this.peerRestUntil, start + BigInt(plan.count - 1)) ??
-        pickBalCatchUpPeer(spine, this.peerRestUntil, start)
+        pickBalCatchUpPeer(
+          spine,
+          this.peerRestUntil,
+          start + BigInt(plan.count - 1),
+          undefined,
+          peerOpts,
+        ) ?? pickBalCatchUpPeer(spine, this.peerRestUntil, start, undefined, peerOpts)
       if (batchPeer === undefined) break
       const batch = startBalBatch(
         this.opts.sendEthMessage,
@@ -572,6 +604,7 @@ export class BalChainStreamer {
         this.nextEthRequestId,
       )
       pipe.inFlight.set(rangeKey(start), batch)
+      inFlightByPeer.set(batchPeer.id, (inFlightByPeer.get(batchPeer.id) ?? 0) + 1)
     }
     this.syncPipelineTelemetry()
     void this.drainBalPipeline()
@@ -580,32 +613,49 @@ export class BalChainStreamer {
   private async drainBalPipeline(): Promise<void> {
     const seq = this.catchUp
     const pipe = seq?.pipeline
-    if (seq === undefined || pipe === undefined) return
-    const key = rangeKey(pipe.nextCommitBlock)
-    const ready = pipe.ready.get(key)
-    if (ready === undefined) {
-      if (pipe.inFlight.size === 0 && pipe.ready.size === 0) {
-        queueMicrotask(() => this.tick())
+    if (seq === undefined || pipe === undefined || pipe.draining) return
+    pipe.draining = true
+    try {
+      for (;;) {
+        if (this.catchUp !== seq || seq.pipeline !== pipe) break
+        const key = rangeKey(pipe.nextCommitBlock)
+        const ready = pipe.ready.get(key)
+        if (ready === undefined) break
+        pipe.ready.delete(key)
+        if (
+          this.verifiedTipHash !== undefined &&
+          ready.blocks.length > 0 &&
+          !equalsBytes(ready.blocks[0]!.header.parentHash, this.verifiedTipHash)
+        ) {
+          // Cross-batch parentHash mismatch (reorg or inconsistent lookahead peer):
+          // rest peer, clear buffered lookahead, and re-sync cleanly from nextCommitBlock.
+          restBalCatchUpPeer(this.peerRestUntil, ready.peerId)
+          this.verifiedTipHash = undefined
+          pipe.inFlight.clear()
+          pipe.ready.clear()
+          break
+        }
+        pipe.committing = { startBlock: ready.startBlock, blockCount: ready.blocks.length }
+        const batch: InFlightBalBatch = {
+          peerId: ready.peerId,
+          ethVersion: ready.ethVersion,
+          startBlock: ready.startBlock,
+          count: ready.blocks.length,
+          mode: ready.mode,
+          stage: 'bal',
+          startedAt: Date.now(),
+          headerRequestId: 0,
+        }
+        await this.applyVerifiedBalBatchBlocks(seq, batch, ready.blocks)
+        pipe.committing = undefined
+        if (this.catchUp !== seq || seq.pipeline !== pipe) break
+        pipe.nextCommitBlock += BigInt(ready.blocks.length)
+        this.syncPipelineTelemetry()
       }
-      return
-    }
-    pipe.ready.delete(key)
-    const batch: InFlightBalBatch = {
-      peerId: ready.peerId,
-      ethVersion: ready.ethVersion,
-      startBlock: ready.startBlock,
-      count: ready.blocks.length,
-      mode: ready.mode,
-      stage: 'bal',
-      startedAt: Date.now(),
-      headerRequestId: 0,
-    }
-    await this.applyVerifiedBalBatchBlocks(seq, batch, ready.blocks)
-    pipe.nextCommitBlock += BigInt(ready.blocks.length)
-    this.syncPipelineTelemetry()
-    if (pipe.ready.has(rangeKey(pipe.nextCommitBlock))) {
-      void this.drainBalPipeline()
-    } else {
+    } finally {
+      pipe.committing = undefined
+      pipe.draining = false
+      this.syncPipelineTelemetry()
       queueMicrotask(() => this.tick())
     }
   }
@@ -724,7 +774,21 @@ export class BalChainStreamer {
     }
 
     if (balTailBatch.length > 0) {
-      this.opts.appendBalTailBatch?.(balTailBatch)
+      if (this.opts.appendBalTailBatch !== undefined) {
+        this.opts.appendBalTailBatch(balTailBatch)
+      } else if (this.opts.appendHealBundle !== undefined) {
+        for (const row of blocks) {
+          if (row.balRlp !== undefined && row.balRlp.length > 0) {
+            this.opts.appendHealBundle({
+              blockNumber: row.header.number,
+              blockHash: row.header.hash,
+              stateRoot: row.header.stateRoot,
+              headerRlp: row.header.headerRlp,
+              balRlp: row.balRlp,
+            })
+          }
+        }
+      }
     }
     const last = blocks[blocks.length - 1]!
     this.verifiedTipHash = last.header.hash
@@ -1039,17 +1103,24 @@ export class BalChainStreamer {
           }
         : undefined)
     if (catchUpPeer === undefined) return
-    if (this.catchUp === undefined || this.catchUp.targetHead < peerHead) {
+    if (this.catchUp === undefined) {
       this.catchUp = {
         peerId: catchUpPeer.id,
         ethVersion: catchUpPeer.ethVersion,
         targetHead: peerHead,
       }
     } else {
+      if (this.catchUp.targetHead < peerHead) {
+        this.catchUp.targetHead = peerHead
+      }
       this.catchUp.peerId = catchUpPeer.id
       this.catchUp.ethVersion = catchUpPeer.ethVersion
     }
     if (peerHead <= tip) {
+      const pipe = this.catchUp.pipeline
+      if (pipe !== undefined && (pipe.inFlight.size > 0 || pipe.ready.size > 0 || pipe.draining)) {
+        return
+      }
       if (spine.phase === 'BAL_CATCHUP') {
         setPhase(spine, 'HEAD_FOLLOWING')
         spine.balCatchUp = undefined
@@ -1111,14 +1182,29 @@ export class BalChainStreamer {
       balBatchEnabled(spine) && shouldUseBalBatch(gap)
         ? planBalBatch(next, this.catchUp.targetHead, gap)
         : undefined
-    if (batchPlan !== undefined) {
+    const existingPipeline = this.catchUp.pipeline
+    if (
+      batchPlan !== undefined &&
+      balPipelineActive(spine.phase, next, this.catchUp.targetHead, gap) &&
+      batchPlan.mode === 'fast'
+    ) {
+      this.dispatchBalFlights(this.catchUp, next, gap)
+      return
+    }
+    if (existingPipeline !== undefined) {
+      // Wait for any in-flight / ready / committing fast-pipeline batches to finish draining
+      // cleanly before handing off to the 64-block 'full' serving tail or single-block mode.
       if (
-        balPipelineActive(spine.phase, next, this.catchUp.targetHead, gap) &&
-        batchPlan.mode === 'fast'
+        existingPipeline.inFlight.size > 0 ||
+        existingPipeline.ready.size > 0 ||
+        existingPipeline.draining
       ) {
-        this.dispatchBalFlights(this.catchUp, next, gap)
+        void this.drainBalPipeline()
         return
       }
+      this.catchUp.pipeline = undefined
+    }
+    if (batchPlan !== undefined) {
       const batchPeer =
         pickBalCatchUpPeer(spine, this.peerRestUntil, next + BigInt(batchPlan.count - 1)) ??
         pickBalCatchUpPeer(spine, this.peerRestUntil, next) ??

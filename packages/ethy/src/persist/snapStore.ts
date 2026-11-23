@@ -1,6 +1,7 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 
+import { RLP } from '@ethereumjs/rlp'
 import type { FlatStateManager } from '@ethereumjs/statemanager'
 import {
   Account,
@@ -16,6 +17,7 @@ import {
 } from '@ethereumjs/util'
 import { bytesToHex, unprefixedHexToBytes } from '@ethereumjs/util'
 
+import { ethyKeccak256 } from '../crypto/keccak.ts'
 import {
   compareBytes32,
   createSnapBuckets,
@@ -34,6 +36,8 @@ import {
   appendBalTailBatch,
   appendBalTailBundle,
   enforceBalTailRetention,
+  readBalTailBundle,
+  readBalTailManifest,
 } from './balTailArchive.ts'
 import { decodeHealBundleRlp } from './healBundle.ts'
 import {
@@ -151,11 +155,24 @@ export class SnapPivotStore {
   private bucketsFlushInFlight?: Promise<void>
   private readonly journalFdCache = new Map<number, number>()
   private readonly lookupFdCache = new Map<string, number>()
+  private readonly lookupFileHandleCache = new Map<
+    string,
+    Promise<fs.promises.FileHandle | undefined>
+  >()
   private readonly lookupRowScratch = Buffer.alloc(BINARY_ACCOUNT_JOURNAL_RECORD_SIZE)
+  private readonly lookupWindowScratch = Buffer.alloc(BINARY_ACCOUNT_JOURNAL_RECORD_SIZE * 64)
   private readonly accountJournalMetaCache = new Map<
     string,
-    Array<{ path: string; recordCount: number; minKey: Uint8Array; maxKey: Uint8Array }>
+    Array<{
+      path: string
+      recordCount: number
+      minKey: Uint8Array
+      maxKey: Uint8Array
+      min48: number
+      max48: number
+    }>
   >()
+  private readonly pivotBlockNumberCache = new Map<string, bigint>()
   private contractScan?: { bucket: number; byteOffset: number; segment?: string }
   private contractScanComplete = false
   private contractProgress?: {
@@ -1340,7 +1357,7 @@ export class SnapPivotStore {
       ) {
         continue
       }
-      const hit = this.lookupBinaryAccountInFile(meta.path, accountHash, meta.recordCount)
+      const hit = this.lookupBinaryAccountInFile(meta, accountHash)
       if (hit !== undefined) return hit
     }
     return undefined
@@ -1353,27 +1370,78 @@ export class SnapPivotStore {
   ): Promise<Map<string, Uint8Array | undefined>> {
     const out = new Map<string, Uint8Array | undefined>()
     if (!this.enabled || accountHashes.length === 0) return out
-    const unique: Uint8Array[] = []
+    const root = this.activeStateRoot ?? this.readActive()?.stateRoot
+    if (root === undefined) return out
+    const unique: Array<{ hash: Uint8Array; key: string; nibble: number }> = []
     const seen = new Set<string>()
     for (const hash of accountHashes) {
       if (hash.length !== 32) continue
       const key = bytesToHex(hash).slice(2).toLowerCase()
       if (seen.has(key)) continue
       seen.add(key)
-      unique.push(hash)
+      unique.push({ hash, key, nibble: (hash[0]! >>> 4) & 0x0f })
     }
+    if (unique.length === 0) return out
+
+    // Preload small journal metadata headers per touched nibble once before fanning out async reads.
+    const metaByNibble = new Map<
+      number,
+      Array<{
+        path: string
+        recordCount: number
+        minKey: Uint8Array
+        maxKey: Uint8Array
+        min48: number
+        max48: number
+      }>
+    >()
+    for (const item of unique) {
+      if (!metaByNibble.has(item.nibble)) {
+        metaByNibble.set(item.nibble, this.loadAccountJournalMeta(item.nibble, root))
+      }
+    }
+
     let cursor = 0
     const worker = async () => {
+      const rowBuf = Buffer.allocUnsafe(BINARY_ACCOUNT_JOURNAL_RECORD_SIZE)
+      const windowBuf = Buffer.allocUnsafe(BINARY_ACCOUNT_JOURNAL_RECORD_SIZE * 64)
       while (cursor < unique.length) {
         const i = cursor++
-        const hash = unique[i]!
-        const key = bytesToHex(hash).slice(2).toLowerCase()
-        out.set(key, this.lookupBinaryAccountByHash(hash))
+        const { hash, key, nibble } = unique[i]!
+        const metaList = metaByNibble.get(nibble)
+        let hit: Uint8Array | undefined
+        if (metaList !== undefined) {
+          for (const meta of metaList) {
+            if (compareBytes32(hash, meta.minKey) < 0 || compareBytes32(hash, meta.maxKey) > 0) {
+              continue
+            }
+            hit = await this.lookupBinaryAccountInFileAsync(meta, hash, rowBuf, windowBuf)
+            if (hit !== undefined) break
+          }
+        }
+        out.set(key, hit)
       }
     }
     const n = Math.min(concurrency, unique.length)
     await Promise.all(Array.from({ length: n }, () => worker()))
     return out
+  }
+
+  private getPivotBlockNumberCached(stateRootHex: string): bigint | undefined {
+    const key = stateRootHex.toLowerCase()
+    const cached = this.pivotBlockNumberCache.get(key)
+    if (cached !== undefined) return cached
+    const pivotPath = path.join(this.pivotDir(stateRootHex), 'pivot.json')
+    if (!fs.existsSync(pivotPath)) return undefined
+    try {
+      const pivot = JSON.parse(fs.readFileSync(pivotPath, 'utf8')) as { blockNumber?: string }
+      if (pivot.blockNumber === undefined) return undefined
+      const num = BigInt(pivot.blockNumber)
+      this.pivotBlockNumberCache.set(key, num)
+      return num
+    } catch {
+      return undefined
+    }
   }
 
   appendBalTailBatch(entries: BalTailBatchEntry[]): void {
@@ -1385,33 +1453,14 @@ export class SnapPivotStore {
       this.shadowPersistRoot.toLowerCase() !== this.activeStateRoot.toLowerCase()
     ) {
       const shadowRootDir = this.pivotDir(this.shadowPersistRoot)
-      let shadowPivotBlock = 0n
-      const shadowPivotPath = path.join(shadowRootDir, 'pivot.json')
-      if (fs.existsSync(shadowPivotPath)) {
-        try {
-          const sp = JSON.parse(fs.readFileSync(shadowPivotPath, 'utf8')) as {
-            blockNumber?: string
-          }
-          if (sp.blockNumber !== undefined) shadowPivotBlock = BigInt(sp.blockNumber)
-        } catch {
-          // ignore malformed shadow pivot metadata
-        }
-      }
+      const shadowPivotBlock = this.getPivotBlockNumberCached(this.shadowPersistRoot) ?? 0n
       const shadowEntries = entries.filter((e) => e.blockNumber > shadowPivotBlock)
       if (shadowEntries.length > 0) {
         appendBalTailBatch(shadowRootDir, shadowEntries)
       }
     }
-    let minEarliest: bigint | undefined
-    const pivotPath = path.join(pivotRoot, 'pivot.json')
-    if (fs.existsSync(pivotPath)) {
-      try {
-        const pivot = JSON.parse(fs.readFileSync(pivotPath, 'utf8')) as { blockNumber: string }
-        minEarliest = BigInt(pivot.blockNumber) + 1n
-      } catch {
-        // ignore malformed pivot metadata
-      }
-    }
+    const activePivotBlock = this.getPivotBlockNumberCached(this.activeStateRoot)
+    const minEarliest = activePivotBlock !== undefined ? activePivotBlock + 1n : undefined
     enforceBalTailRetention(pivotRoot, { minEarliest })
   }
 
@@ -1419,16 +1468,37 @@ export class SnapPivotStore {
     return `${stateRootHex.toLowerCase()}:${nibble.toString(16)}`
   }
 
+  private closeCachedFileHandle(file: string): void {
+    const pending = this.lookupFileHandleCache.get(file)
+    if (pending === undefined) return
+    this.lookupFileHandleCache.delete(file)
+    void pending.then((fh) => fh?.close().catch(() => {}))
+  }
+
   private invalidateAccountJournalMeta(nibble: number): void {
     const root = this.activeStateRoot ?? this.readActive()?.stateRoot
     if (root === undefined) return
-    this.accountJournalMetaCache.delete(this.journalMetaCacheKey(nibble, root))
+    const key = this.journalMetaCacheKey(nibble, root)
+    const existing = this.accountJournalMetaCache.get(key)
+    if (existing !== undefined) {
+      for (const meta of existing) {
+        this.closeCachedFileHandle(meta.path)
+      }
+    }
+    this.accountJournalMetaCache.delete(key)
   }
 
   private loadAccountJournalMeta(
     nibble: number,
     stateRootHex: string,
-  ): Array<{ path: string; recordCount: number; minKey: Uint8Array; maxKey: Uint8Array }> {
+  ): Array<{
+    path: string
+    recordCount: number
+    minKey: Uint8Array
+    maxKey: Uint8Array
+    min48: number
+    max48: number
+  }> {
     const cacheKey = this.journalMetaCacheKey(nibble, stateRootHex)
     const cached = this.accountJournalMetaCache.get(cacheKey)
     if (cached !== undefined) return cached
@@ -1443,8 +1513,10 @@ export class SnapPivotStore {
       recordCount: number
       minKey: Uint8Array
       maxKey: Uint8Array
+      min48: number
+      max48: number
     }> = []
-    const scratch = Buffer.alloc(rowSize)
+    const scratch = this.lookupRowScratch
     for (const file of files) {
       if (!fs.existsSync(file)) continue
       let fd = this.lookupFdCache.get(file)
@@ -1469,28 +1541,65 @@ export class SnapPivotStore {
       const lastOff = payloadStart + (recordCount - 1) * rowSize
       fs.readSync(fd, scratch, 0, rowSize, lastOff)
       const maxKey = new Uint8Array(scratch.subarray(0, 32))
-      journalFiles.push({ path: file, recordCount, minKey, maxKey })
+      journalFiles.push({
+        path: file,
+        recordCount,
+        minKey,
+        maxKey,
+        min48: SnapPivotStore.hashTop48Num(minKey),
+        max48: SnapPivotStore.hashTop48Num(maxKey),
+      })
     }
     this.accountJournalMetaCache.set(cacheKey, journalFiles)
     return journalFiles
   }
 
-  private static hashTop48(accountHash: Uint8Array): bigint {
+  private getLookupFileHandle(file: string): Promise<fs.promises.FileHandle | undefined> {
+    let pending = this.lookupFileHandleCache.get(file)
+    if (pending === undefined) {
+      pending = fs.promises.open(file, 'r').catch(() => undefined)
+      this.lookupFileHandleCache.set(file, pending)
+    }
+    return pending
+  }
+
+  private static hashTop48Num(accountHash: Uint8Array): number {
     return (
-      (BigInt(accountHash[0]!) << 40n) |
-      (BigInt(accountHash[1]!) << 32n) |
-      (BigInt(accountHash[2]!) << 24n) |
-      (BigInt(accountHash[3]!) << 16n) |
-      (BigInt(accountHash[4]!) << 8n) |
-      BigInt(accountHash[5]!)
+      accountHash[0]! * 2 ** 40 +
+      accountHash[1]! * 2 ** 32 +
+      accountHash[2]! * 2 ** 24 +
+      accountHash[3]! * 2 ** 16 +
+      accountHash[4]! * 2 ** 8 +
+      accountHash[5]!
     )
   }
 
-  private lookupBinaryAccountInFile(
-    file: string,
+  private static binarySearchWindow(
+    window: Buffer,
+    windowRows: number,
+    rowSize: number,
     accountHash: Uint8Array,
-    recordCountHint?: number,
   ): Uint8Array | undefined {
+    let wlo = 0
+    let whi = windowRows - 1
+    while (wlo <= whi) {
+      const wm = (wlo + whi) >>> 1
+      const off = wm * rowSize
+      const cmp = compareBytes32(window.subarray(off, off + 32), accountHash)
+      if (cmp === 0) {
+        return new Uint8Array(window.subarray(off + 32, off + rowSize))
+      }
+      if (cmp < 0) wlo = wm + 1
+      else whi = wm - 1
+    }
+    return undefined
+  }
+
+  private lookupBinaryAccountInFile(
+    meta: { path: string; recordCount: number; min48: number; max48: number },
+    accountHash: Uint8Array,
+  ): Uint8Array | undefined {
+    const file = meta.path
     let fd = this.lookupFdCache.get(file)
     if (fd === undefined) {
       if (!fs.existsSync(file)) return undefined
@@ -1501,77 +1610,111 @@ export class SnapPivotStore {
         return undefined
       }
     }
-    let size = 0
-    try {
-      size = fs.fstatSync(fd).size
-    } catch {
-      try {
-        fs.closeSync(fd)
-      } catch {
-        // ignore
-      }
-      this.lookupFdCache.delete(file)
-      return undefined
-    }
     const payloadStart = BINARY_ACCOUNT_JOURNAL_MAGIC.length
     const rowSize = BINARY_ACCOUNT_JOURNAL_RECORD_SIZE
-    const recordCount = recordCountHint ?? Math.floor((size - payloadStart) / rowSize)
+    const recordCount = meta.recordCount
     if (recordCount <= 0) return undefined
     const rowBuf = this.lookupRowScratch
-    const readKeyAt = (index: number): Uint8Array => {
-      const offset = payloadStart + index * rowSize
-      fs.readSync(fd, rowBuf, 0, rowSize, offset)
-      return rowBuf.subarray(0, 32)
-    }
+    const windowBuf = this.lookupWindowScratch
     let lo = 0
     let hi = recordCount - 1
+    let lo48 = meta.min48
+    let hi48 = meta.max48
+    const target48 = SnapPivotStore.hashTop48Num(accountHash)
     let interpolationSteps = 0
-    const target48 = SnapPivotStore.hashTop48(accountHash)
     while (lo <= hi) {
       if (hi - lo < 64) {
         const windowRows = hi - lo + 1
         const windowBytes = windowRows * rowSize
-        const window = Buffer.alloc(windowBytes)
         const baseOff = payloadStart + lo * rowSize
-        fs.readSync(fd, window, 0, windowBytes, baseOff)
-        for (let j = 0; j < windowRows; j++) {
-          const off = j * rowSize
-          const midHash = window.subarray(off, off + 32)
-          const cmp = compareBytes32(midHash, accountHash)
-          if (cmp === 0) {
-            return new Uint8Array(window.subarray(off + 32, off + rowSize))
-          }
-        }
-        return undefined
+        fs.readSync(fd, windowBuf, 0, windowBytes, baseOff)
+        return SnapPivotStore.binarySearchWindow(windowBuf, windowRows, rowSize, accountHash)
       }
       let mid: number
-      if (interpolationSteps < 6 && hi - lo > 64) {
-        const loKey = readKeyAt(lo)
-        const hiKey = readKeyAt(hi)
-        const lo48 = SnapPivotStore.hashTop48(loKey)
-        const hi48 = SnapPivotStore.hashTop48(hiKey)
-        if (hi48 > lo48) {
-          const ratio = Number(target48 - lo48) / Number(hi48 - lo48)
-          const span = hi - lo
-          mid = lo + Math.min(span, Math.max(0, Math.floor(ratio * span)))
-        } else {
-          mid = (lo + hi) >>> 1
-        }
+      if (interpolationSteps < 6 && hi48 > lo48) {
+        const ratio = (target48 - lo48) / (hi48 - lo48)
+        mid = lo + Math.floor(Math.max(0, Math.min(1, ratio)) * (hi - lo))
+        if (mid <= lo) mid = lo + 1
+        else if (mid >= hi) mid = hi - 1
         interpolationSteps += 1
       } else {
         mid = (lo + hi) >>> 1
       }
       const offset = payloadStart + mid * rowSize
       fs.readSync(fd, rowBuf, 0, rowSize, offset)
-      const midHash = rowBuf.subarray(0, 32)
-      const cmp = compareBytes32(midHash, accountHash)
+      const cmp = compareBytes32(rowBuf.subarray(0, 32), accountHash)
       if (cmp === 0) {
         return new Uint8Array(rowBuf.subarray(32, rowSize))
       }
-      if (cmp < 0) lo = mid + 1
-      else hi = mid - 1
+      const mid48 = SnapPivotStore.hashTop48Num(rowBuf)
+      if (cmp < 0) {
+        lo = mid + 1
+        lo48 = mid48
+      } else {
+        hi = mid - 1
+        hi48 = mid48
+      }
     }
     return undefined
+  }
+
+  private async lookupBinaryAccountInFileAsync(
+    meta: { path: string; recordCount: number; min48: number; max48: number },
+    accountHash: Uint8Array,
+    rowBuf: Buffer,
+    windowBuf: Buffer,
+  ): Promise<Uint8Array | undefined> {
+    const fh = await this.getLookupFileHandle(meta.path)
+    if (fh === undefined) return undefined
+    const payloadStart = BINARY_ACCOUNT_JOURNAL_MAGIC.length
+    const rowSize = BINARY_ACCOUNT_JOURNAL_RECORD_SIZE
+    const recordCount = meta.recordCount
+    if (recordCount <= 0) return undefined
+    let lo = 0
+    let hi = recordCount - 1
+    let lo48 = meta.min48
+    let hi48 = meta.max48
+    const target48 = SnapPivotStore.hashTop48Num(accountHash)
+    let interpolationSteps = 0
+    try {
+      while (lo <= hi) {
+        if (hi - lo < 64) {
+          const windowRows = hi - lo + 1
+          const windowBytes = windowRows * rowSize
+          const baseOff = payloadStart + lo * rowSize
+          await fh.read(windowBuf, 0, windowBytes, baseOff)
+          return SnapPivotStore.binarySearchWindow(windowBuf, windowRows, rowSize, accountHash)
+        }
+        let mid: number
+        if (interpolationSteps < 6 && hi48 > lo48) {
+          const ratio = (target48 - lo48) / (hi48 - lo48)
+          mid = lo + Math.floor(Math.max(0, Math.min(1, ratio)) * (hi - lo))
+          if (mid <= lo) mid = lo + 1
+          else if (mid >= hi) mid = hi - 1
+          interpolationSteps += 1
+        } else {
+          mid = (lo + hi) >>> 1
+        }
+        const offset = payloadStart + mid * rowSize
+        await fh.read(rowBuf, 0, rowSize, offset)
+        const cmp = compareBytes32(rowBuf.subarray(0, 32), accountHash)
+        if (cmp === 0) {
+          return new Uint8Array(rowBuf.subarray(32, rowSize))
+        }
+        const mid48 = SnapPivotStore.hashTop48Num(rowBuf)
+        if (cmp < 0) {
+          lo = mid + 1
+          lo48 = mid48
+        } else {
+          hi = mid - 1
+          hi48 = mid48
+        }
+      }
+      return undefined
+    } catch {
+      this.closeCachedFileHandle(meta.path)
+      return undefined
+    }
   }
 
   /**
@@ -1695,6 +1838,11 @@ export class SnapPivotStore {
       }
     }
     this.lookupFdCache.clear()
+    for (const file of [...this.lookupFileHandleCache.keys()]) {
+      this.closeCachedFileHandle(file)
+    }
+    this.accountJournalMetaCache.clear()
+    this.pivotBlockNumberCache.clear()
     const dir = path.join(this.pivotDir(stateRootHex), 'accounts')
     if (!fs.existsSync(dir)) return
     for (const name of fs.readdirSync(dir)) {
@@ -2108,58 +2256,106 @@ export class SnapPivotStore {
     }
   }
 
+  private static balTailBundleToVerifiedBlock(
+    blockNumber: bigint,
+    headerRlp: Uint8Array,
+    balRlp: Uint8Array,
+  ): VerifiedBalBlock {
+    const blockHash = ethyKeccak256(headerRlp)
+    let stateRoot: Uint8Array = new Uint8Array(32)
+    try {
+      const decoded = RLP.decode(headerRlp)
+      if (Array.isArray(decoded) && decoded[3] instanceof Uint8Array && decoded[3].length === 32) {
+        stateRoot = decoded[3]
+      }
+    } catch {
+      // keep zero stateRoot fallback for minimal synthetic test headers
+    }
+    return {
+      blockNumber,
+      blockHash,
+      stateRoot,
+      headerRlp,
+      balRlp,
+    }
+  }
+
   private async readUnappliedHealBundlesAsync(
     pivotBlock: bigint,
     stateRootHex: string,
     maybeYield: () => Promise<void>,
   ): Promise<VerifiedBalBlock[]> {
-    const healDir = path.join(this.pivotDir(stateRootHex), 'heal')
-    if (!fs.existsSync(healDir)) return []
-    const bundleNames = (await fs.promises.readdir(healDir))
-      .filter((n) => n.endsWith('.bundle.rlp'))
-      .sort((a, b) => {
-        const na = BigInt(a.replace(/\.bundle\.rlp$/, ''))
-        const nb = BigInt(b.replace(/\.bundle\.rlp$/, ''))
-        return na < nb ? -1 : na > nb ? 1 : 0
-      })
+    const pivotDir = this.pivotDir(stateRootHex)
+    const healDir = path.join(pivotDir, 'heal')
+    const manifest = readBalTailManifest(pivotDir)
+    const legacyFiles = new Map<bigint, string>()
+    if (fs.existsSync(healDir)) {
+      for (const name of await fs.promises.readdir(healDir)) {
+        if (!name.endsWith('.bundle.rlp')) continue
+        const n = BigInt(name.replace(/\.bundle\.rlp$/, ''))
+        if (n > pivotBlock) legacyFiles.set(n, path.join(healDir, name))
+      }
+    }
+    const maxLegacy =
+      legacyFiles.size > 0
+        ? [...legacyFiles.keys()].reduce((a, b) => (b > a ? b : a), pivotBlock)
+        : pivotBlock
+    const maxTarget =
+      manifest !== undefined && manifest.latest > maxLegacy ? manifest.latest : maxLegacy
+    if (maxTarget <= pivotBlock) return []
+
     const out: VerifiedBalBlock[] = []
-    let expect = pivotBlock + 1n
-    for (const name of bundleNames) {
-      const blockNumber = BigInt(name.replace(/\.bundle\.rlp$/, ''))
-      if (blockNumber <= pivotBlock) continue
-      if (blockNumber !== expect) break
-      const raw = new Uint8Array(await fs.promises.readFile(path.join(healDir, name)))
+    for (let expect = pivotBlock + 1n; expect <= maxTarget; expect += 1n) {
+      const tail = readBalTailBundle(pivotDir, expect)
+      if (tail !== undefined) {
+        out.push(SnapPivotStore.balTailBundleToVerifiedBlock(expect, tail.headerRlp, tail.balRlp))
+        await maybeYield()
+        continue
+      }
+      const legacyPath = legacyFiles.get(expect)
+      if (legacyPath === undefined) break
+      const raw = new Uint8Array(await fs.promises.readFile(legacyPath))
       const decoded = decodeHealBundleRlp(raw)
       if (decoded === undefined) break
       out.push(decoded)
-      expect = blockNumber + 1n
       await maybeYield()
     }
     return out
   }
 
   private readUnappliedHealBundles(pivotBlock: bigint, stateRootHex: string): VerifiedBalBlock[] {
-    const healDir = path.join(this.pivotDir(stateRootHex), 'heal')
-    if (!fs.existsSync(healDir)) return []
-    const bundleNames = fs
-      .readdirSync(healDir)
-      .filter((n) => n.endsWith('.bundle.rlp'))
-      .sort((a, b) => {
-        const na = BigInt(a.replace(/\.bundle\.rlp$/, ''))
-        const nb = BigInt(b.replace(/\.bundle\.rlp$/, ''))
-        return na < nb ? -1 : na > nb ? 1 : 0
-      })
+    const pivotDir = this.pivotDir(stateRootHex)
+    const healDir = path.join(pivotDir, 'heal')
+    const manifest = readBalTailManifest(pivotDir)
+    const legacyFiles = new Map<bigint, string>()
+    if (fs.existsSync(healDir)) {
+      for (const name of fs.readdirSync(healDir)) {
+        if (!name.endsWith('.bundle.rlp')) continue
+        const n = BigInt(name.replace(/\.bundle\.rlp$/, ''))
+        if (n > pivotBlock) legacyFiles.set(n, path.join(healDir, name))
+      }
+    }
+    const maxLegacy =
+      legacyFiles.size > 0
+        ? [...legacyFiles.keys()].reduce((a, b) => (b > a ? b : a), pivotBlock)
+        : pivotBlock
+    const maxTarget =
+      manifest !== undefined && manifest.latest > maxLegacy ? manifest.latest : maxLegacy
+    if (maxTarget <= pivotBlock) return []
+
     const out: VerifiedBalBlock[] = []
-    let expect = pivotBlock + 1n
-    for (const name of bundleNames) {
-      const blockNumber = BigInt(name.replace(/\.bundle\.rlp$/, ''))
-      if (blockNumber <= pivotBlock) continue
-      if (blockNumber !== expect) break
-      const raw = new Uint8Array(fs.readFileSync(path.join(healDir, name)))
+    for (let expect = pivotBlock + 1n; expect <= maxTarget; expect += 1n) {
+      const tail = readBalTailBundle(pivotDir, expect)
+      if (tail !== undefined) {
+        out.push(SnapPivotStore.balTailBundleToVerifiedBlock(expect, tail.headerRlp, tail.balRlp))
+        continue
+      }
+      const legacyPath = legacyFiles.get(expect)
+      if (legacyPath === undefined) break
+      const raw = new Uint8Array(fs.readFileSync(legacyPath))
       const decoded = decodeHealBundleRlp(raw)
       if (decoded === undefined) break
       out.push(decoded)
-      expect = blockNumber + 1n
     }
     return out
   }
