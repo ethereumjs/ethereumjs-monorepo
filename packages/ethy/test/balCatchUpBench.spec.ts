@@ -10,6 +10,7 @@ import {
   createBinaryAccount,
   createBlockLevelAccessListFromRLP,
   equalsBytes,
+  hashBlockAccessListRLP,
   setBinaryAccountBalance,
   setBinaryAccountNonce,
 } from '@ethereumjs/util'
@@ -17,7 +18,12 @@ import { assert, describe, it } from 'vitest'
 
 import { ethyKeccak256, initEthyKeccak } from '../src/crypto/keccak.ts'
 import { networkGenesisHash } from '../src/net/genesisStatus.ts'
-import { appendBalTailBundle, enforceBalTailRetention } from '../src/persist/balTailArchive.ts'
+import {
+  appendBalTailBatch,
+  appendBalTailBundle,
+  enforceBalTailRetention,
+  readBalTailBundle,
+} from '../src/persist/balTailArchive.ts'
 import { encodeHealBundleRlp } from '../src/persist/healBundle.ts'
 import {
   BINARY_ACCOUNT_JOURNAL_MAGIC,
@@ -189,7 +195,29 @@ describe('[Ethy/Bench]: BAL catch-up stage baseline (WP-14)', () => {
     const sm = createFlatStateManager({ common })
     const tConsume0 = performance.now()
     await sm.consumeBALBatch(balJsonList)
-    const tConsumeMs = performance.now() - tConsume0
+    const tConsumeJsonMs = performance.now() - tConsume0
+
+    const smRlp = createFlatStateManager({ common })
+    const tConsumeRlp0 = performance.now()
+    await smRlp.consumeBALBatch(balRlpList)
+    const tConsumeRlpMs = performance.now() - tConsumeRlp0
+    const tWireHash0 = performance.now()
+    for (const rlp of balRlpList) {
+      hashBlockAccessListRLP(rlp, ethyKeccak256)
+    }
+    const tWireHashMs = performance.now() - tWireHash0
+    const legacyMaterializeMs = tCreate + tHashObj + tToJson + tConsumeJsonMs
+    const optimizedPipelineMs = tWireHashMs + tConsumeRlpMs
+    assert.isAbove(
+      legacyMaterializeMs / Math.max(optimizedPipelineMs, 0.001),
+      3,
+      'wire hash + RLP consumeBALBatch should beat create/hash/toJSON/JSON batch by >=3x',
+    )
+    assert.isAbove(
+      tHashObj / Math.max(tWireHashMs, 0.001),
+      2,
+      'wire hash should beat re-encode hash by >=2x',
+    )
 
     // 3. Per-block disk persistence (current appendHealBundle + appendBalTailBundle) vs batched segment write
     const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'ethy-bal-bench-'))
@@ -238,6 +266,25 @@ describe('[Ethy/Bench]: BAL catch-up stage baseline (WP-14)', () => {
       )
       const tDiskBatchMs = performance.now() - tDiskBatch0
 
+      const p3 = path.join(tmpRoot, 'batch-api')
+      fs.mkdirSync(path.join(p3, 'bal-tail'), { recursive: true })
+      const tApiBatch0 = performance.now()
+      appendBalTailBatch(
+        p3,
+        balRlpList.map((balRlp, i) => ({
+          blockNumber: BigInt(101 + i),
+          headerRlp,
+          balRlp,
+        })),
+      )
+      const tApiBatchMs = performance.now() - tApiBatch0
+      assert.isAbove(
+        tDiskPerBlockMs / Math.max(tApiBatchMs, 0.001),
+        3,
+        'appendBalTailBatch API should beat per-block heal writes by >=3x',
+      )
+      assert.isDefined(readBalTailBundle(p3, 101n))
+
       assert.isBelow(
         tDirectWasmHash,
         tHashObj,
@@ -254,7 +301,7 @@ describe('[Ethy/Bench]: BAL catch-up stage baseline (WP-14)', () => {
           [
             `[WP-14 bench] 32-blk synthetic Sepolia batch (avg ${(avgBytes / 1024).toFixed(1)} KB/blk):`,
             `  createBAL=${tCreate.toFixed(1)}ms | bal.hash()=${tHashObj.toFixed(1)}ms (direct WASM=${tDirectWasmHash.toFixed(1)}ms) | toJSON=${tToJson.toFixed(1)}ms`,
-            `  consumeBALBatch(RAM)=${tConsumeMs.toFixed(1)}ms`,
+            `  consumeBALBatch(JSON)=${tConsumeJsonMs.toFixed(1)}ms | consumeBALBatch(RLP)=${tConsumeRlpMs.toFixed(1)}ms`,
             `  disk(per-block)=${tDiskPerBlockMs.toFixed(1)}ms vs disk(batched)=${tDiskBatchMs.toFixed(1)}ms`,
           ].join('\n'),
         )

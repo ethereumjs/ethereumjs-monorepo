@@ -94,38 +94,20 @@ export type BalTailBatchEntry = {
   balRlp: Uint8Array
 }
 
-/** Append many contiguous BAL tail blocks with one manifest update per pivot (WP-14). */
-export function appendBalTailBatch(pivotRootDir: string, entries: BalTailBatchEntry[]): void {
-  if (entries.length === 0) return
-  const sorted = [...entries].sort((a, b) => (a.blockNumber < b.blockNumber ? -1 : 1))
-  const bySegment = new Map<bigint, BalTailBatchEntry[]>()
-  for (const entry of sorted) {
-    const seg = segmentStart(entry.blockNumber)
-    const list = bySegment.get(seg) ?? []
-    list.push(entry)
-    bySegment.set(seg, list)
-  }
-  for (const [, segEntries] of bySegment) {
-    for (const entry of segEntries) {
-      appendBalTailBundle(pivotRootDir, entry.blockNumber, entry.headerRlp, entry.balRlp)
-    }
-  }
-}
-
-export function appendBalTailBundle(
+function writeBalTailSlot(
   pivotRootDir: string,
   blockNumber: bigint,
   headerRlp: Uint8Array,
   balRlp: Uint8Array,
-): void {
+): boolean {
   const segStart = segmentStart(blockNumber)
   const index = Number(blockNumber - segStart)
-  if (index < 0 || index >= 256) return
+  if (index < 0 || index >= 256) return false
   const segPath = path.join(balTailDir(pivotRootDir), `seg-${segStart.toString()}.bin`)
   const { fd, slots, payloadStart } = ensureSegmentFile(segPath)
   try {
     if (slots[index]!.headerLen > 0) {
-      return
+      return false
     }
     const payload = Buffer.concat([Buffer.from(headerRlp), Buffer.from(balRlp)])
     const payloadOff = payloadStart
@@ -136,9 +118,44 @@ export function appendBalTailBundle(
     slot.writeUInt32BE(headerRlp.length, 4)
     slot.writeUInt32BE(balRlp.length, 8)
     fs.writeSync(fd, slot, 0, 12, slotOff)
+    return true
   } finally {
     fs.closeSync(fd)
   }
+}
+
+/** Append many contiguous BAL tail blocks with one manifest update per pivot (WP-14). */
+export function appendBalTailBatch(pivotRootDir: string, entries: BalTailBatchEntry[]): void {
+  if (entries.length === 0) return
+  const sorted = [...entries].sort((a, b) => (a.blockNumber < b.blockNumber ? -1 : 1))
+  let batchEarliest: bigint | undefined
+  let batchLatest: bigint | undefined
+  for (const entry of sorted) {
+    if (!writeBalTailSlot(pivotRootDir, entry.blockNumber, entry.headerRlp, entry.balRlp)) {
+      continue
+    }
+    batchEarliest =
+      batchEarliest === undefined || entry.blockNumber < batchEarliest
+        ? entry.blockNumber
+        : batchEarliest
+    batchLatest =
+      batchLatest === undefined || entry.blockNumber > batchLatest ? entry.blockNumber : batchLatest
+  }
+  if (batchEarliest === undefined || batchLatest === undefined) return
+  const prev = readBalTailManifest(pivotRootDir)
+  const earliest =
+    prev === undefined || batchEarliest < prev.earliest ? batchEarliest : prev.earliest
+  const latest = prev === undefined || batchLatest > prev.latest ? batchLatest : prev.latest
+  writeManifest(pivotRootDir, earliest, latest)
+}
+
+export function appendBalTailBundle(
+  pivotRootDir: string,
+  blockNumber: bigint,
+  headerRlp: Uint8Array,
+  balRlp: Uint8Array,
+): void {
+  if (!writeBalTailSlot(pivotRootDir, blockNumber, headerRlp, balRlp)) return
   const prev = readBalTailManifest(pivotRootDir)
   const earliest = prev?.earliest ?? blockNumber
   const latest = prev === undefined || blockNumber > prev.latest ? blockNumber : prev.latest

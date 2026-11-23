@@ -19,7 +19,9 @@ import { setPhase } from '../spine/createSpine.ts'
 import type { EthySpine, SnapBucket } from '../spine/types.ts'
 import type { SnapAccountSynchronizer } from './accountSync.ts'
 import {
+  type BalBatchMode,
   type InFlightBalBatch,
+  type VerifiedBalBatchBlock,
   advanceBalBatchEthMessage,
   balGapBlocks,
   materializeBalBatch,
@@ -29,6 +31,15 @@ import {
   shouldUseBalBatch,
   startBalBatch,
 } from './balBatch.ts'
+import {
+  MAX_READY_BAL_BATCHES,
+  balPipelineActive,
+  countHealthyBalCatchUpPeers,
+  maxConcurrentBalFlights,
+  nextBalFlightStartBlock,
+  occupiedBalBlockRanges,
+  rangeKey,
+} from './balPipeline.ts'
 import {
   type InFlightBlockBundle,
   advanceBlockBundleEthMessage,
@@ -276,6 +287,20 @@ export type HeadFollowerOpts = {
   onRpcBundle?: (note: import('../rpc/types.ts').RpcBundleNote) => void
 }
 
+type ReadyBalBatch = {
+  startBlock: bigint
+  blocks: VerifiedBalBatchBlock[]
+  mode: BalBatchMode
+  peerId: string
+  ethVersion: number
+}
+
+type BalCatchUpPipeline = {
+  nextCommitBlock: bigint
+  inFlight: Map<string, InFlightBalBatch>
+  ready: Map<string, ReadyBalBatch>
+}
+
 type HeadCatchUp = {
   peerId: string
   ethVersion: number
@@ -283,6 +308,7 @@ type HeadCatchUp = {
   probingNextTip?: boolean
   inFlight?: InFlightBlockBundle
   batchInFlight?: InFlightBalBatch
+  pipeline?: BalCatchUpPipeline
 }
 
 /** Streams and verifies `eth/71` blocks from pivot+1 through catch-up and live head (WP-04k). */
@@ -364,6 +390,55 @@ export class BalChainStreamer {
   }
 
   handleEthMessage(msg: { peerId: string; code: number; payload: Uint8Array }): boolean {
+    const pipeline = this.catchUp?.pipeline
+    if (pipeline !== undefined && pipeline.inFlight.size > 0) {
+      let handled = false
+      for (const [key, batch] of pipeline.inFlight) {
+        if (msg.peerId !== batch.peerId) continue
+        const result = advanceBalBatchEthMessage(
+          this.opts.chain,
+          batch,
+          msg,
+          (peerId, code, payload) => {
+            this.opts.sendEthMessage(peerId, code, payload)
+          },
+          this.verifiedTipHash,
+          this.nextEthRequestId,
+        )
+        if (result === 'ignore') continue
+        handled = true
+        if (result === 'failed') {
+          restBalCatchUpPeer(this.peerRestUntil, batch.peerId)
+          this.verifiedTipHash = undefined
+          pipeline.inFlight.delete(key)
+          queueMicrotask(() => this.tick())
+          return true
+        }
+        if (result === 'progress') return true
+        const materialized = materializeBalBatch(batch, {
+          keccak256Fn: ethyKeccak256,
+          includeBalJson: batch.mode === 'full',
+        })
+        pipeline.inFlight.delete(key)
+        this.syncPipelineTelemetry()
+        if (!materialized.ok) {
+          restBalCatchUpPeer(this.peerRestUntil, batch.peerId)
+          this.verifiedTipHash = undefined
+          queueMicrotask(() => this.tick())
+          return true
+        }
+        pipeline.ready.set(key, {
+          startBlock: batch.startBlock,
+          blocks: materialized.blocks,
+          mode: batch.mode,
+          peerId: batch.peerId,
+          ethVersion: batch.ethVersion,
+        })
+        void this.drainBalPipeline()
+        return true
+      }
+      if (handled) return true
+    }
     const batch = this.catchUp?.batchInFlight
     if (batch !== undefined) {
       const result = advanceBalBatchEthMessage(
@@ -450,10 +525,99 @@ export class BalChainStreamer {
       queueMicrotask(() => this.tick())
       return
     }
+    seq.batchInFlight = undefined
+    await this.applyVerifiedBalBatchBlocks(seq, batch, materialized.blocks)
+  }
+
+  private syncPipelineTelemetry(): void {
+    const pipe = this.catchUp?.pipeline
+    if (pipe === undefined || this.opts.spine.balCatchUp === undefined) return
+    this.opts.spine.balCatchUp.balFlightsInAir = pipe.inFlight.size
+  }
+
+  private ensureBalPipeline(seq: HeadCatchUp, nextCommit: bigint): BalCatchUpPipeline {
+    if (seq.pipeline === undefined) {
+      seq.pipeline = {
+        nextCommitBlock: nextCommit,
+        inFlight: new Map(),
+        ready: new Map(),
+      }
+    }
+    return seq.pipeline
+  }
+
+  private dispatchBalFlights(seq: HeadCatchUp, nextBlock: bigint, gap: bigint): void {
+    const { spine } = this.opts
+    const pipe = this.ensureBalPipeline(seq, seq.pipeline?.nextCommitBlock ?? nextBlock)
+    const maxK = maxConcurrentBalFlights(countHealthyBalCatchUpPeers(spine, this.peerRestUntil))
+    if (pipe.ready.size >= MAX_READY_BAL_BATCHES) return
+    while (pipe.inFlight.size < maxK && pipe.ready.size < MAX_READY_BAL_BATCHES) {
+      const ranges = occupiedBalBlockRanges(pipe.inFlight.values(), readyAsRanges(pipe.ready))
+      const start = nextBalFlightStartBlock(pipe.nextCommitBlock, seq.targetHead, ranges)
+      if (start === undefined) break
+      const localGap = balGapBlocks(start - 1n, seq.targetHead)
+      const plan = planBalBatch(start, seq.targetHead, localGap)
+      if (plan === undefined || plan.mode !== 'fast') break
+      const batchPeer =
+        pickBalCatchUpPeer(spine, this.peerRestUntil, start + BigInt(plan.count - 1)) ??
+        pickBalCatchUpPeer(spine, this.peerRestUntil, start)
+      if (batchPeer === undefined) break
+      const batch = startBalBatch(
+        this.opts.sendEthMessage,
+        batchPeer.id,
+        batchPeer.ethVersion,
+        start,
+        plan.count,
+        plan.mode,
+        this.nextEthRequestId,
+      )
+      pipe.inFlight.set(rangeKey(start), batch)
+    }
+    this.syncPipelineTelemetry()
+    void this.drainBalPipeline()
+  }
+
+  private async drainBalPipeline(): Promise<void> {
+    const seq = this.catchUp
+    const pipe = seq?.pipeline
+    if (seq === undefined || pipe === undefined) return
+    const key = rangeKey(pipe.nextCommitBlock)
+    const ready = pipe.ready.get(key)
+    if (ready === undefined) {
+      if (pipe.inFlight.size === 0 && pipe.ready.size === 0) {
+        queueMicrotask(() => this.tick())
+      }
+      return
+    }
+    pipe.ready.delete(key)
+    const batch: InFlightBalBatch = {
+      peerId: ready.peerId,
+      ethVersion: ready.ethVersion,
+      startBlock: ready.startBlock,
+      count: ready.blocks.length,
+      mode: ready.mode,
+      stage: 'bal',
+      startedAt: Date.now(),
+      headerRequestId: 0,
+    }
+    await this.applyVerifiedBalBatchBlocks(seq, batch, ready.blocks)
+    pipe.nextCommitBlock += BigInt(ready.blocks.length)
+    this.syncPipelineTelemetry()
+    if (pipe.ready.has(rangeKey(pipe.nextCommitBlock))) {
+      void this.drainBalPipeline()
+    } else {
+      queueMicrotask(() => this.tick())
+    }
+  }
+
+  private async applyVerifiedBalBatchBlocks(
+    seq: HeadCatchUp,
+    batch: InFlightBalBatch,
+    blocks: VerifiedBalBatchBlock[],
+  ): Promise<void> {
     const { spine } = this.opts
     const snapStreaming = spine.phase === 'SNAP_SYNCING'
     const persistHeal = true
-    const blocks = materialized.blocks
     const batchBalRlp = blocks
       .map((b) => b.balRlp)
       .filter((r): r is Uint8Array => r !== undefined && r.length > 0)
@@ -543,7 +707,10 @@ export class BalChainStreamer {
         spine.bufferedBalCount = this.buffered.length
         this.opts.onBalBlockBuffered?.(entry)
       } else {
-        pushBalWindow(spine, row.header.number, row.balJson)
+        const nearHeadForWindow = seq.targetHead <= row.header.number + 64n
+        if (nearHeadForWindow) {
+          pushBalWindow(spine, row.header.number, row.balJson)
+        }
         spine.appliedBalCount = (spine.appliedBalCount ?? 0) + 1
       }
       if (spine.pivotBridging !== undefined) {
@@ -572,7 +739,6 @@ export class BalChainStreamer {
       }
     }
     this.recordBatchRate(blocks.length)
-    seq.batchInFlight = undefined
     if (snapStreaming) {
       await this.maybePivotStep()
       const tip = this.downloadTip(spine)
@@ -594,11 +760,12 @@ export class BalChainStreamer {
       spine.balCatchUp = undefined
       this.opts.onSyncedToHead?.(effectiveTarget)
       this.catchUp = undefined
+      seq.pipeline = undefined
       return
     }
     if (tip !== undefined && tip < effectiveTarget) {
       seq.targetHead = effectiveTarget
-      void this.tick()
+      queueMicrotask(() => this.tick())
     } else {
       this.catchUp = undefined
     }
@@ -802,6 +969,19 @@ export class BalChainStreamer {
       return
     }
     const now = Date.now()
+    const pipe = this.catchUp?.pipeline
+    if (pipe !== undefined) {
+      for (const [key, flight] of pipe.inFlight) {
+        if (
+          !spine.peers.has(flight.peerId) ||
+          now - flight.startedAt >= BUNDLE_IN_FLIGHT_TIMEOUT_MS
+        ) {
+          restBalCatchUpPeer(this.peerRestUntil, flight.peerId)
+          pipe.inFlight.delete(key)
+        }
+      }
+      this.syncPipelineTelemetry()
+    }
     const batch = this.catchUp?.batchInFlight
     if (
       batch !== undefined &&
@@ -818,7 +998,18 @@ export class BalChainStreamer {
       restBalCatchUpPeer(this.peerRestUntil, this.catchUp.peerId)
       this.catchUp.inFlight = undefined
     }
-    if (this.catchUp?.inFlight !== undefined || this.catchUp?.batchInFlight !== undefined) return
+    const pipelineBusy =
+      (this.catchUp?.pipeline?.inFlight.size ?? 0) > 0 ||
+      (this.catchUp?.pipeline?.ready.size ?? 0) > 0
+    if (
+      this.catchUp?.inFlight !== undefined ||
+      this.catchUp?.batchInFlight !== undefined ||
+      (pipelineBusy &&
+        this.catchUp?.pipeline !== undefined &&
+        this.catchUp.pipeline.ready.size >= MAX_READY_BAL_BATCHES)
+    ) {
+      return
+    }
     const tip = this.downloadTip(spine)
     if (tip === undefined) return
     const peer = this.opts.pickEthPeer()
@@ -921,6 +1112,13 @@ export class BalChainStreamer {
         ? planBalBatch(next, this.catchUp.targetHead, gap)
         : undefined
     if (batchPlan !== undefined) {
+      if (
+        balPipelineActive(spine.phase, next, this.catchUp.targetHead, gap) &&
+        batchPlan.mode === 'fast'
+      ) {
+        this.dispatchBalFlights(this.catchUp, next, gap)
+        return
+      }
       const batchPeer =
         pickBalCatchUpPeer(spine, this.peerRestUntil, next + BigInt(batchPlan.count - 1)) ??
         pickBalCatchUpPeer(spine, this.peerRestUntil, next) ??
@@ -949,6 +1147,15 @@ export class BalChainStreamer {
       next,
     )
   }
+}
+
+function readyAsRanges(
+  ready: Map<string, ReadyBalBatch>,
+): Array<{ startBlock: bigint; blockCount: number }> {
+  return [...ready.values()].map((r) => ({
+    startBlock: r.startBlock,
+    blockCount: r.blocks.length,
+  }))
 }
 
 /** @deprecated alias — prefer {@link BalChainStreamer} */

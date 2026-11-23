@@ -202,6 +202,8 @@ export interface EthySpine {
     total: number
     /** Live catch-up throughput for Node Pulse (WP-07e). */
     blocksPerSec?: number
+    /** Parallel BAL batch flights in progress (WP-14). */
+    balFlightsInAir?: number
   }
   /** Rolling pivot steps completed during snap (WP-04k). */
   pivotStepsCompleted?: number

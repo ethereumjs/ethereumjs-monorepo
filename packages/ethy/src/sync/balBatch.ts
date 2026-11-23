@@ -298,6 +298,16 @@ export function advanceBalBatchEthMessage(
     if (!requestIdMatches(batch.ethVersion, msg.payload, batch.balRequestId)) return 'ignore'
     const lists = parseBlockAccessListsBatchPayload(msg.payload)
     if (lists === null) return 'failed'
+    if (lists.length === 0) return 'failed'
+    const headers = batch.headers
+    if (headers !== undefined && lists.length < headers.length) {
+      batch.headers = headers.slice(0, lists.length)
+      batch.count = lists.length
+      if (batch.bodiesRlp !== undefined) batch.bodiesRlp = batch.bodiesRlp.slice(0, lists.length)
+      if (batch.receiptsEth69 !== undefined) {
+        batch.receiptsEth69 = batch.receiptsEth69.slice(0, lists.length)
+      }
+    }
     batch.balRlp = lists
     return 'complete'
   }

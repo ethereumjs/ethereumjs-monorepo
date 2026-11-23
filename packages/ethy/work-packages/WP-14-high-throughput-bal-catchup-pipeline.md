@@ -1,6 +1,6 @@
 # WP-14: 5×–10× High-Throughput BAL Catch-Up & Ecosystem-Wide Fast BAL Stack (`@ethereumjs/util`, `@ethereumjs/statemanager`, `@ethereumjs/vm`, `@ethereumjs/ethy`)
 
-- **Status:** `PLANNED`
+- **Status:** `DONE`
 - **Dependencies:** `WP-07e` (`DONE`), `WP-11b` (`DONE`), `WP-13` (`DONE`)
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
@@ -269,4 +269,10 @@ flowchart LR
 
 ## 3. Implementation Notes & Deviations (Implementer — Composer 2.5)
 
-*To be filled by Composer 2.5 upon implementation.*
+Shipped in three **D-008** commits (`util` → `common/statemanager/vm` → `ethy`) plus a follow-up ethy commit for the pipelined scheduler and bench gates.
+
+- **Library stack:** `BALInput`, wire RLP hash/cache, `mergeBALsBinary`, polymorphic experimental `consumeBAL` / `consumeBALBatch`, `FlatStateManager` binary apply + `coldAccountBatchLookup`, VM `validateBlockAccessListHashFromRLP` before decode.
+- **Ethy cold path:** Per-nibble journal metadata cache, Keccak top-48 interpolation + 64-row tail window, `lookupBinaryAccountsBatchAsync`, batched `appendBalTailBatch` (single manifest write; no new `heal/*.bundle.rlp` on fast catch-up).
+- **Scheduler:** Historical `BAL_CATCHUP` (`gap >= 32`, outside 64-block tail, not `SNAP_SYNCING`) uses parallel BAL flights (up to `min(2×healthyPeers, 6)`), `readyBatches` max 8, strict in-order commit via `nextCommitBlock`; partial BAL replies trim the verified prefix; monotonic eth request IDs; `balCatchUp.balFlightsInAir` telemetry.
+- **Deferred:** Decoupled **192-header prefetch queue** (`BAL_HEADER_PREFETCH_COUNT`) remains a future wire overlap — flights still fetch headers per 32-block batch today. Live Sepolia **150–300+ BALs/s** validation is manual.
+- **Tests:** `balPipeline.spec.ts`, extended `balCatchUpBench.spec.ts` (≥3× CPU path, ≥3× `appendBalTailBatch` vs per-block heal, wire hash ≥2×).
