@@ -419,27 +419,29 @@ export class RLPx {
 
   private _enforceEthyPeerReserve(incoming: Peer): void {
     if (this._minEthyPeers <= 0) return
+    if (!this._peerSpeaksEthy(incoming)) return
     if (this._connectedPeerCount() < this._maxPeers) return
-    let ethyCount = this._peerSpeaksEthy(incoming) ? 1 : 0
-    let headSnapCount = 0
-    const dropCandidates: Peer[] = []
+    let existingEthyCount = 0
+    const nonHeadSnapCandidates: Peer[] = []
+    const headSnapCandidates: Peer[] = []
     for (const item of this._peers.values()) {
       if (!(item instanceof Peer) || item === incoming) continue
-      if (this._peerSpeaksEthy(item)) ethyCount++
-      else if (
+      if (this._peerSpeaksEthy(item)) {
+        existingEthyCount++
+      } else if (
         item
           .getProtocols()
           .some((p) => p.constructor.name === 'ETH' || p.constructor.name === 'SNAP')
       ) {
-        headSnapCount++
-        if (!this._peerSpeaksEthy(item)) dropCandidates.push(item)
+        headSnapCandidates.push(item)
       } else {
-        dropCandidates.push(item)
+        nonHeadSnapCandidates.push(item)
       }
     }
-    if (ethyCount >= this._minEthyPeers) return
-    if (headSnapCount < 1) return
-    const victim = dropCandidates.find((p) => !this._peerSpeaksEthy(p))
+    if (existingEthyCount >= this._minEthyPeers) return
+    const victim =
+      nonHeadSnapCandidates[0] ??
+      (headSnapCandidates.length > 1 ? headSnapCandidates[0] : undefined)
     victim?.disconnect(DISCONNECT_REASON.TOO_MANY_PEERS)
   }
 

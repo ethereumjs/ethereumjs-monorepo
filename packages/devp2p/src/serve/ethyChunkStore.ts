@@ -3,7 +3,7 @@ import * as path from 'node:path'
 import { RLP } from '@ethereumjs/rlp'
 import { bytesToUnprefixedHex, equalsBytes } from '@ethereumjs/util'
 
-import { contiguousBalTailWindow, readBalTailBundle } from './balTailDisk.ts'
+import { contiguousBalTailWindow, readBalTailBundle, readBalTailManifest } from './balTailDisk.ts'
 import {
   type DiskChunkProofRecord,
   journalPathForProofSidecar,
@@ -78,7 +78,7 @@ export class EthyChunkStore {
   private static readonly MAX_CONCURRENT_CHUNK_READS = 4
   private _healWindowCache?: {
     accountsDir: string
-    mtimeMs: number
+    signature: string
     earliest: bigint
     latest: bigint
   }
@@ -108,21 +108,23 @@ export class EthyChunkStore {
     const accountsDir = this._pivotAccountsDir
     if (accountsDir === undefined) return undefined
     const pivotRoot = path.dirname(accountsDir)
-    let mtimeMs = 0
+    let signature: string
     try {
       const healDir = path.join(pivotRoot, 'heal')
       const tailDir = path.join(pivotRoot, 'bal-tail')
-      mtimeMs = Math.max(
-        fs.existsSync(healDir) ? fs.statSync(healDir).mtimeMs : 0,
-        fs.existsSync(tailDir) ? fs.statSync(tailDir).mtimeMs : 0,
-      )
+      const manifestPath = path.join(tailDir, 'manifest.bin')
+      const healMtime = fs.existsSync(healDir) ? fs.statSync(healDir).mtimeMs : 0
+      const tailMtime = fs.existsSync(tailDir) ? fs.statSync(tailDir).mtimeMs : 0
+      const manifestMtime = fs.existsSync(manifestPath) ? fs.statSync(manifestPath).mtimeMs : 0
+      const man = readBalTailManifest(pivotRoot)
+      signature = `${healMtime}:${tailMtime}:${manifestMtime}:${man?.earliest ?? ''}:${man?.latest ?? ''}`
     } catch {
       return undefined
     }
     if (
       this._healWindowCache !== undefined &&
       this._healWindowCache.accountsDir === accountsDir &&
-      this._healWindowCache.mtimeMs === mtimeMs
+      this._healWindowCache.signature === signature
     ) {
       return {
         earliest: this._healWindowCache.earliest,
@@ -133,7 +135,7 @@ export class EthyChunkStore {
     if (window === undefined) return undefined
     this._healWindowCache = {
       accountsDir,
-      mtimeMs,
+      signature,
       earliest: window.earliest,
       latest: window.latest,
     }

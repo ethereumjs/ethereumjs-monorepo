@@ -15,7 +15,7 @@ export type EthyKnownPeerRow = {
 
 const MAX_KNOWN = 64
 
-function popcount(mask: number): number {
+function countSetBits(mask: number): number {
   let n = mask
   let c = 0
   while (n !== 0) {
@@ -30,7 +30,9 @@ function popcount(mask: number): number {
  */
 function pexRowScore(row: EthyKnownPeerRow): number {
   return (
-    Number(row.basePivotBlock) * 1_000_000 + popcount(row.bucketsBitmask) * 1_000 + row.lastSeenSec
+    Number(row.basePivotBlock) * 1_000_000 +
+    countSetBits(row.bucketsBitmask) * 1_000 +
+    row.lastSeenSec
   )
 }
 

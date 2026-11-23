@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 const MANIFEST_MAGIC = Buffer.from('BALT')
-const SEGMENT_MAGIC = Buffer.from('BTSG')
+const SEGMENT_MAGIC = Buffer.from([0x42, 0x54, 0x53, 0x47])
 const MANIFEST_VERSION = 1
 const BAL_SEGMENT_BLOCKS = 256n
 
@@ -36,16 +36,23 @@ function segmentStart(block: bigint): bigint {
 }
 
 function slotPopulated(segPath: string, index: number): boolean {
+  let fd: number | undefined
   try {
-    const headerBytes = 4 + 256 * 12
     const hdr = Buffer.alloc(12)
     const off = 4 + index * 12
-    const fd = fs.openSync(segPath, 'r')
+    fd = fs.openSync(segPath, 'r')
     fs.readSync(fd, hdr, 0, 12, off)
-    fs.closeSync(fd)
     return hdr.readUInt32BE(4) > 0 && hdr.readUInt32BE(8) > 0
   } catch {
     return false
+  } finally {
+    if (fd !== undefined) {
+      try {
+        fs.closeSync(fd)
+      } catch {
+        // ignore close failure
+      }
+    }
   }
 }
 
@@ -69,32 +76,37 @@ export function readBalTailBundle(
   if (index < 0 || index >= 256) return undefined
   const segPath = path.join(balTailDir(pivotRootDir), `seg-${segStart.toString()}.bin`)
   if (!fs.existsSync(segPath)) return undefined
+  let fd: number | undefined
   try {
     const headerBytes = 4 + 256 * 12
     const hdr = Buffer.alloc(headerBytes)
-    const fd = fs.openSync(segPath, 'r')
+    fd = fs.openSync(segPath, 'r')
     fs.readSync(fd, hdr, 0, headerBytes, 0)
     if (!hdr.subarray(0, 4).equals(SEGMENT_MAGIC)) {
-      fs.closeSync(fd)
       return undefined
     }
     const slotOff = 4 + index * 12
     const payloadOff = hdr.readUInt32BE(slotOff)
     const headerLen = hdr.readUInt32BE(slotOff + 4)
     const balLen = hdr.readUInt32BE(slotOff + 8)
-    fs.closeSync(fd)
     if (headerLen === 0 || balLen === 0) return undefined
     const total = headerLen + balLen
     const buf = Buffer.alloc(total)
-    const rfd = fs.openSync(segPath, 'r')
-    fs.readSync(rfd, buf, 0, total, payloadOff)
-    fs.closeSync(rfd)
+    fs.readSync(fd, buf, 0, total, payloadOff)
     return {
       headerRlp: new Uint8Array(buf.subarray(0, headerLen)),
       balRlp: new Uint8Array(buf.subarray(headerLen, total)),
     }
   } catch {
     return undefined
+  } finally {
+    if (fd !== undefined) {
+      try {
+        fs.closeSync(fd)
+      } catch {
+        // ignore close failure
+      }
+    }
   }
 }
 
@@ -115,17 +127,11 @@ export function contiguousBalTailWindow(
     }
   }
   if (latest === undefined) return undefined
+  if (!balBundleExistsOnDisk(pivotRootDir, latest)) return undefined
   let earliest = latest
   for (let b = latest; b > 0n; b -= 1n) {
     if (!balBundleExistsOnDisk(pivotRootDir, b)) break
     earliest = b
-  }
-  if (man !== undefined && earliest > man.earliest) {
-    earliest = man.earliest
-    while (earliest <= latest && !balBundleExistsOnDisk(pivotRootDir, earliest)) {
-      earliest += 1n
-    }
-    if (earliest > latest) return undefined
   }
   return { earliest, latest }
 }
