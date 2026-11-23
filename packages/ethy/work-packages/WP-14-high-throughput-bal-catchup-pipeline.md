@@ -1,6 +1,6 @@
 # WP-14: 5×–10× High-Throughput BAL Catch-Up & Ecosystem-Wide Fast BAL Stack (`@ethereumjs/util`, `@ethereumjs/statemanager`, `@ethereumjs/vm`, `@ethereumjs/ethy`)
 
-- **Status:** `READY_FOR_PLANNING`
+- **Status:** `PLANNED`
 - **Dependencies:** `WP-07e` (`DONE`), `WP-11b` (`DONE`), `WP-13` (`DONE`)
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
@@ -176,7 +176,94 @@ Keep upstream library improvements cleanly separated for standalone review/upstr
 
 ## 2. Concrete Implementation Plan (Planner — Grok 4.7)
 
-*To be filled by Grok 4.7 when assigned for planning.*
+Handoff to **Composer 2.5**: three isolated commits per **D-008**; no new dependencies; pure-JS keccak remains the library default (`security.mdc` S3).
+
+### 2.1 Baseline (repo state at planning)
+
+| Area | Current behavior |
+| --- | --- |
+| `BlockLevelAccessList.hash()` | `keccak_256(RLP.encode(this.raw()))` with no wire-byte cache; `stripLeadingZeros` allocates per leading zero via `slice(1)`. |
+| `StateManagerInterface.consumeBAL` | JSON block access list only; no `consumeBALBatch` on the interface. `mergeBALs` in `consumeBAL.ts` already implements EIP-161 intermediate-empty clearing. |
+| `FlatStateManager.consumeBAL` | Builds `new Account` + `accountToBinaryAccount` per write; sync `coldAccountLookup` inside `readBinaryAccountKey`. |
+| VM | `parseProvidedBlockAccessList` in `runBlock.ts` (not `resolveProvidedBlockAccessList`); `Uint8Array` path decodes then re-hashes via `bal.hash()`. |
+| Ethy catch-up | One `batchInFlight`; `requestId = 1..4` in `balBatch.ts`; `materializeBalBatch` always `toJSON()`; `appendHealBundle` writes `heal/*.bundle.rlp` plus `bal-tail/`; `lookupBinaryAccountByHash` uses `readdirSync` and ~23 sync `readSync` probes; `onBalApplied` → `noteBalApplied` in every phase. |
+
+### 2.2 Design refinements (Decision **D-136**)
+
+1. **Pipeline only outside `SNAP_SYNCING`.** `BAL_CATCHUP`, `bridge-pivot`, and `HEAD_FOLLOWING` with `gap >= 32n` use the new multi-flight scheduler. `SNAP_SYNCING` keeps the current single ordered batch and `shouldApplyAccount` pivot stepping (reordering BALs there would violate per-request `stateRoot` snap proofs).
+2. **Stop writing `heal/*.bundle.rlp`** for all phases; `bal-tail/` is the canonical contiguous archive. Resume reads `bal-tail/` first, legacy `heal/*.bundle.rlp` only for pre-WP-14 dirs; bounded legacy cleanup after the block is readable from `bal-tail/`.
+3. **Keep JSON `mergeBALs`.** Add `mergeBALsBinary` with identical semantics, including “pure read does not trigger EIP-161” (`balanceChanges` or `nonceChanges` must be non-empty before empty account clears storage).
+4. **Storage apply:** continue `setLengthLeft` to 32 bytes for slots and values (zero post-value is valid); do not treat `0x` storage as delete.
+5. **Batch-scoped cold misses:** negatives from `coldAccountBatchLookup` skip sync `coldAccountLookup` for the rest of that batch only (not a persistent tombstone).
+6. **Request ids:** monotonic counter on `BalChainStreamer`, passed into header prefetch and `startBalBatch`. Hash mismatch → rest peer, requeue whole range. Partial BAL reply (`m < count`) → commit verified prefix, requeue suffix only.
+7. **Bench gates:** ratio assertions (≥3× CPU path, ≥5× disk), not absolute ms; `ETHY_BENCH=1` remains stdout-only.
+
+```mermaid
+flowchart LR
+  prefetch[HeaderPrefetch_192]
+  queue[headerQueue]
+  dispatch[BalFlights_max6]
+  verify[VerifyHash_prefetchCold]
+  ready[readyBatches_max8]
+  commit[InOrderCommit]
+  prefetch --> queue --> dispatch --> verify --> ready --> commit
+  commit --> state[consumeBALBatch_RLP]
+  commit --> disk[appendBalTailBatch]
+```
+
+### 2.3 Commit 1 — `@ethereumjs/util`
+
+**Files:** new `packages/util/src/bal/binary.ts` (re-export from `bal/index.ts`), `packages/util/src/bal/index.ts`, `packages/util/src/bal/validation.ts`, `packages/util/test/bal/*`.
+
+| Item | Detail |
+| --- | --- |
+| `BALInput` | JSON block access list \| `BlockLevelAccessList` \| raw RLP `Uint8Array` |
+| Wire hash | `hashBlockAccessListRLP(balRlp, keccak256Fn = keccak_256)`, `validateBlockAccessListHashFromRLP` |
+| RLP cache | On `BlockLevelAccessList`: `cachedRlp` set in `createBlockLevelAccessListFromRLP`; `hash(keccak256Fn?)` / `serialize()` return cache until mutation; invalidate on all mutators + `revert` / `cleanupNetZeroBalanceChanges` / self-destruct cleanup; checkpoint/commit do not clear |
+| `stripLeadingZeros` | Single scan + zero-copy byte view; empty input → `new Uint8Array(0)` |
+| Binary BAL | `CompactBinaryBAL`, `decodeBALToBinary`, `mergeBALsBinary` (EIP-161 predicate mirrors `mergeRowTriggersEip161Empty`), `extractBALMutatedAddresses` |
+
+**Tests:** wire hash equals cached `hash()`; custom `keccak256Fn` invoked; cache dropped on mutation; `mergeBALsBinary` vs `mergeBALs` (latest-field-wins, mid-batch EIP-161, read-only follow-up, code, storage→zero); `stripLeadingZeros` edge cases.
+
+### 2.4 Commit 2 — `@ethereumjs/common`, `@ethereumjs/statemanager`, `@ethereumjs/vm`
+
+**Files:** `packages/common/src/interfaces.ts`, `packages/statemanager/src/consumeBAL.ts`, `flatStateManager.ts`, `types.ts`, state managers’ `consumeBAL`/`consumeBALBatch`, `packages/vm/src/runBlock.ts`, `packages/vm/src/types.ts`, tests.
+
+| Item | Detail |
+| --- | --- |
+| Interface | Widen `consumeBAL?` to `BALInput`; add optional `consumeBALBatch?(accessLists: BALInput[], …)` (`@remarks Experimental (Amsterdam)`) |
+| Shared helper | `consumeBAL` / `consumeBALBatch` normalize via `decodeBALToBinary` / `mergeBALsBinary`, then apply via existing `putAccount` / `putCode` / `putStorage` / `deleteAccount` on all managers |
+| `FlatStateManager` fast path | When no `expectedStateRoot` and no `_parent`: merge binary, `_keccak(20-byte address)`, optional `shouldApplyAccount`, one `await coldAccountBatchLookup`, `hydrateColdAccountsBatch`, 104-byte scratch + `setBinaryAccount*` writes; batch-scoped miss set before sync cold hook |
+| VM | `RunBlockOpts.blockAccessList`: `BALInput`; on `Uint8Array` + `generateFields === false`, `validateBlockAccessListHashFromRLP(..., vm.common.customCrypto?.keccak256)` before decode |
+
+**Tests:** JSON / `BlockLevelAccessList` / RLP → same state (Flat, Merkle, Simple); EIP-161 + code; one batch cold prefetch test; VM RLP hash without second serialize.
+
+### 2.5 Commit 3 — `@ethereumjs/ethy`
+
+**Cold lookup** (`snapStore.ts`): per-nibble journal metadata cache; bounds skip; top-48-bit interpolation (≤6 steps) + 64-row tail read; `lookupBinaryAccountsBatchAsync`; wire `coldAccountBatchLookup` in `createEthyNode.ts` (demo unchanged).
+
+**`noteBalApplied`:** `peerCoordinator` `onBalApplied` only when `spine.phase === 'SNAP_SYNCING'`; `codeAndStorageSync` skip rows with no storage/code changes before `invalidateAccount`.
+
+**Disk:** `appendBalTailBatch` in `balTailArchive.ts` + `SnapPivotStore`; stop `heal/*.bundle.rlp` writes; `readUnappliedHealBundles*` prefer `bal-tail/`.
+
+**Scheduler** (`balSync.ts`, `balBatch.ts`, non-`SNAP_SYNCING`, `gap >= 32n`):
+
+| Constant / behavior | Value |
+| --- | --- |
+| Header prefetch | `BAL_HEADER_PREFETCH_COUNT = 192`, queue target `256`, parent/number continuity vs `verifiedTipHash` |
+| Parallel flights | `K = min(max(1, healthyPeers) * 2, 6)`, ≤2 per peer; monotonic `nextRequestId++` |
+| Ready queue | `readyBatches` max 8; out-of-order verify; in-order `nextCommitBlock` drain |
+| Historical apply | Raw `consumeBALBatch(rlpList)`; no `balJson` / `pushBalWindow` when `blockNumber <= targetHead - 64n` |
+| Tail | Last 64 blocks or `gap < 32n` → drain pipeline then existing `planBalBatch` `'full'` (8 blocks) |
+| Telemetry (optional) | `spine.balCatchUp.inFlight` on `/machine` (`machineTools.ts`) |
+
+**Tests:** journal lookup + interpolation; `appendBalTailBatch` round-trip; no new heal files in catch-up; legacy heal resume; 3-peer ordered commit + partial reply + stall + tail `full'` mode; `noteBalApplied` zero cold lookups in `BAL_CATCHUP`; extend `balCatchUpBench.spec.ts` (≥3×, ≥5×).
+
+**Out of scope:** `@ethereumjs/devp2p` wire changes; `ethySwarmSync` JSON paths unchanged; snap account ingest unchanged.
+
+### 2.6 Composer finish gates
+
+`npm run tsc` in `util`, `common`, `statemanager`, `vm`, `ethy`; full Vitest per touched package; `npm run spellcheck`. Live Sepolia **`150–300+ BALs/s`** is manual post-ship only.
 
 ---
 
