@@ -42,26 +42,46 @@ Audit of a live `BAL Catch-Up` session (`1 connected (0 ethy · 1 snap)`, `1,728
 
 Introduce a single, pure, clock-injected **`SyncNetworkOrchestrator`** (`packages/ethy/src/sync/machineOrchestrator.ts`) that inspects Ethy's current state and produces a complete **`MachinePlan`** on every tick. `PeerCoordinator` and `ConsensusTracker` become thin **reconcilers** that apply diffs from `MachinePlan` onto `Devp2pWorkerClient` and the Beacon light runner.
 
-#### Part A: Upstream `@ethereumjs/devp2p` Dynamic Transport Controls (Separate Atomic Commit per **D-008**)
+#### Part A: Upstream `@ethereumjs/devp2p` First-Class `NetworkProfile` & Dynamic Transport Controls (Separate Atomic Commit per **D-008**; Breaking `devp2p` API Allowed)
 
-Backwards-compatible additions to `@ethereumjs/devp2p` (defaulting to current behavior when unused):
+Because `@ethereumjs/devp2p` may take clean breaking API improvements alongside Ethy (**D-008**), we retire the legacy boolean `DPT.setDiscoveryPaused(boolean)` / `RLPx.setSyncDiscoveryHold(boolean)` / worker `setDiscoveryPaused` split and replace them with a single, atomic **`NetworkProfile`** control surface:
 
-1. **Dynamic `RLPx` Capabilities & Peer Budgets (`packages/devp2p/src/rlpx/rlpx.ts`):**
-   - `setCapabilities(capabilities: Capabilities[]): void` — Updates `this._capabilities` for all subsequent inbound/outbound `HELLO` handshakes without restarting TCP listeners or dropping healthy connections.
-   - `setMaxPeers(maxPeers: number, discoveryLowWaterMark?: number): void` and `setMinEthyPeers(minEthyPeers: number): void` — Dynamically adapts connection capacity across phases (e.g. `20` during sync → `8` during `BAL_CATCHUP` → `6` during calm `HEAD_FOLLOWING`) and trims excess non-protected peers gracefully when lowered (evicting highest-latency / surplus non-`ethy` / idle `snap` sessions first, **never** dropping the last healthy `eth/71` peer or protected `minEthyPeers`).
-   - **Graceful Idle-`snap1` Protection:** When `snap1` is NOT in `this._capabilities`, if an older retained connection (that negotiated `snap1` earlier during sync) receives an inbound `snap/1` request (`GetAccountRange`, etc.) — or once non-`snap1` replacement `eth/71` peers meet target — cleanly recycle/rotate that peer without disrupting `BAL_CATCHUP` or `HEAD_FOLLOWING` continuity.
+```ts
+export type DiscoveryMode = 'active' | 'quiet' | 'off'
+
+export interface NetworkProfile {
+  /** Active RLPx subprotocol capabilities advertised in new HELLO handshakes. */
+  capabilities: string[]
+  /** Dynamic total peer ceiling (e.g. 20 sync -> 8 catch-up -> 6 calm). */
+  maxPeers: number
+  maxInboundPeers?: number
+  discoveryLowWaterMark?: number
+  /** Reserved RLPx slots for ETHY/0 peers. */
+  minEthyPeers?: number
+  /** Unified DPT discovery mode ('off' stops DNS, neighbour lookups, and UDP revalidation). */
+  discoveryMode: DiscoveryMode
+  /** Whether the local ENR advertises the "ethy" discovery tag. */
+  ethyDiscoveryTag: boolean
+  /** Optional discovery dial preference (e.g. prioritize ENR "ethy" peers during ETHY pre-warm). */
+  preferEthyDiscovery?: boolean
+}
+```
+
+1. **Dynamic `RLPx` Capabilities, Budgets & Surplus Trimming (`packages/devp2p/src/rlpx/rlpx.ts`):**
+   - Replace `setSyncDiscoveryHold(boolean)` with `applyNetworkProfile(...)` (or `setCapabilities` + `setPeerTargets` + `setDiscoveryMode` invoked atomically by the host).
+   - Updating `this._capabilities` takes effect on all subsequent inbound/outbound `HELLO` handshakes without restarting TCP listeners or dropping healthy sessions.
+   - Lowering `maxPeers` gracefully trims excess non-protected peers (evicting highest-latency / surplus non-`ethy` / idle `snap`-negotiated sessions first, **never** dropping `minEthyPeers` or the last healthy `eth/71` peer).
+   - **Clean `snap/1` Off-Ramp in `Devp2pWorkerHost`:** When `snap1` is absent from the active profile's `capabilities`, if an older retained connection (that negotiated `snap1` during an earlier sync phase) sends an inbound `snap/1` `GET_*` request, disconnect cleanly (`DISCONNECT_REASON.CLIENT_QUITTING`, not `SUBPROTOCOL_ERROR`) rather than letting the remote peer hang for 30 s, so both sides recover immediately and future reconnects omit `snap1`.
+   - **ETHY-Biased Pre-Warm Dialing (`preferEthyDiscovery`):** When `preferEthyDiscovery: true`, prioritize `"ethy"`-tagged ENRs in the dial queue so bounded `ETHY/0` pre-warm bursts don't waste slots on non-`ethy` peers.
 2. **Three-Mode `DPT` Discovery State (`packages/devp2p/src/dpt/dpt.ts`):**
-   - Add `DiscoveryMode = 'active' | 'quiet' | 'off'` via `setDiscoveryMode(mode: DiscoveryMode)` (keeping `setDiscoveryPaused(boolean)` as a backwards-compatible alias: `true` → `'quiet'`, `false` → `'active'`):
+   - Replace `setDiscoveryPaused(boolean)` with `setDiscoveryMode(mode: DiscoveryMode)`:
      - **`'active'`:** Full EIP-1459 DNS ENR refresh + UDP neighbour lookup (`findneighbours`) + k-bucket revalidation.
-     - **`'quiet'`:** Pauses neighbour lookups and DNS refresh while retaining light k-bucket liveness revalidation (existing paused behavior).
-     - **`'off'`:** Suspends DNS refresh, neighbour lookups, **and** periodic UDP revalidation pings (zero outbound discovery traffic while the node is calmly synced with healthy peers; UDP socket stays bound only for passive inbound/immediate wake-up).
-   - Add `setEthyDiscoveryTag(enabled: boolean): void` on `DPT` / `Server` so the ENR `"ethy"` discovery flag can be turned on **only** when the node actually holds servable `ETHY/0` state (or is actively seeking `ETHY/0` peers).
-3. **Worker Protocol & Client Bridge (`packages/devp2p/src/worker/protocol.ts`, `client.ts`, `host.ts`):**
-   - New worker commands (idempotent, diff-gated in `PeerCoordinator`):
-     - `setCapabilities: { capabilities: WorkerCapabilityName[] }`
-     - `setPeerTargets: { maxPeers: number; maxInboundPeers?: number; discoveryLowWaterMark?: number; minEthyPeers?: number }`
-     - `setDiscoveryMode: { mode: DiscoveryMode; ethyDiscoveryTag?: boolean }`
-   - Extend `WorkerDiscoverySnapshot` with `mode: DiscoveryMode`, `activeCapabilities: string[]`, and `ethyDiscoveryTag: boolean` so the TUI and `/machine` microscope show ground-truth worker state (never guessed main-thread state).
+     - **`'quiet'`:** Pauses neighbour lookups and DNS refresh while retaining light k-bucket liveness revalidation (useful during active bulk sync when peer set is healthy).
+     - **`'off'`:** Suspends DNS refresh, neighbour lookups, **and** periodic UDP revalidation pings (zero outbound discovery traffic while calmly synced with healthy peers; UDP socket stays bound only for passive inbound/instant wake-up).
+   - Add `setEthyDiscoveryTag(enabled: boolean): void` on `DPT` / `Server` so the ENR `"ethy"` discovery flag toggles dynamically with honest serving/discovery eligibility.
+3. **Atomic Worker Command & Ground-Truth Telemetry (`packages/devp2p/src/worker/protocol.ts`, `client.ts`, `host.ts`, `src/discovery/metrics.ts`):**
+   - Replace `{ type: 'setDiscoveryPaused'; paused: boolean }` with a single idempotent command: `{ type: 'setNetworkProfile'; profile: NetworkProfile }` (`client.setNetworkProfile(profile)`).
+   - Replace `discoveryPaused: boolean` in `WorkerDiscoverySnapshot` with ground-truth worker state: `discoveryMode: DiscoveryMode`, `activeCapabilities: string[]`, `maxPeers: number`, `minEthyPeers: number`, `ethyDiscoveryTag: boolean` (so `/machine` and the cockpit never guess main-thread state).
 
 #### Part B: The Five-Plane `MachinePlan` & Anticipatory Lifecycle (`packages/ethy/src/sync/machineOrchestrator.ts`)
 
@@ -151,11 +171,12 @@ Respects all `ethy-tui.mdc` craft laws (8-row cockpit boxes, 4 content rows, sha
 ### 1.3 Acceptance Criteria (`WP-13`)
 
 - [ ] **Zero new runtime dependencies** in `@ethereumjs/devp2p` or `@ethereumjs/ethy`.
-- [ ] **Separate upstream `@ethereumjs/devp2p` commit (per D-008):**
-  - `RLPx.setCapabilities()`, `RLPx.setMaxPeers()`, `RLPx.setMinEthyPeers()` with graceful surplus eviction (preserving `minEthyPeers` and minimum healthy `eth` peers).
-  - `DPT.setDiscoveryMode('active' | 'quiet' | 'off')` (zero outbound UDP pings/revalidation in `'off'`) + `setEthyDiscoveryTag(boolean)` + backwards-compatible `setDiscoveryPaused(boolean)`.
-  - Worker commands (`setCapabilities`, `setPeerTargets`, `setDiscoveryMode`) and `WorkerDiscoverySnapshot` ground-truth telemetry (`mode`, `activeCapabilities`, `ethyDiscoveryTag`).
-  - Unit & loopback tests in `packages/devp2p` proving new handshakes omit `snap1` after `setCapabilities` and `'off'` stops discovery pings.
+- [ ] **Separate upstream `@ethereumjs/devp2p` commit (per D-008; breaking `devp2p` API allowed):**
+  - Unified `NetworkProfile` + `client.setNetworkProfile(profile)` replacing legacy `setDiscoveryPaused` / `setSyncDiscoveryHold`.
+  - Dynamic `RLPx` capabilities, `maxPeers` / `minEthyPeers` with graceful surplus eviction (preserving `minEthyPeers` and minimum healthy `eth` peers), `preferEthyDiscovery` dial bias, and clean `CLIENT_QUITTING` disconnect on unwanted inbound `snap/1` requests when `snap1` is off.
+  - `DPT.setDiscoveryMode('active' | 'quiet' | 'off')` (zero outbound UDP pings/revalidation in `'off'`) + `setEthyDiscoveryTag(boolean)`.
+  - Ground-truth `WorkerDiscoverySnapshot` fields (`discoveryMode`, `activeCapabilities`, `maxPeers`, `minEthyPeers`, `ethyDiscoveryTag`).
+  - Unit & loopback tests in `packages/devp2p` proving new handshakes omit `snap1` after `setNetworkProfile` and `'off'` stops discovery pings.
 - [ ] **Pure `SyncNetworkOrchestrator` (`machineOrchestrator.ts`):**
   - Deterministically maps spine/swarm/disk/peer state → `MachinePlan` covering all 10 operating modes, all 5 planes (`eth`, `ethy`, `snap`, `discovery`, `cl`), phase-adaptive peer targets, anticipatory `ETHY/0` (`T - 15m`) and `SNAP/1` (`T - 3m`) pre-warming, anti-flap dwell hysteresis, and honest serving eligibility.
   - Zero-disruption `snap1` off transition (never drops active `eth/71` catch-up peers below target; lazily rotates or disconnects on unwanted inbound `snap/1` requests).
