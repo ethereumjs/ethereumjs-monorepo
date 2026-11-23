@@ -45,7 +45,7 @@ import type { JsonRpcError } from '../rpc/types.ts'
 import type { RpcBundleNote } from '../rpc/types.ts'
 import { enqueueProtocol } from '../runtime/lanes.ts'
 import { ResourceBudgetWatchdog } from '../runtime/resourceBudget.ts'
-import { createSnapBuckets } from '../spine/buckets.ts'
+import { computeAccountRangeFraction, createSnapBuckets } from '../spine/buckets.ts'
 import { localVerifiedBlock, raiseBestPeerHead } from '../spine/chainHead.ts'
 import { deriveCapabilities, setPhase } from '../spine/createSpine.ts'
 import { recordDiagnostic } from '../spine/diagnostics.ts'
@@ -503,10 +503,21 @@ export async function startPeerCoordinator(
     })
   }
 
-  const finishShadowPivotFlip = (clientRef: Devp2pWorkerClient, stateRootHex: string): boolean => {
+  const finishShadowPivotFlip = (
+    clientRef: Devp2pWorkerClient,
+    stateRootHex: string,
+    targetPivotBlock: bigint,
+  ): boolean => {
     if (snapStore === undefined) return false
     if (!snapStore.promoteShadowPivotToActive(stateRootHex)) return false
     snapStore.setShadowPersistRoot(undefined)
+    const normalizedHex = (
+      stateRootHex.startsWith('0x') ? stateRootHex : `0x${stateRootHex}`
+    ) as `0x${string}`
+    spine.pivotBlockNumber = targetPivotBlock
+    spine.pivotStateRoot = hexToBytes(normalizedHex)
+    spine.ethyBucketsBitmask = 0xffff
+    generationElection = undefined
     syncEthyPivotServeDir(clientRef, snapStore.activePivotAccountsDir())
     refreshEthyWorkerAdvertisement(clientRef, spine)
     shadowEthySwarm?.stop()
@@ -520,7 +531,7 @@ export async function startPeerCoordinator(
     recordDiagnostic(spine, {
       subsystem: 'ethy',
       severity: 'info',
-      message: `Shadow pivot flip → ${stateRootHex.slice(0, 14)}…`,
+      message: `Shadow pivot flip → #${targetPivotBlock.toString()} (${stateRootHex.slice(0, 14)}…)`,
     })
     return true
   }
@@ -544,7 +555,7 @@ export async function startPeerCoordinator(
           : undefined
       if (seeder === undefined) return
       const lastVer = localVerifiedBlock(spine) ?? localPivot
-      const from = localPivot + 1n
+      const from = target.basePivotBlock + 1n
       const copied =
         lastVer >= from
           ? startShadowBalTailCopy({
@@ -594,8 +605,14 @@ export async function startPeerCoordinator(
       )
     }
     if (shadowPivotSession.stage === 'ready-to-flip') {
-      if (finishShadowPivotFlip(clientRef, shadowPivotSession.stateRootHex)) {
-        shadowPivotSession.stage = 'done'
+      if (
+        finishShadowPivotFlip(
+          clientRef,
+          shadowPivotSession.stateRootHex,
+          shadowPivotSession.targetPivotBlock,
+        )
+      ) {
+        shadowPivotSession = undefined
       }
     }
   }
@@ -752,8 +769,14 @@ export async function startPeerCoordinator(
     ) {
       shadowSnapMintSync?.stop()
       shadowSnapMintSync = undefined
-      if (finishShadowPivotFlip(clientRef, shadowSnapMintSession.stateRootHex)) {
-        shadowSnapMintSession.stage = 'done'
+      if (
+        finishShadowPivotFlip(
+          clientRef,
+          shadowSnapMintSession.stateRootHex,
+          shadowSnapMintSession.targetPivotBlock,
+        )
+      ) {
+        shadowSnapMintSession = undefined
       }
     }
   }
@@ -2177,7 +2200,7 @@ export async function startPeerCoordinator(
     }
     const bucketsDone = spine.snapBuckets.filter((b) => b.status === 'done').length
     const earlySnapProgress =
-      bucketsDone === 0 || (savedSnapPeek !== undefined && snapResumeProgressPct(savedSnapPeek) < 5)
+      bucketsDone === 0 && computeAccountRangeFraction(spine.snapBuckets) < 0.05
     const canPreemptSnapForEthy =
       spine.syncTransport === 'snap' &&
       syncMode !== 'snap' &&
@@ -2202,6 +2225,7 @@ export async function startPeerCoordinator(
       explicitConnectPeerIds.has(s.peerId.toLowerCase()),
     )
     const hasSnapPeer = peers.some((p) => p.snapSession === true && p.latestBlock !== undefined)
+    const ethyDialInFlight = peers.some((p) => p.ethySession === true && p.ethyStatus === undefined)
     const freshest = freshestEthyPivot(seeders)
     if (
       preferCanonicalSnapOverEthy({
@@ -2214,7 +2238,9 @@ export async function startPeerCoordinator(
     ) {
       if (spine.syncTransport === 'unset' && firstEthStatusAtMs > 0) {
         const elapsed = Date.now() - firstEthStatusAtMs
-        if (shouldLockSnapAfterGrace(syncMode, spine.syncTransport, elapsed, false)) {
+        if (
+          shouldLockSnapAfterGrace(syncMode, spine.syncTransport, elapsed, false, ethyDialInFlight)
+        ) {
           spine.syncTransport = 'snap'
         }
       }
@@ -2225,7 +2251,8 @@ export async function startPeerCoordinator(
         ? pickUsableEthySeeder(explicitSeeders, head, 'ethy')
         : pickUsableEthySeeder(seeders, head, syncMode)
     if (pick !== undefined) {
-      if (canPreemptSnapForEthy && isFreshEthyPreemptCandidate(pick.seeder, head)) {
+      if (canPreemptSnapForEthy) {
+        if (!isFreshEthyPreemptCandidate(pick.seeder, head)) return
         snapSync?.stop()
         snapSync = undefined
         codeSync?.stop()
@@ -2261,7 +2288,7 @@ export async function startPeerCoordinator(
     ) {
       return
     }
-    if (shouldLockSnapAfterGrace(syncMode, spine.syncTransport, elapsed, false)) {
+    if (shouldLockSnapAfterGrace(syncMode, spine.syncTransport, elapsed, false, ethyDialInFlight)) {
       spine.syncTransport = 'snap'
     }
   }
@@ -2600,7 +2627,7 @@ export async function startPeerCoordinator(
       const activeRoot = snapStore.activePivotStateRoot()
       const localPivot = spine.pivotBlockNumber ?? 0n
       const lastVer = localVerifiedBlock(spine) ?? localPivot
-      const from = localPivot + 1n
+      const from = parsed.number + 1n
       let copied = 0
       if (activeRoot !== undefined && lastVer >= from) {
         copied = copyBalTailRange(

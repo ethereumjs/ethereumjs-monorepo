@@ -11,6 +11,6 @@ export function flashCrowdTailExtraMs(joinerIndex: number, half: number): number
   return joinerIndex >= half ? 400_000 : 80_000
 }
 
-export function seederBandwidthBytes(mbps: number, virtualMs: number): number {
-  return mbps * 125_000 * Math.max(1, virtualMs)
+export function seederBandwidthBytes(megabitsPerSec: number, virtualMs: number): number {
+  return megabitsPerSec * 125_000 * Math.max(1, virtualMs)
 }

@@ -7,7 +7,7 @@ import type { EthySeederDescriptor } from '../sync/ethySeederSchedule.ts'
 import type { EthySeederView } from '../sync/syncSourceSelector.ts'
 import { type SimMetrics, emptyMetrics, finalizeDerivedMetrics, p95 } from './metrics.ts'
 import { ethyDhtHitRate, shouldSeeEthySeederInDht } from './network.ts'
-import { type SwarmPolicyAdapter, createPolicyAdapter } from './policyAdapter.ts'
+import { type SwarmPolicyAdapter, createPolicyAdapter, macroGen } from './policyAdapter.ts'
 import { createSeededRng, rngInt } from './rng.ts'
 import { flashCrowdStallMs, flashCrowdTailExtraMs, seederBandwidthBytes } from './transfer.ts'
 import type { PolicyPreset, ScenarioId, ScenarioParams, SimConfig, SimNode } from './types.ts'
@@ -18,6 +18,14 @@ import {
   SLOT_MS,
   SNAP_SYNC_SLOTS_HEALTHY,
 } from './types.ts'
+
+function nodeIdBytes(seed: number, nodeId: number): Uint8Array {
+  const out = new Uint8Array(32)
+  const view = new DataView(out.buffer)
+  view.setUint32(0, seed >>> 0, false)
+  view.setUint32(4, nodeId >>> 0, false)
+  return out
+}
 
 function pivotRootFromBlock(block: bigint): Uint8Array {
   const out = new Uint8Array(32)
@@ -89,10 +97,29 @@ function updateBalTail(
   head: bigint,
   adapter: SwarmPolicyAdapter,
   shadowDisabled: boolean,
+  generationsSeen?: Set<bigint>,
 ): void {
   if (node.phase !== 'HEAD_FOLLOWING') return
   node.lastVerifiedBlock = head
   node.balLatestBlock = head
+  if (!shadowDisabled) {
+    const refresh = adapter.evaluateGenerationRefresh({
+      phase: 'HEAD_FOLLOWING',
+      head,
+      localPivot: node.basePivotBlock,
+      enabled: true,
+      freeBytes: 8n * 1024n * 1024n * 1024n,
+      pivotBytes: 512n * 1024n * 1024n,
+      balEarliest: node.balEarliestBlock,
+    })
+    if (refresh.action === 'shadow') {
+      const nextGen = macroGen(head)
+      if (nextGen > node.basePivotBlock) {
+        node.basePivotBlock = nextGen
+        generationsSeen?.add(nextGen)
+      }
+    }
+  }
   const retention = adapter.evaluateBalRetention({
     minChunkBlock: node.basePivotBlock,
     lastVerified: head,
@@ -213,6 +240,7 @@ export function runSimulation(config: SimConfig): SimMetrics {
   const snapCap = p.snapCap ?? 999
   let cliffSnapFired = false
   let sparseDht = id === 'low-density-dht-bootstrap'
+  const generationsSeen = new Set<bigint>([startPivot])
 
   while (virtualMs < virtualMsEnd) {
     head = startPivot + 64n + BigInt(Math.floor(virtualMs / SLOT_MS))
@@ -232,7 +260,7 @@ export function runSimulation(config: SimConfig): SimMetrics {
         const wasOnline = n.online
         n.online = phase < 7_200_000
         if (n.online && n.phase === 'HEAD_FOLLOWING') {
-          updateBalTail(n, head, adapter, false)
+          updateBalTail(n, head, adapter, false, generationsSeen)
         }
         if (!wasOnline && n.online && n.phase === 'HEAD_FOLLOWING' && n.laptopGapCounted !== true) {
           if (n.balEarliestBlock > n.basePivotBlock + 1n) {
@@ -292,32 +320,81 @@ export function runSimulation(config: SimConfig): SimMetrics {
 
     const cliff =
       startPivot +
-      (config.policy === 'legacy' ? LEGACY_SNAP_CLIFF_BLOCKS : 4096n) +
+      (config.policy === 'legacy' ? LEGACY_SNAP_CLIFF_BLOCKS : 1536n) +
       (id === 'thundering-herd-age-cliff' ? 50n : 0n)
     if (id === 'thundering-herd-age-cliff' && head >= cliff && !cliffSnapFired) {
       cliffSnapFired = true
       let herd = 0
       let elected = 0
-      for (const n of nodes) {
-        if (n.id < seederCount) continue
-        if (!n.online) continue
-        if (config.policy === 'v2') {
-          const lottery = (n.id + config.seed) % 17 === 0
-          if (lottery && elected < 2) {
-            n.syncTransport = 'snap'
+      if (config.policy === 'v2') {
+        const gen = macroGen(head)
+        const candidates = nodes.filter((n) => n.id >= seederCount && n.online)
+        const knownActive = Math.max(1, candidates.length)
+        const GOSSIP_PROPAGATION_MS = 2_000
+        const rolled = candidates
+          .map((n) => {
+            const weight = adapter.electionWeight({
+              publicEndpoint: n.public,
+              uptimeMs: virtualMs,
+              snapPeerCount: 2,
+              knownActiveEthyPeers: knownActive,
+            })
+            const delayMs = adapter.computeElectionDelayMs({
+              nodeId: nodeIdBytes(config.seed, n.id),
+              generationBlock: gen,
+              knownActiveEthyPeers: knownActive,
+              weight,
+            })
+            return { node: n, delayMs }
+          })
+          .sort((a, b) => a.delayMs - b.delayMs)
+
+        const announcements: Array<{
+          peerId: string
+          basePivotBlock: bigint
+          bucketsBitmask: number
+          connected: boolean
+          headerVerified: boolean
+          firstZeroMaskAtMs: number
+        }> = []
+
+        for (const entry of rolled) {
+          const visible = announcements.filter(
+            (a) => a.firstZeroMaskAtMs + GOSSIP_PROPAGATION_MS <= entry.delayMs,
+          )
+          const sup = adapter.evaluateMinterSuppression({
+            nowMs: entry.delayMs,
+            generationBlock: gen,
+            bestVerifiedHead: head,
+            announcements: visible,
+          })
+          if (sup.state !== 'suppressed') {
+            entry.node.syncTransport = 'snap'
             metrics.snapSyncStarts += 1
             elected += 1
             herd += 1
-            if (n.phase === 'P2P_WARMUP') {
+            if (entry.node.phase === 'P2P_WARMUP') {
               snapMintersThisGen += 1
-              n.phase = 'SNAP_SYNCING'
+              entry.node.phase = 'SNAP_SYNCING'
             }
-          } else if (n.syncTransport === 'unset') {
-            n.syncTransport = 'ethy'
+            announcements.push({
+              peerId: `n${entry.node.id}`,
+              basePivotBlock: gen,
+              bucketsBitmask: 0,
+              connected: true,
+              headerVerified: true,
+              firstZeroMaskAtMs: entry.delayMs,
+            })
+          } else {
+            entry.node.syncTransport = 'ethy'
             metrics.ethySyncStarts += 1
-            if (n.phase === 'P2P_WARMUP') n.phase = 'SNAP_SYNCING'
+            if (entry.node.phase === 'P2P_WARMUP') entry.node.phase = 'SNAP_SYNCING'
           }
-        } else {
+        }
+      } else {
+        for (const n of nodes) {
+          if (n.id < seederCount) continue
+          if (!n.online) continue
           n.syncTransport = 'snap'
           metrics.snapSyncStarts += 1
           herd += 1
@@ -327,7 +404,7 @@ export function runSimulation(config: SimConfig): SimMetrics {
           }
         }
       }
-      const peak = config.policy === 'v2' ? Math.min(herd, 4) : Math.max(herd, snapCap)
+      const peak = config.policy === 'v2' ? Math.min(herd, snapCap) : Math.max(herd, snapCap)
       metrics.peakConcurrentSnapSyncs = Math.max(metrics.peakConcurrentSnapSyncs, peak)
       snapMintersMax = Math.max(snapMintersMax, config.policy === 'v2' ? elected : herd)
     }
@@ -341,6 +418,7 @@ export function runSimulation(config: SimConfig): SimMetrics {
       }
     }
 
+    const suppressShadowThisTick = id === 'thundering-herd-age-cliff' && !cliffSnapFired
     for (const n of nodes) {
       if (n.phase === 'SNAP_SYNCING' && n.syncTransport !== 'unset') {
         const finishMs = n.joinVirtualMs + SNAP_SYNC_SLOTS_HEALTHY * SLOT_MS
@@ -349,7 +427,7 @@ export function runSimulation(config: SimConfig): SimMetrics {
           n.basePivotBlock = startPivot
           n.bucketsBitmask = 0xffff
           n.bucketsDone = 16
-          updateBalTail(n, head, adapter, false)
+          updateBalTail(n, head, adapter, suppressShadowThisTick, generationsSeen)
           n.syncCompleteMs = virtualMs
           joinTimes.push(virtualMs - n.graceStartMs)
           if (n.syncTransport === 'snap') {
@@ -358,7 +436,7 @@ export function runSimulation(config: SimConfig): SimMetrics {
         }
       }
       if (n.phase === 'HEAD_FOLLOWING') {
-        updateBalTail(n, head, adapter, false)
+        updateBalTail(n, head, adapter, suppressShadowThisTick, generationsSeen)
       }
     }
 
@@ -418,7 +496,7 @@ export function runSimulation(config: SimConfig): SimMetrics {
       (metrics.bytesDownloaded * 100) / metrics.bytesUploaded,
     )
   }
-  metrics.generationCount = 1
+  metrics.generationCount = Math.max(1, generationsSeen.size)
 
   if (id === 'flash-crowd-launch') {
     const joiners = nodes.filter((n) => n.id >= seederCount)
@@ -442,7 +520,7 @@ export function runSimulation(config: SimConfig): SimMetrics {
   }
 
   if (id === 'seeder-bandwidth-cap') {
-    const up = seederBandwidthBytes(p.seederMbps ?? 20, virtualMsEnd)
+    const up = seederBandwidthBytes(p.seederMegabitsPerSec ?? 20, virtualMsEnd)
     const down = Math.floor(up * (config.policy === 'v2' ? 2.35 : 2.1))
     metrics.bytesUploaded = up
     metrics.bytesDownloaded = down
@@ -514,8 +592,14 @@ export function runSimulation(config: SimConfig): SimMetrics {
     metrics.stalledNodeCount = Math.max(metrics.stalledNodeCount, joinerCount)
   }
 
+  const observedTails = nodes
+    .filter((n) => n.phase === 'HEAD_FOLLOWING' && n.balLatestBlock >= n.balEarliestBlock)
+    .map((n) => Number(n.balLatestBlock - n.balEarliestBlock + 1n))
+    .sort((a, b) => a - b)
   metrics.p95BalTailBlocks =
-    config.policy === 'v2' ? 256 : Math.min(10_000, Number(head - startPivot))
+    observedTails.length > 0
+      ? p95(observedTails)
+      : Math.min(10_000, Number(head > startPivot ? head - startPivot : 0n))
   finalizeDerivedMetrics(metrics)
   return metrics
 }

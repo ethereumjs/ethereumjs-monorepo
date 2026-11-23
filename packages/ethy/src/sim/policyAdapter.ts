@@ -10,7 +10,13 @@ import {
 import { shouldStartShadowRefresh } from '../sync/shadowRefresh.ts'
 import type { NetworkHeadResumeAction } from '../sync/startupStateMachine.ts'
 import { classifySavedDiskState, planNetworkHeadResume } from '../sync/startupStateMachine.ts'
-import { SOFT_REFRESH_AGE_BLOCKS, macroGenerationBlock } from '../sync/swarmGenerationPolicy.ts'
+import {
+  SOFT_REFRESH_AGE_BLOCKS,
+  computeElectionDelayMs,
+  electionWeight,
+  evaluateMinterSuppression,
+  macroGenerationBlock,
+} from '../sync/swarmGenerationPolicy.ts'
 import {
   ETHY_DISCOVERY_EXTENDED_GRACE_MS,
   ETHY_DISCOVERY_GRACE_MS,
@@ -64,6 +70,11 @@ export type SwarmPolicyAdapter = {
     shadowDisabled: boolean
   }): { mode: 'ram' | 'disk'; floor?: bigint; windowBlocks: number }
   shouldPreemptSnapForEthy(seeder: EthySeederView, bestPeerHead: bigint): boolean
+  computeElectionDelayMs(opts: Parameters<typeof computeElectionDelayMs>[0]): number
+  electionWeight(opts: Parameters<typeof electionWeight>[0]): number
+  evaluateMinterSuppression(
+    opts: Parameters<typeof evaluateMinterSuppression>[0],
+  ): ReturnType<typeof evaluateMinterSuppression>
 }
 
 function preferCanonicalSnapLegacy(opts: {
@@ -196,6 +207,9 @@ export function createPolicyAdapter(preset: PolicyPreset): SwarmPolicyAdapter {
       if (bestPeerHead <= seeder.basePivotBlock) return true
       return bestPeerHead - seeder.basePivotBlock <= SOFT_REFRESH_AGE_BLOCKS
     },
+    computeElectionDelayMs,
+    electionWeight,
+    evaluateMinterSuppression,
   }
 }
 

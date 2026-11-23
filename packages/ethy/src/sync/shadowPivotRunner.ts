@@ -94,9 +94,7 @@ export function advanceShadowPivotSession(opts: {
   session: ShadowPivotSession
 }): ShadowPivotSession {
   if (opts.session.stage === 'bal-copy') {
-    opts.session.stage = opts.snapStore.shadowPivotHasPivotMeta(opts.session.stateRootHex)
-      ? 'await-accounts'
-      : 'await-accounts'
+    opts.session.stage = 'await-accounts'
   }
   if (
     opts.session.stage === 'await-accounts' &&

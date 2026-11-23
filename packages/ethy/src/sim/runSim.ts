@@ -1,4 +1,4 @@
-import { type SimMetrics, metricsToCanonicalJson } from './metrics.ts'
+import { type SimMetrics, metricsToCanonicalJSON } from './metrics.ts'
 import { ALL_SCENARIO_IDS, resolveScenarioParams } from './scenarios.ts'
 import type { PolicyPreset, ScenarioId, SimScale } from './types.ts'
 import { runSimulation } from './world.ts'
@@ -32,7 +32,7 @@ export function comparePresets(opts: {
   scenarioId: ScenarioId
   seed: number
   scale: SimScale
-}): { legacy: SimMetrics; v2: SimMetrics; deltaJson: string } {
+}): { legacy: SimMetrics; v2: SimMetrics; deltaJSON: string } {
   const legacy = runScenario({ ...opts, policy: 'legacy' })
   const v2 = runScenario({ ...opts, policy: 'v2' })
   const delta = {
@@ -41,7 +41,7 @@ export function comparePresets(opts: {
     balGapIncidents: v2.balGapIncidents - legacy.balGapIncidents,
     falseSyncedCount: v2.falseSyncedCount - legacy.falseSyncedCount,
   }
-  return { legacy, v2, deltaJson: JSON.stringify(delta) }
+  return { legacy, v2, deltaJSON: JSON.stringify(delta) }
 }
 
-export { metricsToCanonicalJson, ALL_SCENARIO_IDS }
+export { metricsToCanonicalJSON, ALL_SCENARIO_IDS }

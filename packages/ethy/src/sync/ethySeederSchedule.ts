@@ -125,15 +125,17 @@ function tryAssignFromGroups(
   const assignments = new Map<number, BucketAssignment>()
   const bucketPivotBlocks = Array.from({ length: 16 }, () => 0n)
   const bucketPivotRoots = Array.from({ length: 16 }, () => new Uint8Array(32))
+  const workingLoad = new Map(assignedLoad)
   for (const b of bucketOrder) {
     let chosen: EthySeederDescriptor | undefined
     for (const group of groupsSorted) {
-      const sample = group[0]!
-      if ((sample.bucketsBitmask & (1 << b)) === 0) continue
-      chosen = pickPeerFromGroup(group, assignedLoad)
+      const eligible = group.filter((s) => (s.bucketsBitmask & (1 << b)) !== 0)
+      if (eligible.length === 0) continue
+      chosen = pickPeerFromGroup(eligible, workingLoad)
       break
     }
     if (chosen === undefined) return undefined
+    workingLoad.set(chosen.peerId, (workingLoad.get(chosen.peerId) ?? 0) + 1)
     assignments.set(b, {
       peerId: chosen.peerId,
       basePivotBlock: chosen.basePivotBlock,

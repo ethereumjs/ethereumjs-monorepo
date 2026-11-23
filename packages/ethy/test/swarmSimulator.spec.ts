@@ -1,7 +1,7 @@
 import { assert, describe, expect, it } from 'vitest'
 
 import { assertLegacyScenarioGates } from '../src/sim/legacyGates.ts'
-import { metricsToCanonicalJson } from '../src/sim/metrics.ts'
+import { metricsToCanonicalJSON } from '../src/sim/metrics.ts'
 import { createSeededRng } from '../src/sim/rng.ts'
 import {
   ALL_SCENARIO_IDS,
@@ -25,7 +25,7 @@ describe('[Ethy/Sim]: ethy-sim swarm harness', () => {
     const second = runAllScenarios({ seed: 1, policy: 'legacy', scale: 'ci' })
     assert.equal(first.length, 10)
     for (let i = 0; i < first.length; i++) {
-      assert.equal(metricsToCanonicalJson(first[i]!), metricsToCanonicalJson(second[i]!))
+      assert.equal(metricsToCanonicalJSON(first[i]!), metricsToCanonicalJSON(second[i]!))
     }
   })
 

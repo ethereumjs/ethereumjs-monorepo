@@ -10,7 +10,7 @@ const T_TARGET_MS = 60_000
 export const W_MIN_MS = 5_000
 export const W_MAX_MS = 180_000
 
-const U64_MASK = (1n << 64n) - 1n
+const U53_SCALE = 2 ** 53 + 1
 
 export function macroGenerationBlock(head: bigint): bigint {
   if (head <= 0n) return 0n
@@ -27,7 +27,9 @@ function electionUniform(nodeId: Uint8Array, generationBlock: bigint): number {
   const hi = view.getUint32(0, false)
   const lo = view.getUint32(4, false)
   const n = (BigInt(hi) << 32n) | BigInt(lo)
-  const u = Number((n + 1n) / (U64_MASK + 1n))
+  // Top 53 bits for full IEEE-754 float precision on (0, 1); avoids BigInt integer truncation.
+  const top53 = Number(n >> 11n)
+  const u = (top53 + 1) / U53_SCALE
   return Math.min(Math.max(u, Number.EPSILON), 1 - Number.EPSILON)
 }
 
@@ -142,11 +144,12 @@ export function evaluateMinterSuppression(opts: {
 }
 
 export function backupElectionStaggerMs(nodeId: Uint8Array, generationBlock: bigint): number {
-  const buf = new Uint8Array(nodeId.length + 8 + 6)
-  buf.set(nodeId, 0)
   const gen = bigintToMinimalBytes(generationBlock)
+  const tag = new TextEncoder().encode('backup')
+  const buf = new Uint8Array(nodeId.length + gen.length + tag.length)
+  buf.set(nodeId, 0)
   buf.set(gen, nodeId.length)
-  buf.set(new TextEncoder().encode('backup'), nodeId.length + gen.length)
+  buf.set(tag, nodeId.length + gen.length)
   const hash = ethyKeccak256(buf)
   const view = new DataView(hash.buffer, hash.byteOffset, hash.byteLength)
   const n = view.getUint32(0, false) % 75_001

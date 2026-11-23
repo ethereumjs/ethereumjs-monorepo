@@ -448,12 +448,27 @@ export class SnapPivotStore {
     if (prior !== undefined && prior.stateRoot.toLowerCase() === nextRoot.toLowerCase()) {
       return true
     }
+    let nextBucketPivots = prior?.bucketPivotBlocks
+    try {
+      const meta = JSON.parse(
+        fs.readFileSync(path.join(this.pivotDir(nextRoot), 'pivot.json'), 'utf8'),
+      ) as { blockNumber?: string }
+      if (meta.blockNumber !== undefined && meta.blockNumber.length > 0) {
+        const updated: Record<string, string> = {}
+        for (let b = 0; b < 16; b++) {
+          updated[String(b)] = meta.blockNumber
+        }
+        nextBucketPivots = updated
+      }
+    } catch {
+      // keep prior bucket pivots if pivot.json unreadable
+    }
     writeAtomicDoc(path.join(this.networkDir, 'active.json'), {
       stateRoot: nextRoot,
       previousStateRoot,
-      baseSyncComplete: prior?.baseSyncComplete,
+      baseSyncComplete: prior?.baseSyncComplete ?? true,
       lastVerifiedBlockNumber: prior?.lastVerifiedBlockNumber,
-      bucketPivotBlocks: prior?.bucketPivotBlocks,
+      bucketPivotBlocks: nextBucketPivots,
     } satisfies ActiveMeta)
     this.activeStateRoot = nextRoot
     this.seedInitializedAccountFiles(nextRoot)
@@ -1775,6 +1790,27 @@ export class SnapPivotStore {
     fs.writeFileSync(file, body)
     const pivotRoot = this.pivotDir(this.activeStateRoot)
     appendBalTailBundle(pivotRoot, entry.blockNumber, entry.headerRlp, entry.balRlp)
+    if (
+      this.shadowPersistRoot !== undefined &&
+      this.shadowPersistRoot.toLowerCase() !== this.activeStateRoot.toLowerCase()
+    ) {
+      const shadowRootDir = this.pivotDir(this.shadowPersistRoot)
+      let shadowPivotBlock = 0n
+      const shadowPivotPath = path.join(shadowRootDir, 'pivot.json')
+      if (fs.existsSync(shadowPivotPath)) {
+        try {
+          const sp = JSON.parse(fs.readFileSync(shadowPivotPath, 'utf8')) as {
+            blockNumber?: string
+          }
+          if (sp.blockNumber !== undefined) shadowPivotBlock = BigInt(sp.blockNumber)
+        } catch {
+          // ignore malformed shadow pivot metadata
+        }
+      }
+      if (entry.blockNumber > shadowPivotBlock) {
+        appendBalTailBundle(shadowRootDir, entry.blockNumber, entry.headerRlp, entry.balRlp)
+      }
+    }
     let minEarliest: bigint | undefined
     const pivotPath = path.join(pivotRoot, 'pivot.json')
     if (fs.existsSync(pivotPath)) {

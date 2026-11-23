@@ -80,7 +80,7 @@ export function finalizeDerivedMetrics(m: SimMetrics): void {
   m.p95BalTailBlocks = m.p95BalTailBlocks > 0 ? m.p95BalTailBlocks : 64
 }
 
-export function metricsToCanonicalJson(m: SimMetrics): string {
+export function metricsToCanonicalJSON(m: SimMetrics): string {
   return JSON.stringify(m)
 }
 

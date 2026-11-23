@@ -36,8 +36,8 @@ export const SCENARIO_SPECS: Record<ScenarioId, ScenarioSpec> = {
   'flash-crowd-launch': {
     id: 'flash-crowd-launch',
     description: 'Bucket striping amplification',
-    ci: { nodes: 16, virtualDays: 0, seeders: 1, joiners: 15, seederMbps: 50 },
-    demo: { nodes: 201, virtualDays: 0, seeders: 1, joiners: 200, seederMbps: 50 },
+    ci: { nodes: 16, virtualDays: 0, seeders: 1, joiners: 15, seederMegabitsPerSec: 50 },
+    demo: { nodes: 201, virtualDays: 0, seeders: 1, joiners: 200, seederMegabitsPerSec: 50 },
   },
   'low-density-dht-bootstrap': {
     id: 'low-density-dht-bootstrap',
@@ -72,8 +72,8 @@ export const SCENARIO_SPECS: Record<ScenarioId, ScenarioSpec> = {
   'seeder-bandwidth-cap': {
     id: 'seeder-bandwidth-cap',
     description: 'Slow uplink limits amplification',
-    ci: { nodes: 13, virtualDays: 0, seeders: 1, joiners: 12, seederMbps: 20 },
-    demo: { nodes: 51, virtualDays: 0, seeders: 1, joiners: 50, seederMbps: 20 },
+    ci: { nodes: 13, virtualDays: 0, seeders: 1, joiners: 12, seederMegabitsPerSec: 20 },
+    demo: { nodes: 51, virtualDays: 0, seeders: 1, joiners: 50, seederMegabitsPerSec: 20 },
   },
   'long-horizon-soak': {
     id: 'long-horizon-soak',

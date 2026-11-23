@@ -48,13 +48,29 @@ describe('[Ethy/Sync]: ethy seeder schedule', () => {
     }
   })
 
-  it('assignBuckets keeps both peers on same snapshot', () => {
+  it('assignBuckets balances across peers on same snapshot and respects partial masks', () => {
     const a = seeder('a', 100n, ROOT_A, 0xffff, 200n)
     const b = seeder('b', 100n, ROOT_A, 0xffff, 200n)
     assert.equal(peersOnSnapshot([a, b], 100n, ROOT_A).length, 2)
     const r = assignBuckets([a, b])
     assert.ok(r !== undefined)
     assert.equal(r.assignments.size, 16)
+    let countA = 0
+    let countB = 0
+    for (const row of r.assignments.values()) {
+      if (row.peerId === 'a') countA++
+      if (row.peerId === 'b') countB++
+    }
+    assert.equal(countA, 8)
+    assert.equal(countB, 8)
+
+    // Partial same-snapshot peers: a holds low 8 buckets, b holds high 8 buckets
+    const low = seeder('low', 100n, ROOT_A, 0x00ff, 200n)
+    const high = seeder('high', 100n, ROOT_A, 0xff00, 200n)
+    const split = assignBuckets([low, high])
+    assert.ok(split !== undefined)
+    for (let i = 0; i < 8; i++) assert.equal(split.assignments.get(i)?.peerId, 'low')
+    for (let i = 8; i < 16; i++) assert.equal(split.assignments.get(i)?.peerId, 'high')
   })
 
   it('shouldApplyBalAtBlock filters lagging bucket pivots', () => {

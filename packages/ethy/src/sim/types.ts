@@ -62,7 +62,7 @@ export type ScenarioParams = {
   snapCap?: number
   backboneDht?: number
   stopBlocksPastPivot?: bigint
-  seederMbps?: number
+  seederMegabitsPerSec?: number
   ethyInDht?: number
 }
 

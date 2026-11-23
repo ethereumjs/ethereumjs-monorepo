@@ -26,6 +26,7 @@ import {
   freshestCompletedEthyPivot,
   macroGenerationBlock,
 } from './swarmGenerationPolicy.ts'
+import { isUsableEthySeeder } from './syncSourceSelector.ts'
 
 export function minHealPruneBlock(
   snapStore: SnapPivotStore | undefined,
@@ -85,15 +86,28 @@ export function refreshSpineSwarmTelemetry(opts: {
       enabled: opts.shadowRefreshEnabled,
     })
   ) {
-    const seeders = opts.peers
+    const usableSeeders = opts.peers
       .map((p) => {
         const st = p.ethyStatus
         if (st === undefined) return undefined
         return seederFromWorkerStatus(p.id, st)
       })
-      .filter((s): s is NonNullable<typeof s> => s !== undefined)
+      .filter(
+        (s): s is NonNullable<typeof s> =>
+          s !== undefined &&
+          isUsableEthySeeder(
+            {
+              bucketsBitmask: s.bucketsBitmask,
+              basePivotBlock: s.basePivotBlock,
+              balEarliestBlock: s.balEarliestBlock,
+              balLatestBlock: s.balLatestBlock,
+            },
+            head,
+            'auto',
+          ),
+      )
     const freshest = freshestCompletedEthyPivot(
-      seeders.map((s) => ({
+      usableSeeders.map((s) => ({
         basePivotBlock: s.basePivotBlock,
         bucketsBitmask: s.bucketsBitmask,
       })),
@@ -114,14 +128,14 @@ export function refreshSpineSwarmTelemetry(opts: {
       bestVerifiedHead,
       announcements,
     })
-    const electionDelayElapsed =
-      opts.electionHandle !== undefined && Date.now() >= opts.electionHandle.deadlineMs
+    const delayElapsed =
+      opts.electionHandle !== undefined && nowMs >= opts.electionHandle.deadlineMs
     shadow.mode = pickShadowRefreshMode({
       localPivot,
       freshestSwarmPivot: freshest,
       swarmUsable: freshest !== undefined && freshest > localPivot,
       electionSuppressed: suppression.state === 'suppressed',
-      electionDelayElapsed,
+      electionDelayElapsed: delayElapsed,
     })
     shadow.suppressionState = suppression.state
     if (suppression.suppressorPeerId !== undefined) {
@@ -137,7 +151,7 @@ export function refreshSpineSwarmTelemetry(opts: {
     if (opts.electionHandle !== undefined) {
       shadow.electionDeadlineMs = opts.electionHandle.deadlineMs
     }
-    shadow.targetBlock = macroGenerationBlock(head + 1024n)
+    shadow.targetBlock = shadow.mode === 'ethy-shadow' && freshest !== undefined ? freshest : gen
   } else {
     shadow.mode = 'idle'
   }
@@ -163,6 +177,10 @@ export function buildMinterAnnouncements(opts: {
       ? Number.parseInt(st.bucketsBitmask, 16)
       : Number.parseInt(st.bucketsBitmask, 10)
     const basePivotBlock = BigInt(st.basePivotBlock)
+    const balEarliest =
+      st.balEarliestBlock !== undefined ? BigInt(st.balEarliestBlock) : basePivotBlock + 1n
+    // A completed 0xffff peer with a gapped BAL tail cannot serve joiners and must not suppress minting.
+    if (mask === 0xffff && balEarliest > basePivotBlock + 1n) continue
     if (opts.book !== undefined && opts.generationBlock !== undefined) {
       noteMinterStatus(opts.book, p.id, basePivotBlock, mask, gen, nowMs)
     }
@@ -194,7 +212,7 @@ export type GenerationElectionHandle = {
   suppressionWasActive?: boolean
 }
 
-/** Arm once per macro-generation; keep deadline across telemetry ticks (WP-11b). */
+/** Arm once per macro-generation; keep locked deadline across telemetry ticks (WP-11b). */
 export function ensureGenerationElectionArmed(
   prev: GenerationElectionHandle | undefined,
   next: GenerationElectionHandle | undefined,
@@ -203,12 +221,7 @@ export function ensureGenerationElectionArmed(
   if (prev === undefined || prev.generationBlock !== next.generationBlock) {
     return next
   }
-  return {
-    ...next,
-    deadlineMs: Math.max(prev.deadlineMs, next.deadlineMs),
-    backupStaggerApplied: prev.backupStaggerApplied,
-    suppressionWasActive: prev.suppressionWasActive,
-  }
+  return prev
 }
 
 /** When suppression lifts after a blocked lottery window, add backup stagger once. */
