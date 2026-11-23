@@ -34,6 +34,12 @@ export interface FlatStateManagerOpts extends BaseStateManagerOpts {
    */
   coldAccountLookup?: (accountHash: Uint8Array) => Uint8Array | undefined
   /**
+   * Resolve many cold accounts in parallel (e.g. Ethy async journal reads) before BAL apply.
+   */
+  coldAccountBatchLookup?: (
+    accountHashes: Uint8Array[],
+  ) => Promise<Map<string, Uint8Array | undefined>>
+  /**
    * Synchronous fallback when bytecode is not in the in-memory code map (Ethy disk code shards).
    * Must return contract bytecode or `undefined`.
    */
