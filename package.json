@@ -84,7 +84,13 @@
     "vite": "^7.3.7",
     "esbuild": "^0.28.1",
     "embedme": {
-      "glob": "^11.0.0"
+      "glob": {
+        ".": "^11.0.0",
+        "minimatch": "^11.0.1"
+      }
+    },
+    "@typescript-eslint/typescript-estree": {
+      "minimatch": "^11.0.1"
     }
   },
   "engines": {
