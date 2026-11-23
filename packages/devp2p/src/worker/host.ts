@@ -383,6 +383,15 @@ export class Devp2pWorkerHost {
       // Geth's RLPx read deadline is 30s. A 10s pong timer drops a peer that is busy serving snap.
       pingTimeout: 30_000,
     })
+    this._discoveryMetrics.setNetworkProfile({
+      capabilities: this._rlpx.getWireCapabilityNames(),
+      maxPeers: opts.maxPeers ?? 10,
+      maxInboundPeers: opts.maxInboundPeers,
+      discoveryLowWaterMark: opts.discoveryLowWaterMark,
+      minEthyPeers: ethyEnabled ? (opts.minEthyPeers ?? 4) : 0,
+      discoveryMode: 'active',
+      ethyDiscoveryTag: ethyEnabled,
+    })
 
     await new Promise<void>((resolve) => {
       this._dpt!.events.once('listening', () => resolve())
@@ -572,7 +581,9 @@ export class Devp2pWorkerHost {
           true
         const isGet = (SnapMessageCodeNames[msgCode as SnapMessageCodes] ?? '').startsWith('GET_')
         if (isGet && !snapActive) {
-          peer.disconnect(DISCONNECT_REASON.CLIENT_QUITTING)
+          if ((this._rlpx?._connectedPeerCount() ?? 0) > 1) {
+            peer.disconnect(DISCONNECT_REASON.CLIENT_QUITTING)
+          }
           return 'handled'
         }
         if (this._options?.answerEmptySnap === false && isGet) {

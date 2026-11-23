@@ -1,6 +1,11 @@
 import type { DiscoveryMode, NetworkProfile, WorkerPeerSnapshot } from '@ethereumjs/devp2p'
 
-import type { EthyPhase, EthySpine } from '../spine/types.ts'
+import type {
+  EthyPhase,
+  EthySpine,
+  MachinePlaneStatus,
+  MachineSpineSnapshot,
+} from '../spine/types.ts'
 import { HARD_PREFER_SNAP_AGE_BLOCKS, SOFT_REFRESH_AGE_BLOCKS } from './swarmGenerationPolicy.ts'
 import type { SyncMode } from './syncSourceSelector.ts'
 
@@ -17,8 +22,7 @@ export type MachineOperatingMode =
   | 'degraded-recovery'
 
 export type PlaneId = 'eth' | 'ethy' | 'snap' | 'discovery' | 'cl'
-export type PlaneStatus = 'active' | 'prewarming' | 'standby' | 'off'
-
+export type PlaneStatus = MachinePlaneStatus
 export type EthyServingState =
   | 'serving'
   | 'partial-minting'
@@ -27,27 +31,27 @@ export type EthyServingState =
   | 'paused-bal-gap'
   | 'off'
 
-export type EthServingState = 'serving' | 'warming' | 'paused'
-
 export type PlaneDwell = { status: PlaneStatus; sinceMs: number }
+
+export type MachineState = {
+  dwell: Partial<Record<PlaneId, PlaneDwell>>
+  discoveryBurstStartedMs?: number
+  transitions: string[]
+}
 
 export type MachineObservation = {
   nowMs: number
   phase: EthyPhase
   syncTransport: 'unset' | 'snap' | 'ethy'
-  syncMode: 'auto' | 'snap' | 'ethy'
+  syncMode: SyncMode
   shadowRefreshEnabled: boolean
   clDisabled: boolean
-  uptimeMs: number
   healthyEthPeers: number
   ethySessionPeers: number
-  snapSessionPeers: number
-  provenSnapPeers: number
   snapDiscoveryHold: boolean
   ethySwarmActive: boolean
   generationAgeBlocks: bigint
   balTailContiguous: boolean
-  balTailEarliest?: bigint
   bucketsMask: number
   shadowMode?: 'idle' | 'ethy-shadow' | 'snap-mint' | 'waiting-election'
   shadowProgressPct?: number
@@ -55,45 +59,19 @@ export type MachineObservation = {
   electionDeadlineMs?: number
   electionSuppressed: boolean
   hasUsableEthyGNew: boolean
-  ethyPeerTarget: number
   degradedStall: boolean
   dwell: Partial<Record<PlaneId, PlaneDwell>>
   discoveryBurstStartedMs?: number
-  ethBlocksStored: number
-  headLagBlocks: bigint
-}
-
-export type PlaneRecord = {
-  status: PlaneStatus
-  targetPeers: number
-  activePeers: number
-  reason: string
-  nextChangeMs?: number
-  nextChangeLabel?: string
-}
-
-export type MachineSchedule = {
-  generationAgeBlocks: bigint
-  softRefreshAtBlocks: bigint
-  estimatedTimeToSoftRefreshMs?: number
-  ethyPrewarmAtMs?: number
-  snapPrewarmAtMs?: number
-  nextEventSummary: string
 }
 
 export type MachinePlan = {
   mode: MachineOperatingMode
   modeReason: string
-  planes: Record<PlaneId, PlaneRecord>
+  planes: Record<PlaneId, PlaneStatus>
   profile: NetworkProfile
   vipTarget: number
-  schedule: MachineSchedule
-  serving: {
-    eth: EthServingState
-    ethy: EthyServingState
-    snap: 'client-only'
-  }
-  ethyDiscoveryHonest: boolean
+  nextEventSummary: string
+  servingEthy: EthyServingState
 }
 
 export const ETHY_PREWARM_LEAD_MS = 900_000
@@ -102,56 +80,33 @@ export const DISCOVERY_PREWARM_BURST_MS = 300_000
 export const BLOCK_MS = 12_000
 export const MIN_PLANE_DWELL_DISCOVERY_MS = 30_000
 export const MIN_PLANE_DWELL_SNAP_MS = 60_000
+export const MACHINE_TRANSITION_LOG_CAP = 24
 
-const BASE_CAPS = ['eth69', 'eth70', 'eth71', 'eth72', 'ethy0'] as const
-
-function capsForPhase(includeSnap: boolean, includeEthy: boolean): string[] {
-  const caps: string[] = [...BASE_CAPS]
-  if (includeEthy) {
-    /* ethy0 already in base */
-  } else {
-    const idx = caps.indexOf('ethy0')
-    if (idx >= 0) caps.splice(idx, 1)
-  }
-  if (includeSnap) caps.push('snap1')
-  return caps
-}
-
-function peerBudget(mode: MachineOperatingMode): {
-  maxPeers: number
-  vipTarget: number
-  minEthy: number
-  maxInbound: number
-} {
-  switch (mode) {
-    case 'boot-warmup':
-    case 'cold-snap-sync':
-      return { maxPeers: 20, vipTarget: 10, minEthy: 4, maxInbound: 4 }
-    case 'cold-ethy-sync':
-      return { maxPeers: 20, vipTarget: 6, minEthy: 4, maxInbound: 4 }
-    case 'bal-catchup':
-      return { maxPeers: 8, vipTarget: 4, minEthy: 2, maxInbound: 2 }
-    case 'live-calm':
-      return { maxPeers: 6, vipTarget: 3, minEthy: 2, maxInbound: 2 }
-    case 'shadow-ethy-refresh':
-      return { maxPeers: 8, vipTarget: 4, minEthy: 4, maxInbound: 2 }
-    case 'prewarm-snap-mint':
-    case 'shadow-snap-mint':
-      return { maxPeers: 10, vipTarget: 5, minEthy: 2, maxInbound: 4 }
-    case 'prewarm-ethy':
-    case 'degraded-recovery':
-      return { maxPeers: 12, vipTarget: 6, minEthy: 2, maxInbound: 4 }
-    default:
-      return { maxPeers: 8, vipTarget: 4, minEthy: 2, maxInbound: 2 }
-  }
+const BUDGETS: Record<
+  MachineOperatingMode,
+  { maxPeers: number; vipTarget: number; minEthy: number; maxInbound: number }
+> = {
+  'boot-warmup': { maxPeers: 20, vipTarget: 10, minEthy: 4, maxInbound: 4 },
+  'cold-snap-sync': { maxPeers: 20, vipTarget: 10, minEthy: 4, maxInbound: 4 },
+  'cold-ethy-sync': { maxPeers: 20, vipTarget: 6, minEthy: 4, maxInbound: 4 },
+  'bal-catchup': { maxPeers: 8, vipTarget: 4, minEthy: 2, maxInbound: 2 },
+  'live-calm': { maxPeers: 6, vipTarget: 3, minEthy: 2, maxInbound: 2 },
+  'shadow-ethy-refresh': { maxPeers: 8, vipTarget: 4, minEthy: 4, maxInbound: 2 },
+  'prewarm-snap-mint': { maxPeers: 10, vipTarget: 5, minEthy: 2, maxInbound: 4 },
+  'shadow-snap-mint': { maxPeers: 10, vipTarget: 5, minEthy: 2, maxInbound: 4 },
+  'prewarm-ethy': { maxPeers: 12, vipTarget: 6, minEthy: 2, maxInbound: 4 },
+  'degraded-recovery': { maxPeers: 12, vipTarget: 6, minEthy: 2, maxInbound: 4 },
 }
 
 function deriveMode(obs: MachineObservation): { mode: MachineOperatingMode; reason: string } {
-  if (obs.degradedStall || obs.healthyEthPeers === 0) {
-    return { mode: 'degraded-recovery', reason: 'no healthy eth peers' }
-  }
   if (obs.phase === 'BOOTING' || obs.phase === 'P2P_WARMUP') {
     return { mode: 'boot-warmup', reason: obs.phase }
+  }
+  if (obs.degradedStall || obs.healthyEthPeers === 0) {
+    return {
+      mode: 'degraded-recovery',
+      reason: obs.degradedStall ? 'BAL catch-up stalled' : 'no healthy eth peers',
+    }
   }
   if (obs.phase === 'SNAP_SYNCING') {
     return obs.syncTransport === 'ethy'
@@ -168,15 +123,13 @@ function deriveMode(obs: MachineObservation): { mode: MachineOperatingMode; reas
     if (obs.shadowMode === 'snap-mint') {
       return { mode: 'shadow-snap-mint', reason: 'background SNAP shadow mint' }
     }
-    if (obs.shadowMode === 'waiting-election') {
-      const until = obs.electionDeadlineMs
-      if (
-        until !== undefined &&
-        !obs.electionSuppressed &&
-        until - obs.nowMs <= SNAP_PREWARM_LEAD_MS
-      ) {
-        return { mode: 'prewarm-snap-mint', reason: 'election snap pre-warm' }
-      }
+    if (
+      obs.shadowMode === 'waiting-election' &&
+      obs.electionDeadlineMs !== undefined &&
+      !obs.electionSuppressed &&
+      obs.electionDeadlineMs - obs.nowMs <= SNAP_PREWARM_LEAD_MS
+    ) {
+      return { mode: 'prewarm-snap-mint', reason: 'election snap pre-warm' }
     }
     const softMs = Number(SOFT_REFRESH_AGE_BLOCKS - obs.generationAgeBlocks) * BLOCK_MS
     if (
@@ -192,75 +145,58 @@ function deriveMode(obs: MachineObservation): { mode: MachineOperatingMode; reas
 }
 
 function ethyServing(obs: MachineObservation, mode: MachineOperatingMode): EthyServingState {
-  if (obs.syncMode === 'snap' && obs.bucketsMask === 0) return 'off'
+  if (obs.bucketsMask === 0) return 'off'
   if (mode === 'bal-catchup' || obs.phase === 'BAL_CATCHUP') return 'paused-catching-up'
-  if (!obs.balTailContiguous && obs.bucketsMask > 0) return 'paused-bal-gap'
+  if (!obs.balTailContiguous) return 'paused-bal-gap'
   if (obs.generationAgeBlocks > HARD_PREFER_SNAP_AGE_BLOCKS && obs.shadowMode !== 'snap-mint') {
     return 'paused-stale'
   }
-  if (obs.shadowMode === 'snap-mint' || (obs.bucketsMask > 0 && obs.bucketsMask < 0xffff)) {
-    if (obs.bucketsMask > 0 && obs.bucketsMask < 0xffff) return 'partial-minting'
-  }
-  if (obs.bucketsMask > 0 && obs.balTailContiguous) return 'serving'
-  return 'paused-catching-up'
+  if (obs.bucketsMask < 0xffff) return 'partial-minting'
+  return 'serving'
 }
 
-function snapPlaneStatus(mode: MachineOperatingMode): PlaneStatus {
+function snapPlaneStatus(mode: MachineOperatingMode, obs: MachineObservation): PlaneStatus {
   if (mode === 'cold-snap-sync' || mode === 'shadow-snap-mint') return 'active'
-  if (mode === 'prewarm-snap-mint' || mode === 'boot-warmup') return 'prewarming'
+  if (mode === 'prewarm-snap-mint') return 'prewarming'
+  if (mode === 'boot-warmup') return obs.syncMode === 'ethy' ? 'off' : 'prewarming'
+  if (
+    mode === 'degraded-recovery' &&
+    obs.phase === 'SNAP_SYNCING' &&
+    obs.syncTransport !== 'ethy'
+  ) {
+    return 'prewarming'
+  }
   return 'off'
 }
 
 function discoveryPlane(
   mode: MachineOperatingMode,
   obs: MachineObservation,
-): { status: PlaneStatus; mode: DiscoveryMode; reason: string } {
-  const burstAge =
-    obs.discoveryBurstStartedMs !== undefined
-      ? obs.nowMs - obs.discoveryBurstStartedMs
-      : DISCOVERY_PREWARM_BURST_MS + 1
-  const burstOpen =
-    burstAge < DISCOVERY_PREWARM_BURST_MS &&
-    (mode === 'prewarm-ethy' || mode === 'prewarm-snap-mint' || mode === 'degraded-recovery')
-
-  if (burstOpen) {
-    return { status: 'prewarming', mode: 'active', reason: 'pre-warm burst' }
-  }
+  vipTarget: number,
+): PlaneStatus {
+  if (mode === 'degraded-recovery' || mode === 'boot-warmup') return 'active'
   if (mode === 'prewarm-ethy' || mode === 'prewarm-snap-mint') {
-    return { status: 'prewarming', mode: 'active', reason: `${mode} lead window` }
-  }
-  if (mode === 'live-calm' || mode === 'bal-catchup') {
-    if (obs.healthyEthPeers >= obs.ethyPeerTarget) {
-      return { status: 'off', mode: 'off', reason: 'calm steady peers' }
-    }
+    const burstExpired =
+      obs.discoveryBurstStartedMs !== undefined &&
+      obs.nowMs - obs.discoveryBurstStartedMs >= DISCOVERY_PREWARM_BURST_MS
+    return burstExpired ? 'standby' : 'prewarming'
   }
   if (mode === 'cold-snap-sync' || mode === 'cold-ethy-sync') {
-    if (obs.snapDiscoveryHold || obs.ethySwarmActive) {
-      return { status: 'standby', mode: 'quiet', reason: 'bulk sync hold' }
-    }
+    return obs.snapDiscoveryHold || obs.ethySwarmActive ? 'standby' : 'active'
   }
-  if (obs.healthyEthPeers < Math.max(1, peerBudget(mode).vipTarget - 1)) {
-    return { status: 'active', mode: 'active', reason: 'below peer target' }
-  }
-  if (mode === 'live-calm' || mode === 'bal-catchup') {
-    return { status: 'off', mode: 'off', reason: 'targets met' }
-  }
-  return { status: 'standby', mode: 'quiet', reason: 'sync quiet' }
+  if (obs.healthyEthPeers < Math.max(1, vipTarget - 1)) return 'active'
+  return mode === 'live-calm' || mode === 'bal-catchup' ? 'off' : 'standby'
 }
 
 function withDwell(
-  prev: PlaneStatus | undefined,
-  prevSince: number | undefined,
+  dwell: PlaneDwell | undefined,
   next: PlaneStatus,
   nowMs: number,
   minDwellMs: number,
-  emergency: boolean,
+  bypass: boolean,
 ): PlaneStatus {
-  if (prev === undefined || prev === next) return next
-  if (emergency) return next
-  const since = prevSince ?? 0
-  if (nowMs - since < minDwellMs) return prev
-  return next
+  if (dwell === undefined || dwell.status === next || bypass) return next
+  return nowMs - dwell.sinceMs < minDwellMs ? dwell.status : next
 }
 
 function scheduleSummary(
@@ -276,8 +212,8 @@ function scheduleSummary(
     return `SNAP Mint ${obs.shadowMintBucket}/16`
   }
   if (mode === 'prewarm-snap-mint' && obs.electionDeadlineMs !== undefined) {
-    const sec = Math.max(0, Math.ceil((obs.electionDeadlineMs - obs.nowMs) / 1000))
-    return sec > 0 ? `SNAP pre-warm in ${Math.ceil(sec / 60)}m` : 'Waiting election'
+    const min = Math.ceil(Math.max(0, obs.electionDeadlineMs - obs.nowMs) / 60_000)
+    return min > 0 ? `SNAP pre-warm in ${min}m` : 'Waiting election'
   }
   if (mode === 'prewarm-ethy') {
     const softMs = Number(SOFT_REFRESH_AGE_BLOCKS - obs.generationAgeBlocks) * BLOCK_MS
@@ -287,192 +223,186 @@ function scheduleSummary(
     const sec = Math.max(0, Math.ceil((obs.electionDeadlineMs - obs.nowMs) / 1000))
     return `Waiting election (${sec}s)`
   }
-  const softRemaining = Number(SOFT_REFRESH_AGE_BLOCKS - obs.generationAgeBlocks) * BLOCK_MS
-  if (softRemaining > 0 && mode === 'live-calm') {
-    return `Gen ${obs.generationAgeBlocks}/${SOFT_REFRESH_AGE_BLOCKS} blk · ~${(softRemaining / 3_600_000).toFixed(1)}h`
+  const softMs = Number(SOFT_REFRESH_AGE_BLOCKS - obs.generationAgeBlocks) * BLOCK_MS
+  if (softMs > 0 && mode === 'live-calm') {
+    return `Gen ${obs.generationAgeBlocks}/${SOFT_REFRESH_AGE_BLOCKS} blk · ~${(softMs / 3_600_000).toFixed(1)}h`
   }
   if (ethyServe === 'paused-bal-gap') return 'BAL gap — refresh queued'
-  if (mode === 'bal-catchup') return 'Catching up'
-  return 'Live'
+  return mode === 'bal-catchup' ? 'Catching up' : 'Live'
 }
 
 export function evaluateMachinePlan(obs: MachineObservation): MachinePlan {
   const { mode, reason } = deriveMode(obs)
-  const budget = peerBudget(mode)
-  const ethyServe = ethyServing(obs, mode)
-  const snapStatus = snapPlaneStatus(mode)
-  const disc = discoveryPlane(mode, obs)
-
+  const budget = BUDGETS[mode]
+  const servingEthy = ethyServing(obs, mode)
   const emergency = mode === 'degraded-recovery'
-  const prevDisc = obs.dwell.discovery?.status
+
   const discStatus = withDwell(
-    prevDisc,
-    obs.dwell.discovery?.sinceMs,
-    disc.status,
+    obs.dwell.discovery,
+    discoveryPlane(mode, obs, budget.vipTarget),
     obs.nowMs,
     MIN_PLANE_DWELL_DISCOVERY_MS,
     emergency,
   )
-  const prevSnap = obs.dwell.snap?.status
-  const snapStatusDwelled = withDwell(
-    prevSnap,
-    obs.dwell.snap?.sinceMs,
-    snapStatus,
+  const snapStatus = withDwell(
+    obs.dwell.snap,
+    snapPlaneStatus(mode, obs),
     obs.nowMs,
     MIN_PLANE_DWELL_SNAP_MS,
     emergency,
   )
 
-  const includeSnap = snapStatusDwelled === 'active' || snapStatusDwelled === 'prewarming'
-  const ethyOff = ethyServe === 'off'
-  const capabilities = capsForPhase(includeSnap, !ethyOff)
+  const includeSnap = snapStatus === 'active' || snapStatus === 'prewarming'
+  const includeEthy = !(obs.syncMode === 'snap' && obs.bucketsMask === 0)
+  const capabilities = ['eth69', 'eth70', 'eth71', 'eth72']
+  if (includeEthy) capabilities.push('ethy0')
+  if (includeSnap) capabilities.push('snap1')
 
-  const ethyTag = ethyServe === 'serving' || ethyServe === 'partial-minting'
   const discoveryMode: DiscoveryMode =
-    discStatus === 'off' ? 'off' : discStatus === 'standby' ? 'quiet' : disc.mode
+    discStatus === 'off' ? 'off' : discStatus === 'standby' ? 'quiet' : 'active'
+  const ethyDiscoveryTag = servingEthy === 'serving' || servingEthy === 'partial-minting'
 
-  const profile: NetworkProfile = {
-    capabilities,
-    maxPeers: budget.maxPeers,
-    maxInboundPeers: budget.maxInbound,
-    discoveryLowWaterMark: Math.max(1, budget.maxPeers - 4),
-    minEthyPeers: budget.minEthy,
-    discoveryMode,
-    ethyDiscoveryTag: ethyTag,
-    preferEthyDiscovery: mode === 'prewarm-ethy',
-  }
+  const ethyStatus: PlaneStatus = !includeEthy
+    ? 'off'
+    : mode === 'bal-catchup'
+      ? 'standby'
+      : mode === 'prewarm-ethy'
+        ? 'prewarming'
+        : mode === 'cold-ethy-sync' || mode === 'shadow-ethy-refresh' || servingEthy === 'serving'
+          ? 'active'
+          : 'standby'
 
-  const schedule: MachineSchedule = {
-    generationAgeBlocks: obs.generationAgeBlocks,
-    softRefreshAtBlocks: SOFT_REFRESH_AGE_BLOCKS,
-    estimatedTimeToSoftRefreshMs:
-      obs.generationAgeBlocks < SOFT_REFRESH_AGE_BLOCKS
-        ? Number(SOFT_REFRESH_AGE_BLOCKS - obs.generationAgeBlocks) * BLOCK_MS
-        : undefined,
-    nextEventSummary: scheduleSummary(mode, obs, ethyServe),
-  }
-
-  const ethServe: EthServingState =
-    obs.ethBlocksStored > 0 && obs.phase === 'HEAD_FOLLOWING' ? 'serving' : 'warming'
+  const clStatus: PlaneStatus =
+    obs.clDisabled || obs.phase === 'BOOTING'
+      ? 'off'
+      : mode === 'live-calm' || mode === 'boot-warmup'
+        ? 'active'
+        : 'standby'
 
   return {
     mode,
     modeReason: reason,
     vipTarget: budget.vipTarget,
-    schedule,
-    serving: {
-      eth: ethServe,
-      ethy: ethyServe,
-      snap: 'client-only',
-    },
-    ethyDiscoveryHonest: ethyTag,
-    profile,
+    nextEventSummary: scheduleSummary(mode, obs, servingEthy),
+    servingEthy,
     planes: {
-      eth: {
-        status: 'active',
-        targetPeers: budget.vipTarget,
-        activePeers: obs.healthyEthPeers,
-        reason: 'eth/69–72 head & BAL',
-      },
-      ethy: {
-        status:
-          mode === 'bal-catchup'
-            ? 'standby'
-            : ethyOff
-              ? 'off'
-              : mode === 'prewarm-ethy' || mode === 'shadow-ethy-refresh'
-                ? 'active'
-                : ethyServe === 'serving'
-                  ? 'active'
-                  : 'standby',
-        targetPeers: budget.minEthy,
-        activePeers: obs.ethySessionPeers,
-        reason: ethyServe,
-      },
-      snap: {
-        status: snapStatusDwelled,
-        targetPeers: includeSnap ? 4 : 0,
-        activePeers: obs.snapSessionPeers,
-        reason: snapStatusDwelled === 'off' ? 'snap1 not advertised' : 'snap/1 client',
-      },
-      discovery: {
-        status: discStatus,
-        targetPeers: budget.vipTarget,
-        activePeers: obs.healthyEthPeers,
-        reason: disc.reason,
-      },
-      cl: {
-        status:
-          obs.clDisabled || obs.phase === 'BOOTING'
-            ? 'off'
-            : mode === 'live-calm' || mode === 'boot-warmup'
-              ? 'active'
-              : 'standby',
-        targetPeers: 0,
-        activePeers: 0,
-        reason: obs.clDisabled ? '--no-cl' : mode === 'live-calm' ? '12s slot' : '60s standby',
-      },
+      eth: 'active',
+      ethy: ethyStatus,
+      snap: snapStatus,
+      discovery: discStatus,
+      cl: clStatus,
+    },
+    profile: {
+      capabilities,
+      maxPeers: budget.maxPeers,
+      maxInboundPeers: budget.maxInbound,
+      discoveryLowWaterMark: Math.max(1, budget.maxPeers - 4),
+      minEthyPeers: includeEthy ? budget.minEthy : 0,
+      discoveryMode,
+      ethyDiscoveryTag,
+      preferEthyDiscovery: mode === 'prewarm-ethy',
     },
   }
 }
 
-export function bootNetworkProfile(): NetworkProfile {
+export function createMachineState(): MachineState {
+  return { dwell: {}, transitions: [] }
+}
+
+/** Pure stateful step: evaluates plan, updates dwell/burst timers, and returns spine snapshot. */
+export function stepMachineOrchestrator(
+  prev: MachineState,
+  obs: Omit<MachineObservation, 'dwell' | 'discoveryBurstStartedMs'>,
+): { plan: MachinePlan; nextState: MachineState; snapshot: MachineSpineSnapshot } {
+  const plan = evaluateMachinePlan({
+    ...obs,
+    dwell: prev.dwell,
+    discoveryBurstStartedMs: prev.discoveryBurstStartedMs,
+  })
+  const dwell: Partial<Record<PlaneId, PlaneDwell>> = { ...prev.dwell }
+  const transitions = [...prev.transitions]
+  for (const id of ['eth', 'ethy', 'snap', 'discovery', 'cl'] as const) {
+    const next = plan.planes[id]
+    const prior = prev.dwell[id]
+    if (prior?.status !== next) {
+      if (prior !== undefined) {
+        transitions.push(
+          `${new Date(obs.nowMs).toISOString().slice(11, 19)} ${id} ${prior.status}→${next}`,
+        )
+        if (transitions.length > MACHINE_TRANSITION_LOG_CAP) transitions.shift()
+      }
+      dwell[id] = { status: next, sinceMs: obs.nowMs }
+    }
+  }
+  const inPrewarm = plan.mode === 'prewarm-ethy' || plan.mode === 'prewarm-snap-mint'
+  const discoveryBurstStartedMs =
+    plan.planes.discovery === 'prewarming' && prev.dwell.discovery?.status !== 'prewarming'
+      ? obs.nowMs
+      : inPrewarm
+        ? prev.discoveryBurstStartedMs
+        : undefined
+
   return {
-    capabilities: ['eth69', 'eth70', 'eth71', 'eth72', 'snap1', 'ethy0'],
+    plan,
+    nextState: { dwell, discoveryBurstStartedMs, transitions },
+    snapshot: {
+      mode: plan.mode,
+      modeReason: plan.modeReason,
+      nextEventSummary: plan.nextEventSummary,
+      planes: plan.planes,
+      servingEthy: plan.servingEthy,
+      ethyDiscoveryTag: plan.profile.ethyDiscoveryTag,
+      transitions,
+      vipTarget: plan.vipTarget,
+      discoveryMode: plan.profile.discoveryMode,
+    },
+  }
+}
+
+export function bootNetworkProfile(syncMode: SyncMode = 'auto'): NetworkProfile {
+  const capabilities = ['eth69', 'eth70', 'eth71', 'eth72']
+  if (syncMode !== 'snap') capabilities.push('ethy0')
+  if (syncMode !== 'ethy') capabilities.push('snap1')
+  return {
+    capabilities,
     maxPeers: 20,
     maxInboundPeers: 4,
     discoveryLowWaterMark: 4,
-    minEthyPeers: 4,
+    minEthyPeers: syncMode === 'snap' ? 0 : 4,
     discoveryMode: 'active',
     ethyDiscoveryTag: false,
     preferEthyDiscovery: false,
   }
 }
 
-export const MACHINE_TRANSITION_LOG_CAP = 24
-
 export function buildMachineObservation(opts: {
   spine: EthySpine
   peerSnapshots: WorkerPeerSnapshot[]
   syncMode: SyncMode
   shadowRefreshEnabled: boolean
+  clDisabled?: boolean
   nowMs: number
   snapDiscoveryHold: boolean
   ethySwarmActive: boolean
   degradedStall: boolean
-  dwell: Partial<Record<PlaneId, PlaneDwell>>
-  discoveryBurstStartedMs?: number
-  vipTarget: number
   hasUsableEthyGNew: boolean
-  uptimeMs: number
+  dwell?: Partial<Record<PlaneId, PlaneDwell>>
+  discoveryBurstStartedMs?: number
 }): MachineObservation {
-  const healthyEth = opts.peerSnapshots.filter((p) => p.bestHash !== undefined).length
-  const ethySessions = opts.peerSnapshots.filter((p) => p.ethySession === true).length
-  const snapSessions = opts.peerSnapshots.filter((p) => p.snapSession === true).length
-  const provenSnap = opts.peerSnapshots.filter(
-    (p) => p.snapSession === true && (opts.spine.peers.get(p.id)?.snapResponsesOk ?? 0) > 0,
-  ).length
   const shadow = opts.spine.swarm?.shadowRefresh
-  const head = opts.spine.lastVerifiedBlockNumber ?? opts.spine.headBlockNumber ?? 0n
-  const chainHead = opts.spine.bestPeerHead ?? head
-  const headLag = chainHead > head ? chainHead - head : 0n
   return {
     nowMs: opts.nowMs,
     phase: opts.spine.phase,
     syncTransport: opts.spine.syncTransport ?? 'unset',
     syncMode: opts.syncMode,
     shadowRefreshEnabled: opts.shadowRefreshEnabled,
-    clDisabled: opts.spine.clStatus === 'p2p_only',
-    uptimeMs: opts.uptimeMs,
-    healthyEthPeers: healthyEth,
-    ethySessionPeers: ethySessions,
-    snapSessionPeers: snapSessions,
-    provenSnapPeers: provenSnap,
+    clDisabled: opts.clDisabled ?? false,
+    healthyEthPeers: opts.peerSnapshots.filter((p) => p.bestHash !== undefined).length,
+    ethySessionPeers: opts.peerSnapshots.filter((p) => p.ethySession === true).length,
     snapDiscoveryHold: opts.snapDiscoveryHold,
     ethySwarmActive: opts.ethySwarmActive,
     generationAgeBlocks: opts.spine.swarm?.generationAgeBlocks ?? 0n,
     balTailContiguous: opts.spine.swarm?.balTailContiguous !== false,
-    balTailEarliest: opts.spine.swarm?.balTailEarliest,
     bucketsMask: opts.spine.ethyBucketsBitmask ?? 0,
     shadowMode: shadow?.mode,
     shadowProgressPct: shadow?.progressPct,
@@ -481,18 +411,15 @@ export function buildMachineObservation(opts: {
     electionSuppressed:
       shadow?.suppressionState !== 'clear' && shadow?.suppressionState !== undefined,
     hasUsableEthyGNew: opts.hasUsableEthyGNew,
-    ethyPeerTarget: opts.vipTarget,
     degradedStall: opts.degradedStall,
-    dwell: opts.dwell,
+    dwell: opts.dwell ?? {},
     discoveryBurstStartedMs: opts.discoveryBurstStartedMs,
-    ethBlocksStored: opts.spine.serving?.blocksStored ?? 0,
-    headLagBlocks: headLag,
   }
 }
 
 export function machinePlanesOff(plan: MachinePlan): { snapOff: boolean; discoveryOff: boolean } {
   return {
-    snapOff: plan.planes.snap.status === 'off',
-    discoveryOff: plan.planes.discovery.status === 'off' || plan.profile.discoveryMode === 'off',
+    snapOff: plan.planes.snap === 'off',
+    discoveryOff: plan.planes.discovery === 'off' || plan.profile.discoveryMode === 'off',
   }
 }

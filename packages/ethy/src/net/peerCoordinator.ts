@@ -73,13 +73,11 @@ import { pickEthyAnchorForStaleResume } from '../sync/ethyAnchorResume.ts'
 import { seederFromWorkerStatus } from '../sync/ethySeederSchedule.ts'
 import { EthySwarmSynchronizer } from '../sync/ethySwarmSync.ts'
 import {
-  MACHINE_TRANSITION_LOG_CAP,
   type MachinePlan,
-  type PlaneDwell,
-  type PlaneId,
   bootNetworkProfile,
   buildMachineObservation,
-  evaluateMachinePlan,
+  createMachineState,
+  stepMachineOrchestrator,
 } from '../sync/machineOrchestrator.ts'
 import { createMinterHeaderBook, noteMinterHeaderVerified } from '../sync/minterHeaderBook.ts'
 import { createMinterLivenessBook, noteMinterEthyServe } from '../sync/minterLiveness.ts'
@@ -122,7 +120,10 @@ import {
   resolveLiveNetworkHead,
   shouldReenterBalCatchUp,
 } from '../sync/startupStateMachine.ts'
-import { macroGenerationBlock } from '../sync/swarmGenerationPolicy.ts'
+import {
+  MACRO_GENERATION_GRID_BLOCKS,
+  macroGenerationBlock,
+} from '../sync/swarmGenerationPolicy.ts'
 import {
   type GenerationElectionHandle,
   applyBackupElectionStaggerOnSuppressionLift,
@@ -1017,10 +1018,8 @@ export async function startPeerCoordinator(
   let link = initialP2pLinkState()
   const linkStartedAt = Date.now()
   let discoveryHoldActive: boolean | undefined
-  let lastAppliedProfile = bootNetworkProfile()
-  let planeDwell: Partial<Record<PlaneId, PlaneDwell>> = {}
-  let discoveryBurstStartedMs: number | undefined
-  const machineTransitions: string[] = []
+  let lastAppliedProfile = bootNetworkProfile(syncMode)
+  let machineState = createMachineState()
   let lastMachinePlan: MachinePlan | undefined
   let lastClPollMs: number | undefined
 
@@ -1575,7 +1574,7 @@ export async function startPeerCoordinator(
     const peerList = [...spine.peers.values()]
     if (lastMachinePlan?.mode === 'live-calm') {
       const healthy = peerList.filter((p) => p.hasHead === true).length
-      if (healthy >= 3) return
+      if (healthy >= lastMachinePlan.vipTarget) return
     }
     const inHeadOrCatchup =
       spine.phase === 'HEAD_FOLLOWING' || spine.phase === 'BAL_CATCHUP' || handoffCatchup
@@ -2367,71 +2366,43 @@ export async function startPeerCoordinator(
         servingSnapPeers,
         held: discoveryHoldActive === true,
       })
-      discoveryHoldActive = snapDiscoveryHold
-    } else {
-      discoveryHoldActive = false
     }
+    discoveryHoldActive = snapDiscoveryHold
 
     const head = spine.bestPeerHead ?? spine.lastVerifiedBlockNumber ?? 0n
-    const hasGNew = pickUsableEthySeeder(ethySeederRows(snap.peers), head, syncMode) !== undefined
+    const localPivot = spine.pivotBlockNumber ?? 0n
+    const usableSeeder = pickUsableEthySeeder(ethySeederRows(snap.peers), head, syncMode)
+    const hasGNew =
+      usableSeeder !== undefined &&
+      usableSeeder.seeder.basePivotBlock >= localPivot + MACRO_GENERATION_GRID_BLOCKS
 
-    const obs = buildMachineObservation({
-      spine,
-      peerSnapshots: snap.peers,
-      syncMode,
-      shadowRefreshEnabled,
-      nowMs,
-      snapDiscoveryHold,
-      ethySwarmActive:
-        (spine.syncTransport === 'ethy' && (ethySwarm?.isActive() ?? false)) ||
-        (ethySwarm?.isActive() ?? false),
-      degradedStall: balCatchUpStallWarned,
-      dwell: planeDwell,
-      discoveryBurstStartedMs,
-      vipTarget:
-        lastMachinePlan?.vipTarget ??
-        (spine.phase === 'HEAD_FOLLOWING' || spine.phase === 'BAL_CATCHUP' ? 3 : 6),
-      hasUsableEthyGNew: hasGNew,
-      uptimeMs: nowMs - processStartedAtMs,
-    })
-    const plan = evaluateMachinePlan(obs)
+    const prevServingEthy = lastMachinePlan?.servingEthy
+    const { plan, nextState, snapshot } = stepMachineOrchestrator(
+      machineState,
+      buildMachineObservation({
+        spine,
+        peerSnapshots: snap.peers,
+        syncMode,
+        shadowRefreshEnabled,
+        clDisabled: opts.setConsensusPollInterval === undefined,
+        nowMs,
+        snapDiscoveryHold,
+        ethySwarmActive: ethySwarm?.isActive() === true,
+        degradedStall: balCatchUpStallWarned,
+        hasUsableEthyGNew: hasGNew,
+      }),
+    )
+    machineState = nextState
     lastMachinePlan = plan
+    spine.machine = snapshot
 
-    for (const id of ['eth', 'ethy', 'snap', 'discovery', 'cl'] as const) {
-      const nextStatus = plan.planes[id].status
-      const prev = planeDwell[id]
-      if (prev?.status !== nextStatus) {
-        if (prev !== undefined) {
-          machineTransitions.push(
-            `${new Date(nowMs).toISOString().slice(11, 19)} ${id} ${prev.status}→${nextStatus}`,
-          )
-          while (machineTransitions.length > MACHINE_TRANSITION_LOG_CAP) {
-            machineTransitions.shift()
-          }
-        }
-        planeDwell[id] = { status: nextStatus, sinceMs: nowMs }
-      }
-    }
-    if (
-      plan.planes.discovery.status === 'prewarming' &&
-      obs.dwell.discovery?.status !== 'prewarming'
-    ) {
-      discoveryBurstStartedMs = nowMs
-    }
-    if (
-      (plan.planes.discovery.status === 'off' || plan.planes.discovery.status === 'active') &&
-      plan.mode !== 'prewarm-ethy' &&
-      plan.mode !== 'prewarm-snap-mint'
-    ) {
-      discoveryBurstStartedMs = undefined
+    if (prevServingEthy !== plan.servingEthy) {
+      refreshEthyWorkerAdvertisement(clientRef, spine)
     }
 
     if (!networkProfilesEqual(lastAppliedProfile, plan.profile)) {
       clientRef.setNetworkProfile(plan.profile)
-      lastAppliedProfile = {
-        ...plan.profile,
-        capabilities: [...plan.profile.capabilities],
-      }
+      lastAppliedProfile = { ...plan.profile, capabilities: [...plan.profile.capabilities] }
       recordDiagnostic(spine, {
         subsystem: 'devp2p',
         severity: 'info',
@@ -2440,29 +2411,11 @@ export async function startPeerCoordinator(
     }
 
     if (opts.setConsensusPollInterval !== undefined && spine.clStatus !== 'p2p_only') {
-      const pollMs = plan.planes.cl.status === 'active' ? 12_000 : 60_000
-      if (plan.planes.cl.status !== 'off' && lastClPollMs !== pollMs) {
+      const pollMs = plan.planes.cl === 'active' ? 12_000 : 60_000
+      if (plan.planes.cl !== 'off' && lastClPollMs !== pollMs) {
         opts.setConsensusPollInterval(pollMs)
         lastClPollMs = pollMs
       }
-    }
-
-    spine.machine = {
-      mode: plan.mode,
-      modeReason: plan.modeReason,
-      nextEventSummary: plan.schedule.nextEventSummary,
-      planes: {
-        eth: plan.planes.eth.status,
-        ethy: plan.planes.ethy.status,
-        snap: plan.planes.snap.status,
-        discovery: plan.planes.discovery.status,
-        cl: plan.planes.cl.status,
-      },
-      servingEthy: plan.serving.ethy,
-      ethyDiscoveryTag: plan.profile.ethyDiscoveryTag,
-      transitions: [...machineTransitions],
-      vipTarget: plan.vipTarget,
-      discoveryMode: plan.profile.discoveryMode,
     }
   }
 

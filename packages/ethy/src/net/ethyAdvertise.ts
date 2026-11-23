@@ -13,14 +13,12 @@ export function refreshEthyWorkerAdvertisement(client: Devp2pWorkerClient, spine
     servingEthy === 'paused-stale' ||
     servingEthy === 'paused-bal-gap'
   const tailEarliest = spine.swarm?.balTailEarliest
-  let earliest: string
-  if (tailEarliest !== undefined) {
-    earliest = tailEarliest.toString()
-  } else if (pausedServing) {
-    earliest = spine.serving?.earliestBlock ?? pivotStr
-  } else {
-    earliest = spine.serving?.earliestBlock ?? pivotStr
-  }
+  const earliest =
+    tailEarliest !== undefined
+      ? tailEarliest.toString()
+      : mask === 0xffff && !pausedServing
+        ? (spine.pivotBlockNumber + 1n).toString()
+        : (spine.serving?.earliestBlock ?? pivotStr)
   const latest =
     spine.lastVerifiedBlockNumber !== undefined
       ? spine.lastVerifiedBlockNumber.toString()

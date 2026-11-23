@@ -299,7 +299,7 @@ export class DPT {
       return
     }
     if (!this.id) return
-    if (this._shouldFindNeighbours) {
+    if (this._shouldFindNeighbours && this._discoveryMode === 'active') {
       // Rotate random target IDs after the initial self-ID lookup so k-buckets fill across the full key space
       this._server.findneighbours(peer, this.id)
       setTimeout(() => {

@@ -273,30 +273,32 @@ function nodePulsePairs(spine: EthySpine): TwoColumnPair[] {
           : (spine.clStatus ?? '—')
     const ethyServe = spine.machine?.servingEthy
     const bucketBits = countBits16(spine.ethyBucketsBitmask ?? 0)
-    let serveSuffix = `serve ${bucketBits}/16`
-    if (ethyServe === 'paused-catching-up') serveSuffix = 'paused · catching up'
-    else if (ethyServe === 'paused-bal-gap') serveSuffix = 'BAL gap — refresh queued'
-    else if (ethyServe === 'paused-stale') serveSuffix = 'paused · stale generation'
+    const serveSuffix =
+      ethyServe === 'paused-catching-up'
+        ? 'paused · catching up'
+        : ethyServe === 'paused-bal-gap'
+          ? 'BAL gap — refresh queued'
+          : ethyServe === 'paused-stale'
+            ? 'paused · stale gen'
+            : `serve ${bucketBits}/16`
     const stateValue =
       codeCount > 0
         ? `${acc} acc · ${formatCompactCount(codeCount)} code · ${serveSuffix}`
-        : `${acc} acc · ${balCount.toLocaleString('en-US')} BALs · CL ${clLabel} · ${serveSuffix}`
-    let stage = '★ Head Following · Live'
+        : `${acc} acc · ${balCount.toLocaleString('en-US')} BALs · CL ${clLabel}`
     const mode = spine.machine?.mode
-    if (mode === 'shadow-ethy-refresh' && spine.swarm?.shadowRefresh?.progressPct !== undefined) {
-      stage += ` · Shadow ETHY ${Math.round(spine.swarm.shadowRefresh.progressPct)}%`
-    }
-    if (mode === 'shadow-snap-mint' && spine.swarm?.shadowRefresh?.mintBucket !== undefined) {
-      stage += ` · SNAP Mint ${spine.swarm.shadowRefresh.mintBucket}/16`
-    }
-    const refresh = spine.machine?.nextEventSummary ?? '—'
+    const stage =
+      mode === 'shadow-ethy-refresh' && spine.swarm?.shadowRefresh?.progressPct !== undefined
+        ? `★ Live · Shadow ETHY ${Math.round(spine.swarm.shadowRefresh.progressPct)}%`
+        : mode === 'shadow-snap-mint' && spine.swarm?.shadowRefresh?.mintBucket !== undefined
+          ? `★ Live · SNAP Mint ${spine.swarm.shadowRefresh.mintBucket}/16`
+          : '★ Head Following · Live'
     return [
       { label: 'Stage', value: stage },
       {
         label: 'Target',
         value: head !== undefined ? `${formatBlockNum(head)} ${targetSuffix}` : '—',
       },
-      { label: 'Refresh', value: refresh },
+      { label: 'Refresh', value: spine.machine?.nextEventSummary ?? 'Synced' },
       { label: 'State', value: stateValue },
     ]
   }
@@ -323,11 +325,11 @@ function clientFamilies(spine: EthySpine): string {
     .join(' · ')
 }
 
-function rmsLatencyMs(spine: EthySpine): number | undefined {
+function avgLatencyMs(spine: EthySpine): number | undefined {
   const peers = [...spine.peers.values()]
   if (peers.length === 0) return undefined
-  const sumSq = peers.reduce((a, p) => a + p.avgLatencyMs * p.avgLatencyMs, 0)
-  return Math.sqrt(sumSq / peers.length)
+  const sum = peers.reduce((a, p) => a + p.avgLatencyMs, 0)
+  return Math.round(sum / peers.length)
 }
 
 function ethHeadPeerCount(spine: EthySpine): number {
@@ -394,23 +396,24 @@ function servedMetric(spine: EthySpine): string {
 }
 
 function p2pMetricsPairs(spine: EthySpine): TwoColumnPair[] {
-  const rms = rmsLatencyMs(spine)
-  const rttText = rms !== undefined ? `${Math.round(rms)}ms` : '—'
+  const rtt = avgLatencyMs(spine)
+  const rttText = rtt !== undefined ? `${rtt}ms` : '—'
   const ethy = ethySessionCount(spine)
   const ethHead = ethHeadPeerCount(spine)
   const snapN = snapSessionCount(spine)
   const planes = spine.machine?.planes
   const showSnap = planes?.snap === 'active' || planes?.snap === 'prewarming' || snapN > 0
-  let peersValue = `${spine.peers.size} conn · ${rttText} (${ethy} ethy · ${ethHead} eth)`
-  if (showSnap) peersValue += ` · ${snapN} snap`
+  const breakdown = showSnap
+    ? `${ethy} ethy · ${ethHead} eth · ${snapN} snap`
+    : `${ethy} ethy · ${ethHead} eth`
   const planeRow =
     planes !== undefined
       ? `eth ${planeGlyph(planes.eth)} · ethy ${planeGlyph(planes.ethy)} · snap ${planeGlyph(planes.snap)} · disc ${planeGlyph(planes.discovery)}`
       : '—'
   return [
-    { label: 'Peers', value: peersValue },
-    { label: 'Served', value: servedMetric(spine) },
+    { label: 'Peers', value: `${spine.peers.size} conn · ${rttText} (${breakdown})` },
     { label: 'Planes', value: planeRow },
+    { label: 'Served', value: servedMetric(spine) },
     { label: 'Clients', value: clientFamilies(spine) },
   ]
 }

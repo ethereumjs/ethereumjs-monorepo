@@ -577,6 +577,7 @@ export class RLPx {
     // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for peer lookups.
     const peerKey = bytesToUnprefixedHex(id)
     this._peers.delete(peerKey)
+    this._peerRtt.delete(peerKey)
     const helloClientId = peer.getHelloMessage()?.clientId
     const clientStr =
       helloClientId !== undefined
@@ -639,8 +640,10 @@ export class RLPx {
     if (this._dpt !== null) {
       if (profile.discoveryMode === 'off' || profile.discoveryMode === 'quiet') {
         this._dpt.setDiscoveryMode(profile.discoveryMode)
-      } else {
+      } else if (this._throttleDiscovery) {
         this._syncDiscoveryThrottle()
+      } else {
+        this._dpt.setDiscoveryMode('active')
       }
       this._dpt.setEthyDiscoveryTag(profile.ethyDiscoveryTag)
     }
@@ -668,16 +671,17 @@ export class RLPx {
     let surplus = connected.length - this._maxPeers
     if (surplus <= 0) return
 
-    const ethyCount = connected.filter((p) => this._peerSpeaksEthy(p)).length
-    const ethHeadCount = connected.filter(
+    let ethyCount = connected.filter((p) => this._peerSpeaksEthy(p)).length
+    let ethHeadCount = connected.filter(
       (p) => this._peerSpeaksEth(p) || this._peerSpeaksSnap(p),
     ).length
+    const snapWanted = this._wireCapabilityNames.includes('snap1')
 
     const score = (p: Peer): number => {
-      const key = bytesToUnprefixedHex(p.getId() as Uint8Array)
-      const rtt = this._peerRtt.get(key) ?? 0
+      const id = p.getId()
+      const rtt = id ? (this._peerRtt.get(bytesToUnprefixedHex(id)) ?? 0) : 0
       let s = rtt
-      if (this._peerSpeaksSnap(p)) s += 10_000
+      if (!snapWanted && this._peerSpeaksSnap(p)) s += 10_000
       if (!this._peerSpeaksEthy(p)) s += 1000
       return s
     }
@@ -685,13 +689,14 @@ export class RLPx {
     const victims = [...connected].sort((a, b) => score(b) - score(a))
     for (const peer of victims) {
       if (surplus <= 0) break
-      if (this._peerSpeaksEthy(peer) && ethyCount <= this._minEthyPeers) continue
-      if ((this._peerSpeaksEth(peer) || this._peerSpeaksSnap(peer)) && ethHeadCount <= 1) continue
+      const isEthy = this._peerSpeaksEthy(peer)
+      const isEthHead = this._peerSpeaksEth(peer) || this._peerSpeaksSnap(peer)
+      if (isEthy && ethyCount <= this._minEthyPeers) continue
+      if (isEthHead && ethHeadCount <= 1) continue
       peer.disconnect(DISCONNECT_REASON.TOO_MANY_PEERS)
       surplus--
-      if (this._peerSpeaksEthy(peer)) {
-        /* ethyCount not decremented here; disconnect is async */
-      }
+      if (isEthy) ethyCount--
+      if (isEthHead) ethHeadCount--
     }
   }
 

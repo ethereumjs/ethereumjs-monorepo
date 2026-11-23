@@ -2,11 +2,14 @@ import { assert, describe, it } from 'vitest'
 
 import { createSpine, setPhase } from '../src/spine/createSpine.ts'
 import {
+  DISCOVERY_PREWARM_BURST_MS,
   ETHY_PREWARM_LEAD_MS,
   SNAP_PREWARM_LEAD_MS,
   buildMachineObservation,
+  createMachineState,
   evaluateMachinePlan,
   machinePlanesOff,
+  stepMachineOrchestrator,
 } from '../src/sync/machineOrchestrator.ts'
 import type { MachineObservation } from '../src/sync/machineOrchestrator.ts'
 import { SOFT_REFRESH_AGE_BLOCKS } from '../src/sync/swarmGenerationPolicy.ts'
@@ -21,7 +24,6 @@ function calmHeadFollowingObs(nowMs: number): MachineObservation {
     shadowRefresh: { mode: 'idle', suppressionState: 'clear' },
   }
   spine.lastVerifiedBlockNumber = 12_000_000n
-  spine.serving = { blocksStored: 90, earliestBlock: '11999000', latestBlock: '12000000' } as never
   return buildMachineObservation({
     spine,
     peerSnapshots: [],
@@ -31,14 +33,31 @@ function calmHeadFollowingObs(nowMs: number): MachineObservation {
     snapDiscoveryHold: false,
     ethySwarmActive: false,
     degradedStall: false,
-    dwell: {},
-    vipTarget: 3,
     hasUsableEthyGNew: false,
-    uptimeMs: 600_000,
   })
 }
 
 describe('machineOrchestrator', () => {
+  it('cold boot-warmup with 0 peers stays in boot-warmup and keeps snap1 on (off for ethy mode)', () => {
+    const now = Date.now()
+    const base: MachineObservation = {
+      ...calmHeadFollowingObs(now),
+      phase: 'P2P_WARMUP',
+      healthyEthPeers: 0,
+      bucketsMask: 0,
+    }
+    const autoPlan = evaluateMachinePlan(base)
+    assert.equal(autoPlan.mode, 'boot-warmup')
+    assert.equal(autoPlan.planes.snap, 'prewarming')
+    assert.include(autoPlan.profile.capabilities, 'snap1')
+    assert.equal(autoPlan.servingEthy, 'off')
+
+    const ethyOnlyPlan = evaluateMachinePlan({ ...base, syncMode: 'ethy' })
+    assert.equal(ethyOnlyPlan.mode, 'boot-warmup')
+    assert.equal(ethyOnlyPlan.planes.snap, 'off')
+    assert.notInclude(ethyOnlyPlan.profile.capabilities, 'snap1')
+  })
+
   it('live-calm keeps snap and discovery off when peers are healthy', () => {
     const now = Date.now()
     const obs: MachineObservation = {
@@ -54,21 +73,30 @@ describe('machineOrchestrator', () => {
     assert.notInclude(plan.profile.capabilities, 'snap1')
   })
 
-  it('pre-warm ethy opens discovery inside T-15m of soft refresh', () => {
-    const now = Date.now()
+  it('prewarm-ethy opens discovery burst inside T-15m and caps burst after 5m', () => {
+    const t0 = 1_000_000
     const leadBlocks = BigInt(Math.floor(ETHY_PREWARM_LEAD_MS / 12_000))
     const age = SOFT_REFRESH_AGE_BLOCKS - leadBlocks + 5n
-    const obs: MachineObservation = {
-      ...calmHeadFollowingObs(now),
+    const base = {
+      ...calmHeadFollowingObs(t0),
       generationAgeBlocks: age,
       healthyEthPeers: 4,
       ethySessionPeers: 1,
       hasUsableEthyGNew: false,
     }
-    const plan = evaluateMachinePlan(obs)
-    assert.equal(plan.mode, 'prewarm-ethy')
-    assert.equal(plan.planes.discovery.status, 'prewarming')
-    assert.equal(plan.profile.discoveryMode, 'active')
+    const step1 = stepMachineOrchestrator(createMachineState(), base)
+    assert.equal(step1.plan.mode, 'prewarm-ethy')
+    assert.equal(step1.plan.planes.discovery, 'prewarming')
+    assert.equal(step1.plan.profile.discoveryMode, 'active')
+    assert.equal(step1.nextState.discoveryBurstStartedMs, t0)
+
+    const step2 = stepMachineOrchestrator(step1.nextState, {
+      ...base,
+      nowMs: t0 + DISCOVERY_PREWARM_BURST_MS + 1_000,
+    })
+    assert.equal(step2.plan.planes.discovery, 'standby')
+    assert.equal(step2.plan.profile.discoveryMode, 'quiet')
+    assert.isAbove(step2.nextState.transitions.length, 0)
   })
 
   it('paused-bal-gap when mask full but BAL tail gapped', () => {
@@ -80,7 +108,7 @@ describe('machineOrchestrator', () => {
       healthyEthPeers: 3,
     }
     const plan = evaluateMachinePlan(obs)
-    assert.equal(plan.serving.ethy, 'paused-bal-gap')
+    assert.equal(plan.servingEthy, 'paused-bal-gap')
     assert.equal(plan.profile.ethyDiscoveryTag, false)
   })
 
@@ -95,10 +123,11 @@ describe('machineOrchestrator', () => {
     }
     const plan = evaluateMachinePlan(obs)
     assert.equal(plan.mode, 'prewarm-snap-mint')
-    assert.equal(plan.planes.snap.status, 'prewarming')
+    assert.equal(plan.planes.snap, 'prewarming')
+    assert.include(plan.profile.capabilities, 'snap1')
   })
 
-  it('degraded-recovery bypasses dwell on discovery', () => {
+  it('degraded-recovery post-boot bypasses dwell on discovery', () => {
     const now = Date.now()
     const obs: MachineObservation = {
       ...calmHeadFollowingObs(now),
@@ -107,6 +136,6 @@ describe('machineOrchestrator', () => {
     }
     const plan = evaluateMachinePlan(obs)
     assert.equal(plan.mode, 'degraded-recovery')
-    assert.notEqual(plan.planes.discovery.status, 'off')
+    assert.equal(plan.planes.discovery, 'active')
   })
 })
