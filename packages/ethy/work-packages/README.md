@@ -328,6 +328,14 @@ Every Work Package delivers a **runnable, observable, and live-testable incremen
                                           │        Engine, Curated Ethereum Lore &  │
                                           │        Threat Grounding, Editorial TUI  │
                                           │        & Conversational Deep-Dives      │
+                                          └───────────────────┬─────────────────────┘
+                                                              │
+                                                              ▼ (Network Citizenship & Machine Control)
+                                          ┌─────────────────────────────────────────┐
+                                          │ WP-13: The Machine — Unified Sync &     │
+                                          │        Network Lifecycle Orchestrator,  │
+                                          │        Dynamic Subprotocol Planes       │
+                                          │        (SNAP/ETHY/Disc/CL) & Cockpit UI │
                                           └─────────────────────────────────────────┘
 ```
 
