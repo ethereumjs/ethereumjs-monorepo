@@ -10,7 +10,9 @@ import {
   equalsBytes,
 } from '@ethereumjs/util'
 
+import { ethyKeccak256 } from '../crypto/keccak.ts'
 import type { ETHEconomyDataManager } from '../economy/economyDataManager.ts'
+import type { BalTailBatchEntry } from '../persist/balTailArchive.ts'
 import { compareBytes32 } from '../spine/buckets.ts'
 import { raiseBestPeerHead } from '../spine/chainHead.ts'
 import { setPhase } from '../spine/createSpine.ts'
@@ -263,6 +265,7 @@ export type HeadFollowerOpts = {
   onBalApplied?: (balJson: BALJSONBlockAccessList) => void
   appendHealBal?: (blockNumber: bigint, balRlp: Uint8Array) => void
   appendHealBundle?: (entry: VerifiedBalBlock) => void
+  appendBalTailBatch?: (entries: BalTailBatchEntry[]) => void
   noteVerifiedBlock?: (blockNumber: bigint) => void
   onSyncedToHead?: (head: bigint) => void
   onPivotStep?: (newPivot: VerifiedBalBlock) => void
@@ -293,6 +296,7 @@ export class BalChainStreamer {
   private readonly peerRestUntil = new Map<string, number>()
   private verifiedTipHash?: Uint8Array
   private lastBatchAppliedAt = 0
+  private readonly nextEthRequestId = { value: 1 }
 
   constructor(opts: HeadFollowerOpts) {
     this.opts = opts
@@ -370,6 +374,7 @@ export class BalChainStreamer {
           this.opts.sendEthMessage(peerId, code, payload)
         },
         this.verifiedTipHash,
+        this.nextEthRequestId,
       )
       if (result === 'ignore') return false
       if (result === 'failed') {
@@ -434,7 +439,10 @@ export class BalChainStreamer {
     const seq = this.catchUp
     const batch = seq?.batchInFlight
     if (seq === undefined || batch === undefined) return
-    const materialized = materializeBalBatch(batch)
+    const materialized = materializeBalBatch(batch, {
+      keccak256Fn: ethyKeccak256,
+      includeBalJson: batch.mode === 'full',
+    })
     if (!materialized.ok) {
       restBalCatchUpPeer(this.peerRestUntil, batch.peerId)
       this.verifiedTipHash = undefined
@@ -446,15 +454,13 @@ export class BalChainStreamer {
     const snapStreaming = spine.phase === 'SNAP_SYNCING'
     const persistHeal = true
     const blocks = materialized.blocks
-    const batchBalJson = blocks
-      .map((b) => b.balJson)
-      .filter((j): j is BALJSONBlockAccessList => j !== undefined)
+    const batchBalRlp = blocks
+      .map((b) => b.balRlp)
+      .filter((r): r is Uint8Array => r !== undefined && r.length > 0)
+    const balTailBatch: BalTailBatchEntry[] = []
 
-    if (!snapStreaming && batchBalJson.length > 0) {
-      await this.opts.stateManager.consumeBALBatch(batchBalJson)
-      for (const balJson of batchBalJson) {
-        this.opts.onBalApplied?.(balJson)
-      }
+    if (!snapStreaming && batchBalRlp.length > 0) {
+      await this.opts.stateManager.consumeBALBatch(batchBalRlp)
     }
 
     for (let i = 0; i < blocks.length; i++) {
@@ -500,13 +506,21 @@ export class BalChainStreamer {
           balJson: row.balJson,
         }
         if (row.balRlp !== undefined && row.balRlp.length > 0) {
-          this.opts.appendHealBundle?.({
-            blockNumber: row.header.number,
-            blockHash: row.header.hash,
-            stateRoot: row.header.stateRoot,
-            headerRlp: row.header.headerRlp,
-            balRlp: row.balRlp,
-          })
+          if (batch.mode === 'fast') {
+            balTailBatch.push({
+              blockNumber: row.header.number,
+              headerRlp: row.header.headerRlp,
+              balRlp: row.balRlp,
+            })
+          } else {
+            this.opts.appendHealBundle?.({
+              blockNumber: row.header.number,
+              blockHash: row.header.hash,
+              stateRoot: row.header.stateRoot,
+              headerRlp: row.header.headerRlp,
+              balRlp: row.balRlp,
+            })
+          }
         }
         const nearHead = seq.targetHead <= row.header.number + 64n
         if (nearHead) {
@@ -542,6 +556,9 @@ export class BalChainStreamer {
       spine.headStateRoot = row.header.stateRoot
     }
 
+    if (balTailBatch.length > 0) {
+      this.opts.appendBalTailBatch?.(balTailBatch)
+    }
     const last = blocks[blocks.length - 1]!
     this.verifiedTipHash = last.header.hash
     if (!snapStreaming) {
@@ -921,6 +938,7 @@ export class BalChainStreamer {
         next,
         batchPlan.count,
         batchPlan.mode,
+        this.nextEthRequestId,
       )
       return
     }

@@ -110,6 +110,7 @@ export function createEthyNode(opts: CreateEthyNodeOptions): EthyNode {
           common,
           maxResidentAccounts: 500_000,
           coldAccountLookup: (accountHash) => snapStore.lookupBinaryAccountByHash(accountHash),
+          coldAccountBatchLookup: (hashes) => snapStore.lookupBinaryAccountsBatchAsync(hashes),
           coldCodeLookup: (codeHash) => snapStore.lookupCodeByHash(codeHash),
           coldStorageLookup: (accountHash, slotHash) =>
             snapStore.lookupStorageByHash(accountHash, slotHash),

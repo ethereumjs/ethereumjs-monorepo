@@ -29,8 +29,13 @@ import { pruneFloor } from '../sync/balRetentionPolicy.ts'
 import type { VerifiedBalBlock } from '../sync/balSync.ts'
 import type { SnapResumeSaved } from '../sync/resumePolicy.ts'
 import { incrementKey32 } from '../sync/syntheticPeer.ts'
-import { appendBalTailBundle, enforceBalTailRetention } from './balTailArchive.ts'
-import { decodeHealBundleRlp, encodeHealBundleRlp } from './healBundle.ts'
+import {
+  type BalTailBatchEntry,
+  appendBalTailBatch,
+  appendBalTailBundle,
+  enforceBalTailRetention,
+} from './balTailArchive.ts'
+import { decodeHealBundleRlp } from './healBundle.ts'
 import {
   BINARY_ACCOUNT_JOURNAL_MAGIC,
   BINARY_ACCOUNT_JOURNAL_RECORD_SIZE,
@@ -147,6 +152,10 @@ export class SnapPivotStore {
   private readonly journalFdCache = new Map<number, number>()
   private readonly lookupFdCache = new Map<string, number>()
   private readonly lookupRowScratch = Buffer.alloc(BINARY_ACCOUNT_JOURNAL_RECORD_SIZE)
+  private readonly accountJournalMetaCache = new Map<
+    string,
+    Array<{ path: string; recordCount: number; minKey: Uint8Array; maxKey: Uint8Array }>
+  >()
   private contractScan?: { bucket: number; byteOffset: number; segment?: string }
   private contractScanComplete = false
   private contractProgress?: {
@@ -1324,18 +1333,164 @@ export class SnapPivotStore {
       this.seedInitializedAccountFiles(active.stateRoot)
     }
     const nibble = accountHash[0]! >> 4
-    const files = [
-      this.accountFile(nibble, this.activeStateRoot),
-      ...this.listSegmentJournalFiles(nibble, this.activeStateRoot),
-    ]
-    for (const file of files) {
-      const hit = this.lookupBinaryAccountInFile(file, accountHash)
+    for (const meta of this.loadAccountJournalMeta(nibble, this.activeStateRoot)) {
+      if (
+        compareBytes32(accountHash, meta.minKey) < 0 ||
+        compareBytes32(accountHash, meta.maxKey) > 0
+      ) {
+        continue
+      }
+      const hit = this.lookupBinaryAccountInFile(meta.path, accountHash, meta.recordCount)
       if (hit !== undefined) return hit
     }
     return undefined
   }
 
-  private lookupBinaryAccountInFile(file: string, accountHash: Uint8Array): Uint8Array | undefined {
+  /** Parallel cold account prefetch for {@link FlatStateManager.consumeBALBatch} (WP-14). */
+  async lookupBinaryAccountsBatchAsync(
+    accountHashes: Uint8Array[],
+    concurrency = 32,
+  ): Promise<Map<string, Uint8Array | undefined>> {
+    const out = new Map<string, Uint8Array | undefined>()
+    if (!this.enabled || accountHashes.length === 0) return out
+    const unique: Uint8Array[] = []
+    const seen = new Set<string>()
+    for (const hash of accountHashes) {
+      if (hash.length !== 32) continue
+      const key = bytesToHex(hash).slice(2).toLowerCase()
+      if (seen.has(key)) continue
+      seen.add(key)
+      unique.push(hash)
+    }
+    let cursor = 0
+    const worker = async () => {
+      while (cursor < unique.length) {
+        const i = cursor++
+        const hash = unique[i]!
+        const key = bytesToHex(hash).slice(2).toLowerCase()
+        out.set(key, this.lookupBinaryAccountByHash(hash))
+      }
+    }
+    const n = Math.min(concurrency, unique.length)
+    await Promise.all(Array.from({ length: n }, () => worker()))
+    return out
+  }
+
+  appendBalTailBatch(entries: BalTailBatchEntry[]): void {
+    if (!this.enabled || this.activeStateRoot === undefined || entries.length === 0) return
+    const pivotRoot = this.pivotDir(this.activeStateRoot)
+    appendBalTailBatch(pivotRoot, entries)
+    if (
+      this.shadowPersistRoot !== undefined &&
+      this.shadowPersistRoot.toLowerCase() !== this.activeStateRoot.toLowerCase()
+    ) {
+      const shadowRootDir = this.pivotDir(this.shadowPersistRoot)
+      let shadowPivotBlock = 0n
+      const shadowPivotPath = path.join(shadowRootDir, 'pivot.json')
+      if (fs.existsSync(shadowPivotPath)) {
+        try {
+          const sp = JSON.parse(fs.readFileSync(shadowPivotPath, 'utf8')) as {
+            blockNumber?: string
+          }
+          if (sp.blockNumber !== undefined) shadowPivotBlock = BigInt(sp.blockNumber)
+        } catch {
+          // ignore malformed shadow pivot metadata
+        }
+      }
+      const shadowEntries = entries.filter((e) => e.blockNumber > shadowPivotBlock)
+      if (shadowEntries.length > 0) {
+        appendBalTailBatch(shadowRootDir, shadowEntries)
+      }
+    }
+    let minEarliest: bigint | undefined
+    const pivotPath = path.join(pivotRoot, 'pivot.json')
+    if (fs.existsSync(pivotPath)) {
+      try {
+        const pivot = JSON.parse(fs.readFileSync(pivotPath, 'utf8')) as { blockNumber: string }
+        minEarliest = BigInt(pivot.blockNumber) + 1n
+      } catch {
+        // ignore malformed pivot metadata
+      }
+    }
+    enforceBalTailRetention(pivotRoot, { minEarliest })
+  }
+
+  private journalMetaCacheKey(nibble: number, stateRootHex: string): string {
+    return `${stateRootHex.toLowerCase()}:${nibble.toString(16)}`
+  }
+
+  private invalidateAccountJournalMeta(nibble: number): void {
+    const root = this.activeStateRoot ?? this.readActive()?.stateRoot
+    if (root === undefined) return
+    this.accountJournalMetaCache.delete(this.journalMetaCacheKey(nibble, root))
+  }
+
+  private loadAccountJournalMeta(
+    nibble: number,
+    stateRootHex: string,
+  ): Array<{ path: string; recordCount: number; minKey: Uint8Array; maxKey: Uint8Array }> {
+    const cacheKey = this.journalMetaCacheKey(nibble, stateRootHex)
+    const cached = this.accountJournalMetaCache.get(cacheKey)
+    if (cached !== undefined) return cached
+    const files = [
+      this.accountFile(nibble, stateRootHex),
+      ...this.listSegmentJournalFiles(nibble, stateRootHex),
+    ]
+    const payloadStart = BINARY_ACCOUNT_JOURNAL_MAGIC.length
+    const rowSize = BINARY_ACCOUNT_JOURNAL_RECORD_SIZE
+    const journalFiles: Array<{
+      path: string
+      recordCount: number
+      minKey: Uint8Array
+      maxKey: Uint8Array
+    }> = []
+    const scratch = Buffer.alloc(rowSize)
+    for (const file of files) {
+      if (!fs.existsSync(file)) continue
+      let fd = this.lookupFdCache.get(file)
+      if (fd === undefined) {
+        try {
+          fd = fs.openSync(file, 'r')
+          this.lookupFdCache.set(file, fd)
+        } catch {
+          continue
+        }
+      }
+      let size = 0
+      try {
+        size = fs.fstatSync(fd).size
+      } catch {
+        continue
+      }
+      const recordCount = Math.floor((size - payloadStart) / rowSize)
+      if (recordCount <= 0) continue
+      fs.readSync(fd, scratch, 0, rowSize, payloadStart)
+      const minKey = new Uint8Array(scratch.subarray(0, 32))
+      const lastOff = payloadStart + (recordCount - 1) * rowSize
+      fs.readSync(fd, scratch, 0, rowSize, lastOff)
+      const maxKey = new Uint8Array(scratch.subarray(0, 32))
+      journalFiles.push({ path: file, recordCount, minKey, maxKey })
+    }
+    this.accountJournalMetaCache.set(cacheKey, journalFiles)
+    return journalFiles
+  }
+
+  private static hashTop48(accountHash: Uint8Array): bigint {
+    return (
+      (BigInt(accountHash[0]!) << 40n) |
+      (BigInt(accountHash[1]!) << 32n) |
+      (BigInt(accountHash[2]!) << 24n) |
+      (BigInt(accountHash[3]!) << 16n) |
+      (BigInt(accountHash[4]!) << 8n) |
+      BigInt(accountHash[5]!)
+    )
+  }
+
+  private lookupBinaryAccountInFile(
+    file: string,
+    accountHash: Uint8Array,
+    recordCountHint?: number,
+  ): Uint8Array | undefined {
     let fd = this.lookupFdCache.get(file)
     if (fd === undefined) {
       if (!fs.existsSync(file)) return undefined
@@ -1360,13 +1515,52 @@ export class SnapPivotStore {
     }
     const payloadStart = BINARY_ACCOUNT_JOURNAL_MAGIC.length
     const rowSize = BINARY_ACCOUNT_JOURNAL_RECORD_SIZE
-    const recordCount = Math.floor((size - payloadStart) / rowSize)
+    const recordCount = recordCountHint ?? Math.floor((size - payloadStart) / rowSize)
     if (recordCount <= 0) return undefined
     const rowBuf = this.lookupRowScratch
+    const readKeyAt = (index: number): Uint8Array => {
+      const offset = payloadStart + index * rowSize
+      fs.readSync(fd, rowBuf, 0, rowSize, offset)
+      return rowBuf.subarray(0, 32)
+    }
     let lo = 0
     let hi = recordCount - 1
+    let interpolationSteps = 0
+    const target48 = SnapPivotStore.hashTop48(accountHash)
     while (lo <= hi) {
-      const mid = (lo + hi) >>> 1
+      if (hi - lo < 64) {
+        const windowRows = hi - lo + 1
+        const windowBytes = windowRows * rowSize
+        const window = Buffer.alloc(windowBytes)
+        const baseOff = payloadStart + lo * rowSize
+        fs.readSync(fd, window, 0, windowBytes, baseOff)
+        for (let j = 0; j < windowRows; j++) {
+          const off = j * rowSize
+          const midHash = window.subarray(off, off + 32)
+          const cmp = compareBytes32(midHash, accountHash)
+          if (cmp === 0) {
+            return new Uint8Array(window.subarray(off + 32, off + rowSize))
+          }
+        }
+        return undefined
+      }
+      let mid: number
+      if (interpolationSteps < 6 && hi - lo > 64) {
+        const loKey = readKeyAt(lo)
+        const hiKey = readKeyAt(hi)
+        const lo48 = SnapPivotStore.hashTop48(loKey)
+        const hi48 = SnapPivotStore.hashTop48(hiKey)
+        if (hi48 > lo48) {
+          const ratio = Number(target48 - lo48) / Number(hi48 - lo48)
+          const span = hi - lo
+          mid = lo + Math.min(span, Math.max(0, Math.floor(ratio * span)))
+        } else {
+          mid = (lo + hi) >>> 1
+        }
+        interpolationSteps += 1
+      } else {
+        mid = (lo + hi) >>> 1
+      }
       const offset = payloadStart + mid * rowSize
       fs.readSync(fd, rowBuf, 0, rowSize, offset)
       const midHash = rowBuf.subarray(0, 32)
@@ -1668,6 +1862,7 @@ export class SnapPivotStore {
           })
         }
         this.dirtyAccountBuckets.add(bucketIndex)
+        this.invalidateAccountJournalMeta(bucketIndex)
         this.pendingMetadataFlush = true
         this.maybeFlushMetadata(false)
       } catch (err) {
@@ -1701,6 +1896,7 @@ export class SnapPivotStore {
       fs.closeSync(fd)
     }
     this.dirtyAccountBuckets.add(bucketIndex)
+    this.invalidateAccountJournalMeta(bucketIndex)
     this.pendingMetadataFlush = true
     this.maybeFlushMetadata(false)
   }
@@ -1725,6 +1921,7 @@ export class SnapPivotStore {
       fs.closeSync(fd)
     }
     this.dirtyAccountBuckets.add(bucketIndex)
+    this.invalidateAccountJournalMeta(bucketIndex)
     this.pendingMetadataFlush = true
     this.maybeFlushMetadata(false)
   }
@@ -1882,51 +2079,13 @@ export class SnapPivotStore {
   appendHealBundle(entry: VerifiedBalBlock): void {
     if (!this.enabled || this.activeStateRoot === undefined) return
     if (entry.balRlp === undefined || entry.balRlp.length === 0) return
-    const healDir = path.join(this.pivotDir(this.activeStateRoot), 'heal')
-    fs.mkdirSync(healDir, { recursive: true })
-    const file = path.join(healDir, `${entry.blockNumber.toString()}.bundle.rlp`)
-    const body = encodeHealBundleRlp({
-      blockNumber: entry.blockNumber,
-      blockHash: entry.blockHash,
-      stateRoot: entry.stateRoot,
-      headerRlp: entry.headerRlp,
-      balRlp: entry.balRlp,
-    })
-    fs.writeFileSync(file, body)
-    const pivotRoot = this.pivotDir(this.activeStateRoot)
-    appendBalTailBundle(pivotRoot, entry.blockNumber, entry.headerRlp, entry.balRlp)
-    if (
-      this.shadowPersistRoot !== undefined &&
-      this.shadowPersistRoot.toLowerCase() !== this.activeStateRoot.toLowerCase()
-    ) {
-      const shadowRootDir = this.pivotDir(this.shadowPersistRoot)
-      let shadowPivotBlock = 0n
-      const shadowPivotPath = path.join(shadowRootDir, 'pivot.json')
-      if (fs.existsSync(shadowPivotPath)) {
-        try {
-          const sp = JSON.parse(fs.readFileSync(shadowPivotPath, 'utf8')) as {
-            blockNumber?: string
-          }
-          if (sp.blockNumber !== undefined) shadowPivotBlock = BigInt(sp.blockNumber)
-        } catch {
-          // ignore malformed shadow pivot metadata
-        }
-      }
-      if (entry.blockNumber > shadowPivotBlock) {
-        appendBalTailBundle(shadowRootDir, entry.blockNumber, entry.headerRlp, entry.balRlp)
-      }
-    }
-    let minEarliest: bigint | undefined
-    const pivotPath = path.join(pivotRoot, 'pivot.json')
-    if (fs.existsSync(pivotPath)) {
-      try {
-        const pivot = JSON.parse(fs.readFileSync(pivotPath, 'utf8')) as { blockNumber: string }
-        minEarliest = BigInt(pivot.blockNumber) + 1n
-      } catch {
-        // ignore malformed pivot metadata
-      }
-    }
-    enforceBalTailRetention(pivotRoot, { minEarliest })
+    this.appendBalTailBatch([
+      {
+        blockNumber: entry.blockNumber,
+        headerRlp: entry.headerRlp,
+        balRlp: entry.balRlp,
+      },
+    ])
   }
 
   pruneHealBundlesUpTo(blockNumber: bigint): void {

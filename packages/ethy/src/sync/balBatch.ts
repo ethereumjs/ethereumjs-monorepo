@@ -2,7 +2,7 @@ import type { ChainConfig } from '@ethereumjs/common'
 import {
   type BALJSONBlockAccessList,
   createBlockLevelAccessListFromRLP,
-  equalsBytes,
+  validateBlockAccessListHashFromRLP,
 } from '@ethereumjs/util'
 
 import {
@@ -163,8 +163,9 @@ export function startBalBatch(
   startBlock: bigint,
   count: number,
   mode: BalBatchMode,
+  nextRequestId: { value: number } = { value: 1 },
 ): InFlightBalBatch {
-  const headerRequestId = 1
+  const headerRequestId = nextRequestId.value++
   sendEth(
     peerId,
     EthMessageCodes.GET_BLOCK_HEADERS,
@@ -198,6 +199,7 @@ export function advanceBalBatchEthMessage(
   msg: { peerId: string; code: number; payload: Uint8Array },
   sendEth: (peerId: string, code: number, payload: Uint8Array) => void,
   priorTipHash?: Uint8Array,
+  nextRequestId: { value: number } = { value: 1 },
 ): 'progress' | 'complete' | 'failed' | 'ignore' {
   if (msg.peerId !== batch.peerId) return 'ignore'
   if (msg.code === EthMessageCodes.BLOCK_HEADERS && batch.stage === 'headers') {
@@ -222,7 +224,7 @@ export function advanceBalBatchEthMessage(
       }
       batch.stage = 'bal'
       batch.startedAt = Date.now()
-      const balRequestId = 4
+      const balRequestId = nextRequestId.value++
       batch.balRequestId = balRequestId
       const hashes = headers.map((h) => h.hash)
       sendEth(
@@ -234,7 +236,7 @@ export function advanceBalBatchEthMessage(
     }
     batch.stage = 'bodies'
     batch.startedAt = Date.now()
-    const bodiesRequestId = 2
+    const bodiesRequestId = nextRequestId.value++
     batch.bodiesRequestId = bodiesRequestId
     sendEth(
       batch.peerId,
@@ -254,7 +256,7 @@ export function advanceBalBatchEthMessage(
     batch.bodiesRlp = bodies
     batch.stage = 'receipts'
     batch.startedAt = Date.now()
-    const receiptsRequestId = 3
+    const receiptsRequestId = nextRequestId.value++
     batch.receiptsRequestId = receiptsRequestId
     const hashes = batch.headers!.map((h) => h.hash)
     sendEth(
@@ -279,7 +281,7 @@ export function advanceBalBatchEthMessage(
     }
     batch.stage = 'bal'
     batch.startedAt = Date.now()
-    const balRequestId = 4
+    const balRequestId = nextRequestId.value++
     batch.balRequestId = balRequestId
     sendEth(
       batch.peerId,
@@ -304,6 +306,10 @@ export function advanceBalBatchEthMessage(
 
 export function materializeBalBatch(
   batch: InFlightBalBatch,
+  opts?: {
+    keccak256Fn?: (data: Uint8Array) => Uint8Array
+    includeBalJson?: boolean
+  },
 ): { ok: true; blocks: VerifiedBalBatchBlock[] } | { ok: false; reason: string } {
   const headers = batch.headers
   if (headers === undefined || headers.length === 0) {
@@ -337,16 +343,19 @@ export function materializeBalBatch(
       blocks.push({ header, balRlp })
       continue
     }
-    const bal = createBlockLevelAccessListFromRLP(balRlp)
-    if (!equalsBytes(bal.hash(), balHash)) {
+    try {
+      validateBlockAccessListHashFromRLP(balRlp, balHash, opts?.keccak256Fn)
+    } catch {
       return { ok: false, reason: 'BAL hash mismatch' }
     }
+    const balJson =
+      opts?.includeBalJson === true ? createBlockLevelAccessListFromRLP(balRlp).toJSON() : undefined
     blocks.push({
       header,
       balRlp,
       bodyRlp: batch.bodiesRlp?.[i],
       receiptsEth69Rlp: batch.receiptsEth69?.[i],
-      balJson: bal.toJSON(),
+      balJson,
     })
   }
   return { ok: true, blocks }

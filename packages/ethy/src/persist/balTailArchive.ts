@@ -88,6 +88,30 @@ function ensureSegmentFile(segPath: string): {
   return { fd, slots, payloadStart: stat.size }
 }
 
+export type BalTailBatchEntry = {
+  blockNumber: bigint
+  headerRlp: Uint8Array
+  balRlp: Uint8Array
+}
+
+/** Append many contiguous BAL tail blocks with one manifest update per pivot (WP-14). */
+export function appendBalTailBatch(pivotRootDir: string, entries: BalTailBatchEntry[]): void {
+  if (entries.length === 0) return
+  const sorted = [...entries].sort((a, b) => (a.blockNumber < b.blockNumber ? -1 : 1))
+  const bySegment = new Map<bigint, BalTailBatchEntry[]>()
+  for (const entry of sorted) {
+    const seg = segmentStart(entry.blockNumber)
+    const list = bySegment.get(seg) ?? []
+    list.push(entry)
+    bySegment.set(seg, list)
+  }
+  for (const [, segEntries] of bySegment) {
+    for (const entry of segEntries) {
+      appendBalTailBundle(pivotRootDir, entry.blockNumber, entry.headerRlp, entry.balRlp)
+    }
+  }
+}
+
 export function appendBalTailBundle(
   pivotRootDir: string,
   blockNumber: bigint,

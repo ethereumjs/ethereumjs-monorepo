@@ -34,6 +34,7 @@ import {
   syncP2pLinkNotices,
 } from '../notify/p2pLink.ts'
 import { copyBalTailRange } from '../persist/balTailArchive.ts'
+import type { BalTailBatchEntry } from '../persist/balTailArchive.ts'
 import { resolveEthyDataDir } from '../persist/ethyDataRoot.ts'
 import {
   PEER_BOOK_STARTUP_DIALS,
@@ -844,6 +845,7 @@ export async function startPeerCoordinator(
         onBalApplied: bundleBalHooks.onBalApplied,
         appendHealBal: bundleBalHooks.appendHealBal,
         appendHealBundle: bundleBalHooks.appendHealBundle,
+        appendBalTailBatch: bundleBalHooks.appendBalTailBatch,
         noteVerifiedBlock: (n) => snapStore?.noteVerifiedBlock(n),
         onSyncedToHead: (head) => {
           populateHeadFlipSummary(head)
@@ -1606,7 +1608,9 @@ export async function startPeerCoordinator(
 
   const bundleBalHooks = {
     onBalApplied: (bal: BALJSONBlockAccessList) => {
-      codeSync?.noteBalApplied(bal)
+      if (spine.phase === 'SNAP_SYNCING') {
+        codeSync?.noteBalApplied(bal)
+      }
     },
     appendHealBal: (blockNumber: bigint, balRlp: Uint8Array) => {
       snapStore?.appendHealBal(blockNumber, balRlp)
@@ -1615,6 +1619,13 @@ export async function startPeerCoordinator(
       const pivot = spine.pivotBlockNumber
       if (pivot === undefined || entry.blockNumber <= pivot) return
       snapStore?.appendHealBundle(entry)
+    },
+    appendBalTailBatch: (entries: BalTailBatchEntry[]) => {
+      const pivot = spine.pivotBlockNumber
+      if (pivot === undefined) return
+      const filtered = entries.filter((e: BalTailBatchEntry) => e.blockNumber > pivot)
+      if (filtered.length === 0) return
+      snapStore?.appendBalTailBatch(filtered)
     },
   }
 
