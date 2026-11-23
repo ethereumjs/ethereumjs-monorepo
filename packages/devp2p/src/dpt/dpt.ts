@@ -19,7 +19,7 @@ import { Server as DPTServer } from './server.ts'
 
 import type { Common } from '@ethereumjs/common'
 import type { Debugger } from 'debug'
-import type { DPTEvent, DPTOptions, PeerInfo } from '../types.ts'
+import type { DPTEvent, DPTOptions, DiscoveryMode, PeerInfo } from '../types.ts'
 import type { NodeStore } from './nodeStore.ts'
 
 const DEBUG_BASE_NAME = 'dpt'
@@ -80,7 +80,7 @@ export class DPT {
   protected _revalidateCounter = 0
   protected _revalidatePeers: boolean
   protected _maxInFlightPings: number | undefined
-  protected _discoveryPaused = false
+  protected _discoveryMode: DiscoveryMode = 'active'
   protected _peerBatchQueue: PeerInfo[] = []
   protected _inFlightPings = 0
   protected _discoveryMetrics: import('../discovery/metrics.ts').DiscoveryMetrics | undefined
@@ -205,20 +205,25 @@ export class DPT {
     this._server.destroy(...args)
   }
 
-  /** Pause or resume neighbour lookup and DNS-driven peer batches (refresh timer stays armed). */
-  setDiscoveryPaused(paused: boolean): void {
-    if (this._discoveryPaused === paused) return
-    this._discoveryPaused = paused
-    if (paused) {
+  /** Discovery traffic mode (`off` skips UDP revalidation as well as neighbour/DNS refresh). */
+  setDiscoveryMode(mode: DiscoveryMode): void {
+    if (this._discoveryMode === mode) return
+    this._discoveryMode = mode
+    if (mode !== 'active') {
       this._peerBatchQueue = []
     } else {
       void this.refresh()
       this._drainPeerBatchQueue()
     }
+    this._discoveryMetrics?.setDiscoveryMode(mode)
   }
 
-  isDiscoveryPaused(): boolean {
-    return this._discoveryPaused
+  getDiscoveryMode(): DiscoveryMode {
+    return this._discoveryMode
+  }
+
+  setEthyDiscoveryTag(enabled: boolean): void {
+    this._server.setEthyDiscoveryTag(enabled)
   }
 
   _onKBucketPing(oldPeers: PeerInfo[], newPeer: PeerInfo): void {
@@ -244,7 +249,7 @@ export class DPT {
   }
 
   _addPeerBatch(peers: PeerInfo[]): void {
-    if (this._discoveryPaused) return
+    if (this._discoveryMode !== 'active') return
     if (this._maxInFlightPings === undefined) {
       const DIFF_TIME_MS = 200
       let ms = 0
@@ -263,7 +268,7 @@ export class DPT {
   }
 
   _drainPeerBatchQueue(): void {
-    if (this._discoveryPaused || this._maxInFlightPings === undefined) return
+    if (this._discoveryMode !== 'active' || this._maxInFlightPings === undefined) return
     while (this._inFlightPings < this._maxInFlightPings && this._peerBatchQueue.length > 0) {
       const peer = this._peerBatchQueue.shift()!
       this._inFlightPings++
@@ -298,7 +303,7 @@ export class DPT {
       // Rotate random target IDs after the initial self-ID lookup so k-buckets fill across the full key space
       this._server.findneighbours(peer, this.id)
       setTimeout(() => {
-        if (this._shouldFindNeighbours && !this._discoveryPaused) {
+        if (this._shouldFindNeighbours && this._discoveryMode === 'active') {
           this._server.findneighbours(peer, randomBytes(64))
         }
       }, 1500)
@@ -379,7 +384,7 @@ export class DPT {
         if (peer.id !== undefined && typeof peer.tcpPort === 'number' && peer.tcpPort > 0) {
           const idHex = bytesToUnprefixedHex(peer.id)
           const timer = setTimeout(() => {
-            if (this._discoveryPaused || this._banlist.has(peer)) return
+            if (this._discoveryMode !== 'active' || this._banlist.has(peer)) return
             if (this._confirmedPeers.has(idHex)) return
             this.events.emit('peer:new', peer)
           }, 600)
@@ -521,7 +526,10 @@ export class DPT {
   }
 
   async refresh(): Promise<void> {
-    if (this._discoveryPaused) {
+    if (this._discoveryMode === 'off') {
+      return
+    }
+    if (this._discoveryMode === 'quiet') {
       if (this._revalidatePeers) {
         this._revalidateCounter = (this._revalidateCounter + 1) % 10
         if (this._revalidateCounter === 0) {

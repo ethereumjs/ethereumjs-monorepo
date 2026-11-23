@@ -25,6 +25,7 @@ import { classifyHandshakeReject } from '../discovery/handshakeReject.ts'
 import { DiscoveryMetrics, peerFateLabel } from '../discovery/metrics.ts'
 import { DPT } from '../dpt/dpt.ts'
 import { resolveCapabilities } from '../lab/capabilities.ts'
+import { networkProfilesEqual } from '../lab/capabilities.ts'
 import { emptyWireReply } from '../lab/emptyReply.ts'
 import { privateKeyToEnode } from '../lab/enode.ts'
 import { ethMessageNameToCode, ethStatusFromFields } from '../lab/messages/eth.ts'
@@ -47,7 +48,7 @@ import { EthyChunkStore } from '../serve/ethyChunkStore.ts'
 import { tryServeEthyGet } from '../serve/ethyServer.ts'
 import { RollingBlockStore } from '../serve/rollingBlockStore.ts'
 import { ServeGovernor } from '../serve/serveGovernor.ts'
-import { DISCONNECT_REASON, DisconnectReasonNames } from '../types.ts'
+import { DISCONNECT_REASON, DisconnectReasonNames, type NetworkProfile } from '../types.ts'
 import type { PeerInfo } from '../types.ts'
 import { pk2id } from '../util.ts'
 import { dptDnsOptionsFromCommon, resolveWorkerBootnodes } from './bootNodes.ts'
@@ -163,6 +164,7 @@ export class Devp2pWorkerHost {
   private _ethyPexSent = new Set<string>()
   private _privateKey: Uint8Array | null = null
   private _localNodeId: Uint8Array | null = null
+  private _networkProfile: NetworkProfile | null = null
 
   constructor(port: MessagePort) {
     this._port = port
@@ -305,9 +307,15 @@ export class Devp2pWorkerHost {
           this._syncBlockRangeFromStore(true)
           break
         }
-        case 'setDiscoveryPaused':
-          this._rlpx?.setSyncDiscoveryHold(cmd.paused)
-          this._discoveryMetrics.setDiscoveryPaused(cmd.paused)
+        case 'setNetworkProfile':
+          if (
+            this._networkProfile !== null &&
+            networkProfilesEqual(this._networkProfile, cmd.profile)
+          ) {
+            break
+          }
+          this._networkProfile = cmd.profile
+          this._rlpx?.applyNetworkProfile(cmd.profile)
           break
       }
     } catch (err: unknown) {
@@ -557,12 +565,19 @@ export class Devp2pWorkerHost {
       ) {
         return 'default'
       }
-      if (
-        protocolName === 'SNAP' &&
-        this._options?.answerEmptySnap === false &&
-        (SnapMessageCodeNames[msgCode as SnapMessageCodes] ?? '').startsWith('GET_')
-      ) {
-        return 'handled'
+      if (protocolName === 'SNAP') {
+        const snapActive =
+          this._networkProfile?.capabilities.includes('snap1') ??
+          this._rlpx?.getWireCapabilityNames().includes('snap1') ??
+          true
+        const isGet = (SnapMessageCodeNames[msgCode as SnapMessageCodes] ?? '').startsWith('GET_')
+        if (isGet && !snapActive) {
+          peer.disconnect(DISCONNECT_REASON.CLIENT_QUITTING)
+          return 'handled'
+        }
+        if (this._options?.answerEmptySnap === false && isGet) {
+          return 'handled'
+        }
       }
       if (protocolName === 'ETHY' && msgCode === EthyMessageCodes.STATUS) {
         return 'default'
@@ -1087,7 +1102,7 @@ export class Devp2pWorkerHost {
       clearInterval(this._telemetryTimer)
       this._telemetryTimer = null
     }
-    this._dpt?.setDiscoveryPaused(true)
+    this._dpt?.setDiscoveryMode('off')
     this._rlpx?.destroy()
     this._dpt?.destroy()
     this._rlpx = null

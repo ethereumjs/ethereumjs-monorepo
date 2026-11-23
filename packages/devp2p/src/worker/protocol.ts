@@ -1,4 +1,4 @@
-import type { PeerInfo } from '../types.ts'
+import type { NetworkProfile, PeerInfo } from '../types.ts'
 
 /** Chain names supported by {@link createThreadedNetwork} worker init (clone-safe). */
 export type WorkerChainId = 'mainnet' | 'sepolia' | 'hoodi' | 'holesky'
@@ -112,7 +112,7 @@ export type WorkerCommand =
         balRlp?: Uint8Array
       }
     }
-  | { type: 'setDiscoveryPaused'; paused: boolean }
+  | { type: 'setNetworkProfile'; profile: NetworkProfile }
   | { type: 'setAdvertiseBlockRange'; enabled: boolean }
   | { type: 'notePooledTx'; hashHex: string; raw: Uint8Array }
   | { type: 'dropPooledTx'; hashHex: string }
@@ -211,8 +211,11 @@ export interface WorkerDiscoverySnapshot {
   /** `enode://` URL for this node (loopback-friendly). */
   localEnode?: string
   tablePeers: number
-  /** True when DPT neighbour lookup and DNS batches are paused. */
-  discoveryPaused?: boolean
+  discoveryMode?: import('../types.ts').DiscoveryMode
+  activeCapabilities?: string[]
+  maxPeers?: number
+  minEthyPeers?: number
+  ethyDiscoveryTag?: boolean
   /** Hardfork, EIP-2124 hash, and next fork this node puts in ETH STATUS. */
   advertisedFork?: { hardfork: string; hash: string; next?: string }
   bootstrap: WorkerDiscoveryBootstrapSnapshot

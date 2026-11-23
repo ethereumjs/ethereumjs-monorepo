@@ -253,6 +253,26 @@ export interface DPTServerOptions {
   ethyDiscoveryTag?: boolean
 }
 
+export type DiscoveryMode = 'active' | 'quiet' | 'off'
+
+/** Atomic network control plane (WP-13): capabilities, peer budgets, and DPT mode. */
+export interface NetworkProfile {
+  /** Active RLPx subprotocol capabilities advertised in new HELLO handshakes. */
+  capabilities: string[]
+  /** Dynamic total peer ceiling. */
+  maxPeers: number
+  maxInboundPeers?: number
+  discoveryLowWaterMark?: number
+  /** Reserved RLPx slots for ETHY/0 peers. */
+  minEthyPeers?: number
+  /** Unified DPT discovery mode. */
+  discoveryMode: DiscoveryMode
+  /** Whether the local ENR advertises the `ethy` discovery tag. */
+  ethyDiscoveryTag: boolean
+  /** Prioritize ENR `ethy` peers in the dial queue. */
+  preferEthyDiscovery?: boolean
+}
+
 export type ProtocolType = (typeof ProtocolType)[keyof typeof ProtocolType]
 
 export const ProtocolType = {
