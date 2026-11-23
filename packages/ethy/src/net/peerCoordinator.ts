@@ -1577,7 +1577,10 @@ export async function startPeerCoordinator(
       if (healthy >= lastMachinePlan.vipTarget) return
     }
     const inHeadOrCatchup =
-      spine.phase === 'HEAD_FOLLOWING' || spine.phase === 'BAL_CATCHUP' || handoffCatchup
+      spine.phase === 'HEAD_FOLLOWING' ||
+      spine.phase === 'BAL_CATCHUP' ||
+      handoffCatchup ||
+      spine.diskResumeKind === 'base-complete'
     const target = lastMachinePlan?.vipTarget ?? (inHeadOrCatchup ? 6 : VIP_SNAP_PEER_TARGET)
     const towardTarget = inHeadOrCatchup
       ? peerList.filter((p) => p.hasHead === true).length
@@ -1588,7 +1591,7 @@ export async function startPeerCoordinator(
     const maxBatch = peerList.length === 0 ? 2 : peerList.length < 3 ? 3 : 2
     const need = Math.min(maxBatch, target - towardTarget)
     let dialed = 0
-    for (const peer of peerBook.vipDialCandidates(now, 64)) {
+    for (const peer of peerBook.vipDialCandidates(now, 64, { requireSnap: !inHeadOrCatchup })) {
       const id = bytesToUnprefixedHex(peer.id as Uint8Array).toLowerCase()
       if (connected.has(id)) continue
       const pendingUntil = pendingVipDials.get(id)
@@ -2338,7 +2341,10 @@ export async function startPeerCoordinator(
   if (peerBook !== undefined) {
     const now = Date.now()
     peerBook.pruneOnStart(now)
-    for (const peer of peerBook.dialCandidates(now)) {
+    const requireSnapAtBoot = initialDiskResumeKind !== 'base-complete'
+    for (const peer of peerBook.dialCandidates(now, undefined, {
+      requireSnap: requireSnapAtBoot,
+    })) {
       const id = bytesToUnprefixedHex(peer.id as Uint8Array).toLowerCase()
       peerBook.noteDialAttempt(id, now)
       pendingVipDials.set(id, now + VIP_RECONNECT_INTERVAL_MS)
@@ -2439,10 +2445,11 @@ export async function startPeerCoordinator(
     lastTelemetryPeers = snap.peers
     const prev = spine.peers
     spine.peers.clear()
+    const localSnapAdvertised = lastAppliedProfile.capabilities.includes('snap1')
     for (const p of snap.peers) {
       spine.peers.set(p.id, mapPeer(p, prev.get(p.id), spine.pivotBlockNumber))
       pendingVipDials.delete(p.id.toLowerCase())
-      peerBook?.noteTelemetryPeer(p, Date.now())
+      peerBook?.noteTelemetryPeer(p, Date.now(), { localSnapAdvertised })
     }
     spine.discovery = snap.discovery
     const prevServingLatest = spine.serving?.latestBlock

@@ -363,12 +363,13 @@ export function bootNetworkProfile(syncMode: SyncMode = 'auto'): NetworkProfile 
   const capabilities = ['eth69', 'eth70', 'eth71', 'eth72']
   if (syncMode !== 'snap') capabilities.push('ethy0')
   if (syncMode !== 'ethy') capabilities.push('snap1')
+  const budget = BUDGETS['boot-warmup']
   return {
     capabilities,
-    maxPeers: 20,
-    maxInboundPeers: 4,
-    discoveryLowWaterMark: 4,
-    minEthyPeers: syncMode === 'snap' ? 0 : 4,
+    maxPeers: budget.maxPeers,
+    maxInboundPeers: budget.maxInbound,
+    discoveryLowWaterMark: Math.max(1, budget.maxPeers - 4),
+    minEthyPeers: syncMode === 'snap' ? 0 : budget.minEthy,
     discoveryMode: 'active',
     ethyDiscoveryTag: false,
     preferEthyDiscovery: false,

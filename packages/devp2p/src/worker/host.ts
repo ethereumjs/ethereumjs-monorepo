@@ -383,7 +383,7 @@ export class Devp2pWorkerHost {
       // Geth's RLPx read deadline is 30s. A 10s pong timer drops a peer that is busy serving snap.
       pingTimeout: 30_000,
     })
-    this._discoveryMetrics.setNetworkProfile({
+    const initialProfile: NetworkProfile = {
       capabilities: this._rlpx.getWireCapabilityNames(),
       maxPeers: opts.maxPeers ?? 10,
       maxInboundPeers: opts.maxInboundPeers,
@@ -391,7 +391,14 @@ export class Devp2pWorkerHost {
       minEthyPeers: ethyEnabled ? (opts.minEthyPeers ?? 4) : 0,
       discoveryMode: 'active',
       ethyDiscoveryTag: ethyEnabled,
-    })
+    }
+    if (this._networkProfile !== null) {
+      // A `setNetworkProfile` command arrived before `_start()` constructed `_rlpx`.
+      this._rlpx.applyNetworkProfile(this._networkProfile)
+    } else {
+      this._networkProfile = initialProfile
+      this._discoveryMetrics.setNetworkProfile(initialProfile)
+    }
 
     await new Promise<void>((resolve) => {
       this._dpt!.events.once('listening', () => resolve())
@@ -581,7 +588,9 @@ export class Devp2pWorkerHost {
           true
         const isGet = (SnapMessageCodeNames[msgCode as SnapMessageCodes] ?? '').startsWith('GET_')
         if (isGet && !snapActive) {
-          if ((this._rlpx?._connectedPeerCount() ?? 0) > 1) {
+          // Only shed a stale snap/1 session when at least two ETH-status-verified peers
+          // are connected; raw `_connectedPeerCount()` includes transient pre-STATUS peers.
+          if (this._verifiedEthPeerCount() > 1) {
             peer.disconnect(DISCONNECT_REASON.CLIENT_QUITTING)
           }
           return 'handled'
@@ -1039,6 +1048,21 @@ export class Devp2pWorkerHost {
         this._sendBlockRangeUpdateToPeer(protocol as ETH)
       }
     }
+  }
+
+  private _verifiedEthPeerCount(): number {
+    let count = 0
+    for (const peer of this._rlpx?.getPeers() ?? []) {
+      for (const protocol of peer.getProtocols()) {
+        if (protocol.constructor.name !== 'ETH') continue
+        const head = (protocol as ETH).peerStatusHead()
+        if (head?.bestHash !== undefined && head.bestHash.length === 32) {
+          count++
+          break
+        }
+      }
+    }
+    return count
   }
 
   private _emitTelemetry(): void {

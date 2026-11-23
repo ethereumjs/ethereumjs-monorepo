@@ -1,11 +1,13 @@
+import { MessageChannel } from 'node:worker_threads'
 import { assert, describe, it, vi } from 'vitest'
 
 import { randomBytes } from '@ethereumjs/util'
 
 import { Common, Mainnet } from '@ethereumjs/common'
 import { DPT, genPrivateKey } from '../../src/index.ts'
-import { ETH, ETHY, SNAP } from '../../src/protocol/index.ts'
+import { ETH, ETHY, SNAP, SnapMessageCodes } from '../../src/protocol/index.ts'
 import { Peer } from '../../src/rlpx/peer.ts'
+import { Devp2pWorkerHost } from '../../src/worker/host.ts'
 import { destroyRLPXs, initTwoPeerRLPXSetup } from '../helpers.ts'
 
 function fakePeer(idByte: number, protocols: string[], onDisconnect: () => void): Peer {
@@ -105,5 +107,65 @@ describe('[Devp2p/RLPx]: network profile', () => {
     await dpt.refresh()
     assert.strictEqual(revalSpy.mock.calls.length, 0)
     dpt.destroy()
+  })
+
+  it('Devp2pWorkerHost keeps sole verified ETH peer on inbound SNAP GET when snap1 is off', () => {
+    const { port1, port2 } = new MessageChannel()
+    const host = new Devp2pWorkerHost(port1)
+    let disconnected = false
+
+    const makePeer = (idByte: number, verified: boolean) => {
+      const peer = Object.create(Peer.prototype) as Peer
+      const id = new Uint8Array(64).fill(idByte)
+      const ethProto = {
+        constructor: { name: 'ETH' },
+        events: { on: () => {} },
+        getVersion: () => 72,
+        peerStatusHead: () => (verified ? { bestHash: new Uint8Array(32).fill(1) } : undefined),
+      }
+      const snapProto = { constructor: { name: 'SNAP' }, getVersion: () => 1 }
+      ;(peer as any).getId = () => id
+      ;(peer as any).events = { on: () => {} }
+      ;(peer as any).getHelloMessage = () => null
+      ;(peer as any).endpointTcp = () => undefined
+      ;(peer as any).getProtocols = () => [ethProto, snapProto]
+      ;(peer as any).disconnect = () => {
+        disconnected = true
+      }
+      return peer
+    }
+
+    const verifiedPeer = makePeer(1, true)
+    const transientPeer = makePeer(2, false)
+    ;(host as any)._rlpx = {
+      getPeers: () => [verifiedPeer, transientPeer],
+      _connectedPeerCount: () => 2,
+      getWireCapabilityNames: () => ['eth72'],
+    }
+    ;(host as any)._networkProfile = {
+      capabilities: ['eth72'],
+      maxPeers: 8,
+      discoveryMode: 'active',
+      ethyDiscoveryTag: false,
+    }
+    ;(host as any)._wirePeer(verifiedPeer)
+
+    // Only 1 verified ETH peer (the second peer is unverified/transient): must NOT drop verifiedPeer.
+    const action = verifiedPeer.subprotocolDispatch!(
+      'SNAP',
+      SnapMessageCodes.GET_ACCOUNT_RANGE,
+      new Uint8Array(),
+    )
+    assert.strictEqual(action, 'handled')
+    assert.strictEqual(disconnected, false)
+
+    // Once a second verified ETH peer exists, shedding the stale SNAP session is allowed.
+    const verifiedPeer2 = makePeer(3, true)
+    ;(host as any)._rlpx.getPeers = () => [verifiedPeer, verifiedPeer2]
+    verifiedPeer.subprotocolDispatch!('SNAP', SnapMessageCodes.GET_ACCOUNT_RANGE, new Uint8Array())
+    assert.strictEqual(disconnected, true)
+
+    port1.close()
+    port2.close()
   })
 })
