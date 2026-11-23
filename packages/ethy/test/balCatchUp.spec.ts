@@ -219,11 +219,11 @@ describe('[Ethy/Sync]: BAL catch-up oracle', () => {
     const flat = new FlatStateManager()
     const spine = createSpine('sepolia', 11155111n)
     setPhase(spine, 'SNAP_SYNCING')
-    const basePivot = 12_000_100n
+    const basePivot = 12_000_096n
     spine.pivotBlockNumber = basePivot
     spine.pivotStateRoot = new Uint8Array(32).fill(0x11)
     spine.lastVerifiedBlockNumber = basePivot
-    spine.bestPeerHead = basePivot + 18n
+    spine.bestPeerHead = basePivot + 34n
     // Mark buckets 0..14 done while bucket 15 stays syncing
     for (let i = 0; i < 15; i++) {
       spine.snapBuckets[i]!.status = 'done'
@@ -246,13 +246,13 @@ describe('[Ethy/Sync]: BAL catch-up oracle', () => {
       sendEthMessage: (_peer, code, payload) => {
         pendingOutbound.push({ code, payload })
       },
-      pickEthPeer: () => ({ id: peerId, ethVersion: 71, latestBlock: Number(basePivot + 18n) }),
+      pickEthPeer: () => ({ id: peerId, ethVersion: 71, latestBlock: Number(basePivot + 34n) }),
       putServableBlock: () => {},
     })
 
-    // Start streaming and feed blocks basePivot+1 .. basePivot+18 as each GET_BLOCK_HEADERS is requested
+    // Start streaming and feed blocks basePivot+1 .. basePivot+34 as each GET_BLOCK_HEADERS is requested
     ;(streamer as unknown as { tick: () => void }).tick()
-    for (let i = 1; i <= 18; i++) {
+    for (let i = 1; i <= 34; i++) {
       const n = basePivot + BigInt(i)
       assert.isAtLeast(pendingOutbound.length, 1)
       assert.equal(
@@ -300,23 +300,23 @@ describe('[Ethy/Sync]: BAL catch-up oracle', () => {
       assert.equal(spine.phase, 'SNAP_SYNCING')
     }
 
-    // After 18 blocks (16 step + 2 safety margin), 1 pivot step completed (+16) and 2 blocks remain buffered!
+    // After 34 blocks (32-step + 2 safety margin), 1 pivot step completed (+32) and 2 blocks remain buffered!
     assert.equal(spine.pivotStepsCompleted, 1)
-    assert.equal(spine.pivotBlockNumber, basePivot + 16n)
-    assert.equal(spine.lastVerifiedBlockNumber, basePivot + 16n)
+    assert.equal(spine.pivotBlockNumber, basePivot + 32n)
+    assert.equal(spine.lastVerifiedBlockNumber, basePivot + 32n)
     assert.equal(spine.bufferedBalCount, 2)
-    assert.equal(spine.streamedBalCount, 18)
-    assert.equal(spine.appliedBalCount, 16)
+    assert.equal(spine.streamedBalCount, 34)
+    assert.equal(spine.appliedBalCount, 32)
 
     // Now finish the last bucket (15) and flush buffered blocks for "The Big Flip"
     spine.snapBuckets[15]!.status = 'done'
     await streamer.flushBufferedBlocks()
-    assert.equal(spine.pivotBlockNumber, basePivot + 18n)
-    assert.equal(spine.lastVerifiedBlockNumber, basePivot + 18n)
+    assert.equal(spine.pivotBlockNumber, basePivot + 34n)
+    assert.equal(spine.lastVerifiedBlockNumber, basePivot + 34n)
     assert.equal(spine.bufferedBalCount, 0)
-    assert.equal(spine.appliedBalCount, 18)
+    assert.equal(spine.appliedBalCount, 34)
 
-    const flipped = tryEnterBalCatchUp(spine, undefined, undefined, basePivot + 18n)
+    const flipped = tryEnterBalCatchUp(spine, undefined, undefined, basePivot + 34n)
     assert.equal(flipped, true)
     assert.equal(spine.phase, 'HEAD_FOLLOWING')
   })

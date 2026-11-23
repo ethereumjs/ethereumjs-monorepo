@@ -16,6 +16,7 @@ const READ_TOOLS: Omit<ToolCatalogEntry, 'permission'>[] = [
   { id: 'buckets', slash: '/buckets', description: '16 snap bucket progress' },
   { id: 'diag', slash: '/diag', description: 'Diagnostic ring buffer' },
   { id: 'economy', slash: '/economy', description: 'Live economy deep view' },
+  { id: 'signals', slash: '/signals', description: 'Deterministic signal candidates' },
   { id: 'contract', slash: '/contract', description: 'Contract microscope (hot or address)' },
   { id: 'help', slash: '/help', description: 'Command list' },
   { id: 'range', slash: '/range', description: 'Inspect synced account range' },

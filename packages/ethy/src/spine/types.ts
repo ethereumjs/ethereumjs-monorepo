@@ -1,7 +1,11 @@
 import type { WorkerDiscoverySnapshot, WorkerServingSnapshot } from '@ethereumjs/devp2p'
 import type { BALJSONBlockAccessList } from '@ethereumjs/util'
 
+import type { HardwareSnapshot } from '../ai/hardwareCheck.ts'
+import type { DiscoveredLocalModel } from '../ai/localProviders.ts'
 import type { EconomySnapshot } from '../economy/types.ts'
+import type { EthyAiMode } from '../persist/userConfig.ts'
+import type { DiskResumeKind } from '../sync/startupStateMachine.ts'
 
 export type CapabilityId = 'state' | 'economy' | 'p2p'
 
@@ -18,6 +22,27 @@ export type EthyPhase = 'BOOTING' | 'P2P_WARMUP' | 'SNAP_SYNCING' | 'BAL_CATCHUP
 export type SyncTransport = 'unset' | 'ethy' | 'snap'
 
 export type CapabilityReadiness = 'locked' | 'partial' | 'ready'
+
+/** Default managed model lifecycle (WP-10d). */
+export type ManagedAiPhase =
+  | 'idle'
+  | 'probing'
+  | 'downloading'
+  | 'deferred'
+  | 'warming'
+  | 'ready'
+  | 'needs-runner'
+  | 'ollama-bridge'
+
+export interface ManagedAiState {
+  phase: ManagedAiPhase
+  progressPct?: number
+  downloadedBytes?: number
+  totalBytes?: number
+  bytesPerSec?: number
+  detail?: string
+  label?: string
+}
 
 export type SnapBucketStatus = 'pending' | 'syncing' | 'verifying_proof' | 'done' | 'stalled'
 
@@ -137,6 +162,12 @@ export interface EthySpine {
   phase: EthyPhase
   /** Locked base-state download path (WP-06c). Phase stays `SNAP_SYNCING` for both. */
   syncTransport?: SyncTransport
+  /** Classification of local disk state at startup (`cold` when fresh/empty). */
+  diskResumeKind?: DiskResumeKind
+  /** Local block number peeked from disk before/during hydrate (display only; never a network head). */
+  diskResumeBlock?: bigint
+  /** False while on-disk journals are still being replayed into memory. */
+  diskHydrated?: boolean
   /** Local servable ETHY/0 account buckets (`1 << nibble`). */
   ethyBucketsBitmask?: number
   currentSlot: number
@@ -150,6 +181,12 @@ export interface EthySpine {
   pivotBridging?: PivotBridgingProgress
   /** Set after a heal that held accounts, or when the previous pivot still has unloaded journals. */
   pivotCarry?: PivotCarry
+  /** Effective AI runtime mode (WP-10a). */
+  aiMode: EthyAiMode
+  /** Opt-in RAM-only prompt sharing for Chain Detective (WP-10c). */
+  sharePromptHistory?: boolean
+  /** Integrated default model runner state (`aiMode === 'default'`). */
+  managedAi?: ManagedAiState
   /** `--demo` uses {@link currentSlot} as a synthetic clock in the capability bar. */
   demoClock?: boolean
   headBlockNumber?: bigint
@@ -229,12 +266,32 @@ export interface EthySpine {
   /** Finalized EL block hash from BLS-verified light client header. */
   clFinalizedBlockHash?: Uint8Array
   clEndpoint?: string
+  /** Swarm generation / BAL tail / shadow refresh telemetry (WP-11b). */
+  swarm?: SpineSwarmSnapshot
   /** Optional sink hook for the persistent Flight Recorder log files. */
   onDiagnosticRecorded?: (entry: DiagnosticEvent) => void
   /** Active logs directory path (`~/.ethy/networks/<net>/logs`). */
   logsDirPath?: string
   /** Loopback JSON-RPC 2.0 telemetry (WP-08a). */
   rpc?: RpcTelemetry
+}
+
+export type SpineSwarmSnapshot = {
+  generationAgeBlocks?: bigint
+  balTailContiguous?: boolean
+  balTailEarliest?: bigint
+  balTailLatest?: bigint
+  shadowRefresh?: {
+    mode: 'idle' | 'ethy-shadow' | 'snap-mint' | 'waiting-election'
+    targetBlock?: bigint
+    progressPct?: number
+    suppressedByPeerId?: string
+    electionDeadlineMs?: number
+    mintBucket?: number
+    partialMinterMask?: number
+    suppressionState?: 'clear' | 'suppressed' | 'stalled'
+    stalledMinterPeerIds?: string[]
+  }
 }
 
 export type RpcMethodStat = {
@@ -297,11 +354,26 @@ export type InteractionHistoryEntry =
       page: InteractionPage
     }
 
+export type ChainDispatchCard = {
+  category: string
+  severity: string
+  headline: string
+  body: string
+  relatedAddress?: string
+  suggestedAction?: string
+  blockNumber?: string
+  atMs: number
+  deterministic?: boolean
+}
+
 export interface AiOverviewSections {
   state?: string
   economy?: string
   p2p?: string
   focusNote?: { domain: CapabilityId; text: string }
+  /** WP-10c Dispatch Feed (replaces 3-domain prose when set). */
+  dispatches?: ChainDispatchCard[]
+  bootstrapNote?: string
 }
 
 export type WidgetSpec =
@@ -350,9 +422,23 @@ export type WidgetSpec =
       kind: 'live_plaza'
       debugPage?: DebugSectionSpec[]
     }
+  | {
+      kind: 'ai_onboarding'
+      /** 0 = default, 1 = no AI, 2 = local */
+      initialOption?: number
+      selectedOption?: number
+      selectedLocalIndex?: number
+      sharePromptHistory?: boolean
+      discoveredModels?: DiscoveredLocalModel[]
+      hardware?: HardwareSnapshot
+      statusNote?: string
+      debugPage?: DebugSectionSpec[]
+    }
 
 export interface TuiViewState {
   activeDomain: CapabilityId
+  /** When true, first-run onboarding is required before normal prompt routing (WP-10a). */
+  aiOnboardingActive?: boolean
   activeWidget: WidgetSpec | null
   interactionPage: InteractionPage
   /** Three-domain situational prose for the full-height AI box (refreshed in session). */

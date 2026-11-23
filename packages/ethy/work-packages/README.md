@@ -271,11 +271,63 @@ Every Work Package delivers a **runnable, observable, and live-testable incremen
                                           │         Broadcast & Headless SDK        │
                                           └───────────────────┬─────────────────────┘
                                                               │
-                                                              ▼ (Optional)
+                                                              ├───────────────────────────────┐
+                                                              ▼                               ▼ (Optional)
+                                          ┌─────────────────────────────────────────┐   ┌─────────────────────────────────────────┐
+                                          │ WP-10a: Modular AI Modes (default/off/  │   │ WP-09: Optional ETHY/0 Discovery Infra  │
+                                          │         local), First-Open Choice,      │   │        (--rendezvous Seed & Signed      │
+                                          │         Full-Width UI & Ollama Auto-Det │   │        EIP-1459 DNS ENR Tree)           │
+                                          └───────────────────┬─────────────────────┘   └─────────────────────────────────────────┘
+                                                              │
+                                                              ▼
                                           ┌─────────────────────────────────────────┐
-                                          │ WP-09: Optional ETHY/0 Discovery Infra  │
-                                          │        (--rendezvous Seed & Signed      │
-                                          │        EIP-1459 DNS ENR Tree)           │
+                                          │ WP-10b: Layer 1 Deterministic Signal    │
+                                          │         Engine, Multi-Horizon Series,   │
+                                          │         7702/L2/BAL Slots & Local ENS   │
+                                          └───────────────────┬─────────────────────┘
+                                                              │
+                                                              ▼
+                                          ┌─────────────────────────────────────────┐
+                                          │ WP-10c: Layer 2 Chain-Detective LLM,    │
+                                          │         Bounded Investigation Toolbelt, │
+                                          │         Dispatch Feed & Prompt Consent  │
+                                          └───────────────────┬─────────────────────┘
+                                                              │
+                                                              ▼
+                                          ┌─────────────────────────────────────────┐
+                                          │ WP-10d: Default Model (Qwen3.5-2B) —    │
+                                          │         GGUF Store, Local Runner, Live  │
+                                          │         Hot-Start & ai:smoke Testing    │
+                                          └───────────────────┬─────────────────────┘
+                                                              │
+                                                              ▼ (Optional Future)
+                                          ┌─────────────────────────────────────────┐
+                                          │ WP-10e..10g: Optional Eval Bake-Off,    │
+                                          │         ~30 MB LoRA Diffset + KV-Cache, │
+                                          │         Zero-CPU Watch Rules & Lenses   │
+                                          └───────────────────┬─────────────────────┘
+                                                              │
+                                                              ▼ (Swarm Production Readiness)
+                                          ┌─────────────────────────────────────────┐
+                                          │ WP-11a: Multi-Client Swarm Simulator    │
+                                          │         (ethy-sim), Shared-Policy Hooks │
+                                          │         & 10-Scenario Stress Harness    │
+                                          └───────────────────┬─────────────────────┘
+                                                              │
+                                                              ▼
+                                          ┌─────────────────────────────────────────┐
+                                          │ WP-11b: Amortized O(1) Generation       │
+                                          │         Election, Contiguous Disk BAL   │
+                                          │         Archive, Rarest-First Striping  │
+                                          │         & Background Shadow Re-Seeding  │
+                                          └───────────────────┬─────────────────────┘
+                                                              │
+                                                              ▼ (Curiosity-First AI Experience)
+                                          ┌─────────────────────────────────────────┐
+                                          │ WP-12: Chain Storyteller — Uncaged Prose│
+                                          │        Engine, Curated Ethereum Lore &  │
+                                          │        Threat Grounding, Editorial TUI  │
+                                          │        & Conversational Deep-Dives      │
                                           └─────────────────────────────────────────┘
 ```
 

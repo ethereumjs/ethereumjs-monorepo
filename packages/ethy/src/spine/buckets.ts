@@ -339,11 +339,17 @@ export function computeAccountRangeFraction(buckets: readonly SnapBucket[]): num
 
 /** Continuous snap progress: 75% accounts, then 25% code+storage when all buckets are done (WP-06f). */
 export function computeSnapProgressPct(spine: EthySpine): number {
+  if (spine.phase === 'HEAD_FOLLOWING' || spine.phase === 'BAL_CATCHUP') {
+    return 100
+  }
   const buckets = spine.snapBuckets
   const accountFraction = computeAccountRangeFraction(buckets)
   const allDone = buckets.every((b) => b.status === 'done')
   if (!allDone) {
     return Math.min(100, Math.max(0, Math.round(0.75 * accountFraction * 100)))
+  }
+  if (spine.syncTransport === 'ethy') {
+    return 100
   }
   const codeTotal = Math.max(spine.codesTotal ?? 0, spine.codesSynced + spine.codesQueued)
   const codeFrac = codeTotal <= 0 ? 1 : spine.codesSynced / codeTotal

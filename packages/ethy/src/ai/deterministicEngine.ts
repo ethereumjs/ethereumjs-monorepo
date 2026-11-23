@@ -23,6 +23,7 @@ import { buildDomainHelpWidget, buildHelpWidget, parseHelpDomainArg } from '../t
 import { livePlazaWidget } from '../tools/livePlaza.ts'
 import { inspectRawAccountRange, sampleSyncedAccounts } from '../tools/range.ts'
 import { rpcMicroscopeWidget } from '../tools/rpcTools.ts'
+import { signalsDeepViewWidget } from '../tools/signalTools.ts'
 import { sendTxWidget, simulateMicroscopeWidget } from '../tools/simulateTools.ts'
 import { renderCommandUnavailableWidget } from '../tui/components/CommandUnavailableUIComponent.ts'
 import type { IntentEngine, IntentRequest, IntentResult } from './intentEngine.ts'
@@ -161,6 +162,12 @@ export function dispatchSlashWidget(line: string, ctx: SlashDispatchCtx): Widget
       const locked = slashIfLocked('/economy', spine)
       if (locked !== undefined) return locked
       return economyDeepViewWidget(spine)
+    }
+    case '/signals':
+    case '/si': {
+      const locked = slashIfLocked('/signals', spine)
+      if (locked !== undefined) return locked
+      return signalsDeepViewWidget(spine)
     }
     case '/contract':
     case '/co': {

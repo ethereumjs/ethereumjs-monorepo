@@ -20,6 +20,7 @@ function economySections(): { sections: DomainHelpSection[]; aiExamples: string[
         rows: [
           { command: '/live · /plaza', detail: 'Ethereum Plaza observatory' },
           { command: '/economy', detail: '64-block gas, TPS & volume' },
+          { command: '/signals · /si', detail: 'Ranked Layer 1 anomaly signals' },
           { command: '/contract', detail: 'Hot contract #1 microscope' },
           { command: '/contract <N>', detail: 'Inspect leaderboard #1..10' },
           { command: '/contract <0x>', detail: 'Bytecode, proxy & ABI lens' },
@@ -225,6 +226,7 @@ export function buildHelpWidget(spine: EthySpine): WidgetSpec {
       rows: [
         { command: '/live · /plaza', detail: 'Ethereum Plaza observatory' },
         { command: '/economy', detail: '64-block gas, TPS & volume' },
+        { command: '/signals · /si', detail: 'Ranked Layer 1 anomaly signals' },
         { command: '/contract [N|0x]', detail: 'Contract & ABI microscope' },
       ],
     },
@@ -252,6 +254,9 @@ export function buildHelpWidget(spine: EthySpine): WidgetSpec {
         { command: '/rpc', detail: 'JSON-RPC status & methods' },
         { command: '/diag', detail: 'Diagnostic ring buffer' },
         { command: '/send <txHex> · /drop <id>', detail: 'Broadcast tx or drop peer' },
+        ...(spine.aiMode === 'off'
+          ? [{ command: '/ai', detail: 'Configure or enable AI mode' }]
+          : []),
       ],
     },
   ]
@@ -259,7 +264,7 @@ export function buildHelpWidget(spine: EthySpine): WidgetSpec {
     kind: 'domain_help',
     unified: true,
     sections,
-    aiExamples: UNIFIED_AI_EXAMPLES,
+    aiExamples: spine.aiMode === 'off' ? undefined : UNIFIED_AI_EXAMPLES,
     debugPage: unifiedHelpDebugPage(spine),
   }
 }

@@ -678,6 +678,19 @@
     "IMPLS",
     "impls",
     "ethy",
-    "Ethy"
+    "Ethy",
+    "Ollama",
+    "ollama",
+    "statfs",
+    "bavail",
+    "GGUF",
+    "gguf",
+    "Gguf",
+    "qwen",
+    "Qwen",
+    "nomic",
+    "mxbai",
+    "minilm",
+    "DYLD"
   ]
 }

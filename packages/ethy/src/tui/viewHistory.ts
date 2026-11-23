@@ -173,6 +173,8 @@ export function inferDomainForCommandOrPrompt(
     cmd === '/head' ||
     cmd === '/economy' ||
     cmd === '/e' ||
+    cmd === '/signals' ||
+    cmd === '/si' ||
     cmd === '/contract' ||
     cmd === '/co'
   ) {
@@ -233,10 +235,17 @@ export function applyLiveSlashRefresh(
   spine: EthySpine,
   slashCtx: SlashDispatchCtx,
 ): TuiViewState {
+  if (view.aiOnboardingActive === true || view.activeWidget?.kind === 'ai_onboarding') {
+    return view
+  }
   if (view.viewHistory.length === 0) return view
   const entry = view.viewHistory[view.viewHistoryIndex]
   if (entry === undefined || entry.kind !== 'slash') return view
   if (entry.frozenWidget !== undefined) return view
+  const cmdLower = entry.command.trim().toLowerCase()
+  if (cmdLower === '/ai' || cmdLower.startsWith('/ai ') || cmdLower === '/clear') {
+    return view
+  }
   const widget = dispatchSlashWidget(entry.command, slashCtx)
   return { ...view, activeWidget: widget }
 }

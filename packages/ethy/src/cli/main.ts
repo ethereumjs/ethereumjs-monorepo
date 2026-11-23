@@ -1,9 +1,11 @@
+import { createAiRuntimeController } from '../ai/aiRuntime.ts'
 import { startConsensusTracker } from '../cl/consensusTracker.ts'
 import { createEthyNode } from '../core/createEthyNode.ts'
 import { initEthyKeccak } from '../crypto/keccak.ts'
 import { advanceDemo } from '../demo/advanceDemo.ts'
 import { activeHardfork, chainConfigForNetwork } from '../net/chainHardfork.ts'
 import { startPeerCoordinator } from '../net/peerCoordinator.ts'
+import { readUserConfig, resolveEffectiveAiConfig, writeUserConfig } from '../persist/userConfig.ts'
 import { initRpcTelemetry } from '../rpc/methods.ts'
 import { type JsonRpcHandle, startJsonRpcServer } from '../rpc/server.ts'
 import { recordDiagnostic } from '../spine/diagnostics.ts'
@@ -37,6 +39,12 @@ async function main(): Promise<void> {
 
   await initEthyKeccak()
 
+  const saved = readUserConfig(cli.dataDir)
+  const aiResolution = resolveEffectiveAiConfig(saved, cli, { isTTY: process.stdin.isTTY === true })
+  if (aiResolution.persistOnBoot) {
+    writeUserConfig(cli.dataDir, aiResolution.effective)
+  }
+
   const node = createEthyNode({
     network,
     chainId,
@@ -45,11 +53,23 @@ async function main(): Promise<void> {
     fresh: cli.fresh,
     dataDir: cli.dataDir,
     enableFlightRecorder: !cli.demo,
+    aiConfig: aiResolution.effective,
     llmUrl: cli.llmUrl,
     llmAllowRemote: cli.llmAllowRemote,
     aiMemory: cli.aiMemory,
     recordFixturePath: cli.recordFixturePath,
   })
+
+  const aiRuntime = createAiRuntimeController({
+    node,
+    dataDir: cli.dataDir,
+    initial: aiResolution.effective,
+    recordFixturePath: cli.recordFixturePath,
+    sessionNoSave: aiResolution.sessionOnly,
+  })
+  node.aiRuntime = aiRuntime
+  node.hybridEngine?.attachAiRuntime(aiRuntime, aiResolution.sessionOnly)
+  await aiRuntime.setAiConfig(aiResolution.effective, { persist: false })
 
   let coordinatorStop: (() => void) | undefined
   let consensusStop: (() => void) | undefined
@@ -140,6 +160,7 @@ async function main(): Promise<void> {
       listenPort: cli.listenPort,
       connectEnodeUrls: cli.connectEnodeUrls.length > 0 ? cli.connectEnodeUrls : undefined,
       syncMode: cli.syncMode,
+      shadowRefreshEnabled: cli.shadowRefreshEnabled,
       witnessExecutionHeader,
       economy: node.economy,
       onRpcBundle: (note) => rpcHandle?.noteBundle(note),
@@ -147,6 +168,12 @@ async function main(): Promise<void> {
       .then((handle) => {
         bindPeerCoordinator(handle)
         noteChainHead = handle.noteChainHead
+        if (
+          node.spine.clOptimisticBlockNumber !== undefined &&
+          node.spine.clOptimisticBlockNumber > 0n
+        ) {
+          handle.noteChainHead(node.spine.clOptimisticBlockNumber)
+        }
         node.submitRawTransaction = handle.submitRawTransaction
         node.hybridEngine?.setSubmitRawTransaction((hex) =>
           handle
@@ -160,6 +187,7 @@ async function main(): Promise<void> {
   }
 
   const shutdown = () => {
+    void node.aiRuntime?.stop()
     void rpcHandle?.stop()
     coordinatorStop?.()
     consensusStop?.()
@@ -183,7 +211,10 @@ async function main(): Promise<void> {
   }
 
   try {
-    await runEthySession(node)
+    await runEthySession(node, {
+      showOnboarding: aiResolution.showOnboarding,
+      sessionNoSave: aiResolution.sessionOnly,
+    })
   } finally {
     shutdown()
   }

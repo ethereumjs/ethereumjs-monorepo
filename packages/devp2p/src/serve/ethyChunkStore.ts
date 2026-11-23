@@ -3,6 +3,7 @@ import * as path from 'node:path'
 import { RLP } from '@ethereumjs/rlp'
 import { bytesToUnprefixedHex, equalsBytes } from '@ethereumjs/util'
 
+import { contiguousBalTailWindow, readBalTailBundle, readBalTailManifest } from './balTailDisk.ts'
 import {
   type DiskChunkProofRecord,
   journalPathForProofSidecar,
@@ -73,11 +74,20 @@ export class EthyChunkStore {
   private _pivotAccountsDir?: string
   private readonly _diskCache = new Map<number, BucketDiskCache>()
   private readonly _journalFds = new Map<string, number>()
+  private _chunkReadsInFlight = 0
+  private static readonly MAX_CONCURRENT_CHUNK_READS = 4
+  private _healWindowCache?: {
+    accountsDir: string
+    signature: string
+    earliest: bigint
+    latest: bigint
+  }
 
   setPivotAccountsDir(dir: string | undefined): void {
     if (this._pivotAccountsDir !== dir) {
       this._pivotAccountsDir = dir
       this._diskCache.clear()
+      this._healWindowCache = undefined
       for (const fd of this._journalFds.values()) {
         try {
           fs.closeSync(fd)
@@ -89,17 +99,59 @@ export class EthyChunkStore {
     }
   }
 
+  hasPivotAccountsDir(): boolean {
+    return this._pivotAccountsDir !== undefined && this._pivotAccountsDir.length > 0
+  }
+
+  /** Return the contiguous `(earliest, latest)` heal bundle range under the active pivot root. */
+  getDiskHealWindow(): { earliest: bigint; latest: bigint } | undefined {
+    const accountsDir = this._pivotAccountsDir
+    if (accountsDir === undefined) return undefined
+    const pivotRoot = path.dirname(accountsDir)
+    let signature: string
+    try {
+      const healDir = path.join(pivotRoot, 'heal')
+      const tailDir = path.join(pivotRoot, 'bal-tail')
+      const manifestPath = path.join(tailDir, 'manifest.bin')
+      const healMtime = fs.existsSync(healDir) ? fs.statSync(healDir).mtimeMs : 0
+      const tailMtime = fs.existsSync(tailDir) ? fs.statSync(tailDir).mtimeMs : 0
+      const manifestMtime = fs.existsSync(manifestPath) ? fs.statSync(manifestPath).mtimeMs : 0
+      const man = readBalTailManifest(pivotRoot)
+      signature = `${healMtime}:${tailMtime}:${manifestMtime}:${man?.earliest ?? ''}:${man?.latest ?? ''}`
+    } catch {
+      return undefined
+    }
+    if (
+      this._healWindowCache !== undefined &&
+      this._healWindowCache.accountsDir === accountsDir &&
+      this._healWindowCache.signature === signature
+    ) {
+      return {
+        earliest: this._healWindowCache.earliest,
+        latest: this._healWindowCache.latest,
+      }
+    }
+    const window = contiguousBalTailWindow(pivotRoot)
+    if (window === undefined) return undefined
+    this._healWindowCache = {
+      accountsDir,
+      signature,
+      earliest: window.earliest,
+      latest: window.latest,
+    }
+    return window
+  }
+
   /** Read a persisted `(headerRlp, balRlp)` bundle from `../heal/<n>.bundle.rlp` on disk. */
   getBalBundleFromDisk(
     blockNumber: bigint,
   ): { headerRlp: Uint8Array; balRlp: Uint8Array } | undefined {
     const accountsDir = this._pivotAccountsDir
     if (accountsDir === undefined) return undefined
-    const healFile = path.join(
-      path.dirname(accountsDir),
-      'heal',
-      `${blockNumber.toString()}.bundle.rlp`,
-    )
+    const pivotRoot = path.dirname(accountsDir)
+    const fromTail = readBalTailBundle(pivotRoot, blockNumber)
+    if (fromTail !== undefined) return fromTail
+    const healFile = path.join(pivotRoot, 'heal', `${blockNumber.toString()}.bundle.rlp`)
     if (!fs.existsSync(healFile)) return undefined
     try {
       const raw = new Uint8Array(fs.readFileSync(healFile))
@@ -115,6 +167,22 @@ export class EthyChunkStore {
   }
 
   private readJournalSliceCached(
+    journalPath: string,
+    byteOffset: number,
+    byteLength: number,
+  ): Uint8Array {
+    if (this._chunkReadsInFlight >= EthyChunkStore.MAX_CONCURRENT_CHUNK_READS) {
+      return readSlabSlice(journalPath, byteOffset, byteLength)
+    }
+    this._chunkReadsInFlight++
+    try {
+      return this.readJournalSliceCachedInner(journalPath, byteOffset, byteLength)
+    } finally {
+      this._chunkReadsInFlight--
+    }
+  }
+
+  private readJournalSliceCachedInner(
     journalPath: string,
     byteOffset: number,
     byteLength: number,

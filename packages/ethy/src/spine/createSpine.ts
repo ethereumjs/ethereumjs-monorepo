@@ -9,7 +9,11 @@ function deriveStateCapability(spine: EthySpine): void {
     return
   }
   if (phase === 'P2P_WARMUP') {
-    if (totalAccountsSynced > 0 || pivotBlockNumber !== undefined) {
+    if (
+      totalAccountsSynced > 0 ||
+      pivotBlockNumber !== undefined ||
+      (spine.diskResumeKind !== undefined && spine.diskResumeKind !== 'cold')
+    ) {
       spine.capabilities.state = { status: 'partial', label: 'Warming' }
     } else {
       spine.capabilities.state = { status: 'locked', label: 'Waiting' }
@@ -60,8 +64,58 @@ function deriveP2pCapability(spine: EthySpine): void {
 }
 
 function deriveAiCapability(spine: EthySpine): void {
+  if (spine.aiMode === 'off') {
+    spine.capabilities.ai = { status: 'locked', label: 'No AI' }
+    return
+  }
+  if (spine.aiMode === 'default') {
+    const m = spine.managedAi
+    if (m === undefined) {
+      spine.capabilities.ai = { status: 'partial', label: 'Default model' }
+      return
+    }
+    switch (m.phase) {
+      case 'downloading':
+        spine.capabilities.ai = {
+          status: 'partial',
+          label: m.progressPct !== undefined ? `Downloading ${m.progressPct}%` : 'Downloading',
+          progressPct: m.progressPct,
+        }
+        return
+      case 'deferred':
+        spine.capabilities.ai = {
+          status: 'partial',
+          label: 'Ready after sync',
+        }
+        return
+      case 'warming':
+      case 'probing':
+        spine.capabilities.ai = {
+          status: 'partial',
+          label: m.phase === 'warming' ? 'Loading Qwen3.5-2B' : 'Default model',
+        }
+        return
+      case 'ready':
+        spine.capabilities.ai = { status: 'ready', label: 'Qwen3.5-2B' }
+        return
+      case 'ollama-bridge':
+        spine.capabilities.ai = {
+          status: 'partial',
+          label: m.label ?? 'Ollama bridge',
+        }
+        return
+      case 'needs-runner':
+        spine.capabilities.ai = { status: 'partial', label: 'Install runner' }
+        return
+      default:
+        spine.capabilities.ai = { status: 'partial', label: 'Default model' }
+        return
+    }
+  }
   if (spine.llmPulseReady === true) {
     spine.capabilities.ai = { status: 'ready', label: 'Local LLM' }
+  } else if (spine.aiMode === 'local') {
+    spine.capabilities.ai = { status: 'partial', label: 'Local LLM' }
   } else {
     spine.capabilities.ai = { status: 'partial', label: 'Slash/Rule' }
   }
@@ -84,6 +138,7 @@ export function createSpine(network: string, chainId: bigint): EthySpine {
     syncTransport: 'unset',
     ethyBucketsBitmask: 0,
     currentSlot: 0,
+    aiMode: 'off',
     capabilities: {
       state: { status: 'locked', label: 'Starting' },
       economy: { status: 'locked', label: 'No blocks' },

@@ -10,6 +10,7 @@ import { DOMAIN_ORDER } from '../spine/types.ts'
 import { helpDomainLabel } from '../tools/help.ts'
 import { BOLD, DIM, RESET, visibleWidth } from './ansi.ts'
 import { capabilityMark } from './capabilityMark.ts'
+import { renderAiOnboardingUIComponent } from './components/AiOnboardingUIComponent.ts'
 import { renderDebugPageUIComponent } from './components/DebugPageUIComponent.ts'
 import {
   type DomainHelpColumnMetrics,
@@ -136,6 +137,9 @@ export function renderInteractionWidgetBody(
         pushLines(renderLiveHeadPlazaUIComponent(spine, w, budget, tick, colMetrics))
       }
       break
+    case 'ai_onboarding':
+      pushLines(renderAiOnboardingUIComponent(widget, w, budget))
+      break
   }
 
   return lines
@@ -181,9 +185,15 @@ export function interactionViewTitle(
   } else {
     base = `${BOLD}Interaction${RESET}`
   }
+  if (widget?.kind === 'ai_onboarding') {
+    return `${BOLD}Welcome · Setup${RESET}`
+  }
   if (widget?.kind === 'domain_help') {
     if (widget.unified === true) {
-      base = `${BOLD}/help · Commands & AI${RESET}`
+      base =
+        spine?.aiMode === 'off'
+          ? `${BOLD}/help · Commands${RESET}`
+          : `${BOLD}/help · Commands & AI${RESET}`
     } else if (spine !== undefined && widget.domain !== undefined) {
       const mark = capabilityMark(widget.domain, spine.capabilities[widget.domain].status)
       base = `${mark} ${BOLD}/help · ${helpDomainLabel(widget.domain)}${RESET}`
@@ -209,12 +219,57 @@ function wrapSectionText(text: string, wrapW: number): string[] {
   return wrapped
 }
 
+function categoryBadge(card: { category: string; deterministic?: boolean }): string {
+  const tag = card.deterministic === true ? 'SIGNAL' : card.category.toUpperCase()
+  return `[${tag}]`
+}
+
 export function renderAiOverviewSections(
   spine: EthySpine,
   sections: AiOverviewSections | undefined,
   innerWidth: number,
   innerLines: number,
 ): string[] {
+  if (sections?.bootstrapNote !== undefined && sections.bootstrapNote.length > 0) {
+    return wrapProseCentered(sections.bootstrapNote, innerWidth, innerLines)
+  }
+  const dispatchList = sections?.dispatches
+  if (dispatchList !== undefined && dispatchList.length > 0 && spine.economy?.hasBlocks === true) {
+    const padCols = 2
+    const wrapW = Math.max(8, innerWidth - padCols * 2)
+    const pad = ' '.repeat(padCols)
+    const blocks: string[] = []
+    for (const card of dispatchList.slice(0, 2)) {
+      const badge = categoryBadge(card)
+      const head = `${BOLD}${badge} ${card.headline}${RESET}`
+      const age =
+        card.blockNumber !== undefined
+          ? `${DIM}#${card.blockNumber}${RESET}`
+          : `${DIM}${Math.round((Date.now() - card.atMs) / 1000)}s ago${RESET}`
+      for (const ln of wrapSectionText(`${head}  ${age}`, wrapW)) {
+        blocks.push(`${pad}${ln}`)
+      }
+      for (const ln of wrapSectionText(card.body, wrapW)) {
+        blocks.push(`${pad}${ln}`)
+      }
+      if (card.suggestedAction !== undefined) {
+        for (const ln of wrapSectionText(`› ${card.suggestedAction}`, wrapW)) {
+          blocks.push(`${pad}${DIM}${ln}${RESET}`)
+        }
+      }
+      blocks.push('')
+    }
+    const body = blocks.filter((b, i, arr) => !(b === '' && arr[i + 1] === ''))
+    if (body[body.length - 1] === '') body.pop()
+    const topPad = Math.max(0, Math.floor((innerLines - body.length) / 2))
+    const rows: string[] = []
+    for (let i = 0; i < innerLines; i++) {
+      if (i < topPad || i >= topPad + body.length) rows.push('')
+      else rows.push(body[i - topPad] ?? '')
+    }
+    return rows
+  }
+
   const wrapW = Math.max(8, innerWidth - 7)
   const blocks: string[] = []
   const renderOne = (domain: CapabilityId, text: string) => {
@@ -228,6 +283,14 @@ export function renderAiOverviewSections(
       }
     })
   }
+  if (spine.economy?.hasBlocks === true) {
+    return wrapProseCentered(
+      'Chain detective is watching for ranked signals…',
+      innerWidth,
+      innerLines,
+    )
+  }
+
   for (const id of DOMAIN_ORDER) {
     const text =
       sections?.focusNote !== undefined && sections.focusNote.domain === id

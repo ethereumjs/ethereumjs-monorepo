@@ -1,3 +1,4 @@
+import type { LocalLlmProviderKind } from '../persist/userConfig.ts'
 import type { ChatMessage, LlmCompletionKind } from './llmClient.ts'
 import { postChatCompletion } from './llmClient.ts'
 
@@ -10,15 +11,27 @@ export interface LlmTransport {
   complete(req: LlmTransportRequest, signal?: AbortSignal): Promise<string>
 }
 
+export type FetchLlmTransportOpts = {
+  model?: string
+  provider?: LocalLlmProviderKind
+}
+
 export class FetchLlmTransport implements LlmTransport {
   private readonly base: string
+  private readonly model?: string
+  private readonly provider?: LocalLlmProviderKind
 
-  constructor(base: string) {
+  constructor(base: string, opts?: FetchLlmTransportOpts) {
     this.base = base
+    this.model = opts?.model
+    this.provider = opts?.provider
   }
 
   async complete(req: LlmTransportRequest, signal?: AbortSignal): Promise<string> {
-    return postChatCompletion(this.base, req.kind, req.messages, signal)
+    return postChatCompletion(this.base, req.kind, req.messages, signal, {
+      model: this.model,
+      provider: this.provider,
+    })
   }
 }
 

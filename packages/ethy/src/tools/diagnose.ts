@@ -43,16 +43,81 @@ export function ethyOverviewWidget(spine: EthySpine): WidgetSpec {
       ? `#${BigInt(s.earliestBlock).toLocaleString('en-US')}..#${BigInt(s.latestBlock).toLocaleString('en-US')} (${servableCount} block${servableCount === 1 ? '' : 's'})`
       : '—'
   const localEnode = spine.discovery?.localEnode ?? '—'
+  const swarm = spine.swarm
+  const shadowMode = swarm?.shadowRefresh?.mode ?? '—'
+  const genAge =
+    swarm?.generationAgeBlocks !== undefined ? swarm.generationAgeBlocks.toString() : '—'
+  const balTail =
+    swarm?.balTailEarliest !== undefined && swarm?.balTailLatest !== undefined
+      ? `#${swarm.balTailEarliest.toString()}..#${swarm.balTailLatest.toString()}${swarm.balTailContiguous === false ? ' (gap)' : ''}`
+      : '—'
+  const electionDeadline =
+    swarm?.shadowRefresh?.electionDeadlineMs !== undefined
+      ? new Date(swarm.shadowRefresh.electionDeadlineMs).toISOString()
+      : '—'
+  const mintBucket =
+    swarm?.shadowRefresh?.mintBucket !== undefined
+      ? `0x${swarm.shadowRefresh.mintBucket.toString(16)}`
+      : '—'
   return {
     kind: 'table',
     title: 'ETHY/0 swarm',
     preface: [{ key: 'Local enode', value: localEnode }],
     headers: ['Field', 'Value'],
+    debugPage: [
+      {
+        title: 'Shadow refresh',
+        entries: [
+          { key: 'Mode', value: shadowMode },
+          {
+            key: 'Progress',
+            value:
+              swarm?.shadowRefresh?.progressPct !== undefined
+                ? `${swarm.shadowRefresh.progressPct}%`
+                : '—',
+          },
+          {
+            key: 'Target block',
+            value:
+              swarm?.shadowRefresh?.targetBlock !== undefined
+                ? `#${swarm.shadowRefresh.targetBlock.toString()}`
+                : '—',
+          },
+          { key: 'Election deadline (UTC)', value: electionDeadline },
+          { key: 'Mint bucket', value: mintBucket },
+          {
+            key: 'Suppressed by',
+            value: swarm?.shadowRefresh?.suppressedByPeerId ?? '—',
+          },
+          {
+            key: 'Partial minter mask',
+            value:
+              swarm?.shadowRefresh?.partialMinterMask !== undefined
+                ? `0x${swarm.shadowRefresh.partialMinterMask.toString(16)}`
+                : '—',
+          },
+          {
+            key: 'Suppression state',
+            value: swarm?.shadowRefresh?.suppressionState ?? '—',
+          },
+          {
+            key: 'Stalled minters',
+            value:
+              swarm?.shadowRefresh?.stalledMinterPeerIds !== undefined
+                ? swarm.shadowRefresh.stalledMinterPeerIds.join(', ')
+                : '—',
+          },
+        ],
+      },
+    ],
     rows: [
       ['Transport', transport],
       ['Local seed buckets', `${localBits}/16`],
       ['ETHY sessions', String(ethyPeers)],
       ['Pivot', pivot],
+      ['Generation age (blocks)', genAge],
+      ['Disk BAL tail', balTail],
+      ['Shadow refresh', shadowMode],
       ['Servable head window (eth)', servableWindow],
       ['Headers served (eth)', String(s?.headersServed ?? 0)],
       ['Bodies served (eth)', String(s?.bodiesServed ?? 0)],

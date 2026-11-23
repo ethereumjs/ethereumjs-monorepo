@@ -47,7 +47,6 @@ function renderFooterHint(): string {
 /** Rhythm inside the pill cluster; spacer before cluster stays flexible. */
 const CAPABILITY_PILL_GAP = 2
 
-const CAPABILITY_IDS = CAPABILITY_PILL_ORDER
 const CAPABILITY_LABEL: Record<CapabilityMarkId, string> = {
   economy: 'Economy',
   state: 'State',
@@ -59,7 +58,9 @@ function capabilityPillWidth(name: string): number {
   return visibleWidth(formatCapabilityPill('●', name))
 }
 
-const CAPABILITY_PILL_WIDTHS = CAPABILITY_IDS.map((id) => capabilityPillWidth(CAPABILITY_LABEL[id]))
+function capabilityIdsForSpine(spine: EthySpine): readonly CapabilityMarkId[] {
+  return spine.aiMode === 'off' ? (['economy', 'state', 'p2p'] as const) : CAPABILITY_PILL_ORDER
+}
 
 function formatCapabilityPill(dot: string, name: string): string {
   return `${dot} ${BOLD}${name}${RESET}`
@@ -69,18 +70,16 @@ function formatCapabilityPill(dot: string, name: string): string {
 function renderCapabilityBar(spine: EthySpine, cols: number): string[] {
   const network = spine.network.toUpperCase()
   const brand = `${BOLD}${spine.clientName} v${spine.clientVersion}${RESET} | ${network}`
-  const pillTexts = CAPABILITY_IDS.map((id) =>
+  const ids = capabilityIdsForSpine(spine)
+  const pillWidths = ids.map((id) => capabilityPillWidth(CAPABILITY_LABEL[id]))
+  const pillTexts = ids.map((id) =>
     formatCapabilityPill(capabilityMark(id, spine.capabilities[id].status), CAPABILITY_LABEL[id]),
   )
 
-  const line = composeBrandAndRightPills(
-    cols,
-    brand,
-    pillTexts,
-    CAPABILITY_PILL_WIDTHS,
-    CAPABILITY_PILL_GAP,
-    { text: capabilityBarClockLabel(spine), gap: SLOT_GAP },
-  )
+  const line = composeBrandAndRightPills(cols, brand, pillTexts, pillWidths, CAPABILITY_PILL_GAP, {
+    text: capabilityBarClockLabel(spine),
+    gap: SLOT_GAP,
+  })
   return [line]
 }
 

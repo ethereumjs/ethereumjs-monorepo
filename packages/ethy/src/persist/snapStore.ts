@@ -25,9 +25,11 @@ import {
 } from '../spine/buckets.ts'
 import type { EthySpine, SnapBucket, SnapBucketStatus, SnapRangeCursor } from '../spine/types.ts'
 import type { IngestedAccountMeta } from '../sync/accountSync.ts'
+import { pruneFloor } from '../sync/balRetentionPolicy.ts'
 import type { VerifiedBalBlock } from '../sync/balSync.ts'
 import type { SnapResumeSaved } from '../sync/resumePolicy.ts'
 import { incrementKey32 } from '../sync/syntheticPeer.ts'
+import { appendBalTailBundle, enforceBalTailRetention } from './balTailArchive.ts'
 import { decodeHealBundleRlp, encodeHealBundleRlp } from './healBundle.ts'
 import {
   BINARY_ACCOUNT_JOURNAL_MAGIC,
@@ -72,6 +74,8 @@ type ActiveMeta = {
   baseSyncComplete?: boolean
   lastVerifiedBlockNumber?: string
   ethyBucketsBitmask?: number
+  /** Per-nibble ETHY snapshot block (`"0"`..`"15"`), WP-06g. */
+  bucketPivotBlocks?: Record<string, string>
 }
 
 type PivotMeta = {
@@ -128,6 +132,8 @@ export class SnapPivotStore {
   private readonly chainId: bigint
   private readonly genesisHash: string
   private activeStateRoot?: string
+  /** When set, account journal writes go to this pivot without flipping `active.json` (WP-11b snap-mint). */
+  private shadowPersistRoot?: string
   private restoredContracts: IngestedAccountMeta[] = []
   private lastBuckets?: SnapBucket[]
   private pendingMetadataFlush = false
@@ -295,6 +301,220 @@ export class SnapPivotStore {
     }
     this.activeStateRoot = undefined
     this.restoredContracts = []
+  }
+
+  noteBucketPivot(bucketIndex: number, blockNumber: bigint): void {
+    if (!this.enabled) return
+    const active = this.readActive()
+    if (active === undefined) return
+    const key = bucketIndex.toString(16)
+    const next: Record<string, string> = { ...(active.bucketPivotBlocks ?? {}) }
+    next[key] = blockNumber.toString()
+    writeAtomicDoc(path.join(this.networkDir, 'active.json'), {
+      ...active,
+      bucketPivotBlocks: next,
+    } satisfies ActiveMeta)
+  }
+
+  getBucketPivotBlocks(): Record<string, string> | undefined {
+    if (!this.enabled) return undefined
+    return this.readActive()?.bucketPivotBlocks
+  }
+
+  /** Filesystem data root for the active network (WP-11b shadow refresh). */
+  dataRoot(): string {
+    return this.networkDir
+  }
+
+  activePivotStateRoot(): string | undefined {
+    return this.activeStateRoot
+  }
+
+  /** Active pivot filesystem root (`pivots/<stateRoot>/`). */
+  activePivotRootDir(): string | undefined {
+    if (this.activeStateRoot === undefined) return undefined
+    return this.pivotDir(this.activeStateRoot)
+  }
+
+  pivotDirForRoot(stateRootHex: string): string {
+    return this.pivotDir(stateRootHex)
+  }
+
+  setShadowPersistRoot(stateRootHex: string | undefined): void {
+    if (!this.enabled) return
+    if (stateRootHex === undefined) {
+      this.shadowPersistRoot = undefined
+      return
+    }
+    const normalized = stateRootHex.toLowerCase().startsWith('0x')
+      ? stateRootHex
+      : `0x${stateRootHex}`
+    this.shadowPersistRoot = normalized
+    this.seedInitializedAccountFiles(normalized)
+  }
+
+  shadowPersistTarget(): string | undefined {
+    return this.shadowPersistRoot
+  }
+
+  private persistStateRoot(): string | undefined {
+    return this.shadowPersistRoot ?? this.activeStateRoot
+  }
+
+  /** Write `pivot.json` / `buckets.json` under `pivots/<root>/` without activating (WP-11b). */
+  prepareShadowPivotFromSeeder(meta: {
+    blockNumber: bigint
+    stateRoot: Uint8Array
+    blockHash?: Uint8Array
+  }): string {
+    return this.prepareShadowPivotFromHeader({
+      blockNumber: meta.blockNumber,
+      blockHash: meta.blockHash ?? new Uint8Array(32),
+      stateRoot: meta.stateRoot,
+    })
+  }
+
+  prepareShadowPivotFromHeader(meta: {
+    blockNumber: bigint
+    blockHash: Uint8Array
+    stateRoot: Uint8Array
+  }): string {
+    if (!this.enabled) return ''
+    const stateRootHex = bytesToHex(meta.stateRoot)
+    this.beginShadowPivot(stateRootHex)
+    const dir = this.pivotDir(stateRootHex)
+    writeAtomicDoc(path.join(dir, 'pivot.json'), {
+      blockNumber: meta.blockNumber.toString(),
+      blockHash: bytesToHex(meta.blockHash),
+      stateRoot: stateRootHex,
+      anchoredAt: Date.now(),
+    } satisfies PivotMeta)
+    writeAtomicDoc(path.join(dir, 'buckets.json'), {
+      buckets: serializeBuckets(createSnapBuckets()),
+    })
+    return stateRootHex
+  }
+
+  minActiveBucketPivotBlock(): bigint | undefined {
+    const rows = this.getBucketPivotBlocks()
+    if (rows === undefined) return undefined
+    let min: bigint | undefined
+    for (const v of Object.values(rows)) {
+      const n = BigInt(v)
+      if (n === 0n) continue
+      if (min === undefined || n < min) min = n
+    }
+    return min
+  }
+
+  healPruneCapForPivotStep(newPivotBlock: bigint, shadowRefreshDisabled: boolean): bigint {
+    const active = this.readActive()
+    const lastVerified =
+      active?.lastVerifiedBlockNumber !== undefined
+        ? BigInt(active.lastVerifiedBlockNumber)
+        : undefined
+    const floor = pruneFloor(this.minActiveBucketPivotBlock(), lastVerified, shadowRefreshDisabled)
+    if (floor === undefined || floor <= 0n) return newPivotBlock
+    const maxDelete = floor - 1n
+    return maxDelete < newPivotBlock ? maxDelete : newPivotBlock
+  }
+
+  /** Prepare parallel pivot directory without flipping `active.json` (WP-11b). */
+  beginShadowPivot(stateRootHex: string): void {
+    if (!this.enabled) return
+    const root = this.pivotDir(stateRootHex)
+    fs.mkdirSync(path.join(root, 'accounts'), { recursive: true })
+    fs.mkdirSync(path.join(root, 'bal-tail'), { recursive: true })
+    fs.mkdirSync(path.join(root, 'heal'), { recursive: true })
+  }
+
+  shadowPivotHasPivotMeta(stateRootHex: string): boolean {
+    if (!this.enabled) return false
+    return fs.existsSync(path.join(this.pivotDir(stateRootHex), 'pivot.json'))
+  }
+
+  /**
+   * Atomically point `active.json` at a prepared shadow pivot with `pivot.json`.
+   * Keeps the prior root as `previousStateRoot` and defers deleting older pivots.
+   */
+  promoteShadowPivotToActive(shadowStateRootHex: string): boolean {
+    if (!this.enabled) return false
+    if (!this.shadowPivotHasPivotMeta(shadowStateRootHex)) return false
+    const prior = this.readActive()
+    const nextRoot = shadowStateRootHex.toLowerCase().startsWith('0x')
+      ? shadowStateRootHex
+      : `0x${shadowStateRootHex}`
+    const previousStateRoot = prior?.stateRoot ?? null
+    if (prior !== undefined && prior.stateRoot.toLowerCase() === nextRoot.toLowerCase()) {
+      return true
+    }
+    let nextBucketPivots = prior?.bucketPivotBlocks
+    try {
+      const meta = JSON.parse(
+        fs.readFileSync(path.join(this.pivotDir(nextRoot), 'pivot.json'), 'utf8'),
+      ) as { blockNumber?: string }
+      if (meta.blockNumber !== undefined && meta.blockNumber.length > 0) {
+        const updated: Record<string, string> = {}
+        for (let b = 0; b < 16; b++) {
+          updated[String(b)] = meta.blockNumber
+        }
+        nextBucketPivots = updated
+      }
+    } catch {
+      // keep prior bucket pivots if pivot.json unreadable
+    }
+    writeAtomicDoc(path.join(this.networkDir, 'active.json'), {
+      stateRoot: nextRoot,
+      previousStateRoot,
+      baseSyncComplete: prior?.baseSyncComplete ?? true,
+      lastVerifiedBlockNumber: prior?.lastVerifiedBlockNumber,
+      bucketPivotBlocks: nextBucketPivots,
+    } satisfies ActiveMeta)
+    this.activeStateRoot = nextRoot
+    this.seedInitializedAccountFiles(nextRoot)
+    const keep = new Set<string>([nextRoot.toLowerCase()])
+    if (previousStateRoot !== null && previousStateRoot !== undefined) {
+      keep.add(previousStateRoot.toLowerCase())
+    }
+    const pivotRoot = path.join(this.networkDir, 'pivots')
+    if (fs.existsSync(pivotRoot)) {
+      for (const name of fs.readdirSync(pivotRoot)) {
+        const hex = name.startsWith('0x') ? name : `0x${name}`
+        if (keep.has(hex.toLowerCase())) continue
+        const doomed = path.join(pivotRoot, name)
+        setImmediate(() => {
+          try {
+            fs.rmSync(doomed, { recursive: true, force: true })
+          } catch {
+            // retry on next maintenance
+          }
+        })
+      }
+    }
+    return true
+  }
+
+  estimateActivePivotBytes(): bigint {
+    if (!this.enabled || this.activeStateRoot === undefined) return 0n
+    const root = this.pivotDir(this.activeStateRoot)
+    if (!fs.existsSync(root)) return 0n
+    let total = 0n
+    const stack = [root]
+    while (stack.length > 0) {
+      const dir = stack.pop()!
+      for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
+        const full = path.join(dir, ent.name)
+        if (ent.isDirectory()) stack.push(full)
+        else {
+          try {
+            total += BigInt(fs.statSync(full).size)
+          } catch {
+            // skip
+          }
+        }
+      }
+    }
+    return total
   }
 
   markBaseSyncComplete(pivotBlock: bigint): void {
@@ -1315,11 +1535,12 @@ export class SnapPivotStore {
     journal: 'prefix' | string = 'prefix',
     proof?: ChunkProofFields,
   ): Promise<void> {
-    if (!this.enabled || this.activeStateRoot === undefined || slab.length === 0) {
+    const root = this.persistStateRoot()
+    if (!this.enabled || root === undefined || slab.length === 0) {
       return Promise.resolve()
     }
     this.lastBuckets = buckets
-    const file = this.accountJournalPath(bucketIndex, this.activeStateRoot, journal)
+    const file = this.accountJournalPath(bucketIndex, root, journal)
     const needMagic = !this.initializedAccountFiles.has(file)
     if (needMagic) this.initializedAccountFiles.add(file)
     const prior = this.accountWriteChains.get(file) ?? Promise.resolve()
@@ -1358,9 +1579,10 @@ export class SnapPivotStore {
     records: Array<{ accountHash: Uint8Array; binaryAccount: Uint8Array }>,
     buckets: SnapBucket[],
   ): void {
-    if (!this.enabled || this.activeStateRoot === undefined || records.length === 0) return
+    const root = this.persistStateRoot()
+    if (!this.enabled || root === undefined || records.length === 0) return
     this.lastBuckets = buckets
-    const file = this.accountFile(bucketIndex, this.activeStateRoot)
+    const file = this.accountFile(bucketIndex, root)
     fs.mkdirSync(path.dirname(file), { recursive: true })
     const fileEmpty = !fs.existsSync(file) || fs.statSync(file).size === 0
     const batch =
@@ -1384,9 +1606,10 @@ export class SnapPivotStore {
     records: Array<{ accountHash: Uint8Array; accountRlp: Uint8Array }>,
     buckets: SnapBucket[],
   ): void {
-    if (!this.enabled || this.activeStateRoot === undefined || records.length === 0) return
+    const root = this.persistStateRoot()
+    if (!this.enabled || root === undefined || records.length === 0) return
     this.lastBuckets = buckets
-    const file = this.accountFile(bucketIndex, this.activeStateRoot)
+    const file = this.accountFile(bucketIndex, root)
     fs.mkdirSync(path.dirname(file), { recursive: true })
     const chunks: Uint8Array[] = records.map((row) => encodeAccountJournalRecord(row))
     const batch = Buffer.concat(chunks.map((c) => Buffer.from(c)))
@@ -1402,7 +1625,7 @@ export class SnapPivotStore {
   }
 
   maybeFlushMetadata(force: boolean): void {
-    if (!this.enabled || this.activeStateRoot === undefined) return
+    if (!this.enabled || this.persistStateRoot() === undefined) return
     const now = Date.now()
     if (!force && now - this.lastMetadataFlushAt < this.metadataFlushIntervalMs) return
     if (!this.pendingMetadataFlush && !force) return
@@ -1423,9 +1646,10 @@ export class SnapPivotStore {
   }
 
   private flushBucketsAsync(buckets: SnapBucket[]): Promise<void> {
-    if (!this.enabled || this.activeStateRoot === undefined) return Promise.resolve()
+    const root = this.persistStateRoot()
+    if (!this.enabled || root === undefined) return Promise.resolve()
     this.lastBuckets = buckets
-    const dir = this.pivotDir(this.activeStateRoot)
+    const dir = this.pivotDir(root)
     const filePath = path.join(dir, 'buckets.json')
     const payload = `${JSON.stringify({ buckets: serializeBuckets(buckets) }, null, 2)}\n`
     const run = async () => {
@@ -1444,10 +1668,11 @@ export class SnapPivotStore {
   }
 
   private fsyncBucketSync(bucketIndex: number): void {
-    if (this.activeStateRoot === undefined) return
+    const root = this.persistStateRoot()
+    if (root === undefined) return
     const files = [
-      this.accountFile(bucketIndex, this.activeStateRoot),
-      ...this.listSegmentJournalFiles(bucketIndex, this.activeStateRoot),
+      this.accountFile(bucketIndex, root),
+      ...this.listSegmentJournalFiles(bucketIndex, root),
     ]
     for (const file of files) {
       if (!fs.existsSync(file)) continue
@@ -1461,8 +1686,8 @@ export class SnapPivotStore {
   }
 
   private async fsyncBucketsAsync(bucketIndexes: number[]): Promise<void> {
-    if (this.activeStateRoot === undefined) return
-    const root = this.activeStateRoot
+    const root = this.persistStateRoot()
+    if (root === undefined) return
     for (const bucketIndex of bucketIndexes) {
       const file = this.accountFile(bucketIndex, root)
       try {
@@ -1480,9 +1705,10 @@ export class SnapPivotStore {
   }
 
   flushBuckets(buckets: SnapBucket[]): void {
-    if (!this.enabled || this.activeStateRoot === undefined) return
+    const root = this.persistStateRoot()
+    if (!this.enabled || root === undefined) return
     this.lastBuckets = buckets
-    const dir = this.pivotDir(this.activeStateRoot)
+    const dir = this.pivotDir(root)
     const filePath = path.join(dir, 'buckets.json')
     if (this.bucketsFlushInFlight !== undefined) {
       this.bucketsFlushInFlight = this.bucketsFlushInFlight.then(() => {
@@ -1562,6 +1788,40 @@ export class SnapPivotStore {
       balRlp: entry.balRlp,
     })
     fs.writeFileSync(file, body)
+    const pivotRoot = this.pivotDir(this.activeStateRoot)
+    appendBalTailBundle(pivotRoot, entry.blockNumber, entry.headerRlp, entry.balRlp)
+    if (
+      this.shadowPersistRoot !== undefined &&
+      this.shadowPersistRoot.toLowerCase() !== this.activeStateRoot.toLowerCase()
+    ) {
+      const shadowRootDir = this.pivotDir(this.shadowPersistRoot)
+      let shadowPivotBlock = 0n
+      const shadowPivotPath = path.join(shadowRootDir, 'pivot.json')
+      if (fs.existsSync(shadowPivotPath)) {
+        try {
+          const sp = JSON.parse(fs.readFileSync(shadowPivotPath, 'utf8')) as {
+            blockNumber?: string
+          }
+          if (sp.blockNumber !== undefined) shadowPivotBlock = BigInt(sp.blockNumber)
+        } catch {
+          // ignore malformed shadow pivot metadata
+        }
+      }
+      if (entry.blockNumber > shadowPivotBlock) {
+        appendBalTailBundle(shadowRootDir, entry.blockNumber, entry.headerRlp, entry.balRlp)
+      }
+    }
+    let minEarliest: bigint | undefined
+    const pivotPath = path.join(pivotRoot, 'pivot.json')
+    if (fs.existsSync(pivotPath)) {
+      try {
+        const pivot = JSON.parse(fs.readFileSync(pivotPath, 'utf8')) as { blockNumber: string }
+        minEarliest = BigInt(pivot.blockNumber) + 1n
+      } catch {
+        // ignore malformed pivot metadata
+      }
+    }
+    enforceBalTailRetention(pivotRoot, { minEarliest })
   }
 
   pruneHealBundlesUpTo(blockNumber: bigint): void {

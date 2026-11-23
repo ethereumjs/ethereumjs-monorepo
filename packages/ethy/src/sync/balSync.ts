@@ -34,11 +34,12 @@ import {
   headFieldsFromHeaderRlp,
   startBlockBundleByNumber,
 } from './blockBundle.ts'
+import { nextCanonicalPivotBlock } from './canonicalPivotGrid.ts'
 import type { SnapCodeAndStorageSynchronizer } from './codeAndStorageSync.ts'
 import { accountHashFromAddress, isAccountHashSynced } from './syncedAccountHash.ts'
 
 export const PIVOT_HEAL_BLOCK_GAP = 64n
-export const PIVOT_STEP_BLOCKS = 16n
+export const PIVOT_STEP_BLOCKS = 32n
 export const SAFE_HEAD_MARGIN = 2n
 export const HEAD_FOLLOW_POLL_MS = 5_000
 export const TIP_POLL_MS = 4_000
@@ -319,6 +320,9 @@ export class BalChainStreamer {
   /** Wake follower when consensus or P2P reports a newer execution head (WP-07g). */
   noteChainHead(blockNumber: bigint): void {
     const { spine } = this.opts
+    if (blockNumber <= 0n) return
+    raiseBestPeerHead(spine, blockNumber)
+    growBalCatchUpTarget(spine, blockNumber)
     if (
       spine.phase !== 'SNAP_SYNCING' &&
       spine.phase !== 'BAL_CATCHUP' &&
@@ -326,7 +330,6 @@ export class BalChainStreamer {
     ) {
       return
     }
-    raiseBestPeerHead(spine, blockNumber)
     void this.tick()
   }
 
@@ -352,7 +355,7 @@ export class BalChainStreamer {
     this.verifiedTipHash = last.blockHash
     spine.headBlockNumber = last.blockNumber
     spine.headStateRoot = last.stateRoot
-    raiseBestPeerHead(spine, last.blockNumber)
+    // Never call raiseBestPeerHead from disk heal bundles: bestPeerHead is strictly network-observed.
     void this.maybePivotStep()
   }
 
@@ -434,13 +437,14 @@ export class BalChainStreamer {
     const materialized = materializeBalBatch(batch)
     if (!materialized.ok) {
       restBalCatchUpPeer(this.peerRestUntil, batch.peerId)
+      this.verifiedTipHash = undefined
       seq.batchInFlight = undefined
       queueMicrotask(() => this.tick())
       return
     }
     const { spine } = this.opts
     const snapStreaming = spine.phase === 'SNAP_SYNCING'
-    const persistHeal = snapStreaming
+    const persistHeal = true
     const blocks = materialized.blocks
     const batchBalJson = blocks
       .map((b) => b.balJson)
@@ -563,14 +567,20 @@ export class BalChainStreamer {
       return
     }
     const tip = this.verifiedTip(spine)
-    if (tip !== undefined && tip >= seq.targetHead) {
+    const effectiveTarget =
+      spine.bestPeerHead !== undefined && spine.bestPeerHead > seq.targetHead
+        ? spine.bestPeerHead
+        : seq.targetHead
+    growBalCatchUpTarget(spine, effectiveTarget)
+    if (tip !== undefined && tip >= effectiveTarget) {
       setPhase(spine, 'HEAD_FOLLOWING')
       spine.balCatchUp = undefined
-      this.opts.onSyncedToHead?.(seq.targetHead)
+      this.opts.onSyncedToHead?.(effectiveTarget)
       this.catchUp = undefined
       return
     }
-    if (tip !== undefined && tip < seq.targetHead) {
+    if (tip !== undefined && tip < effectiveTarget) {
+      seq.targetHead = effectiveTarget
       void this.tick()
     } else {
       this.catchUp = undefined
@@ -608,7 +618,7 @@ export class BalChainStreamer {
       appendHealBundle: this.opts.appendHealBundle,
       syncBuckets: snapStreaming ? spine.snapBuckets : undefined,
       deferStateApply: snapStreaming,
-      persistHeal: snapStreaming,
+      persistHeal: true,
       economy: this.opts.economy,
       onRpcBundle: this.opts.onRpcBundle,
     })
@@ -658,14 +668,20 @@ export class BalChainStreamer {
       return
     }
     const tip = this.verifiedTip(this.opts.spine)
-    if (tip !== undefined && tip >= seq.targetHead) {
+    const effectiveTarget =
+      this.opts.spine.bestPeerHead !== undefined && this.opts.spine.bestPeerHead > seq.targetHead
+        ? this.opts.spine.bestPeerHead
+        : seq.targetHead
+    growBalCatchUpTarget(this.opts.spine, effectiveTarget)
+    if (tip !== undefined && tip >= effectiveTarget) {
       setPhase(this.opts.spine, 'HEAD_FOLLOWING')
       this.opts.spine.balCatchUp = undefined
-      this.opts.onSyncedToHead?.(seq.targetHead)
+      this.opts.onSyncedToHead?.(effectiveTarget)
       this.catchUp = undefined
       return
     }
-    if (tip !== undefined && tip < seq.targetHead) {
+    if (tip !== undefined && tip < effectiveTarget) {
+      seq.targetHead = effectiveTarget
       void this.tick()
     } else {
       this.catchUp = undefined
@@ -718,19 +734,22 @@ export class BalChainStreamer {
   private async maybePivotStep(): Promise<void> {
     const { spine } = this.opts
     if (spine.phase !== 'SNAP_SYNCING') return
-    while (this.buffered.length >= Number(PIVOT_STEP_BLOCKS)) {
+    while (this.buffered.length > 0) {
       const pivot = spine.pivotBlockNumber
       if (pivot === undefined || spine.pivotStateRoot === undefined) return
       const first = this.buffered[0]?.blockNumber
       const last = this.buffered[this.buffered.length - 1]?.blockNumber
       if (first === undefined || last === undefined) return
-      const targetBlock = pivot + PIVOT_STEP_BLOCKS
+      const targetBlock = nextCanonicalPivotBlock(pivot, last)
+      if (targetBlock === undefined) return
       const best =
         spine.bestPeerHead !== undefined && spine.bestPeerHead > last ? spine.bestPeerHead : last
       if (first !== pivot + 1n || last < targetBlock) return
       if (targetBlock > best - SAFE_HEAD_MARGIN) return
 
-      const window = this.buffered.splice(0, Number(PIVOT_STEP_BLOCKS))
+      const stepCount = Number(targetBlock - pivot)
+      if (this.buffered.length < stepCount) return
+      const window = this.buffered.splice(0, stepCount)
       spine.pivotStepsCompleted = (spine.pivotStepsCompleted ?? 0) + 1
       await this.applyBufferedWindow(window, spine.snapBuckets)
       // Advance Connected Peers' known latestBlock to at least targetBlock once we have verified
@@ -794,12 +813,24 @@ export class BalChainStreamer {
         : spine.bestPeerHead
     if (peer === undefined || bestKnownHead === undefined) return
     const peerHead = bestKnownHead
-    const catchUpPeer = pickBalCatchUpPeer(spine, this.peerRestUntil, tip + 1n) ??
-      pickBalCatchUpPeer(spine, this.peerRestUntil) ?? {
-        id: peer.id,
-        ethVersion: peer.ethVersion,
-        latestBlock: peerHead,
-      }
+    growBalCatchUpTarget(spine, peerHead)
+    const peerRow = spine.peers.get(peer.id)
+    const fallbackAllowed =
+      spine.peers.size === 0 ||
+      (peerRow !== undefined &&
+        (this.peerRestUntil.get(peer.id) ?? 0) <= now &&
+        peerRow.ethySession !== true)
+    const catchUpPeer =
+      pickBalCatchUpPeer(spine, this.peerRestUntil, tip + 1n) ??
+      pickBalCatchUpPeer(spine, this.peerRestUntil) ??
+      (fallbackAllowed
+        ? {
+            id: peer.id,
+            ethVersion: peer.ethVersion,
+            latestBlock: peerHead,
+          }
+        : undefined)
+    if (catchUpPeer === undefined) return
     if (this.catchUp === undefined || this.catchUp.targetHead < peerHead) {
       this.catchUp = {
         peerId: catchUpPeer.id,
@@ -818,6 +849,28 @@ export class BalChainStreamer {
       }
       if (spine.phase === 'SNAP_SYNCING') {
         void this.maybePivotStep()
+      }
+      if (
+        spine.phase === 'HEAD_FOLLOWING' &&
+        spine.balWindow.length === 0 &&
+        this.verifiedTipHash === undefined &&
+        tip > 0n
+      ) {
+        this.lastTipProbeAt = now
+        const seedPeer = pickBalCatchUpPeer(this.opts.spine, this.peerRestUntil, tip) ?? peer
+        this.catchUp = {
+          peerId: seedPeer.id,
+          ethVersion: seedPeer.ethVersion,
+          targetHead: tip,
+          probingNextTip: true,
+          inFlight: startBlockBundleByNumber(
+            this.opts.getClient(),
+            seedPeer.id,
+            seedPeer.ethVersion,
+            tip,
+          ),
+        }
+        return
       }
       // Because Geth/Nethermind only send BLOCK_RANGE_UPDATE every 32 blocks (~6.4m),
       // probe tip + 1n periodically to discover newly mined 12s blocks live.
@@ -883,8 +936,19 @@ export class BalChainStreamer {
 /** @deprecated alias — prefer {@link BalChainStreamer} */
 export const HeadBlockFollower = BalChainStreamer
 
-/** Re-seed catch-up after laptop wake or handoff gap. */
+/** Extend `spine.balCatchUp.total` monotonically when network head rises during catch-up. */
+export function growBalCatchUpTarget(spine: EthySpine, liveHead: bigint): void {
+  if (spine.phase !== 'BAL_CATCHUP' || spine.balCatchUp === undefined) return
+  if (liveHead < spine.balCatchUp.fromBlock) return
+  const needed = Number(liveHead - spine.balCatchUp.fromBlock + 1n)
+  if (needed > spine.balCatchUp.total) {
+    spine.balCatchUp.total = needed
+  }
+}
+
+/** Re-seed catch-up after laptop wake or handoff gap. Requires a network-observed head (> 0n). */
 export function seedBalCatchUp(spine: EthySpine, bestPeerHead: bigint): void {
+  if (bestPeerHead <= 0n) return
   const last = spine.lastVerifiedBlockNumber ?? spine.pivotBlockNumber
   if (last === undefined) return
   if (bestPeerHead <= last) {

@@ -87,6 +87,64 @@ function nodePulsePairs(spine: EthySpine): TwoColumnPair[] {
   const peerCount = spine.peers.size
 
   if (phase === 'BOOTING' || phase === 'P2P_WARMUP') {
+    const resumeKind = spine.diskResumeKind
+    const savedBlock = localVerifiedBlock(spine) ?? spine.diskResumeBlock ?? spine.pivotBlockNumber
+    if (resumeKind !== undefined && resumeKind !== 'cold') {
+      const hydrating = spine.diskHydrated === false
+      const peerNote = peerCount === 0 ? 'awaiting head…' : `${peerCount} RLPx`
+      if (hydrating) {
+        const target =
+          savedBlock !== undefined
+            ? `Local ${formatBlockNum(savedBlock)} · loading…`
+            : 'Restoring saved state…'
+        return [
+          { label: 'Stage', value: 'Loading Disk State' },
+          { label: 'Target', value: target },
+          { label: 'Progress', value: 'Restoring local state…' },
+          { label: 'State', value: 'Warming peer book' },
+        ]
+      }
+      if (resumeKind === 'base-complete') {
+        const acc = formatCompactCount(spine.totalAccountsSynced)
+        const codeCount = spine.codesSynced ?? 0
+        const stateText =
+          codeCount > 0
+            ? `${acc} acc · ${formatCompactCount(codeCount)} code · saved`
+            : `${acc} acc on disk · connecting`
+        return [
+          { label: 'Stage', value: 'Connecting · Resuming' },
+          {
+            label: 'Target',
+            value:
+              savedBlock !== undefined
+                ? `Local ${formatBlockNum(savedBlock)} · ${peerNote}`
+                : peerNote,
+          },
+          {
+            label: 'Progress',
+            value: peerCount === 0 ? 'Awaiting network head…' : 'Checking network head…',
+          },
+          { label: 'State', value: stateText },
+        ]
+      }
+      // partial-accounts or partial-contracts awaiting first peer head
+      const pct = computeSnapProgressPct(spine)
+      return [
+        { label: 'Stage', value: 'Connecting · Snap Resume' },
+        {
+          label: 'Target',
+          value:
+            savedBlock !== undefined
+              ? `Saved ${formatBlockNum(savedBlock)} · ${peerNote}`
+              : peerNote,
+        },
+        { label: 'Progress', value: `${formatProgressBar(pct)} (paused)` },
+        {
+          label: 'State',
+          value: `${formatCompactCount(spine.totalAccountsSynced)} acc on disk · connecting`,
+        },
+      ]
+    }
     const target = peerCount === 0 ? 'Awaiting peer head…' : `Peers: ${peerCount} RLPx`
     return [
       { label: 'Stage', value: 'Connecting P2P' },

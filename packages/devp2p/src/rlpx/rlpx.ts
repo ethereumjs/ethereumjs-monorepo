@@ -56,6 +56,7 @@ export class RLPx {
   protected _maxInboundPeers: number | undefined
   protected _throttleDiscovery: boolean
   protected _discoveryLowWaterMark: number
+  protected _minEthyPeers: number
   public readonly clientId: Uint8Array
   protected _remoteClientIdFilter?: string[]
   protected _capabilities: Capabilities[]
@@ -101,6 +102,7 @@ export class RLPx {
       throw EthereumJSErrorWithoutCode('discoveryLowWaterMark must be less than maxPeers')
     }
     this._discoveryLowWaterMark = lowWater
+    this._minEthyPeers = options.minEthyPeers ?? 0
 
     this.clientId =
       options.clientId ?? utf8ToBytes(`ethereumjs-devp2p/${os.platform()}-${os.arch()}/nodejs`)
@@ -411,6 +413,38 @@ export class RLPx {
     })
   }
 
+  private _peerSpeaksEthy(peer: Peer): boolean {
+    return peer.getProtocols().some((p) => p.constructor.name === 'ETHY')
+  }
+
+  private _enforceEthyPeerReserve(incoming: Peer): void {
+    if (this._minEthyPeers <= 0) return
+    if (!this._peerSpeaksEthy(incoming)) return
+    if (this._connectedPeerCount() < this._maxPeers) return
+    let existingEthyCount = 0
+    const nonHeadSnapCandidates: Peer[] = []
+    const headSnapCandidates: Peer[] = []
+    for (const item of this._peers.values()) {
+      if (!(item instanceof Peer) || item === incoming) continue
+      if (this._peerSpeaksEthy(item)) {
+        existingEthyCount++
+      } else if (
+        item
+          .getProtocols()
+          .some((p) => p.constructor.name === 'ETH' || p.constructor.name === 'SNAP')
+      ) {
+        headSnapCandidates.push(item)
+      } else {
+        nonHeadSnapCandidates.push(item)
+      }
+    }
+    if (existingEthyCount >= this._minEthyPeers) return
+    const victim =
+      nonHeadSnapCandidates[0] ??
+      (headSnapCandidates.length > 1 ? headSnapCandidates[0] : undefined)
+    victim?.disconnect(DISCONNECT_REASON.TOO_MANY_PEERS)
+  }
+
   _countInboundPeers(): number {
     let n = 0
     for (const item of this._peers.values()) {
@@ -485,6 +519,7 @@ export class RLPx {
 
       this._peers.set(peerKey, peer)
       this._discoveryMetrics?.recordRlpxConnected()
+      this._enforceEthyPeerReserve(peer)
       this.events.emit('peer:added', peer)
       this._syncDiscoveryThrottle()
     })

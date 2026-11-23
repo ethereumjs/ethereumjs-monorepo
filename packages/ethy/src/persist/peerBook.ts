@@ -32,6 +32,18 @@ export function tooManyPeersHoldMs(vip: boolean, streak: number): number {
   return vip ? PEER_TOO_MANY_PEERS_VIP_CAP_MS : PEER_TOO_MANY_PEERS_HOLD_MAX_MS
 }
 
+/**
+ * Exponential backoff for TCP connection timeouts / unreachable hosts.
+ * Caps at {@link PEER_TOO_MANY_PEERS_HOLD_MAX_MS} (5 min) even for VIP peers so
+ * offline remembered nodes cannot starve outbound dial slots on restart.
+ */
+export function timeoutHoldMs(streak: number): number {
+  if (streak <= 0) return 30_000
+  if (streak === 1) return 60_000
+  if (streak === 2) return 120_000
+  return PEER_TOO_MANY_PEERS_HOLD_MAX_MS
+}
+
 /** Remembered peers dialed at boot and on each VIP pass. Kept small so the table is not filled before snap starts. */
 export const PEER_BOOK_STARTUP_DIALS = 6
 /** Backoff cap for peers with no successful snap responses (WP-04a). */
@@ -88,6 +100,9 @@ export function rankPeerRows(rows: Iterable<PeerBookRow>, now: number): PeerBook
       const ta = tier(a)
       const tb = tier(b)
       if (ta !== tb) return tb - ta
+      const aPenalty = (a.tooManyPeersStreak ?? 0) + a.resetStreak
+      const bPenalty = (b.tooManyPeersStreak ?? 0) + b.resetStreak
+      if (aPenalty !== bPenalty) return aPenalty - bPenalty
       if (ta === 3) {
         const aAff = clientAffinityRank(a.clientFamily)
         const bAff = clientAffinityRank(b.clientFamily)
@@ -348,7 +363,7 @@ export class PeerBookStore {
       const streak = (row.tooManyPeersStreak ?? 0) + 1
       row.tooManyPeersStreak = streak
       const vip = row.snapResponsesOk > 0
-      row.dialAfter = now + tooManyPeersHoldMs(vip, streak - 1)
+      row.dialAfter = Math.max(row.dialAfter, now + tooManyPeersHoldMs(vip, streak - 1))
       this.schedulePersist()
       return
     }
@@ -361,6 +376,25 @@ export class PeerBookStore {
 
     if (upper.includes('SUBPROTOCOL_ERROR') || upper.includes('PROTOCOL_ERROR')) {
       row.dialAfter = now + (row.snapResponsesOk > 0 ? 30_000 : 120_000)
+      this.schedulePersist()
+      return
+    }
+
+    const timeoutLike =
+      upper.includes('CONNECTION TIMEOUT') ||
+      upper.includes('ETIMEDOUT') ||
+      upper.includes('EHOSTUNREACH') ||
+      upper.includes('ENETUNREACH')
+
+    if (timeoutLike) {
+      row.resetStreak++
+      if (row.snapResponsesOk > 0 || row.snapCapable === true) {
+        row.dialAfter = Math.max(row.dialAfter, now + timeoutHoldMs(row.resetStreak - 1))
+      } else if (row.resetStreak >= PEER_RESET_REMOVE_STREAK) {
+        this._rows.delete(id)
+      } else {
+        row.dialAfter = Math.max(row.dialAfter, now + timeoutHoldMs(row.resetStreak - 1))
+      }
       this.schedulePersist()
       return
     }
