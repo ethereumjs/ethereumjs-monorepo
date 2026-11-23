@@ -891,16 +891,17 @@ export class SnapPivotStore {
     const logicalTotal = buckets.reduce((sum, b) => sum + b.accountsLoaded, 0)
     stateManager.setSyncedAccountCount(logicalTotal)
     spine.totalAccountsSynced = logicalTotal
-    this.loadContractScanCursor(active.stateRoot)
+    await this.loadContractScanCursorAsync(active.stateRoot, maybeYield)
     if (active.previousStateRoot !== undefined && active.previousStateRoot !== null) {
       const held = this.heldAccountCount(active.previousStateRoot)
       if (held > 0) {
         spine.pivotCarry = { kind: 'previous', accounts: held }
       }
     }
-    this.restoredHealBlocks = this.readUnappliedHealBundles(
+    this.restoredHealBlocks = await this.readUnappliedHealBundlesAsync(
       BigInt(pivot.blockNumber),
       active.stateRoot,
+      maybeYield,
     )
     return restored
   }
@@ -1321,7 +1322,8 @@ export class SnapPivotStore {
       const isSegment = /^[0-9a-f]\..+\.seg$/i.test(name)
       if (!isPrefix && !isSegment) continue
       const filePath = path.join(accountsDir, name)
-      if (fs.statSync(filePath).size === 0) continue
+      const statSize = fs.statSync(filePath).size
+      if (statSize === 0) continue
       const index = Number.parseInt(name.slice(0, 1), 16)
       const row = saved?.find((b) => b.index === index)
       if (row !== undefined && row.accountsLoaded > 0) {
@@ -1331,9 +1333,33 @@ export class SnapPivotStore {
         }
         continue
       }
-      total += countAccountJournalRecords(new Uint8Array(fs.readFileSync(filePath)))
+      if (
+        statSize >= BINARY_ACCOUNT_JOURNAL_MAGIC.length &&
+        this.fileHasBinaryJournalMagicSync(filePath)
+      ) {
+        total += Math.floor(
+          (statSize - BINARY_ACCOUNT_JOURNAL_MAGIC.length) / BINARY_ACCOUNT_JOURNAL_RECORD_SIZE,
+        )
+      } else {
+        total += countAccountJournalRecords(new Uint8Array(fs.readFileSync(filePath)))
+      }
     }
     return total
+  }
+
+  private fileHasBinaryJournalMagicSync(filePath: string): boolean {
+    const head = Buffer.alloc(BINARY_ACCOUNT_JOURNAL_MAGIC.length)
+    const fd = fs.openSync(filePath, 'r')
+    try {
+      const n = fs.readSync(fd, head, 0, head.length, 0)
+      if (n < BINARY_ACCOUNT_JOURNAL_MAGIC.length) return false
+    } finally {
+      fs.closeSync(fd)
+    }
+    for (let i = 0; i < BINARY_ACCOUNT_JOURNAL_MAGIC.length; i++) {
+      if (head[i] !== BINARY_ACCOUNT_JOURNAL_MAGIC[i]) return false
+    }
+    return true
   }
 
   /** Create or switch active pivot; prune to active + previous only. */
@@ -1844,6 +1870,36 @@ export class SnapPivotStore {
     }
   }
 
+  private async readUnappliedHealBundlesAsync(
+    pivotBlock: bigint,
+    stateRootHex: string,
+    maybeYield: () => Promise<void>,
+  ): Promise<VerifiedBalBlock[]> {
+    const healDir = path.join(this.pivotDir(stateRootHex), 'heal')
+    if (!fs.existsSync(healDir)) return []
+    const bundleNames = (await fs.promises.readdir(healDir))
+      .filter((n) => n.endsWith('.bundle.rlp'))
+      .sort((a, b) => {
+        const na = BigInt(a.replace(/\.bundle\.rlp$/, ''))
+        const nb = BigInt(b.replace(/\.bundle\.rlp$/, ''))
+        return na < nb ? -1 : na > nb ? 1 : 0
+      })
+    const out: VerifiedBalBlock[] = []
+    let expect = pivotBlock + 1n
+    for (const name of bundleNames) {
+      const blockNumber = BigInt(name.replace(/\.bundle\.rlp$/, ''))
+      if (blockNumber <= pivotBlock) continue
+      if (blockNumber !== expect) break
+      const raw = new Uint8Array(await fs.promises.readFile(path.join(healDir, name)))
+      const decoded = decodeHealBundleRlp(raw)
+      if (decoded === undefined) break
+      out.push(decoded)
+      expect = blockNumber + 1n
+      await maybeYield()
+    }
+    return out
+  }
+
   private readUnappliedHealBundles(pivotBlock: bigint, stateRootHex: string): VerifiedBalBlock[] {
     const healDir = path.join(this.pivotDir(stateRootHex), 'heal')
     if (!fs.existsSync(healDir)) return []
@@ -1949,14 +2005,60 @@ export class SnapPivotStore {
     return path.join(this.pivotDir(stateRootHex), 'contract-scan.json')
   }
 
-  private loadContractScanCursor(stateRootHex: string): void {
+  private async loadContractScanCursorAsync(
+    stateRootHex: string,
+    maybeYield: () => Promise<void>,
+  ): Promise<void> {
     this.contractScanComplete = false
     this.contractProgress = undefined
     this.persistedCodeHashes.clear()
     this.persistedStorageAccounts.clear()
-    this.indexExistingCodeAndStorageDirs(stateRootHex)
     const p = this.contractScanPath(stateRootHex)
-    if (!fs.existsSync(p)) {
+    let doc:
+      | {
+          bucket: number
+          byteOffset: number
+          segment?: string
+          done?: boolean
+          codesTotal?: number
+          codesSynced?: number
+          storageAccountsTotal?: number
+          storageAccountsSynced?: number
+          storageSlotsSynced?: number
+        }
+      | undefined
+    if (fs.existsSync(p)) {
+      try {
+        doc = readStoredDoc<NonNullable<typeof doc>>(p)
+      } catch {
+        doc = undefined
+      }
+    }
+    // Fast path: when contract scan already completed on disk, skip scanning
+    // all code/storage shards on startup (which can hold millions of slots).
+    if (doc?.done === true) {
+      if (
+        doc.codesTotal !== undefined ||
+        doc.codesSynced !== undefined ||
+        doc.storageAccountsTotal !== undefined
+      ) {
+        const codesSynced = doc.codesSynced ?? 0
+        const storageAccountsSynced = doc.storageAccountsSynced ?? 0
+        this.contractProgress = {
+          codesTotal: Math.max(doc.codesTotal ?? 0, codesSynced),
+          codesSynced,
+          storageAccountsTotal: Math.max(doc.storageAccountsTotal ?? 0, storageAccountsSynced),
+          storageAccountsSynced,
+          storageSlotsSynced: doc.storageSlotsSynced ?? 0,
+        }
+      }
+      this.contractScanComplete = true
+      this.contractScan = undefined
+      return
+    }
+
+    await this.indexExistingCodeAndStorageDirsAsync(stateRootHex, maybeYield)
+    if (doc === undefined) {
       this.contractScan = { bucket: 0, byteOffset: BINARY_ACCOUNT_JOURNAL_MAGIC.length }
       if (this.persistedCodeHashes.size > 0 || this.persistedStorageAccounts.size > 0) {
         this.contractProgress = {
@@ -1969,64 +2071,48 @@ export class SnapPivotStore {
       }
       return
     }
-    try {
-      const doc = readStoredDoc<{
-        bucket: number
-        byteOffset: number
-        segment?: string
-        done?: boolean
-        codesTotal?: number
-        codesSynced?: number
-        storageAccountsTotal?: number
-        storageAccountsSynced?: number
-        storageSlotsSynced?: number
-      }>(p)
-      if (
-        doc.codesTotal !== undefined ||
-        doc.codesSynced !== undefined ||
-        doc.storageAccountsTotal !== undefined ||
-        this.persistedCodeHashes.size > 0 ||
-        this.persistedStorageAccounts.size > 0
-      ) {
-        const codesSynced = Math.max(doc.codesSynced ?? 0, this.persistedCodeHashes.size)
-        const storageAccountsSynced = Math.max(
-          doc.storageAccountsSynced ?? 0,
-          this.persistedStorageAccounts.size,
-        )
-        this.contractProgress = {
-          codesTotal: Math.max(doc.codesTotal ?? 0, codesSynced),
-          codesSynced,
-          storageAccountsTotal: Math.max(doc.storageAccountsTotal ?? 0, storageAccountsSynced),
-          storageAccountsSynced,
-          storageSlotsSynced: doc.storageSlotsSynced ?? 0,
-        }
+    if (
+      doc.codesTotal !== undefined ||
+      doc.codesSynced !== undefined ||
+      doc.storageAccountsTotal !== undefined ||
+      this.persistedCodeHashes.size > 0 ||
+      this.persistedStorageAccounts.size > 0
+    ) {
+      const codesSynced = Math.max(doc.codesSynced ?? 0, this.persistedCodeHashes.size)
+      const storageAccountsSynced = Math.max(
+        doc.storageAccountsSynced ?? 0,
+        this.persistedStorageAccounts.size,
+      )
+      this.contractProgress = {
+        codesTotal: Math.max(doc.codesTotal ?? 0, codesSynced),
+        codesSynced,
+        storageAccountsTotal: Math.max(doc.storageAccountsTotal ?? 0, storageAccountsSynced),
+        storageAccountsSynced,
+        storageSlotsSynced: doc.storageSlotsSynced ?? 0,
       }
-      if (doc.done === true) {
-        this.contractScanComplete = true
-        this.contractScan = undefined
-        return
-      }
-      this.contractScan = {
-        bucket: doc.bucket ?? 0,
-        byteOffset: doc.byteOffset ?? BINARY_ACCOUNT_JOURNAL_MAGIC.length,
-        segment: doc.segment,
-      }
-    } catch {
-      this.contractScan = { bucket: 0, byteOffset: BINARY_ACCOUNT_JOURNAL_MAGIC.length }
+    }
+    this.contractScan = {
+      bucket: doc.bucket ?? 0,
+      byteOffset: doc.byteOffset ?? BINARY_ACCOUNT_JOURNAL_MAGIC.length,
+      segment: doc.segment,
     }
   }
 
-  private indexExistingCodeAndStorageDirs(stateRootHex: string): void {
+  private async indexExistingCodeAndStorageDirsAsync(
+    stateRootHex: string,
+    maybeYield: () => Promise<void>,
+  ): Promise<void> {
     const dir = this.pivotDir(stateRootHex)
     const codeDir = path.join(dir, 'code')
     if (fs.existsSync(codeDir)) {
       try {
-        for (const name of fs.readdirSync(codeDir)) {
+        for (const name of await fs.promises.readdir(codeDir)) {
           if (name.endsWith('.bin') && name.length === 68 && !name.startsWith('shard-')) {
             this.persistedCodeHashes.add(name.slice(0, 64).toLowerCase())
           } else if (name.startsWith('shard-') && name.endsWith('.bin')) {
-            this.scanCodeShardHashes(path.join(codeDir, name))
+            await this.scanCodeShardHashesAsync(path.join(codeDir, name), maybeYield)
           }
+          await maybeYield()
         }
       } catch {
         // ignore read error
@@ -2035,17 +2121,19 @@ export class SnapPivotStore {
     const storageDir = path.join(dir, 'storage')
     if (fs.existsSync(storageDir)) {
       try {
-        for (const name of fs.readdirSync(storageDir)) {
+        for (const name of await fs.promises.readdir(storageDir)) {
           if (name.endsWith('.bin') && name.length === 68 && !name.startsWith('shard-')) {
             this.persistedStorageAccounts.add(name.slice(0, 64).toLowerCase())
           } else if (name.startsWith('shard-') && name.endsWith('.bin')) {
-            const batches = this.buildStorageShardBatchIndex(path.join(storageDir, name))
+            const shardPath = path.join(storageDir, name)
+            const batches = await this.buildStorageShardBatchIndexAsync(shardPath, maybeYield)
             if (batches !== undefined) {
               for (const b of batches) {
                 this.persistedStorageAccounts.add(b.accountHashHex)
               }
             }
           }
+          await maybeYield()
         }
       } catch {
         // ignore read error
@@ -2053,24 +2141,22 @@ export class SnapPivotStore {
     }
   }
 
-  private scanCodeShardHashes(filePath: string): void {
+  private async scanCodeShardHashesAsync(
+    filePath: string,
+    maybeYield: () => Promise<void>,
+  ): Promise<void> {
     try {
-      const stat = fs.statSync(filePath)
-      if (stat.size < 36) return
-      const fd = fs.openSync(filePath, 'r')
-      const header = Buffer.alloc(36)
-      try {
-        let offset = 0
-        while (offset + 36 <= stat.size) {
-          const n = fs.readSync(fd, header, 0, 36, offset)
-          if (n < 36) break
-          const hashHex = header.subarray(0, 32).toString('hex')
-          const len = header.readUInt32BE(32)
-          this.persistedCodeHashes.add(hashHex)
-          offset += 36 + len
-        }
-      } finally {
-        fs.closeSync(fd)
+      const buf = await fs.promises.readFile(filePath)
+      if (buf.length < 36) return
+      let offset = 0
+      let scanned = 0
+      while (offset + 36 <= buf.length) {
+        const hashHex = buf.subarray(offset, offset + 32).toString('hex')
+        const len = buf.readUInt32BE(offset + 32)
+        this.persistedCodeHashes.add(hashHex)
+        offset += 36 + len
+        scanned++
+        if ((scanned & 0x3ff) === 0) await maybeYield()
       }
     } catch {
       // ignore malformed tail
@@ -2177,59 +2263,96 @@ export class SnapPivotStore {
     return path.join(this.pivotDir(this.activeStateRoot), 'storage', `shard-${shard}.bin`)
   }
 
-  private buildStorageShardBatchIndex(file: string): StorageBatchSpan[] | undefined {
+  private parseStorageShardBatchIndexSync(buf: Buffer): StorageBatchSpan[] | undefined {
+    if (buf.length < 8) return undefined
+    if (!equalsBytes(new Uint8Array(buf.subarray(0, 4)), STORAGE_BATCH_MAGIC)) {
+      return undefined
+    }
+    const batches: StorageBatchSpan[] = []
+    let offset = 0
+    while (offset + 8 <= buf.length) {
+      if (!equalsBytes(new Uint8Array(buf.subarray(offset, offset + 4)), STORAGE_BATCH_MAGIC)) {
+        break
+      }
+      const slotCount = buf.readUInt32BE(offset + 4)
+      const dataOffset = offset + 8
+      if (dataOffset + 32 > buf.length) break
+      const accountHashHex = buf.subarray(dataOffset, dataOffset + 32).toString('hex')
+      let pos = dataOffset + 32
+      for (let i = 0; i < slotCount; i++) {
+        if (pos + 36 > buf.length) {
+          pos = buf.length + 1
+          break
+        }
+        const valueLen = buf.readUInt32BE(pos + 32)
+        pos += 36 + valueLen
+      }
+      if (pos > buf.length) break
+      const batchByteLength = pos - offset
+      batches.push({
+        batchOffset: offset,
+        accountHashHex,
+        slotCount,
+        batchByteLength,
+      })
+      offset += batchByteLength
+    }
+    return batches
+  }
+
+  private async buildStorageShardBatchIndexAsync(
+    file: string,
+    maybeYield: () => Promise<void>,
+  ): Promise<StorageBatchSpan[] | undefined> {
     try {
-      const stat = fs.statSync(file)
-      if (stat.size < 8) return undefined
+      const buf = await fs.promises.readFile(file)
+      if (buf.length < 8) return undefined
+      if (!equalsBytes(new Uint8Array(buf.subarray(0, 4)), STORAGE_BATCH_MAGIC)) {
+        return undefined
+      }
       const batches: StorageBatchSpan[] = []
       let offset = 0
-      const header = Buffer.alloc(8)
-      const row = Buffer.alloc(36)
-      const magic = Buffer.alloc(4)
-      const fd = fs.openSync(file, 'r')
-      try {
-        const mn = fs.readSync(fd, magic, 0, 4, 0)
-        if (mn < 4 || !equalsBytes(new Uint8Array(magic), STORAGE_BATCH_MAGIC)) {
-          return undefined
+      let slotsScanned = 0
+      while (offset + 8 <= buf.length) {
+        if (!equalsBytes(new Uint8Array(buf.subarray(offset, offset + 4)), STORAGE_BATCH_MAGIC)) {
+          break
         }
-        while (offset + 8 <= stat.size) {
-          const hn = fs.readSync(fd, header, 0, 8, offset)
-          if (hn < 8) break
-          if (!equalsBytes(new Uint8Array(header.subarray(0, 4)), STORAGE_BATCH_MAGIC)) break
-          const slotCount = header.readUInt32BE(4)
-          const dataOffset = offset + 8
-          if (dataOffset + 32 > stat.size) break
-          const an = fs.readSync(fd, row, 0, 32, dataOffset)
-          if (an < 32) break
-          const accountHashHex = row.subarray(0, 32).toString('hex')
-          let pos = dataOffset + 32
-          for (let i = 0; i < slotCount; i++) {
-            if (pos + 36 > stat.size) {
-              pos = stat.size + 1
-              break
-            }
-            const len = fs.readSync(fd, row, 0, 36, pos)
-            if (len < 36) {
-              pos = stat.size + 1
-              break
-            }
-            const valueLen = row.readUInt32BE(32)
-            pos += 36 + valueLen
+        const slotCount = buf.readUInt32BE(offset + 4)
+        const dataOffset = offset + 8
+        if (dataOffset + 32 > buf.length) break
+        const accountHashHex = buf.subarray(dataOffset, dataOffset + 32).toString('hex')
+        let pos = dataOffset + 32
+        for (let i = 0; i < slotCount; i++) {
+          if (pos + 36 > buf.length) {
+            pos = buf.length + 1
+            break
           }
-          if (pos > stat.size) break
-          const batchByteLength = pos - offset
-          batches.push({
-            batchOffset: offset,
-            accountHashHex,
-            slotCount,
-            batchByteLength,
-          })
-          offset += batchByteLength
+          const valueLen = buf.readUInt32BE(pos + 32)
+          pos += 36 + valueLen
+          slotsScanned++
+          if ((slotsScanned & 0x3fff) === 0) await maybeYield()
         }
-      } finally {
-        fs.closeSync(fd)
+        if (pos > buf.length) break
+        const batchByteLength = pos - offset
+        batches.push({
+          batchOffset: offset,
+          accountHashHex,
+          slotCount,
+          batchByteLength,
+        })
+        offset += batchByteLength
       }
+      this.storageLookupIndex.set(file, { fileSize: buf.length, batches })
       return batches
+    } catch {
+      return undefined
+    }
+  }
+
+  private buildStorageShardBatchIndex(file: string): StorageBatchSpan[] | undefined {
+    try {
+      const buf = fs.readFileSync(file)
+      return this.parseStorageShardBatchIndexSync(buf)
     } catch {
       return undefined
     }

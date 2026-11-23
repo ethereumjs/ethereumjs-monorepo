@@ -38,7 +38,7 @@ import {
   syncOutputBegin,
   syncOutputEnd,
 } from './ansi.ts'
-import { createInitialViewState, pushKeyChar, reducePromptKey } from './prompt.ts'
+import { type KeyAction, createInitialViewState, pushKeyChar, reducePromptKey } from './prompt.ts'
 import { promptCaretPosition, renderFrame } from './renderFrame.ts'
 import {
   activateHistoryEntry,
@@ -468,11 +468,110 @@ export async function runEthySession(node: EthyNode, opts?: EthySessionOpts): Pr
       resolve()
     }
 
+    const ESC_FLUSH_MS = 40
+    let escTimer: ReturnType<typeof setTimeout> | undefined
+    const clearEscTimer = () => {
+      if (escTimer !== undefined) {
+        clearTimeout(escTimer)
+        escTimer = undefined
+      }
+    }
+
     const onSignal = () => finish()
     process.once('SIGINT', onSignal)
     process.once('SIGTERM', onSignal)
 
+    const handleAction = (action: KeyAction): boolean => {
+      const onboardingStep = reduceOnboardingKey(view, action)
+      if (onboardingStep !== undefined) {
+        if (onboardingStep.committed !== undefined && node.aiRuntime !== undefined) {
+          void applyOnboardingCommit(
+            node.aiRuntime,
+            onboardingStep.committed,
+            opts?.sessionNoSave === true,
+          ).then(() => {
+            view = {
+              ...onboardingStep.view,
+              aiOnboardingActive: false,
+              activeWidget: { kind: 'start_page' },
+            }
+            if (node.spine.aiMode !== 'off' && node.llm !== undefined) {
+              startDetectiveNarrator()
+            }
+            draw()
+          })
+        } else {
+          view = onboardingStep.view
+        }
+        draw()
+        return false
+      }
+      const {
+        view: nextView,
+        submittedLine,
+        helpToggle,
+        viewHistoryNav,
+        toggleDebug,
+        openPlaza,
+      } = reducePromptKey(view, action)
+      view = nextView
+      if (openPlaza === true) {
+        view = openPlazaView(view, node.spine, slashCtx())
+      }
+      if (toggleDebug === true) {
+        const w = view.activeWidget
+        if (w?.debugPage !== undefined && w.debugPage.length > 0) {
+          const nextPage = view.interactionPage === 'debug' ? 'main' : 'debug'
+          view = {
+            ...view,
+            interactionPage: nextPage,
+          }
+          if (view.viewHistory.length > 0) {
+            const idx = view.viewHistoryIndex
+            const entry = view.viewHistory[idx]
+            if (entry !== undefined) {
+              const updated: InteractionHistoryEntry = { ...entry, page: nextPage }
+              const hist = [...view.viewHistory]
+              hist[idx] = updated
+              view = { ...view, viewHistory: hist }
+            }
+          }
+        }
+      }
+      if (helpToggle === true) {
+        const onHelp = view.activeWidget?.kind === 'domain_help'
+        if (!onHelp) {
+          view = openDomainHelp(view, node.spine)
+        } else if (view.viewHistoryIndex > 0) {
+          navigateHistory('left')
+        } else {
+          const canPlaza =
+            node.spine.phase === 'HEAD_FOLLOWING' ||
+            (node.spine.demoClock === true && node.spine.economy?.hasBlocks === true)
+          if (canPlaza) {
+            view = openPlazaView(view, node.spine, slashCtx())
+          }
+        }
+      }
+      if (viewHistoryNav !== undefined) {
+        navigateHistory(viewHistoryNav)
+      }
+      let dirty = true
+      if (submittedLine !== undefined) {
+        const gen = ++intentGeneration
+        const isNl = !submittedLine.trim().startsWith('/')
+        runIntent(submittedLine, gen, isNl)
+        dirty = false
+      }
+      if (view.shouldExit) {
+        finish()
+        return false
+      }
+      return dirty
+    }
+
     const onData = (buf: Buffer) => {
+      clearEscTimer()
       const chunk = buf.toString('utf8')
       let dirty = false
       for (const ch of chunk) {
@@ -482,92 +581,21 @@ export async function runEthySession(node: EthyNode, opts?: EthySessionOpts): Pr
         if (action === undefined) {
           continue
         }
-        dirty = true
-        const onboardingStep = reduceOnboardingKey(view, action)
-        if (onboardingStep !== undefined) {
-          if (onboardingStep.committed !== undefined && node.aiRuntime !== undefined) {
-            void applyOnboardingCommit(
-              node.aiRuntime,
-              onboardingStep.committed,
-              opts?.sessionNoSave === true,
-            ).then(() => {
-              view = {
-                ...onboardingStep.view,
-                aiOnboardingActive: false,
-                activeWidget: { kind: 'start_page' },
-              }
-              if (node.spine.aiMode !== 'off' && node.llm !== undefined) {
-                startDetectiveNarrator()
-              }
-              draw()
-            })
-          } else {
-            view = onboardingStep.view
-          }
+        if (handleAction(action)) {
           dirty = true
-          if (dirty) draw()
-          continue
         }
-        const {
-          view: nextView,
-          submittedLine,
-          helpToggle,
-          viewHistoryNav,
-          toggleDebug,
-          openPlaza,
-        } = reducePromptKey(view, action)
-        view = nextView
-        if (openPlaza === true) {
-          view = openPlazaView(view, node.spine, slashCtx())
-        }
-        if (toggleDebug === true) {
-          const w = view.activeWidget
-          if (w?.debugPage !== undefined && w.debugPage.length > 0) {
-            const nextPage = view.interactionPage === 'debug' ? 'main' : 'debug'
-            view = {
-              ...view,
-              interactionPage: nextPage,
-            }
-            if (view.viewHistory.length > 0) {
-              const idx = view.viewHistoryIndex
-              const entry = view.viewHistory[idx]
-              if (entry !== undefined) {
-                const updated: InteractionHistoryEntry = { ...entry, page: nextPage }
-                const hist = [...view.viewHistory]
-                hist[idx] = updated
-                view = { ...view, viewHistory: hist }
-              }
+        if (finished) return
+      }
+      if (escapeBuf === '\u001b') {
+        escTimer = setTimeout(() => {
+          escTimer = undefined
+          if (!finished && escapeBuf === '\u001b') {
+            escapeBuf = ''
+            if (handleAction({ type: 'exit' }) && !finished) {
+              draw()
             }
           }
-        }
-        if (helpToggle === true) {
-          const onHelp = view.activeWidget?.kind === 'domain_help'
-          if (!onHelp) {
-            view = openDomainHelp(view, node.spine)
-          } else if (view.viewHistoryIndex > 0) {
-            navigateHistory('left')
-          } else {
-            const canPlaza =
-              node.spine.phase === 'HEAD_FOLLOWING' ||
-              (node.spine.demoClock === true && node.spine.economy?.hasBlocks === true)
-            if (canPlaza) {
-              view = openPlazaView(view, node.spine, slashCtx())
-            }
-          }
-        }
-        if (viewHistoryNav !== undefined) {
-          navigateHistory(viewHistoryNav)
-        }
-        if (submittedLine !== undefined) {
-          const gen = ++intentGeneration
-          const isNl = !submittedLine.trim().startsWith('/')
-          runIntent(submittedLine, gen, isNl)
-          dirty = false
-        }
-        if (view.shouldExit) {
-          finish()
-          return
-        }
+        }, ESC_FLUSH_MS)
       }
       if (dirty) {
         draw()
@@ -575,6 +603,7 @@ export async function runEthySession(node: EthyNode, opts?: EthySessionOpts): Pr
     }
 
     const cleanup = () => {
+      clearEscTimer()
       process.off('SIGINT', onSignal)
       process.off('SIGTERM', onSignal)
       clearInterval(refreshTimer)
