@@ -468,6 +468,33 @@ describe('[Ethy/Persist]: snap pivot store', () => {
     assert.deepEqual(storeDone.lookupStorageByHash(accountHash, slotHash), value)
   })
 
+  it('estimateActivePivotBytes returns cached estimate without blocking and refreshes async', async () => {
+    const dir = tempDir()
+    const root = new Uint8Array(32)
+    root[0] = 0x55
+    const store = openStore(dir)
+    store.activatePivot({
+      blockNumber: 12n,
+      blockHash: new Uint8Array(32),
+      stateRoot: root,
+    })
+    const accountHash = new Uint8Array(32)
+    accountHash[0] = 0x0c
+    const slotHash = new Uint8Array(32)
+    slotHash[31] = 0x03
+    await store.appendStorageSlots(accountHash, [{ slotHash, value: new Uint8Array(64).fill(7) }])
+    await store.flushStorageWrites()
+
+    const t0 = Date.now()
+    const first = store.estimateActivePivotBytes()
+    assert.isBelow(Date.now() - t0, 100)
+    assert.isAtLeast(Number(first), 0)
+    // Wait briefly for the async background refresh to pick up storage/ bytes
+    await new Promise((r) => setTimeout(r, 80))
+    const refreshed = store.estimateActivePivotBytes()
+    assert.isAbove(Number(refreshed), 64)
+  })
+
   it('demo store does not touch disk', () => {
     const dir = tempDir()
     const store = SnapPivotStore.open({

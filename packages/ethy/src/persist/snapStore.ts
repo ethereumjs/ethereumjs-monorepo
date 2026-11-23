@@ -168,6 +168,8 @@ export class SnapPivotStore {
     string,
     { fileSize: number; batches: StorageBatchSpan[] }
   >()
+  private pivotBytesCache?: { root: string; bytes: bigint; atMs: number }
+  private pivotBytesRefreshInFlight = false
   private restoredHealBlocks: VerifiedBalBlock[] = []
 
   private constructor(opts: SnapStoreOpenOpts & { root: string; networkDir: string }) {
@@ -494,27 +496,104 @@ export class SnapPivotStore {
     return true
   }
 
+  /**
+   * Non-blocking estimate of active pivot disk usage for shadow-refresh headroom checks.
+   * Returns a cached result immediately (<1ms) and refreshes `code/`/`storage/`/`heal/`
+   * sizes asynchronously so pivots with hundreds of thousands of files never stall the event loop.
+   */
   estimateActivePivotBytes(): bigint {
     if (!this.enabled || this.activeStateRoot === undefined) return 0n
     const root = this.pivotDir(this.activeStateRoot)
+    const now = Date.now()
+    const CACHE_TTL_MS = 5 * 60_000
+    if (
+      this.pivotBytesCache !== undefined &&
+      this.pivotBytesCache.root === root &&
+      now - this.pivotBytesCache.atMs < CACHE_TTL_MS
+    ) {
+      return this.pivotBytesCache.bytes
+    }
     if (!fs.existsSync(root)) return 0n
-    let total = 0n
-    const stack = [root]
-    while (stack.length > 0) {
-      const dir = stack.pop()!
-      for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
-        const full = path.join(dir, ent.name)
-        if (ent.isDirectory()) stack.push(full)
-        else {
+    // Cheap synchronous floor from small directories only (`accounts/` + `bal-tail/`).
+    let fastTotal = 0n
+    for (const sub of ['accounts', 'bal-tail']) {
+      const subDir = path.join(root, sub)
+      if (!fs.existsSync(subDir)) continue
+      try {
+        for (const ent of fs.readdirSync(subDir, { withFileTypes: true })) {
+          if (!ent.isFile()) continue
           try {
-            total += BigInt(fs.statSync(full).size)
+            fastTotal += BigInt(fs.statSync(path.join(subDir, ent.name)).size)
           } catch {
             // skip
           }
         }
+      } catch {
+        // skip
       }
     }
-    return total
+    const prev =
+      this.pivotBytesCache !== undefined && this.pivotBytesCache.root === root
+        ? this.pivotBytesCache.bytes
+        : 0n
+    const baseline = fastTotal > prev ? fastTotal : prev
+    this.pivotBytesCache = { root, bytes: baseline, atMs: now }
+    this.schedulePivotBytesRefreshAsync(root)
+    return baseline
+  }
+
+  private schedulePivotBytesRefreshAsync(root: string): void {
+    if (this.pivotBytesRefreshInFlight) return
+    this.pivotBytesRefreshInFlight = true
+    void (async () => {
+      try {
+        let total = 0n
+        const folders = ['accounts', 'bal-tail', 'code', 'storage', 'heal']
+        const SAMPLE_CAP = 256
+        for (const sub of folders) {
+          const subDir = path.join(root, sub)
+          let names: string[]
+          try {
+            names = await fs.promises.readdir(subDir)
+          } catch {
+            continue
+          }
+          if (names.length === 0) continue
+          if (names.length <= SAMPLE_CAP * 2) {
+            for (let i = 0; i < names.length; i++) {
+              try {
+                const st = await fs.promises.stat(path.join(subDir, names[i]!))
+                if (st.isFile()) total += BigInt(st.size)
+              } catch {
+                // skip
+              }
+            }
+          } else {
+            // Legacy per-file directories can hold 500k+ entries; sample evenly and extrapolate.
+            const stride = Math.max(1, Math.floor(names.length / SAMPLE_CAP))
+            let sampledBytes = 0n
+            let sampledFiles = 0
+            for (let i = 0; i < names.length && sampledFiles < SAMPLE_CAP; i += stride) {
+              try {
+                const st = await fs.promises.stat(path.join(subDir, names[i]!))
+                if (st.isFile()) {
+                  sampledBytes += BigInt(st.size)
+                  sampledFiles++
+                }
+              } catch {
+                // skip
+              }
+            }
+            if (sampledFiles > 0) {
+              total += (sampledBytes * BigInt(names.length)) / BigInt(sampledFiles)
+            }
+          }
+        }
+        this.pivotBytesCache = { root, bytes: total, atMs: Date.now() }
+      } finally {
+        this.pivotBytesRefreshInFlight = false
+      }
+    })()
   }
 
   markBaseSyncComplete(pivotBlock: bigint): void {

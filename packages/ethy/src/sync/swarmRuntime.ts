@@ -65,18 +65,19 @@ export function refreshSpineSwarmTelemetry(opts: {
       snap.balTailContiguous = man.earliest <= localPivot + 1n
     }
   }
-  const pivotBytes = snapStore?.estimateActivePivotBytes() ?? 0n
   const balEarliest = snap.balTailEarliest ?? localPivot + 1n
-  let freeBytes = 8n * 1024n * 1024n * 1024n
-  try {
-    const st = fs.statfsSync(snapStore?.dataRoot() ?? os.tmpdir())
-    freeBytes = BigInt(st.bavail) * BigInt(st.bsize)
-  } catch {
-    // ignore
-  }
   const shadow = spine.swarm?.shadowRefresh ?? { mode: 'idle' as const }
-  if (
-    shouldStartShadowRefresh({
+  let shouldRefresh = false
+  if (opts.shadowRefreshEnabled && spine.phase === 'HEAD_FOLLOWING') {
+    const pivotBytes = snapStore?.estimateActivePivotBytes() ?? 0n
+    let freeBytes = 8n * 1024n * 1024n * 1024n
+    try {
+      const st = fs.statfsSync(snapStore?.dataRoot() ?? os.tmpdir())
+      freeBytes = BigInt(st.bavail) * BigInt(st.bsize)
+    } catch {
+      // ignore
+    }
+    shouldRefresh = shouldStartShadowRefresh({
       phase: spine.phase,
       freeBytes,
       pivotBytes,
@@ -85,7 +86,8 @@ export function refreshSpineSwarmTelemetry(opts: {
       balEarliest,
       enabled: opts.shadowRefreshEnabled,
     })
-  ) {
+  }
+  if (shouldRefresh) {
     const usableSeeders = opts.peers
       .map((p) => {
         const st = p.ethyStatus
