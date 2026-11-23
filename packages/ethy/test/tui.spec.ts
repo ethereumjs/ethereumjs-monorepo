@@ -85,7 +85,9 @@ describe('[Ethy/TUI]: renderFrame', () => {
     spine.balCatchUp = { fromBlock: 101n, applied: 10, total: 25 }
     const catchUp = stripAnsi(renderFrame(spine, view, 160, 30).join('\n'))
     assert.include(catchUp, 'BAL Catch-Up')
+    assert.include(catchUp, '#110 → +15 blk')
     assert.include(catchUp, '10 / 25 BALs applied')
+    assert.include(catchUp, 'Enter home')
     assert.match(catchUp, /%/)
     assert.include(catchUp, '█')
     assert.notInclude(catchUp, 'kept')

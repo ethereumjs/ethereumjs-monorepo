@@ -229,6 +229,12 @@ function nodePulsePairs(spine: EthySpine): TwoColumnPair[] {
     const total = catchUp?.total ?? 0
     const applied = catchUp?.applied ?? 0
     const remaining = Math.max(0, total - applied)
+    const fallbackCurrent = from > 0n ? from - 1n + BigInt(applied) : BigInt(applied)
+    const current =
+      spine.lastVerifiedBlockNumber !== undefined &&
+      spine.lastVerifiedBlockNumber >= fallbackCurrent
+        ? spine.lastVerifiedBlockNumber
+        : fallbackCurrent
     const pct = total > 0 ? (applied / total) * 100 : 0
     const rate = catchUp?.blocksPerSec
     const etaMin =
@@ -238,7 +244,7 @@ function nodePulsePairs(spine: EthySpine): TwoColumnPair[] {
       { label: 'Stage', value: 'BAL Catch-Up' },
       {
         label: 'Target',
-        value: `${formatBlockNum(from)} → +${remaining.toLocaleString('en-US')} blk`,
+        value: `${formatBlockNum(current)} → +${remaining.toLocaleString('en-US')} blk`,
       },
       { label: 'Progress', value: formatProgressBar(pct, etaMin) },
       {

@@ -12,6 +12,7 @@ function buildCrystalRows(spine: EthySpine, tick: number): string[] {
   const econMark = capabilityMark('economy', spine.capabilities.economy.status)
   const stateMark = capabilityMark('state', spine.capabilities.state.status)
   const p2pMark = capabilityMark('p2p', spine.capabilities.p2p.status)
+  const aiMark = capabilityMark('ai', spine.capabilities.ai.status)
 
   const phase = tick % 4
   const sA = phase === 0 ? `${FG.yellow}✦${RESET}` : `${DIM}·${RESET}`
@@ -30,6 +31,7 @@ function buildCrystalRows(spine: EthySpine, tick: number): string[] {
   const core = `${BOLD}${coreColor}╬${RESET}`
   const facet = `${coreColor}◈${RESET}`
   const vertex = `${BOLD}${FG.yellow}◆${RESET}`
+  const bottomRightMark = spine.aiMode === 'off' ? sD : aiMark
 
   // Every row is exactly 21 visible columns wide; diagonals step 1 col/row.
   return [
@@ -41,9 +43,9 @@ function buildCrystalRows(spine: EthySpine, tick: number): string[] {
     `    ${vertex}${DIM}════${RESET}${core}${DIM}════${RESET}${vertex}      `,
     `     ${FG.green}╲${RESET}   ${facet}   ${FG.cyan}╱${RESET}       `,
     `      ${FG.green}╲${RESET}  ${DIM}│${RESET}  ${FG.cyan}╱${RESET}        `,
-    `  ${sC} ${DIM}───╲─┼─╱─╮${RESET}    ${p2pMark}  `,
+    `  ${p2pMark} ${DIM}───╲─┼─╱─╮${RESET}    ${sC}  `,
     `        ${DIM}╲│╱   ╲${RESET}      `,
-    `     ${FG.magenta}✦${RESET}   ${sD}     ${p2pMark}     `,
+    `     ${FG.magenta}✦${RESET}   ${sD}     ${bottomRightMark}     `,
   ]
 }
 
@@ -51,12 +53,17 @@ function buildRightRows(spine: EthySpine): string[] {
   const econMark = capabilityMark('economy', spine.capabilities.economy.status)
   const stateMark = capabilityMark('state', spine.capabilities.state.status)
   const p2pMark = capabilityMark('p2p', spine.capabilities.p2p.status)
+  const aiMark = capabilityMark('ai', spine.capabilities.ai.status)
   const net = spine.network.toUpperCase()
   const ver = `v${spine.clientVersion}`
 
   const word1 = `${BOLD}${FG.magenta}┏━━━╸${RESET} ${BOLD}${FG.yellow}╺┳╸${RESET} ${BOLD}${FG.green}╻ ╻${RESET} ${BOLD}${FG.cyan}╻ ╻${RESET}`
   const word2 = `${BOLD}${FG.magenta}┣━━  ${RESET} ${BOLD}${FG.yellow} ┃ ${RESET} ${BOLD}${FG.green}┣━┫${RESET} ${BOLD}${FG.cyan}┗┳┛${RESET}  ${DIM}${ver}${RESET}`
   const word3 = `${BOLD}${FG.magenta}┗━━━╸${RESET} ${BOLD}${FG.yellow} ╹ ${RESET} ${BOLD}${FG.green}╹ ╹${RESET} ${BOLD}${FG.cyan} ╹ ${RESET}  ${BOLD}${net}${RESET}`
+  const pillRow =
+    spine.aiMode === 'off'
+      ? `${econMark} ${BOLD}Economy${RESET}   ${stateMark} ${BOLD}State${RESET}   ${p2pMark} ${BOLD}P2P${RESET}`
+      : `${econMark} ${BOLD}Economy${RESET}   ${stateMark} ${BOLD}State${RESET}   ${p2pMark} ${BOLD}P2P${RESET}   ${aiMark} ${BOLD}AI${RESET}`
 
   return [
     '',
@@ -69,7 +76,7 @@ function buildRightRows(spine: EthySpine): string[] {
       ? `${DIM}Economy · Flat State · P2P observatory${RESET}`
       : `${DIM}Economy · Flat State · Swarm Intelligence${RESET}`,
     '',
-    `${econMark} ${BOLD}Economy${RESET}   ${stateMark} ${BOLD}State${RESET}   ${p2pMark} ${BOLD}P2P${RESET}`,
+    pillRow,
     '',
     spine.aiMode === 'off'
       ? `${DIM}Press ${RESET}${BOLD}Tab${RESET}${DIM} for help · Enter plaza · ${RESET}${BOLD}/${RESET}${DIM} command${RESET}`
