@@ -336,6 +336,14 @@ Every Work Package delivers a **runnable, observable, and live-testable incremen
                                           │        Network Lifecycle Orchestrator,  │
                                           │        Dynamic Subprotocol Planes       │
                                           │        (SNAP/ETHY/Disc/CL) & Cockpit UI │
+                                          └───────────────────┬─────────────────────┘
+                                                              │
+                                                              ▼ (5x-10x BAL Catch-Up Engine)
+                                          ┌─────────────────────────────────────────┐
+                                          │ WP-14: High-Throughput BAL Catch-Up     │
+                                          │        (Binary consumeBALRlpBatch,      │
+                                          │        Async Interpolation Lookups,     │
+                                          │        Batched bal-tail & Multi-Peer)   │
                                           └─────────────────────────────────────────┘
 ```
 
