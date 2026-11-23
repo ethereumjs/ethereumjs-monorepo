@@ -86,7 +86,8 @@ export type SynthesizeStoryOpts = {
 export async function synthesizeInteractiveStory(
   opts: SynthesizeStoryOpts,
 ): Promise<{ story: ChainDispatchCard; debugPage: DebugSectionSpec[] } | undefined> {
-  const tier = inferModelTier(opts.spine.managedAi?.label)
+  const activeModel = opts.transport.modelName ?? opts.spine.managedAi?.label
+  const tier = inferModelTier(activeModel)
   const brief = buildStoryBrief(opts.spine, opts.economy, tier)
   if (brief === undefined) return undefined
   const lens =
@@ -127,7 +128,7 @@ export async function synthesizeInteractiveStory(
     lead,
     loreCardId: loreCards[0]?.id,
     toolsUsed: opts.toolResults.map((t) => t.tool),
-    modelLabel: opts.spine.managedAi?.label,
+    modelLabel: activeModel,
     latencyMs: Date.now() - started,
     atMs: Date.now(),
   })
@@ -136,7 +137,7 @@ export async function synthesizeInteractiveStory(
       title: 'Story synthesis',
       entries: [
         { key: 'loreCardId', value: loreCards[0]?.id ?? '—' },
-        { key: 'model', value: opts.spine.managedAi?.label ?? 'compact' },
+        { key: 'model', value: activeModel ?? tier },
         { key: 'latencyMs', value: String(Date.now() - started) },
         ...opts.toolResults.map((t) => ({
           key: t.tool,

@@ -59,7 +59,7 @@ export function parseStorySlashTrigger(line: string): StorySlashTrigger | undefi
   const lens = parseLensOverride(sub)
   if (lens !== undefined) return { action: 'new', lens }
   const idx = Number(sub)
-  if (sub.length > 0 && Number.isFinite(idx) && idx >= 1 && idx <= 8) {
+  if (sub.length > 0 && Number.isFinite(idx) && idx >= 1 && idx <= 6) {
     return { action: 'open', index: Math.floor(idx) }
   }
   if (parts.length === 1) return { action: 'full' }

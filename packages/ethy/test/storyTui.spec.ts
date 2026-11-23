@@ -24,17 +24,16 @@ const sampleCard: ChainDispatchCard = {
 describe('story TUI rendering', () => {
   it('top-aligns editorial AI column with blank pad row first', () => {
     const spine = createSpine('mainnet', 1n)
-    spine.economy = { hasBlocks: true }
+    spine.economy = { hasBlocks: true, topContracts: [], recentBlocks: [] }
     const sections: AiOverviewSections = { dispatches: [sampleCard], storyIndex: 1, storyCount: 6 }
     const lines = renderAiOverviewSections(spine, sections, 60, 20)
     expect(lines[0]).toBe('')
-    const firstContent = lines.slice(1).find((ln) => ln.trim().length > 0)
-    expect(firstContent).toBeDefined()
+    expect(lines[1]?.trim().length).toBeGreaterThan(0)
   })
 
   it('ends with /story hint when content overflows short terminals', () => {
     const spine = createSpine('mainnet', 1n)
-    spine.economy = { hasBlocks: true }
+    spine.economy = { hasBlocks: true, topContracts: [], recentBlocks: [] }
     const longBody = Array.from(
       { length: 12 },
       (_, i) => `Paragraph ${i} with extra detail about blobs.`,
@@ -46,11 +45,33 @@ describe('story TUI rendering', () => {
     expect(lines[lines.length - 1]).toMatch(/\/story/)
   })
 
-  it('StoryUIComponent lines respect innerWidth', () => {
-    const innerWidth = 72
-    const lines = renderStoryUIComponent(sampleCard, innerWidth, 30)
+  it('StoryUIComponent lines respect innerWidth and wrap long Ask questions without clipping sections', () => {
+    const innerWidth = 60
+    const richCard: ChainDispatchCard = {
+      ...sampleCard,
+      evidence: [
+        { label: 'baseFee', value: '1.2 gwei' },
+        { label: 'blobs', value: '6' },
+      ],
+      curiosityQuestion:
+        'Will rollup batchers throttle blob submissions if blob base fee doubles over the next ten minutes?',
+    }
+    const lines = renderStoryUIComponent(richCard, innerWidth, 24)
     for (const ln of lines) {
       expect(visibleWidth(ln)).toBeLessThanOrEqual(innerWidth)
     }
+    const joined = lines.join('\n')
+    expect(joined).toContain('Observed:')
+    expect(joined).toContain('Echo')
+    expect(joined).toContain('ten minutes?')
+  })
+
+  it('does not replace the last fitting line with overflow hint when story fits cleanly', () => {
+    const spine = createSpine('mainnet', 1n)
+    spine.economy = { hasBlocks: true, topContracts: [], recentBlocks: [] }
+    const sections: AiOverviewSections = { dispatches: [sampleCard], storyIndex: 1, storyCount: 2 }
+    const lines = renderAiOverviewSections(spine, sections, 60, 20)
+    expect(lines.join('\n')).toContain('/story full')
+    expect(lines.join('\n')).not.toContain('/story to read full story')
   })
 })

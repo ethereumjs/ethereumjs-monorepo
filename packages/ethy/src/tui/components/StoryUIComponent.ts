@@ -56,12 +56,10 @@ export function renderStoryUIComponent(
   if (budget <= 0) return lines
 
   push('')
-  budget -= 1
   for (const ln of wrapPlain(story.headline, wrapW)) {
     push(`${BOLD}${ln}${RESET}`)
   }
   push('')
-  budget -= 1
 
   const paras = story.body.split(/\n\n+/).filter((p) => p.trim().length > 0)
   for (const p of paras) {
@@ -70,7 +68,6 @@ export function renderStoryUIComponent(
       push(`${' '.repeat(pad)}${ln}`)
     }
     push('')
-    budget -= 1
   }
 
   if (story.angle !== undefined && story.angle.length > 0 && budget > 2) {
@@ -79,7 +76,6 @@ export function renderStoryUIComponent(
       push(`${DIM}│${RESET} ${ln}`)
     }
     push('')
-    budget -= 1
   }
 
   if (story.evidence !== undefined && story.evidence.length > 0 && budget > 1) {
@@ -89,12 +85,12 @@ export function renderStoryUIComponent(
       push(`${DIM}${' '.repeat(pad)}${ln}${RESET}`)
     }
     push('')
-    budget -= 1
   }
 
   if (story.curiosityQuestion !== undefined && budget > 0) {
-    push(`${DIM}› Ask: "${story.curiosityQuestion}"${RESET}`)
-    budget -= 1
+    for (const ln of wrapPlain(`› Ask: "${story.curiosityQuestion}"`, wrapW)) {
+      push(`${DIM}${ln}${RESET}`)
+    }
   }
   if (story.suggestedAction !== undefined && budget > 0) {
     push(`${DIM}› ${story.suggestedAction}${RESET}`)

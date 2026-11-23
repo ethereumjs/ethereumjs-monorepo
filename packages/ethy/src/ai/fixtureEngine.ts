@@ -9,6 +9,7 @@ export type LlmTransportRequest = {
 }
 
 export interface LlmTransport {
+  readonly modelName?: string
   complete(req: LlmTransportRequest, signal?: AbortSignal): Promise<string>
 }
 
@@ -26,6 +27,10 @@ export class FetchLlmTransport implements LlmTransport {
     this.base = base
     this.model = opts?.model
     this.provider = opts?.provider
+  }
+
+  get modelName(): string | undefined {
+    return this.model
   }
 
   async complete(req: LlmTransportRequest, signal?: AbortSignal): Promise<string> {
@@ -63,6 +68,10 @@ export class RecordingTransport implements LlmTransport {
   constructor(inner: LlmTransport, append?: (line: string) => void) {
     this.inner = inner
     this.append = append
+  }
+
+  get modelName(): string | undefined {
+    return this.inner.modelName
   }
 
   async complete(req: LlmTransportRequest, signal?: AbortSignal): Promise<string> {

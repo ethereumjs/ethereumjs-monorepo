@@ -42,7 +42,7 @@ export const ETHEREUM_LORE_CARDS: readonly EthereumLoreCard[] = [
     historicalEcho:
       'The 2017 Parity multi-sig library self-destruct froze hundreds of millions in ETH; storage collisions remain a classic upgrade risk.',
     attackOrEdgeScenario:
-      'A malicious implementation upgrade or wrong slot layout can let an admin drain funds — always verify implementation address and timelocks.',
+      'A malicious implementation upgrade or wrong slot layout can let an admin drain funds — always verify implementation address and time locks.',
   },
   {
     id: 'revert_storm_mev_wars',

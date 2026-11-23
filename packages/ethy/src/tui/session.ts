@@ -22,7 +22,7 @@ import { describeNotice } from '../notify/board.ts'
 import { deriveCapabilities } from '../spine/createSpine.ts'
 import type { AiOverviewSections, InteractionHistoryEntry, TuiViewState } from '../spine/types.ts'
 import { parseHelpDomainArg } from '../tools/help.ts'
-import { parseStorySlashTrigger } from '../tools/storyTools.ts'
+import { parseStorySlashTrigger, storyWidgetFromCard } from '../tools/storyTools.ts'
 import {
   applyOnboardingCommit,
   buildOnboardingWidget,
@@ -350,7 +350,16 @@ export async function runEthySession(node: EthyNode, opts?: EthySessionOpts): Pr
   const runIntent = (text: string, gen: number, isNl: boolean) => {
     const storyTrigger = parseStorySlashTrigger(text)
     if (storyTrigger?.action === 'new') {
-      void detectiveNarrator?.triggerNow(storyTrigger.lens)
+      node.aiRuntime?.wakeIfDeferred()
+      void detectiveNarrator?.triggerNow(storyTrigger.lens).then(() => {
+        if (gen !== intentGeneration) return
+        if (view.activeWidget?.kind !== 'key_value' || view.activeWidget.title !== 'Story') return
+        const latest = node.investigationJournal.latest()
+        if (latest !== undefined) {
+          view = { ...view, activeWidget: storyWidgetFromCard(latest) }
+          draw()
+        }
+      })
     }
     if (isHelpCommand(text)) {
       const parts = text.split(/\s+/)

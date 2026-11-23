@@ -21,8 +21,10 @@ export type ParsedStory = {
 }
 
 function stripMarkdownFences(text: string): string {
-  const fence = /```[\s\S]*?```/g
-  return text.replace(fence, '').trim()
+  return text
+    .replace(/^```[a-zA-Z0-9_-]*\s*\n?/gm, '')
+    .replace(/\n?```\s*$/gm, '')
+    .trim()
 }
 
 const SECTION_RE =
@@ -78,7 +80,13 @@ export function sanitizeStoryText(text: string): string {
   }
   out = out.replace(/\bscore\s+\d+\b/gi, '')
   out = out.replace(/\bLayer\s+1\s+signal\b/gi, 'live note')
-  return out.replace(/\s{2,}/g, ' ').trim()
+  return out
+    .replace(/\r\n/g, '\n')
+    .replace(/[ \t]{2,}/g, ' ')
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n[ \t]+/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
 }
 
 export function parseStoryOutput(raw: string): ParsedStory | undefined {

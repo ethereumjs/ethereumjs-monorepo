@@ -165,4 +165,75 @@ COMMAND: /signals`,
     expect(last?.dispatches?.length).toBe(1)
     expect(last?.dispatches?.[0]?.headline).toContain('Base batch')
   })
+
+  it('waits for an aborted in-flight cycle during triggerNow without marking unhealthy and infers rich tier from transport.modelName', async () => {
+    const chain = Mainnet
+    const hardfork = Hardfork.Cancun
+    const common = new Common({ chain, hardfork })
+    const stateManager = createFlatStateManager({ common })
+    const spine = createSpine('mainnet', 1n)
+    spine.aiMode = 'local'
+    spine.economy = {
+      hasBlocks: true,
+      latestBlockNumber: '101',
+      topContracts: [],
+      recentBlocks: [],
+      signals: [sampleSignal],
+    }
+
+    let calls = 0
+    const seenTiers: Array<string | undefined> = []
+    let releaseFirst: (() => void) | undefined
+    const transport = {
+      modelName: 'qwen2.5:14b',
+      async complete(
+        req: { overrides?: { modelTier?: string } },
+        signal?: AbortSignal,
+      ): Promise<string> {
+        calls += 1
+        seenTiers.push(req.overrides?.modelTier)
+        if (calls === 1) {
+          await new Promise<void>((resolve, reject) => {
+            releaseFirst = resolve
+            signal?.addEventListener('abort', () => reject(new Error('aborted')), { once: true })
+          })
+        }
+        if (calls === 2) {
+          return JSON.stringify({ mode: 'tell_story', focus: 'fresh lens' })
+        }
+        return `HEADLINE: Manual fresh story
+STORY: Fresh narrative after aborting an in-flight pulse.
+ANGLE: EIP-4844 split blob fees from execution fees.
+CURIOSITY: What changes when demand spikes?`
+      },
+    }
+
+    const economy = new ETHEconomyDataManager({ spine, chain, hardfork, stateManager })
+    const journal = new InvestigationJournal()
+    const userInterest = new UserInterestRing()
+    let unhealthyCount = 0
+    const narrator = new ChainDetectiveNarrator({
+      transport,
+      economy,
+      stateManager,
+      chain,
+      journal,
+      userInterest,
+      onOverview: () => {},
+      onUnhealthy: () => {
+        unhealthyCount += 1
+      },
+    })
+    narrator.start(spine)
+    await new Promise((r) => setTimeout(r, 15))
+    await narrator.triggerNow('security')
+    releaseFirst?.()
+    narrator.stop()
+
+    expect(unhealthyCount).toBe(0)
+    expect(seenTiers).toContain('rich')
+    expect(journal.latest()?.headline).toContain('Manual fresh story')
+    expect(journal.latest()?.lens).toBe('security')
+    expect(journal.latest()?.modelLabel).toBe('qwen2.5:14b')
+  })
 })

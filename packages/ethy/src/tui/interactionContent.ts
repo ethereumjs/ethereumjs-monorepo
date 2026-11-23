@@ -266,7 +266,7 @@ export function renderAiOverviewSections(
     const padCols = 2
     const wrapW = Math.max(8, innerWidth - padCols * 2)
     const pad = ' '.repeat(padCols)
-    const blocks: string[] = ['']
+    const blocks: string[] = []
     const journalPos =
       sections?.storyCount !== undefined && sections?.storyIndex !== undefined
         ? ` ${DIM}(${sections.storyIndex}/${sections.storyCount})${RESET}`
@@ -275,8 +275,8 @@ export function renderAiOverviewSections(
       blocks.push(`${pad}${ln}`)
     }
     blocks.push('')
-    for (const ln of wrapSectionText(`${BOLD}${card.headline}${RESET}`, wrapW)) {
-      blocks.push(`${pad}${ln}`)
+    for (const ln of wrapSectionText(card.headline, wrapW)) {
+      blocks.push(`${pad}${BOLD}${ln}${RESET}`)
     }
     blocks.push('')
     const paras = card.body.split(/\n\n+/).filter((p) => p.trim().length > 0)
@@ -300,7 +300,9 @@ export function renderAiOverviewSections(
       blocks.push('')
     }
     if (card.curiosityQuestion !== undefined) {
-      blocks.push(`${pad}${DIM}› Ask: "${card.curiosityQuestion}"${RESET}`)
+      for (const ln of wrapSectionText(`› Ask: "${card.curiosityQuestion}"`, wrapW)) {
+        blocks.push(`${pad}${DIM}${ln}${RESET}`)
+      }
     }
     blocks.push(`${pad}${DIM}› /story full · /story new${RESET}`)
     const overflowHint = `${pad}${DIM}› /story to read full story${RESET}`
@@ -312,7 +314,7 @@ export function renderAiOverviewSections(
         rows.push('')
         continue
       }
-      if (i === innerLines - 1 && used < blocks.length) {
+      if (i === innerLines - 1 && used < blocks.length - 1) {
         rows.push(overflowHint)
       } else if (used < blocks.length) {
         rows.push(blocks[used] ?? '')

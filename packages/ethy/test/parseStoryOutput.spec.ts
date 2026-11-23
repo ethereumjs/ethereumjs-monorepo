@@ -15,15 +15,19 @@ COMMAND: /signals`
     expect(p?.command).toBe('/signals')
   })
 
-  it('strips think blocks and markdown fences', () => {
+  it('strips think blocks and unwraps markdown fences without erasing the story', () => {
     const open = String.fromCharCode(60) + 'think' + String.fromCharCode(62)
     const close = String.fromCharCode(60) + '/' + 'think' + String.fromCharCode(62)
     const raw = `${open}secret reasoning${close}
-HEADLINE: x
-STORY: y`
+\`\`\`markdown
+HEADLINE: Fenced headline
+STORY: First paragraph of story.
+
+Second paragraph stays separate.
+\`\`\``
     const p = parseStoryOutput(raw)
-    expect(p?.headline).toBe('x')
-    expect(p?.story).toContain('y')
+    expect(p?.headline).toBe('Fenced headline')
+    expect(p?.story).toBe('First paragraph of story.\n\nSecond paragraph stays separate.')
   })
 
   it('salvages long plain prose without headers', () => {

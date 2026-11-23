@@ -10,7 +10,7 @@ import { createSpine } from '../src/spine/createSpine.ts'
 describe('storyBrief', () => {
   it('returns undefined when economy has no blocks', () => {
     const spine = createSpine('mainnet', 1n)
-    spine.economy = { hasBlocks: false }
+    spine.economy = { hasBlocks: false, topContracts: [], recentBlocks: [] }
     const chain = Mainnet
     const economy = new ETHEconomyDataManager({
       spine,

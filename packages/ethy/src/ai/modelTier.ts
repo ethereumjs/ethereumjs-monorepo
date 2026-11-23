@@ -1,7 +1,7 @@
 export type ModelTier = 'compact' | 'rich'
 
 const RICH_PATTERN =
-  /\b(7b|8b|9b|12b|14b|20b|24b|27b|32b|70b|72b|llama-3\.1-70|llama-3\.1-8|mixtral|qwen2\.5-72|qwen2\.5-14)\b/i
+  /(?:^|[\s:/_-])(7b|8b|9b|12b|14b|20b|24b|27b|32b|70b|72b|llama-?3\.1-?70|llama-?3\.1-?8|mixtral|qwen2\.5-?72|qwen2\.5-?14)(?:$|[\s:/_-])/i
 
 /** Infer prose depth from managed runner or Ollama model name. */
 export function inferModelTier(modelName?: string): ModelTier {

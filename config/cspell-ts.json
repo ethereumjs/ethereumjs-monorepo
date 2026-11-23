@@ -38,9 +38,7 @@
       "filename": "**/packages/ethy/**",
       "ignoreWords": [
         "Dencun",
-        "dencun",
         "rollups",
-        "timelocks",
         "mixtral"
       ]
     }

@@ -147,6 +147,7 @@ export class ChainDetectiveNarrator {
   private timer?: ReturnType<typeof setInterval>
   private abort?: AbortController
   private inFlight = false
+  private inFlightPromise?: Promise<void>
   private consecutiveFailures = 0
   private lastDispatchMs = 0
   private lastDispatchBlock = 0n
@@ -199,14 +200,20 @@ export class ChainDetectiveNarrator {
   }
 
   async triggerNow(lensOverride?: StoryLens): Promise<void> {
+    this.abortInFlight()
+    if (this.inFlightPromise !== undefined) {
+      await this.inFlightPromise.catch(() => {})
+    }
     this.lensOverride = lensOverride
     this.pendingManual = true
-    this.abortInFlight()
-    if (this.spineRef !== undefined) {
-      await this.runCycle('manual')
+    try {
+      if (this.spineRef !== undefined) {
+        await this.runCycle('manual')
+      }
+    } finally {
+      this.pendingManual = false
+      this.lensOverride = undefined
     }
-    this.pendingManual = false
-    this.lensOverride = undefined
   }
 
   private setLlmPulseReady(spine: EthySpine, ready: boolean): void {
@@ -237,8 +244,12 @@ export class ChainDetectiveNarrator {
     })
   }
 
+  private activeModelLabel(spine?: EthySpine): string | undefined {
+    return this.transport.modelName ?? spine?.managedAi?.label
+  }
+
   private modelTier(spine: EthySpine): ModelTier {
-    return inferModelTier(spine.managedAi?.label)
+    return inferModelTier(this.activeModelLabel(spine))
   }
 
   private async runStorytellerTurn(
@@ -281,7 +292,7 @@ export class ChainDetectiveNarrator {
       lead,
       loreCardId: loreCards[0]?.id,
       toolsUsed: toolResults.map((t) => t.tool),
-      modelLabel: this.spineRef?.managedAi?.label,
+      modelLabel: this.activeModelLabel(this.spineRef),
       latencyMs: Date.now() - startedMs,
       atMs: Date.now(),
     })
@@ -338,81 +349,92 @@ export class ChainDetectiveNarrator {
 
     this.inFlight = true
     this.abort?.abort()
-    this.abort = new AbortController()
+    const controller = new AbortController()
+    this.abort = controller
     this.userFocusBump = false
     const tier = this.modelTier(spine)
     const lead = directStory(brief, this.journal, this.lensOverride)
     const journalHeadlines = this.journal.snapshot(5).map(headlineSnippet)
     const startedMs = Date.now()
 
-    try {
-      const raw1 = await this.transport.complete(
-        {
-          kind: 'pulse',
-          messages: [
-            { role: 'system', content: buildScoutSystem(INVESTIGATION_TOOL_NAMES.join(', ')) },
-            {
-              role: 'user',
-              content: JSON.stringify({
-                brief: briefForPrompt(brief),
-                lead,
-                journalHeadlines,
-                trigger,
-              }),
-            },
-          ],
-          overrides: { responseMode: 'json', modelTier: tier },
-        },
-        this.abort.signal,
-      )
-      const triage = parseDetectiveTriage(parseLlmJSONObject(raw1))
-      let card: ChainDispatchCard | undefined
-      const toolResults: Array<{ tool: string; result: string }> = []
+    let work: Promise<void> | undefined
+    work = (async () => {
+      try {
+        const raw1 = await this.transport.complete(
+          {
+            kind: 'pulse',
+            messages: [
+              { role: 'system', content: buildScoutSystem(INVESTIGATION_TOOL_NAMES.join(', ')) },
+              {
+                role: 'user',
+                content: JSON.stringify({
+                  brief: briefForPrompt(brief),
+                  lead,
+                  journalHeadlines,
+                  trigger,
+                }),
+              },
+            ],
+            overrides: { responseMode: 'json', modelTier: tier },
+          },
+          controller.signal,
+        )
+        const triage = parseDetectiveTriage(parseLlmJSONObject(raw1))
+        let card: ChainDispatchCard | undefined
+        const toolResults: Array<{ tool: string; result: string }> = []
 
-      if (triage?.mode === 'dispatch') {
-        card = triage.card
-        card.blockNumber = snap.latestBlockNumber
-        card.lens = lead.lens
-        card.network = brief.network
-        card.subjectKey = lead.subjectKey
-      } else if (triage?.mode === 'investigate') {
-        for (const call of triage.calls) {
-          toolResults.push({
-            tool: call.tool,
-            result: await runInvestigationToolAsync(call.tool, call.args, this.ctx),
-          })
+        if (triage?.mode === 'dispatch') {
+          card = triage.card
+          card.blockNumber = snap.latestBlockNumber
+          card.lens = lead.lens
+          card.network = brief.network
+          card.subjectKey = lead.subjectKey
+        } else if (triage?.mode === 'investigate') {
+          for (const call of triage.calls) {
+            toolResults.push({
+              tool: call.tool,
+              result: await runInvestigationToolAsync(call.tool, call.args, this.ctx),
+            })
+          }
+          card = await this.runStorytellerTurn(brief, lead, toolResults, tier, startedMs)
+        } else if (triage?.mode === 'tell_story' || triage === undefined) {
+          card = await this.runStorytellerTurn(brief, lead, toolResults, tier, startedMs)
         }
-        card = await this.runStorytellerTurn(brief, lead, toolResults, tier, startedMs)
-      } else if (triage?.mode === 'tell_story' || triage === undefined) {
-        card = await this.runStorytellerTurn(brief, lead, toolResults, tier, startedMs)
-      }
 
-      if (card !== undefined) {
-        card.blockNumber = card.blockNumber ?? snap.latestBlockNumber
-        this.journal.push(card)
-        this.lastDispatchMs = Date.now()
-        this.lastDispatchBlock = head
-        this.publishStory(card)
-        this.consecutiveFailures = 0
-        this.setLlmPulseReady(spine, true)
-        return
+        if (card !== undefined) {
+          card.blockNumber = card.blockNumber ?? snap.latestBlockNumber
+          this.journal.push(card)
+          this.lastDispatchMs = Date.now()
+          this.lastDispatchBlock = head
+          this.publishStory(card)
+          this.consecutiveFailures = 0
+          this.setLlmPulseReady(spine, true)
+          return
+        }
+        throw new Error('empty_story')
+      } catch {
+        // Intentional aborts (user prompt or manual /story new) are not model failures.
+        if (controller.signal.aborted) return
+        this.consecutiveFailures += 1
+        const latest = this.journal.latest()
+        if (latest !== undefined && latest.deterministic !== true) {
+          this.publishStory(latest)
+        } else {
+          this.publishFallback(brief, lead.lens)
+        }
+        if (this.consecutiveFailures >= 2) {
+          this.setLlmPulseReady(spine, false)
+          this.onUnhealthy?.()
+        }
+      } finally {
+        this.inFlight = false
+        if (this.inFlightPromise === work) {
+          this.inFlightPromise = undefined
+        }
       }
-      throw new Error('empty_story')
-    } catch {
-      this.consecutiveFailures += 1
-      const latest = this.journal.latest()
-      if (latest !== undefined && latest.deterministic !== true) {
-        this.publishStory(latest)
-      } else {
-        this.publishFallback(brief, lead.lens)
-      }
-      if (this.consecutiveFailures >= 2) {
-        this.setLlmPulseReady(spine, false)
-        this.onUnhealthy?.()
-      }
-    } finally {
-      this.inFlight = false
-    }
+    })()
+    this.inFlightPromise = work
+    await work
   }
 
   private get economy(): ETHEconomyDataManager {
