@@ -338,12 +338,12 @@ Every Work Package delivers a **runnable, observable, and live-testable incremen
                                           │        (SNAP/ETHY/Disc/CL) & Cockpit UI │
                                           └───────────────────┬─────────────────────┘
                                                               │
-                                                              ▼ (5x-10x BAL Catch-Up Engine)
+                                                              ▼ (5x-10x BAL Catch-Up & Fast BAL Stack)
                                           ┌─────────────────────────────────────────┐
-                                          │ WP-14: High-Throughput BAL Catch-Up     │
-                                          │        (Binary consumeBALRlpBatch,      │
-                                          │        Async Interpolation Lookups,     │
-                                          │        Batched bal-tail & Multi-Peer)   │
+                                          │ WP-14: High-Throughput BAL Catch-Up &   │
+                                          │        Fast Ecosystem BAL Stack         │
+                                          │        (util/statemanager/vm + Ethy     │
+                                          │        Async Lookup, bal-tail & Swarm)  │
                                           └─────────────────────────────────────────┘
 ```
 
