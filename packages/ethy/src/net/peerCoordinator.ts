@@ -433,6 +433,9 @@ export async function startPeerCoordinator(
   let restoredContractsDrained = false
   let balCatchUpStallStartedAt = 0
   let balCatchUpStallWarned = false
+  let balCatchUpLastApplied = -1
+  let balCatchUpNoProgressSince = 0
+  let balCatchUpProgressStalled = false
   let lastSnapProgressAt = Date.now()
   let lastSnapProgressAccounts = spine.totalAccountsSynced
   let resumeHydrateStarted = false
@@ -906,6 +909,9 @@ export async function startPeerCoordinator(
           deriveCapabilities(spine)
         },
         onVerifiedExecutionHeader: opts.witnessExecutionHeader,
+        onDiagnostic: (severity, message, peerId) => {
+          recordDiagnostic(spine, { subsystem: 'bal', severity, message, peerId })
+        },
       })
     }
     headFollower.start()
@@ -2405,7 +2411,7 @@ export async function startPeerCoordinator(
         nowMs,
         snapDiscoveryHold,
         ethySwarmActive: ethySwarm?.isActive() === true,
-        degradedStall: balCatchUpStallWarned,
+        degradedStall: balCatchUpProgressStalled || balCatchUpStallWarned,
         hasUsableEthyGNew: hasGNew,
       }),
     )
@@ -2454,7 +2460,7 @@ export async function startPeerCoordinator(
 
   const applyTelemetry = (snap: WorkerTelemetrySnapshot) => {
     lastTelemetryPeers = snap.peers
-    const prev = spine.peers
+    const prev = new Map(spine.peers)
     spine.peers.clear()
     const localSnapAdvertised = lastAppliedProfile.capabilities.includes('snap1')
     for (const p of snap.peers) {
@@ -2567,10 +2573,17 @@ export async function startPeerCoordinator(
     if (spine.phase === 'BAL_CATCHUP' && spine.balCatchUp !== undefined) {
       const hasHeadPeers = snap.peers.some((p) => p.latestBlock !== undefined)
       const gap = BigInt(Math.max(0, spine.balCatchUp.total - spine.balCatchUp.applied))
+      const now = Date.now()
+      if (!hasHeadPeers || spine.balCatchUp.applied !== balCatchUpLastApplied) {
+        balCatchUpLastApplied = spine.balCatchUp.applied
+        balCatchUpNoProgressSince = hasHeadPeers ? now : 0
+        balCatchUpProgressStalled = false
+      } else if (balCatchUpNoProgressSince > 0 && now - balCatchUpNoProgressSince >= 30_000) {
+        balCatchUpProgressStalled = true
+      }
       if (spine.balCatchUp.applied > 0 || !hasHeadPeers || gap <= BAL_CATCHUP_STALE_WARN_GAP) {
         balCatchUpStallStartedAt = 0
       } else {
-        const now = Date.now()
         if (balCatchUpStallStartedAt === 0) {
           balCatchUpStallStartedAt = now
         } else if (
@@ -2592,6 +2605,9 @@ export async function startPeerCoordinator(
     } else {
       balCatchUpStallStartedAt = 0
       balCatchUpStallWarned = false
+      balCatchUpLastApplied = -1
+      balCatchUpNoProgressSince = 0
+      balCatchUpProgressStalled = false
     }
     noteRemoteEthyPeers(snap.peers)
     tryLockSyncTransport(snap.peers)

@@ -84,6 +84,33 @@ export function nextBalFlightStartBlock(
   }
 }
 
+/** Highest block number currently buffered in `ready` (used to distinguish gap-fill from lookahead). */
+export function highestReadyBlock(
+  ready: Iterable<{ startBlock: bigint; blockCount: number }>,
+): bigint | undefined {
+  let max: bigint | undefined
+  for (const r of ready) {
+    if (r.blockCount <= 0) continue
+    const end = r.startBlock + BigInt(r.blockCount) - 1n
+    if (max === undefined || end > max) max = end
+  }
+  return max
+}
+
+/** Lowest occupied range start strictly greater than `afterBlock` (caps gap-fill width cleanly). */
+export function nextOccupiedRangeStart(
+  afterBlock: bigint,
+  ranges: BlockRange[],
+): bigint | undefined {
+  let next: bigint | undefined
+  for (const r of ranges) {
+    if (r.lo > afterBlock && (next === undefined || r.lo < next)) {
+      next = r.lo
+    }
+  }
+  return next
+}
+
 export function rangeKey(startBlock: bigint): string {
   return startBlock.toString()
 }

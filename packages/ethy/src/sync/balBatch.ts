@@ -27,6 +27,7 @@ export const BAL_BATCH_MIN_GAP = 4n
 export const SERVING_TAIL_BLOCKS = 64n
 export const TAIL_BUNDLE_BATCH_SIZE = 8
 export const BAL_BATCH_PEER_REST_MS = 15_000
+export const BAL_BATCH_PEER_MAX_REST_MS = 120_000
 
 export type BalBatchMode = 'fast' | 'full'
 
@@ -142,8 +143,25 @@ export function restBalCatchUpPeer(
   peerRestUntil: Map<string, number>,
   peerId: string,
   now = Date.now(),
+  failureStreaks?: Map<string, number>,
 ) {
-  peerRestUntil.set(peerId, now + BAL_BATCH_PEER_REST_MS)
+  let restMs = BAL_BATCH_PEER_REST_MS
+  if (failureStreaks !== undefined) {
+    const streak = (failureStreaks.get(peerId) ?? 0) + 1
+    failureStreaks.set(peerId, streak)
+    restMs = Math.min(
+      BAL_BATCH_PEER_MAX_REST_MS,
+      BAL_BATCH_PEER_REST_MS * 2 ** Math.min(streak - 1, 4),
+    )
+  }
+  peerRestUntil.set(peerId, now + restMs)
+}
+
+export function noteBalCatchUpPeerSuccess(
+  failureStreaks: Map<string, number>,
+  peerId: string,
+): void {
+  failureStreaks.delete(peerId)
 }
 
 /** Blocks still to download before `targetHead`. */
