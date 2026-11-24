@@ -1,6 +1,6 @@
 # WP-15: Deep Contract Forensics, Guided-Randomness Storytelling, Persistent Contract Dossiers & Grounded AI Observability
 
-- **Status:** `READY_FOR_PLANNING`
+- **Status:** `PLANNED`
 - **Dependencies:** `WP-07d` (`DONE`), `WP-10b` (`DONE`), `WP-10c` (`DONE`), `WP-10d` (`DONE`), `WP-12` (`DONE`)
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
@@ -219,7 +219,55 @@ Redesign the prompt and execution pipeline so even a compact `Qwen3.5-2B` model 
 
 ## 2. Concrete Implementation Plan (Planner — Grok 4.7)
 
-*To be filled in by Grok 4.7 after inspecting the repository.*
+Composer 2.5 implements the slices below. No new npm dependencies. `EthyCore` stays terminal-agnostic: logs and the dossier file live under `networks/<net>/` via existing Node persist helpers; the TUI only renders typed cards.
+
+### What is broken today
+
+- `src/ai/chainDetective.ts` `runCycle` uses a bare `catch` and always does a JSON scout turn, then a story turn. Compact Qwen often dies on the scout; the user sees `src/ai/storyFallback.ts` labeled `[LIVE NOTE]` in `src/tui/interactionContent.ts`.
+- `src/ai/managedRunner.ts` spawns `llama-server` with `stdio: 'ignore'`. `src/ai/llamaServerBin.ts` always passes `--reasoning-budget 0`.
+- `src/tui/session.ts` pushes `/story new` as a live slash. Every 400 ms `src/tui/viewHistory.ts` `applyLiveSlashRefresh` re-dispatches it through `src/tools/storyTools.ts` `storyWritingPlaceholderWidget()`, so the left pane stays on “Writing a fresh story…”.
+- `src/ai/storyDirector.ts` always takes `signals[0]` or `moments[0]`. `src/ai/ethereumLore.ts` adds `+5` for `sepolia_testnet_rehearsal` and, when nothing scores, injects that card anyway. `src/ai/storyBrief.ts` ranks `eip7702` third. `src/economy/signalDetector.ts` fires `delegation_surge` at 3 auths with score 55–80.
+- Forensics stop at `src/contracts/bytecodeFingerprint.ts` plus name/symbol probes in `src/contracts/identityResolver.ts`. Nothing is persisted across restarts.
+
+### Design locks
+
+- **Beat, then lens.** Add `StoryBeatKind`: `contract_deep_dive`, `newborn_contract`, `call_pattern_mystery`, `storage_slot_pulse`, `tx_or_address_oddity`, `protocol_feature_spot`. `StoryLead` gains `beat`, `baseScore`, and `address`. Existing `StoryLens` stays the voice. `/story detective` still filters; `/story <beat>` forces that beat family.
+- **Injectable RNG.** `pickStoryBeat(brief, journal, opts?: { rng?: () => number; lens?: StoryLens; beat?: StoryBeatKind })`. Record the top 8 weights and the roll in `ai-runs.jsonl`.
+- **Compact models skip the scout.** One storyteller completion on a prebuilt dossier. `rich` may add one tool hop when the dossier names an open clue.
+- **Typed wire errors.** `LlmWireError` with `errorKind`. Story default timeout `45_000` ms; override `ETHY_LLM_TIMEOUT_MS`.
+- **Right column owns generation.** `AiOverviewSections.generating?`. Mutation story commands do not push live slash or change `activeWidget`.
+- **Honest badges.** `[STORY · model]` vs `[FALLBACK · reason]`. No fake field note in `refreshOverview` at startup.
+- **Lore / 7702 / fallback prose** per §1.2 pillars 3–5 (Sepolia `+5` removed, delegation thresholds raised, no base-fee opener).
+- **Dossier budget** `<150 ms`, 4 probes, `contract-dossiers.json` LRU 2000.
+- **Observability:** `ai-runs.jsonl`, `llama-server.log`, `[ai]` diagnostics, `/ai log`, `npm run ai:inspect`.
+
+### Slice 1 — Observability and wire honesty
+
+New `src/ai/aiRunTrace.ts`. Harden `llmClient.ts`, `managedRunner.ts`, `llamaServerBin.ts`, `chainDetective.ts`, `aiRuntime.ts`, `localHttpEngine.ts`. Tests: `llmClientWire.spec.ts`, `aiRunTrace.spec.ts`, `managedModel.spec.ts`.
+
+### Slice 2 — `/story` UX and badges
+
+`ChainDispatchCard` extensions, `interactionContent.ts`, `session.ts`, `viewHistory.ts`, `storyTools.ts`, `/ai log` in `deterministicEngine.ts`. Tests: `storyTui.spec.ts` / `tui.spec.ts`.
+
+### Slice 3 — Weighted dice and de-bias
+
+New `src/ai/storyBeats.ts`; refactor `storyDirector.ts`, `storyFallback.ts`, `storyNarrator.ts`, `ethereumLore.ts`, `storyBrief.ts`, `signalDetector.ts`. Tests: `storyDirector.spec.ts`, `ethereumLore.spec.ts`, `signalDetector.spec.ts`.
+
+### Slice 4 — Forensics and dossier DB
+
+New `src/contracts/contractForensics.ts`, `src/contracts/contractDossierStore.ts`; expand `signatureCatalog.ts`; behavior fields on `ContractAddressAgg`; wire `contractTools.ts`. Tests: forensics + dossier specs.
+
+### Slice 5 — Investigator to storyteller
+
+`ChainDetectiveNarrator` pipeline: `pickStoryBeat` → `buildForensicDossier` → single LLM turn; `parseStoryOutput` aliases; dossier write-back.
+
+### Slice 6 — CLI inspect and smoke
+
+`scripts/inspect-ai-runs.ts`, `ai:inspect` script, extend `ai-smoke.ts`. Gates: `tsc`, `test`, `spellcheck`, `build`.
+
+### Out of scope
+
+WP-10e–10g, new model downloads, third-party ABI APIs, snap/BAL sync changes.
 
 ---
 
