@@ -118,5 +118,32 @@ describe('ethereumLore', () => {
       baseScore: 94,
     })
     expect(snapPicked).toHaveLength(0)
+
+    // A routine USDC token slot_trend must NOT attach alarmist storage_slot_accumulator lore
+    const usdcSlotPicked = selectLoreCards(
+      miniBrief({ network: 'mainnet' }),
+      'detective',
+      [],
+      1,
+      {
+        lens: 'detective',
+        lead: 'Storage slot monotonic up',
+        subjectKey: 'signal:slot_trend:0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48:16',
+        relatedAddress: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+        followUp: false,
+        quiet: false,
+        beat: 'storage_slot_pulse',
+        format: 'field_note',
+        baseScore: 70,
+      },
+      {
+        beat: 'storage_slot_pulse',
+        subjectKey: 'signal:slot_trend:0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48:16',
+        lead: 'Storage slot monotonic up',
+        identity: { knownName: 'USDC', kind: 'token', decimals: 6, symbol: 'USDC' },
+        callPreviews: ['transfer(to: 0x6355…59c6, amount: 20000000)'],
+      },
+    )
+    expect(usdcSlotPicked.some((c) => c.id === 'storage_slot_accumulator')).toBe(false)
   })
 })

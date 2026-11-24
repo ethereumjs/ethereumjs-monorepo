@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { InvestigationJournal } from '../src/ai/investigationJournal.ts'
-import { isInterestingProposerGraffiti } from '../src/ai/storyBeats.ts'
+import { isDecodedPreview, isInterestingProposerGraffiti } from '../src/ai/storyBeats.ts'
 import type { StoryBrief } from '../src/ai/storyBrief.ts'
 import { directStory, parseLensOverride } from '../src/ai/storyDirector.ts'
 
@@ -122,10 +122,12 @@ describe('storyDirector', () => {
     expect(noteCandidate!.weight).toBeGreaterThan(bareCandidate!.weight)
   })
 
-  it('filters routine client graffiti and promotes human validator graffiti as a snap', () => {
+  it('filters routine client & builder graffiti while keeping .eth identities and human messages', () => {
     expect(isInterestingProposerGraffiti('geth/v1.15.0')).toBe(false)
     expect(isInterestingProposerGraffiti('besu/v25.1.0')).toBe(false)
+    expect(isInterestingProposerGraffiti('helix-builder-2')).toBe(false)
     expect(isInterestingProposerGraffiti('0xdeadbeef01')).toBe(false)
+    expect(isInterestingProposerGraffiti('builder.alice.eth')).toBe(true)
     expect(isInterestingProposerGraffiti('hi mom from home staking')).toBe(true)
 
     const journal = new InvestigationJournal()
@@ -138,5 +140,48 @@ describe('storyDirector', () => {
     const lead = directStory(withGraffiti, journal, undefined, { rng: () => 0.01 })
     expect(lead.subjectKey).toBe('proposer_graffiti:hi mom from home staking')
     expect(lead.format).toBe('snap')
+  })
+
+  it('does not treat raw 4-byte selectors as decoded calls and prevents noveltyBoost from inflating bare contracts', () => {
+    expect(isDecodedPreview('0xd36b4ff6')).toBe(false)
+    expect(isDecodedPreview('transfer(to: 0x1234..5678, amount: 500000)')).toBe(true)
+
+    const journal = new InvestigationJournal()
+    const rawVsDecoded = brief({
+      signals: [],
+      moments: [],
+      hotContracts: [
+        {
+          address: '0x2c4dfb3ba834c11246f609bffd01c0a5e0c9181a',
+          blocksActive: 5,
+          storageWrites: 20,
+          storageReads: 0,
+          netEthDeltaWei: 0n,
+          callPreviews: ['0xd36b4ff6'],
+        },
+        {
+          address: '0x1c7d4b196cb0c7b01d743fbc6116a902379c7238',
+          knownName: 'USDC',
+          blocksActive: 3,
+          storageWrites: 10,
+          storageReads: 0,
+          netEthDeltaWei: 0n,
+          callPreviews: ['transfer(to: 0x6355…59c6, amount: 20000000)'],
+        },
+      ],
+    })
+    const lead = directStory(rawVsDecoded, journal, undefined, {
+      rng: () => 0.01,
+      dossierNoveltyBoost: () => 1.45,
+    })
+    expect(lead.relatedAddress).toBe('0x1c7d4b196cb0c7b01d743fbc6116a902379c7238')
+    const rawCandidate = lead.beatCandidates?.find(
+      (c) => c.subjectKey === 'contract:0x2c4dfb3ba834c11246f609bffd01c0a5e0c9181a',
+    )
+    const usdcCandidate = lead.beatCandidates?.find(
+      (c) => c.subjectKey === 'contract:0x1c7d4b196cb0c7b01d743fbc6116a902379c7238',
+    )
+    expect(rawCandidate!.weight).toBeLessThan(40)
+    expect(usdcCandidate!.weight).toBeGreaterThan(rawCandidate!.weight * 2)
   })
 })

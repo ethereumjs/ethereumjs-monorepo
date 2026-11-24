@@ -50,12 +50,14 @@ STORY: score 52 on l2_blob_pressure anomaly.`
 
   it('strips markdown bold, [END OF REPORT], and accidental dossier meta-phrases', () => {
     const raw = `HEADLINE: **0.3 KB contract deployed**
-STORY: The dossier explicitly states that \`0xabc\` was deployed in the dossier. [END OF REPORT]`
+STORY: The dossier explicitly states that \`0xabc\` was deployed in the dossier. [END OF REPORT]
+QUESTION: Click the transfer to see who owns the wallet?`
     const p = parseStoryOutput(raw)!
     expect(p.headline).toBe('0.3 KB contract deployed')
     expect(p.story).not.toContain('**')
     expect(p.story).not.toContain('`')
     expect(p.story).not.toMatch(/dossier/i)
     expect(p.story).not.toMatch(/END OF REPORT/i)
+    expect(p.curiosityQuestion).toBe('Check the transfer to see who owns the wallet?')
   })
 })

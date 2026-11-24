@@ -182,7 +182,13 @@ function subjectTagsFromLead(lead: StoryLead, dossier?: ForensicDossier): Set<st
   const headline = lead.lead.toLowerCase()
 
   if (lead.beat === 'newborn_contract' || key.includes(':birth:')) tags.add('birth')
-  if (lead.beat === 'storage_slot_pulse' || key.includes('slot_trend')) tags.add('slot_trend')
+  if (lead.beat === 'storage_slot_pulse' || key.includes('slot_trend')) {
+    // Routine token contract transfers (e.g. USDC) should not trigger alarmist admin-flip lore
+    const isRoutineToken =
+      dossier?.identity?.kind === 'token' ||
+      (dossier?.callPreviews ?? []).some((c) => /^(?:transfer|approve|transferFrom)\(/i.test(c))
+    if (!isRoutineToken) tags.add('slot_trend')
+  }
   if (
     key.includes('graffiti') ||
     headline.includes('graffiti') ||

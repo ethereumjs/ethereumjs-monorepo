@@ -37,13 +37,26 @@ export type StoryBeatPick = StoryBeatCandidate & {
 const BEAT_TEMPERATURE = 0.85
 const TOP_K = 8
 
-// cspell:ignore erigon prysm teku grandine openethereum
+// cspell:ignore erigon prysm teku grandine openethereum flashbots beaverbuild bloxroute jetbldr
 const ROUTINE_CLIENT_GRAFFITI_RE =
   /^(?:geth|erigon|reth|besu|nethermind|nimbus|prysm|lighthouse|teku|lodestar|grandine|ethereumjs|parity|openethereum)(?:[\s/_-]|$)/i
 
+const ROUTINE_BUILDER_GRAFFITI_RE =
+  /(?:^|[\s/_-])(?:builder|flashbots|beaverbuild|titan|rsync|ultrasound|bloxroute|mev-boost|quasar|eden|manifold|jetbldr)(?:[\s/_-]|$|\d)/i
+
 /**
- * True when validator extraData looks like a human message or pool tag rather than
- * a routine execution/consensus client version banner or raw hex string.
+ * True when a call/event preview is human-decoded (e.g. `transfer(to: ..., amount: ...)`)
+ * rather than a raw undecoded 4-byte hex selector like `0xd36b4ff6`.
+ */
+export function isDecodedPreview(preview: string): boolean {
+  const t = preview.trim()
+  if (t.length === 0) return false
+  return !/^0x[0-9a-f]{8}$/i.test(t)
+}
+
+/**
+ * True when validator extraData looks like a human message or .eth identity rather than
+ * a routine client version banner, generic block-builder server ID, or raw hex string.
  */
 export function isInterestingProposerGraffiti(raw?: string): boolean {
   if (raw === undefined) return false
@@ -52,6 +65,9 @@ export function isInterestingProposerGraffiti(raw?: string): boolean {
   if (ROUTINE_CLIENT_GRAFFITI_RE.test(trimmed)) return false
   if (/^(?:0x)?[0-9a-f]{6,}$/i.test(trimmed)) return false
   if (!/[a-zA-Z]/.test(trimmed)) return false
+  // Keep .eth identities (e.g. builder.alice.eth) and multi-word human messages
+  if (trimmed.toLowerCase().includes('.eth') || /\s/.test(trimmed)) return true
+  if (ROUTINE_BUILDER_GRAFFITI_RE.test(trimmed)) return false
   return true
 }
 
@@ -69,19 +85,19 @@ function buildContractCandidates(brief: StoryBrief, limit: number): StoryBeatCan
   return rows.map((row, i) => {
     const hasKnownName = row.knownName !== undefined
     const hasProxy = row.proxyKind !== undefined
-    const hasCalls = (row.callPreviews?.length ?? 0) > 0
-    const hasEvents = (row.eventPreviews?.length ?? 0) > 0
+    const hasDecodedCalls = (row.callPreviews ?? []).some(isDecodedPreview)
+    const hasDecodedEvents = (row.eventPreviews ?? []).some(isDecodedPreview)
     const hasArchetype = row.archetype !== undefined && row.archetype !== 'Contract'
     const richness =
-      (hasKnownName ? 14 : 0) +
+      (hasKnownName ? 16 : 0) +
       (hasProxy ? 10 : 0) +
-      (hasCalls ? 10 : 0) +
-      (hasEvents ? 8 : 0) +
+      (hasDecodedCalls ? 12 : 0) +
+      (hasDecodedEvents ? 8 : 0) +
       (hasArchetype ? 8 : 0)
-    // Rich contracts lead the deep-dive lane; bare anonymous silent contracts stay low
-    // so richer moments, notes, and named protocols win naturally.
+    // Rich contracts lead the deep-dive lane; bare anonymous contracts (even with raw 4-byte
+    // selectors like 0xd36b4ff6) stay low so decoded protocols, notes, and moments win naturally.
     const score =
-      richness > 0 ? Math.min(95, Math.max(48, 72 - i * 5 + richness)) : Math.max(18, 32 - i * 3)
+      richness > 0 ? Math.min(95, Math.max(50, 72 - i * 4 + richness)) : Math.max(18, 28 - i * 2)
     return {
       beat: 'contract_deep_dive' as const,
       format: 'field_note' as const,
@@ -116,12 +132,20 @@ function momentFormat(moment: StoryBriefMoment): StoryFormat {
 function momentBaseScore(moment: StoryBriefMoment, idx: number): number {
   const decay = idx * 4
   switch (moment.kind) {
-    case 'graffiti_note':
-      return Math.max(70, 94 - decay)
+    case 'graffiti_note': {
+      // Distinguish conversational human notes from pipe-delimited machine hash attestations
+      const pipeCount = (moment.headline.match(/\|/g) ?? []).length
+      const isMachineStamp = pipeCount >= 2 || /\bSHA:[0-9a-f]{8,}/i.test(moment.headline)
+      return isMachineStamp ? Math.max(46, 62 - decay) : Math.max(72, 96 - decay)
+    }
     case 'eip7702':
     case 'blob_anchor':
       return Math.max(55, 84 - decay)
     case 'choreography':
+      // Multi-account calls with a decoded function name or venue badge are rich; generic call() paths stay modest
+      return moment.headline.includes('· call() path')
+        ? Math.max(34, 48 - decay)
+        : Math.max(52, 82 - decay)
     case 'whale':
     case 'revert':
       return Math.max(50, 80 - decay)
@@ -180,6 +204,7 @@ function buildSignalCandidates(
   brief: StoryBrief,
   journal: InvestigationJournal,
 ): StoryBeatCandidate[] {
+  const hotByAddr = new Map(brief.hotContracts.map((h) => [h.address.toLowerCase(), h]))
   return brief.signals.slice(0, 4).map((sig, i) => {
     const beat: StoryBeatKind =
       sig.kind === 'slot_trend'
@@ -194,10 +219,24 @@ function buildSignalCandidates(
     if (prev !== undefined && prev.signalScore !== undefined) {
       followUp = sig.noveltyScore >= prev.signalScore + 20
     }
+    let baseScore = sig.noveltyScore - i * 3
+    // Demote slot_trend on completely anonymous contracts with no decoded calls so named
+    // protocols (e.g. USDC, WETH) and real moments win instead of raw hex storage jumps.
+    if (sig.kind === 'slot_trend' && sig.address !== undefined) {
+      const hot = hotByAddr.get(sig.address.toLowerCase())
+      const hasContext =
+        hot !== undefined &&
+        (hot.knownName !== undefined ||
+          (hot.callPreviews ?? []).some(isDecodedPreview) ||
+          (hot.eventPreviews ?? []).some(isDecodedPreview))
+      if (!hasContext) {
+        baseScore = Math.min(baseScore, 34 - i * 2)
+      }
+    }
     return {
       beat,
       format: 'field_note' as const,
-      baseScore: sig.noveltyScore - i * 3,
+      baseScore,
       subjectKey: `signal:${sig.id}`,
       address: sig.address,
       lead: sig.headline,
@@ -304,7 +343,7 @@ export function pickStoryBeat(
       c.baseScore *
       addressRepeatPenalty(journal, c.subjectKey, c.address, c.followUp) *
       beatRepeatPenalty(journal, c.beat)
-    if (c.address !== undefined && opts?.dossierNoveltyBoost !== undefined) {
+    if (c.address !== undefined && c.baseScore >= 40 && opts?.dossierNoveltyBoost !== undefined) {
       w *= opts.dossierNoveltyBoost(c.address)
     }
     const effective = w < 0.5 && c.followUp !== true ? 0 : w

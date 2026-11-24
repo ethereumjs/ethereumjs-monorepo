@@ -225,30 +225,36 @@ function wrapSectionText(text: string, wrapW: number): string[] {
   return wrapped
 }
 
-function storyEyebrow(card: {
-  lens?: string
-  category: string
+function storyMetaFooter(card: {
   deterministic?: boolean
-  network?: string
   blockNumber?: string
-  atMs: number
   modelLabel?: string
   fallbackReason?: string
-  beatKind?: string
-  format?: 'snap' | 'field_note'
 }): string {
-  const shortModel = card.modelLabel?.split(/[\s:/_-]/)[0]?.slice(0, 12) ?? 'local'
-  const beat = card.beatKind !== undefined ? ` · ${card.beatKind}` : ''
-  const badge =
-    card.deterministic === true
-      ? `[FALLBACK · ${(card.fallbackReason ?? 'offline').slice(0, 24)}]`
-      : card.format === 'snap'
-        ? `[SNAP · ${shortModel}]`
-        : `[STORY · ${shortModel}${beat}]`
-  const net = (card.network ?? 'mainnet').toUpperCase()
-  const block = card.blockNumber !== undefined ? ` · #${card.blockNumber}` : ''
-  const age = `${Math.round((Date.now() - card.atMs) / 1000)}s ago`
-  return `${badge}  ${DIM}${net}${block} · ${age}${RESET}`
+  const parts: string[] = []
+  if (card.blockNumber !== undefined) parts.push(`#${card.blockNumber}`)
+  if (card.deterministic === true) {
+    parts.push(`fallback · ${(card.fallbackReason ?? 'offline').slice(0, 18)}`)
+  } else {
+    const shortModel = card.modelLabel?.split(/[\s:/_-]/)[0]?.slice(0, 12) ?? 'local'
+    parts.push(shortModel)
+  }
+  return parts.join(' · ')
+}
+
+function buildStoryFooterRow(
+  pad: string,
+  wrapW: number,
+  leftPlain: string,
+  rightPlain: string,
+): string {
+  const rightFit = rightPlain.length > wrapW ? rightPlain.slice(0, wrapW) : rightPlain
+  const gap = wrapW - leftPlain.length - rightFit.length
+  if (gap >= 2) {
+    return `${pad}${DIM}${leftPlain}${' '.repeat(gap)}${rightFit}${RESET}`
+  }
+  const leadPad = Math.max(0, wrapW - rightFit.length)
+  return `${pad}${DIM}${' '.repeat(leadPad)}${rightFit}${RESET}`
 }
 
 function angleTagForCard(card: {
@@ -285,14 +291,8 @@ export function renderAiOverviewSections(
     const wrapW = Math.max(8, innerWidth - padCols * 2)
     const pad = ' '.repeat(padCols)
     const blocks: string[] = []
-    const journalPos =
-      sections?.storyCount !== undefined && sections?.storyIndex !== undefined
-        ? ` ${DIM}(${sections.storyIndex}/${sections.storyCount})${RESET}`
-        : ''
-    for (const ln of wrapSectionText(`${storyEyebrow(card)}${journalPos}`, wrapW)) {
-      blocks.push(`${pad}${ln}`)
-    }
-    blocks.push('')
+    const topPad = 1
+    const bodyBudget = Math.max(1, innerLines - topPad - 1)
     for (const ln of wrapSectionText(card.headline, wrapW)) {
       blocks.push(`${pad}${BOLD}${ln}${RESET}`)
     }
@@ -318,13 +318,15 @@ export function renderAiOverviewSections(
       blocks.push('')
     }
     if (card.curiosityQuestion !== undefined) {
-      for (const ln of wrapSectionText(`› Ask: "${card.curiosityQuestion}"`, wrapW)) {
-        blocks.push(`${pad}${DIM}${ln}${RESET}`)
+      const askLines = wrapSectionText(`› Ask: "${card.curiosityQuestion}"`, wrapW)
+      // Only include the follow-up question when it fits completely above the footer row
+      if (blocks.length + askLines.length <= bodyBudget) {
+        for (const ln of askLines) {
+          blocks.push(`${pad}${DIM}${ln}${RESET}`)
+        }
       }
     }
-    blocks.push(`${pad}${DIM}› /story full · /story new${RESET}`)
-    const overflowHint = `${pad}${DIM}› /story to read full story${RESET}`
-    const topPad = 1
+    const footerRow = buildStoryFooterRow(pad, wrapW, '› /story new', storyMetaFooter(card))
     let used = 0
     const rows: string[] = []
     for (let i = 0; i < innerLines; i++) {
@@ -332,9 +334,11 @@ export function renderAiOverviewSections(
         rows.push('')
         continue
       }
-      if (i === innerLines - 1 && used < blocks.length - 1) {
-        rows.push(overflowHint)
-      } else if (used < blocks.length) {
+      if (i === innerLines - 1) {
+        rows.push(footerRow)
+        continue
+      }
+      if (used < blocks.length) {
         rows.push(blocks[used] ?? '')
         used += 1
       } else {

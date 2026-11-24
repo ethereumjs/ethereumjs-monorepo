@@ -37,7 +37,7 @@ export function renderStoryUIComponent(
   const pad = 2
   const wrapW = Math.max(8, w - pad * 2)
   const lines: string[] = []
-  let budget = maxBodyLines
+  let budget = Math.max(1, maxBodyLines - 1)
 
   const push = (raw: string) => {
     if (budget <= 0) return
@@ -45,20 +45,6 @@ export function renderStoryUIComponent(
     budget -= 1
   }
 
-  const shortModel = story.modelLabel?.split(/[\s:/_-]/)[0]?.slice(0, 12) ?? 'local'
-  const badge =
-    story.deterministic === true
-      ? `[FALLBACK · ${(story.fallbackReason ?? 'offline').slice(0, 24)}]`
-      : story.format === 'snap'
-        ? `[SNAP · ${shortModel}]`
-        : `[STORY · ${shortModel}]`
-  const net = (story.network ?? 'NETWORK').toUpperCase()
-  const ageSec = Math.max(0, Math.round((Date.now() - story.atMs) / 1000))
-  const block = story.blockNumber !== undefined ? ` · #${story.blockNumber}` : ''
-  push(`${DIM}${badge}  ${net}${block}  ${ageSec}s ago${RESET}`)
-  if (budget <= 0) return lines
-
-  push('')
   for (const ln of wrapPlain(story.headline, wrapW)) {
     push(`${BOLD}${ln}${RESET}`)
   }
@@ -95,9 +81,23 @@ export function renderStoryUIComponent(
       push(`${DIM}${ln}${RESET}`)
     }
   }
-  if (story.suggestedAction !== undefined && budget > 0) {
-    push(`${DIM}› ${story.suggestedAction}${RESET}`)
+
+  const metaParts: string[] = []
+  if (story.blockNumber !== undefined) metaParts.push(`#${story.blockNumber}`)
+  if (story.deterministic === true) {
+    metaParts.push(`fallback · ${(story.fallbackReason ?? 'offline').slice(0, 18)}`)
+  } else {
+    const shortModel = story.modelLabel?.split(/[\s:/_-]/)[0]?.slice(0, 12) ?? 'local'
+    metaParts.push(shortModel)
   }
+  const rightMeta = metaParts.join(' · ')
+  const leftAction = story.suggestedAction !== undefined ? `› ${story.suggestedAction}` : ''
+  const gap = w - leftAction.length - rightMeta.length
+  const footer =
+    leftAction.length > 0 && gap >= 2
+      ? `${DIM}${leftAction}${' '.repeat(gap)}${rightMeta}${RESET}`
+      : `${DIM}${' '.repeat(Math.max(0, w - rightMeta.length))}${rightMeta}${RESET}`
+  lines.push(fixedLine(footer, w))
 
   return lines
 }

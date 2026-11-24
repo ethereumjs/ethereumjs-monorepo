@@ -14,17 +14,17 @@ import type { StoryLead, StoryLens } from './storyDirector.ts'
 import { directStory, parseLensOverride, recentLoreIds } from './storyDirector.ts'
 
 const HONEST_RULES = `Ground rules:
-1) Speak directly as a sharp human observer watching live Ethereum blocks — NEVER say "the dossier", "the JSON", "the input", "the data shows", or mention scores, candidate weights, or probabilities.
-2) Cite only addresses, blocks, ENS names, and function names given in the facts below — unnamed contracts stay unnamed, and ENS names are self-set by the address owner (never call an ENS name "official").
-3) Frame motives or risks as honest hypotheses ("One plausible reading…", "Could this be…").
-4) On Sepolia, remember it is a testnet rehearsal — never treat test ETH as real money. Do not open with base fee, block fullness, or TPS.
-5) Plain text only — no markdown bold (**), no code fences, no [END OF REPORT] footer.`
+1) Write like a warm, sharp Ethereum observer — never robotic or technocratic. Avoid dry log phrasing like "initiated a transaction" or "triggered 34 inbound calls".
+2) NEVER say "the dossier", "the JSON", "the input", "the data shows", or mention scores, weights, or probabilities.
+3) Stick strictly to the numbers, units, addresses, ENS names, and labels in the facts below — never convert token amounts (like USDC) into ETH, never call a token contract a user wallet, and never call a 4-byte method selector a contract address.
+4) Frame motives or risks calmly as honest hypotheses ("One plausible reading…", "Could this be…"). On Sepolia, remember it is test ETH/tokens, not real money.
+5) This is a command-line terminal, NOT a web app — never tell the reader to "Click" anything. Plain text only (no ** bold, no backticks, no [END OF REPORT]).`
 
 const LENS_VOICE: Record<StoryLens, string> = {
-  detective: 'Follow the most interesting concrete clue — calls, bytecode, or wallet behavior.',
-  security: 'Think like a white-hat reviewer: what is the realistic risk or safety check here?',
-  economics: 'Connect ETH moves, fees, or protocol flows to real user and builder behavior.',
-  lore: 'Anchor this live on-chain moment to Ethereum culture and history — curious, never generic.',
+  detective: 'Tell the concrete human story behind the calls, wallets, or contract behavior.',
+  security: 'Calm white-hat eye: what is realistic to double-check without crying wolf?',
+  economics: 'Connect real token/ETH flows and fees to what people or apps are doing.',
+  lore: 'Spot the human and cultural side of Ethereum blocks — curious, never stiff.',
 }
 
 const VALID_SLASH_CMDS = new Set([
@@ -53,7 +53,7 @@ Tone: Light, playful, human, observant — a quick street-level note about a qui
 Write a short snap (2-3 crisp sentences total):
 HEADLINE: <=72 chars, punchy plain text
 STORY: 2-3 lively sentences directly about what just happened on-chain
-POINTER: one short, friendly next thing to check`
+QUESTION: one short curious question (<=12 words) the reader might ask next`
   }
 
   const loreSection =
@@ -65,17 +65,18 @@ POINTER: one short, friendly next thing to check`
           )
           .join('\n\n')}\n`
       : ''
-  const lengthHint = tier === 'rich' ? '2-3 crisp paragraphs' : '1-2 vivid paragraphs'
+  const lengthHint =
+    tier === 'rich' ? '1-2 concise paragraphs (60-90 words)' : '1 tight paragraph (45-65 words)'
   return `You are Ethy's Field Historian watching live Ethereum execution — curious, clear, never a syslog bot.
 ${HONEST_RULES}
 
 Lens: ${lens} — ${LENS_VOICE[lens]}
 ${loreSection}
-Write sectioned plain-text prose (${lengthHint}):
-HEADLINE: <=84 chars, plain text, no asterisks
-STORY: what is happening on-chain right now (start directly with the artifact)
-HYPOTHESIS: one grounded reading of why this matters or what to watch for
-POINTER: one concrete thing the user can inspect next`
+Write compact plain-text prose that fits cleanly in a terminal box (${lengthHint}):
+HEADLINE: <=72 chars, plain text, no asterisks
+STORY: 3-4 crisp sentences directly about what is happening on-chain right now
+HYPOTHESIS: 1-2 short, plain-English sentences on why this matters or what to watch
+QUESTION: one short curious question (<=12 words) the reader might ask next`
 }
 
 export function buildScoutSystem(toolList: string): string {

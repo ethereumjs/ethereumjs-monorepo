@@ -31,7 +31,7 @@ describe('story TUI rendering', () => {
     expect(lines[1]?.trim().length).toBeGreaterThan(0)
   })
 
-  it('ends with /story hint when content overflows short terminals', () => {
+  it('omits clipped Ask line and never prints /story full or overflow nag on short terminals', () => {
     const spine = createSpine('mainnet', 1n)
     spine.economy = { hasBlocks: true, topContracts: [], recentBlocks: [] }
     const longBody = Array.from(
@@ -42,7 +42,10 @@ describe('story TUI rendering', () => {
       dispatches: [{ ...sampleCard, body: longBody }],
     }
     const lines = renderAiOverviewSections(spine, sections, 50, 8)
-    expect(lines[lines.length - 1]).toMatch(/\/story/)
+    const joined = lines.join('\n')
+    expect(joined).not.toContain('/story full')
+    expect(joined).not.toContain('/story to read full story')
+    expect(joined).not.toContain('› Ask:')
   })
 
   it('StoryUIComponent lines respect innerWidth and wrap long Ask questions without clipping sections', () => {
@@ -66,16 +69,18 @@ describe('story TUI rendering', () => {
     expect(joined).toContain('ten minutes?')
   })
 
-  it('does not replace the last fitting line with overflow hint when story fits cleanly', () => {
+  it('renders /story new without /story full when story fits cleanly in the AI box', () => {
     const spine = createSpine('mainnet', 1n)
     spine.economy = { hasBlocks: true, topContracts: [], recentBlocks: [] }
     const sections: AiOverviewSections = { dispatches: [sampleCard], storyIndex: 1, storyCount: 2 }
     const lines = renderAiOverviewSections(spine, sections, 60, 20)
-    expect(lines.join('\n')).toContain('/story full')
-    expect(lines.join('\n')).not.toContain('/story to read full story')
+    const joined = lines.join('\n')
+    expect(joined).toContain('/story new')
+    expect(joined).not.toContain('/story full')
+    expect(joined).not.toContain('/story to read full story')
   })
 
-  it('renders SNAP eyebrow and omits Lens box for snap-format cards', () => {
+  it('renders right-aligned block + model footer without redundant eyebrow or /story full', () => {
     const snapCard: ChainDispatchCard = {
       category: 'lore',
       severity: 'calm',
@@ -96,12 +101,20 @@ describe('story TUI rendering', () => {
       { dispatches: [snapCard], storyIndex: 1, storyCount: 1 },
       60,
       16,
-    ).join('\n')
-    expect(overviewLines).toContain('[SNAP · qwen3.5]')
-    expect(overviewLines).not.toContain('│ Lens')
+    )
+    expect(overviewLines[1]).toContain('Validator says hi from home staking')
+    const footer = overviewLines[overviewLines.length - 1] ?? ''
+    expect(footer).toContain('#21402811 · qwen3.5')
+    expect(footer).toContain('/story new')
+    const joined = overviewLines.join('\n')
+    expect(joined).not.toContain('[STORY')
+    expect(joined).not.toContain('[SNAP')
+    expect(joined).not.toContain('│ Lens')
 
-    const componentLines = renderStoryUIComponent(snapCard, 60, 16).join('\n')
-    expect(componentLines).toContain('[SNAP · qwen3.5]')
-    expect(componentLines).not.toContain('│ Lens')
+    const componentLines = renderStoryUIComponent(snapCard, 60, 16)
+    expect(componentLines[0]).toContain('Validator says hi from home staking')
+    expect(componentLines[componentLines.length - 1]).toContain('#21402811 · qwen3.5')
+    expect(componentLines.join('\n')).not.toContain('[SNAP')
+    expect(componentLines.join('\n')).not.toContain('│ Lens')
   })
 })

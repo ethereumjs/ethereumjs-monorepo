@@ -28,7 +28,7 @@ function stripMarkdownFences(text: string): string {
 }
 
 const SECTION_RE =
-  /(?:^|\n)\s*(?:#{1,3}\s*)?\*{0,2}(HEADLINE|STORY|ANGLE|HYPOTHESIS|CURIOSITY|POINTER|COMMAND)\*{0,2}\s*:?\s*/gi
+  /(?:^|\n)\s*(?:#{1,3}\s*)?\*{0,2}(HEADLINE|STORY|ANGLE|HYPOTHESIS|CURIOSITY|QUESTION|POINTER|COMMAND)\*{0,2}\s*:?\s*/gi
 
 function parseSectioned(raw: string): Partial<ParsedStory> | undefined {
   const text = stripMarkdownFences(stripThinkingBlocks(raw))
@@ -45,7 +45,7 @@ function parseSectioned(raw: string): Partial<ParsedStory> | undefined {
   const story = parts.STORY ?? ''
   if (headline.length === 0 && story.length === 0) return undefined
   const angle = parts.ANGLE ?? parts.HYPOTHESIS
-  const curiosity = parts.CURIOSITY ?? parts.POINTER
+  const curiosity = parts.QUESTION ?? parts.CURIOSITY ?? parts.POINTER
   return {
     headline: headline.slice(0, 84),
     story,
@@ -103,6 +103,16 @@ export function sanitizeStoryText(text: string): string {
     .trim()
 }
 
+function cleanCuriosityQuestion(raw: string): string {
+  let out = sanitizeStoryText(raw).replace(/^click\s+(?:on\s+)?/i, 'Check ')
+  if (out.length > 100) {
+    const cut = out.slice(0, 99)
+    const space = cut.lastIndexOf(' ')
+    out = `${(space > 50 ? cut.slice(0, space) : cut).replace(/[.,;:\s]+$/, '')}…`
+  }
+  return out
+}
+
 export function parseStoryOutput(raw: string): ParsedStory | undefined {
   const sectioned = parseSectioned(raw)
   const parsed = sectioned ?? salvagePlainProse(raw)
@@ -116,7 +126,7 @@ export function parseStoryOutput(raw: string): ParsedStory | undefined {
     angle: parsed.angle !== undefined ? sanitizeStoryText(parsed.angle) : undefined,
     curiosityQuestion:
       parsed.curiosityQuestion !== undefined
-        ? sanitizeStoryText(parsed.curiosityQuestion)
+        ? cleanCuriosityQuestion(parsed.curiosityQuestion)
         : undefined,
     command: parsed.command,
   }

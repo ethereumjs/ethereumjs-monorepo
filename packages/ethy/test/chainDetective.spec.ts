@@ -9,6 +9,7 @@ import {
   signalToDispatchCard,
 } from '../src/ai/chainDetective.ts'
 import { FixtureReplayTransport } from '../src/ai/fixtureEngine.ts'
+import { formatHumanCallPreview, renderPromptFacts } from '../src/ai/forensicDossierBuilder.ts'
 import { InvestigationJournal, UserInterestRing } from '../src/ai/investigationJournal.ts'
 import { buildSignalDigest, digestForPrompt } from '../src/ai/signalDigest.ts'
 import { ETHEconomyDataManager } from '../src/economy/economyDataManager.ts'
@@ -298,5 +299,85 @@ COMMAND: /call_pattern 0xdeadbeef`
     expect(user).toContain('Observation:')
     // Invented /call_pattern command must be replaced with deterministic /contract <relatedAddress>
     expect(journal.latest()?.suggestedAction).toBe(`/contract ${targetAddr}`)
+  })
+
+  it('scales ERC-20 token units, omits hardfork city names, and labels raw 4-byte selectors clearly', () => {
+    expect(formatHumanCallPreview('transfer(to: 0x6355…59c6, amount: 20000000)', 6, 'USDC')).toBe(
+      'transfer(to: 0x6355…59c6, amount: 20 USDC)',
+    )
+    expect(formatHumanCallPreview('transfer(to: 0x5b8b…1d93, amount: 500000)', 6, 'USDC')).toBe(
+      'transfer(to: 0x5b8b…1d93, amount: 0.5 USDC)',
+    )
+
+    const facts = renderPromptFacts({
+      dossier: {
+        beat: 'storage_slot_pulse',
+        subjectKey: 'signal:slot_trend:0x1c7d4b196cb0c7b01d743fbc6116a902379c7238:16',
+        address: '0x1c7d4b196cb0c7b01d743fbc6116a902379c7238',
+        lead: 'Storage slot monotonic up',
+        identity: {
+          knownName: 'USDC',
+          kind: 'token',
+          role: 'Sepolia USD Coin ERC-20 test token contract',
+          symbol: 'USDC',
+          decimals: 6,
+        },
+        callPreviews: ['transfer(to: 0x6355…59c6, amount: 20000000)'],
+      },
+      brief: {
+        network: 'sepolia',
+        hardfork: 'amsterdam',
+        head: { blockNumber: '12202385' },
+        signals: [],
+        moments: [],
+        hotContracts: [],
+        l2: [],
+      },
+      lead: {
+        lens: 'detective',
+        lead: 'Storage slot monotonic up',
+        subjectKey: 'signal:slot_trend:0x1c7d4b196cb0c7b01d743fbc6116a902379c7238:16',
+        relatedAddress: '0x1c7d4b196cb0c7b01d743fbc6116a902379c7238',
+        followUp: false,
+        quiet: false,
+        beat: 'storage_slot_pulse',
+        format: 'field_note',
+        baseScore: 70,
+      },
+    })
+    expect(facts).toContain('amount: 20 USDC')
+    expect(facts).toContain('NOT a user wallet')
+    expect(facts).not.toMatch(/amsterdam/i)
+
+    const rawFacts = renderPromptFacts({
+      dossier: {
+        beat: 'contract_deep_dive',
+        subjectKey: 'contract:0x2c4dfb3ba834c11246f609bffd01c0a5e0c9181a',
+        address: '0x2c4dfb3ba834c11246f609bffd01c0a5e0c9181a',
+        lead: 'Active contract 0x2c4dfb3b…',
+        callPreviews: ['0xd36b4ff6'],
+      },
+      brief: {
+        network: 'sepolia',
+        hardfork: 'amsterdam',
+        head: { blockNumber: '12202367' },
+        signals: [],
+        moments: [],
+        hotContracts: [],
+        l2: [],
+      },
+      lead: {
+        lens: 'detective',
+        lead: 'Active contract 0x2c4dfb3b…',
+        subjectKey: 'contract:0x2c4dfb3ba834c11246f609bffd01c0a5e0c9181a',
+        relatedAddress: '0x2c4dfb3ba834c11246f609bffd01c0a5e0c9181a',
+        followUp: false,
+        quiet: false,
+        beat: 'contract_deep_dive',
+        format: 'field_note',
+        baseScore: 28,
+      },
+    })
+    expect(rawFacts).toContain('4-byte method selector 0xd36b4ff6 — NOT a contract address')
   })
 })

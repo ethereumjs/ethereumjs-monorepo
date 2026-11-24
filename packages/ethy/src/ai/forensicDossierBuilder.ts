@@ -8,12 +8,13 @@ import type {
 } from '../contracts/contractDossierStore.ts'
 import { scanBytecodeForensics } from '../contracts/contractForensics.ts'
 import { buildCodeLookup, resolveCodeForAddress } from '../contracts/contractIntelligence.ts'
-import { knownContractName } from '../contracts/knownContracts.ts'
+import { type KnownContractMeta, knownContractMeta } from '../contracts/knownContracts.ts'
 import { EIP1967_IMPLEMENTATION_SLOT } from '../contracts/signatureCatalog.ts'
 import type { ETHEconomyDataManager } from '../economy/economyDataManager.ts'
 import type { EthySandbox } from '../evm/sandbox.ts'
 import type { EthySpine } from '../spine/types.ts'
 import type { InvestigationContext } from './investigationTools.ts'
+import { isDecodedPreview } from './storyBeats.ts'
 import type { StoryBrief } from './storyBrief.ts'
 import type { StoryLead } from './storyDirector.ts'
 
@@ -25,6 +26,10 @@ export type ForensicDossier = {
   identity?: {
     knownName?: string
     ensName?: string
+    kind?: KnownContractMeta['kind']
+    role?: string
+    symbol?: string
+    decimals?: number
   }
   relatedEnsNames?: Array<{ address: string; ensName: string }>
   static?: ReturnType<typeof scanBytecodeForensics>
@@ -72,18 +77,25 @@ export async function buildForensicDossier(opts: {
     }
   })()
 
-  // Resolve known contract label + reverse/forward-verified ENS primary name
-  const staticKnown = knownContractName(BigInt(opts.chain.chainId), addr)
+  // Resolve known contract metadata + reverse/forward-verified ENS primary name
+  const staticMeta = knownContractMeta(BigInt(opts.chain.chainId), addr)
   const resolver =
     typeof opts.economy.getIdentityResolver === 'function'
       ? opts.economy.getIdentityResolver()
       : undefined
   const resolved =
     resolver !== undefined ? await resolver.resolveNow(addr, blockNumBigInt) : undefined
-  const knownName = staticKnown ?? resolved?.knownName
+  const knownName = staticMeta?.name ?? resolved?.knownName
   const ensName = resolved?.ensName
-  if (knownName !== undefined || ensName !== undefined) {
-    dossier.identity = { knownName, ensName }
+  if (knownName !== undefined || ensName !== undefined || staticMeta !== undefined) {
+    dossier.identity = {
+      knownName,
+      ensName,
+      kind: staticMeta?.kind,
+      role: staticMeta?.role,
+      symbol: staticMeta?.symbol,
+      decimals: staticMeta?.decimals,
+    }
   }
 
   const agg = opts.economy.getContractAgg(addr)
@@ -187,10 +199,48 @@ export function stripInternalDossierFields(
   return clean
 }
 
+function formatScaledUnits(rawDigits: string, decimals: number, symbol?: string): string {
+  try {
+    const val = BigInt(rawDigits)
+    if (decimals <= 0) return symbol !== undefined ? `${val.toString()} ${symbol}` : val.toString()
+    const base = 10n ** BigInt(decimals)
+    const whole = val / base
+    const frac = val % base
+    const wholeStr = whole.toLocaleString('en-US')
+    let numStr: string
+    if (frac === 0n) {
+      numStr = wholeStr
+    } else {
+      const fracPadded = frac.toString().padStart(decimals, '0').slice(0, 4).replace(/0+$/, '')
+      numStr = fracPadded.length > 0 ? `${wholeStr}.${fracPadded}` : wholeStr
+    }
+    return symbol !== undefined ? `${numStr} ${symbol}` : numStr
+  } catch {
+    return rawDigits
+  }
+}
+
+/**
+ * Scale raw ERC-20 integer amounts (`amount: 20000000` on 6-decimal USDC → `amount: 20 USDC`)
+ * so small local models never misread base units as millions of ETH.
+ */
+export function formatHumanCallPreview(
+  preview: string,
+  decimals?: number,
+  symbol?: string,
+): string {
+  if (decimals === undefined) return preview
+  return preview.replace(
+    /\b(amount|value|wad):\s*(\d+)\b/g,
+    (_match, field: string, digits: string) =>
+      `${field}: ${formatScaledUnits(digits, decimals, symbol)}`,
+  )
+}
+
 /**
  * Render clean, plain-English observations for the storyteller prompt.
- * Never exposes internal selection metadata (dice, weights, candidate tables, subject keys)
- * or raw JSON field names, keeping small local models grounded and conversational.
+ * Never exposes internal selection metadata (dice, weights, candidate tables, subject keys),
+ * hardfork city names (like "amsterdam"), or unlabeled 4-byte hex selectors.
  */
 export function renderPromptFacts(opts: {
   dossier: ForensicDossier
@@ -205,19 +255,28 @@ export function renderPromptFacts(opts: {
   const blockStr =
     brief.head.blockNumber !== undefined ? `block #${brief.head.blockNumber}` : 'the latest block'
   lines.push(
-    `Network: ${net}${isSepolia ? ' (testnet — test ETH only, not real funds)' : ''}, ${blockStr} (${brief.hardfork}).`,
+    `Network: ${net}${isSepolia ? ' (Ethereum testnet — test ETH & test tokens only, not real funds)' : ''}, ${blockStr}.`,
   )
   lines.push(`Observation: ${lead.lead}`)
 
+  const id = dossier.identity
   if (dossier.address !== undefined) {
-    lines.push(`Address: ${dossier.address}`)
+    if (id?.kind === 'token' && id.knownName !== undefined) {
+      const sym = id.symbol ?? id.knownName
+      lines.push(
+        `Subject contract: ${id.knownName} (${dossier.address}) — ${id.role ?? `${sym} ERC-20 token contract`}. IMPORTANT: this address is the ${sym} token smart contract itself, NOT a user wallet; transfers on it move ${sym} tokens, NOT ETH.`,
+      )
+    } else if (id?.role !== undefined && id.knownName !== undefined) {
+      lines.push(`Subject contract: ${id.knownName} (${dossier.address}) — ${id.role}.`)
+    } else if (id?.knownName !== undefined) {
+      lines.push(`Subject: ${id.knownName} (${dossier.address}).`)
+    } else {
+      lines.push(`Address: ${dossier.address}`)
+    }
   }
-  if (dossier.identity?.knownName !== undefined) {
-    lines.push(`Known label: ${dossier.identity.knownName}`)
-  }
-  if (dossier.identity?.ensName !== undefined) {
+  if (id?.ensName !== undefined) {
     lines.push(
-      `ENS primary name (reverse+forward verified): ${dossier.identity.ensName} (owner-set name, not an official protocol endorsement)`,
+      `ENS primary name (reverse+forward verified): ${id.ensName} (self-set by address owner, not an official protocol badge).`,
     )
   }
   if (dossier.relatedEnsNames !== undefined && dossier.relatedEnsNames.length > 0) {
@@ -259,9 +318,7 @@ export function renderPromptFacts(opts: {
       )
     } else if (s.unknownSelectors.length > 0) {
       lines.push(
-        `Unrecognized function selectors (${s.unknownSelectors.length}): ${s.unknownSelectors
-          .slice(0, 4)
-          .join(', ')}.`,
+        `Unrecognized custom function selectors (${s.unknownSelectors.length} — 4-byte method IDs, not addresses).`,
       )
     }
 
@@ -301,14 +358,30 @@ export function renderPromptFacts(opts: {
   if (dossier.inboundCalls !== undefined && dossier.inboundCalls > 0) {
     const rev = dossier.behavior?.inboundReverts ?? 0
     lines.push(
-      `Recent activity: ${dossier.inboundCalls} inbound call(s)${rev > 0 ? `, ${rev} reverted` : ''}.`,
+      `Recent activity: ${dossier.inboundCalls} inbound call(s) to this address${rev > 0 ? `, ${rev} reverted` : ''}.`,
     )
   }
+  const decimals = id?.decimals ?? dossier.probes?.decimals
+  const symbol = id?.symbol ?? dossier.probes?.symbol
   if (dossier.callPreviews !== undefined && dossier.callPreviews.length > 0) {
-    lines.push(`Observed calls: ${dossier.callPreviews.slice(0, 3).join(' | ')}.`)
+    const decodedCalls = dossier.callPreviews
+      .filter(isDecodedPreview)
+      .slice(0, 3)
+      .map((c) => formatHumanCallPreview(c, decimals, symbol))
+    const rawSelectors = dossier.callPreviews.filter((c) => !isDecodedPreview(c)).slice(0, 2)
+    if (decodedCalls.length > 0) {
+      lines.push(`Decoded calls into this contract: ${decodedCalls.join(' | ')}.`)
+    } else if (rawSelectors.length > 0) {
+      lines.push(
+        `Calls invoked an unrecognized custom function (4-byte method selector ${rawSelectors.join(', ')} — NOT a contract address or storage slot).`,
+      )
+    }
   }
   if (dossier.eventPreviews !== undefined && dossier.eventPreviews.length > 0) {
-    lines.push(`Observed events: ${dossier.eventPreviews.slice(0, 3).join(' | ')}.`)
+    const decodedEvents = dossier.eventPreviews.filter(isDecodedPreview).slice(0, 3)
+    if (decodedEvents.length > 0) {
+      lines.push(`Decoded events emitted: ${decodedEvents.join(' | ')}.`)
+    }
   }
   if (dossier.priorHypothesis !== undefined) {
     lines.push(`Earlier note on this address: ${dossier.priorHypothesis}`)
