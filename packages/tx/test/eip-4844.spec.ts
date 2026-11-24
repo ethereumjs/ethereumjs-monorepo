@@ -336,6 +336,26 @@ describe('[Tx/EIP-4844]: constructor tests - invalid scenarios', () => {
       }
     }
   })
+
+  it('rejects versioned hashes whose version byte is not exactly 0x01', () => {
+    const { common } = kzgs[0]
+    const txData = (version: number) => ({
+      type: 0x03,
+      maxFeePerBlobGas: 1n,
+      to: createZeroAddress(),
+      blobVersionedHashes: [concatBytes(new Uint8Array([version]), new Uint8Array(31))],
+    })
+
+    createBlob4844Tx(txData(0x01), { common })
+    for (const version of [0x00, 0x02, 0x10, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f]) {
+      assert.throws(
+        () => createBlob4844Tx(txData(version), { common }),
+        'does not start with KZG commitment version',
+        undefined,
+        `version byte 0x${version.toString(16).padStart(2, '0')}`,
+      )
+    }
+  })
 })
 
 describe('[Tx]: network wrapper tests', () => {
