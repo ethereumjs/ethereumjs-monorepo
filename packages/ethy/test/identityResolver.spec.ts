@@ -135,4 +135,45 @@ describe('identityResolver', () => {
     await new Promise((r) => setTimeout(r, 30))
     expect(spoofResolver.getKnownName(targetAddr)).toBeUndefined()
   })
+
+  it('supports resolveNow, getEnsName, EOA ensOnly fast path, and long ENS names (>32 chars)', async () => {
+    const targetAddr = '0x000000000000000000000000000000000000cafe'
+    const resolverAddr = '0x0000000000000000000000000000000000009999'
+    const longEns = 'this-is-a-very-long-ethereum-validator-name.eth'
+    const spine = createSpine('mainnet', 1n)
+    spine.phase = 'HEAD_FOLLOWING'
+
+    const seenCalls: string[] = []
+    const padAddr = (a: string) => `0x${'00'.repeat(12)}${a.replace(/^0x/, '')}`
+    const sandbox = {
+      runEthCall: async (tx: unknown) => {
+        const obj = tx as { to: string; data: string; gas: string }
+        seenCalls.push(obj.data.slice(0, 10))
+        if (obj.data.startsWith('0x0178b8bf')) return { result: padAddr(resolverAddr) }
+        if (obj.data.startsWith('0x691f3431')) {
+          return { result: bytesToHex(encodeAbiString(longEns)) }
+        }
+        if (obj.data.startsWith('0x3b3b57de')) return { result: padAddr(targetAddr) }
+        return { error: { code: 3, message: 'revert' } }
+      },
+      runEstimateGas: async () => ({ result: '0x0' }),
+      runCreateAccessList: async () => ({ result: {} }),
+      runSimulateCall: async () => {
+        throw new Error('unused')
+      },
+    }
+
+    const resolver = new IdentityResolver({
+      chain: Mainnet,
+      sandbox: sandbox as never,
+      spine,
+    })
+    const hit = await resolver.resolveNow(targetAddr, 50n, { ensOnly: true })
+    expect(hit.ensName).toBe(longEns)
+    expect(hit.knownName).toBe(longEns)
+    expect(resolver.getEnsName(targetAddr)).toBe(longEns)
+    // ensOnly must skip ERC-20 name() (0x06fdde03) and symbol() (0x95d89b41)
+    expect(seenCalls).not.toContain('0x06fdde03')
+    expect(seenCalls).not.toContain('0x95d89b41')
+  })
 })
