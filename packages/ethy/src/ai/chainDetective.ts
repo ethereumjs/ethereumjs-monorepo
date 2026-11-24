@@ -437,13 +437,15 @@ export class ChainDetectiveNarrator {
       dossierNoveltyBoost: (addr) => this.dossierStore?.noveltyBoost(addr) ?? 1,
     })
     const blockNumber = snap.latestBlockNumber ?? '0'
-    const dossier = buildForensicDossier({
+    const dossier = await buildForensicDossier({
       lead,
       economy: this.economy,
       stateManager: this.ctx.stateManager,
       chain: this.ctx.chain,
       blockNumber,
       store: this.dossierStore,
+      sandbox: this.ctx.sandbox,
+      spine,
     })
     const startedMs = Date.now()
     const llmCalls: AiRunTraceRecord['llmCalls'] = []

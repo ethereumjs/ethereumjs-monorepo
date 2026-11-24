@@ -170,6 +170,22 @@ export class ContractDossierStore {
     return this.get(address) === undefined ? 1.45 : 1
   }
 
+  mergeProbes(address: string, blockNumber: string, probes: ContractDossierProbes): void {
+    const key = address.toLowerCase()
+    const row = this.entries.get(key)
+    if (row === undefined) return
+    row.probes = {
+      ...row.probes,
+      ...probes,
+      probedAtBlock: blockNumber,
+      miss: { ...row.probes?.miss, ...probes.miss },
+    }
+    row.lastSeenBlock = blockNumber
+    this.entries.set(key, row)
+    this.dirty = true
+    this.scheduleFlush()
+  }
+
   noteFeatured(address: string, hypothesis?: string, modelLabel?: string): void {
     const key = address.toLowerCase()
     const row = this.entries.get(key)

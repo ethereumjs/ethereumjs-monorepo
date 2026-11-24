@@ -77,6 +77,7 @@ async function runLive(): Promise<void> {
       if (r.story !== undefined) console.log(`  story:    ${r.story}`)
     }
     if (results.some((r) => !r.validJSON)) process.exit(1)
+    console.log('Tip: after a live node run, inspect traces with npm run ai:inspect -- <dataDir> [network]')
   } finally {
     await runner.stop()
   }

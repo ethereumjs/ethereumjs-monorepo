@@ -1,11 +1,17 @@
 import type { ChainConfig } from '@ethereumjs/common'
 import type { FlatStateManager } from '@ethereumjs/statemanager'
 
-import type { ContractDossierStore } from '../contracts/contractDossierStore.ts'
+import { runDossierViewProbes } from '../contracts/contractDossierProbes.ts'
+import type {
+  ContractDossierProbes,
+  ContractDossierStore,
+} from '../contracts/contractDossierStore.ts'
 import { scanBytecodeForensics } from '../contracts/contractForensics.ts'
 import { buildCodeLookup, resolveCodeForAddress } from '../contracts/contractIntelligence.ts'
 import type { ETHEconomyDataManager } from '../economy/economyDataManager.ts'
 import type { EthySandbox } from '../evm/sandbox.ts'
+import type { EthySpine } from '../spine/types.ts'
+import type { InvestigationContext } from './investigationTools.ts'
 import type { StoryLead } from './storyDirector.ts'
 
 export type ForensicDossier = {
@@ -25,17 +31,20 @@ export type ForensicDossier = {
     valueTxCount: number
   }
   implStatic?: ReturnType<typeof scanBytecodeForensics>
+  probes?: ContractDossierProbes
   dice?: { roll?: number; candidates?: StoryLead['beatCandidates'] }
 }
 
-export function buildForensicDossier(opts: {
+export async function buildForensicDossier(opts: {
   lead: StoryLead
   economy: ETHEconomyDataManager
   stateManager: FlatStateManager
   chain: ChainConfig
   blockNumber: string
   store?: ContractDossierStore
-}): ForensicDossier {
+  sandbox?: EthySandbox
+  spine?: EthySpine
+}): Promise<ForensicDossier> {
   const lead = opts.lead
   const dossier: ForensicDossier = {
     beat: lead.beat,
@@ -84,6 +93,27 @@ export function buildForensicDossier(opts: {
 
   const prior = opts.store?.get(addr)?.aiNotes?.hypothesis
   if (prior !== undefined) dossier.priorHypothesis = prior
+
+  if (dossier.static !== undefined && opts.sandbox !== undefined && opts.spine !== undefined) {
+    const ctx: InvestigationContext = {
+      economy: opts.economy,
+      stateManager: opts.stateManager,
+      chain: opts.chain,
+      sandbox: opts.sandbox,
+      spine: opts.spine,
+    }
+    const probes = await runDossierViewProbes({
+      ctx,
+      address: addr,
+      scan: dossier.static,
+      blockNumber: opts.blockNumber,
+      store: opts.store,
+    })
+    if (probes !== undefined) dossier.probes = probes
+  } else {
+    const cachedProbes = opts.store?.get(addr)?.probes
+    if (cachedProbes !== undefined) dossier.probes = cachedProbes
+  }
 
   return dossier
 }

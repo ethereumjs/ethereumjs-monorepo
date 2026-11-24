@@ -1,6 +1,6 @@
 # WP-15: Deep Contract Forensics, Guided-Randomness Storytelling, Persistent Contract Dossiers & Grounded AI Observability
 
-- **Status:** `PLANNED`
+- **Status:** `DONE`
 - **Dependencies:** `WP-07d` (`DONE`), `WP-10b` (`DONE`), `WP-10c` (`DONE`), `WP-10d` (`DONE`), `WP-12` (`DONE`)
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5

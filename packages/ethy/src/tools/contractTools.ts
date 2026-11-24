@@ -100,6 +100,15 @@ export function contractMicroscopeWidget(
     if (dossier.compilerHint !== undefined) {
       preface.push({ key: 'Compiler', value: dossier.compilerHint })
     }
+    if (dossier.probes?.name !== undefined) {
+      preface.push({ key: 'Token name', value: dossier.probes.name })
+    }
+    if (dossier.probes?.symbol !== undefined) {
+      preface.push({ key: 'Symbol', value: dossier.probes.symbol })
+    }
+    if (dossier.probes?.owner !== undefined) {
+      preface.push({ key: 'Owner (probe)', value: shortAddress(dossier.probes.owner) })
+    }
   }
   if (profile.fingerprint !== undefined) {
     preface.push({ key: 'Bytecode', value: `${profile.fingerprint.bytecodeSize} bytes` })
