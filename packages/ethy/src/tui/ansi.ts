@@ -4,11 +4,16 @@ export const DIM = '\x1b[2m'
 export const UNDERLINE = '\x1b[4m'
 
 export const FG = {
+  black: '\x1b[30m',
   cyan: '\x1b[36m',
   green: '\x1b[32m',
   yellow: '\x1b[33m',
   magenta: '\x1b[35m',
   red: '\x1b[31m',
+} as const
+
+export const BG = {
+  cyan: '\x1b[46m',
 } as const
 
 /** Alternate screen buffer on / off. */

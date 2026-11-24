@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import { createSpine } from '../src/spine/createSpine.ts'
 import type { AiOverviewSections, ChainDispatchCard } from '../src/spine/types.ts'
-import { visibleWidth } from '../src/tui/ansi.ts'
+import { BG, FG, visibleWidth } from '../src/tui/ansi.ts'
 import { renderStoryUIComponent } from '../src/tui/components/StoryUIComponent.ts'
 import { renderAiOverviewSections } from '../src/tui/interactionContent.ts'
 
@@ -103,6 +103,9 @@ describe('story TUI rendering', () => {
       16,
     )
     expect(overviewLines[1]).toContain('Validator says hi from home staking')
+    expect(overviewLines[1]).toContain(BG.cyan)
+    expect(overviewLines[1]).toContain(FG.black)
+    expect(visibleWidth(overviewLines[1]!)).toBeLessThanOrEqual(60)
     const footer = overviewLines[overviewLines.length - 1] ?? ''
     expect(footer).toContain('#21402811 · qwen3.5')
     expect(footer).toContain('/story new')
@@ -113,6 +116,8 @@ describe('story TUI rendering', () => {
 
     const componentLines = renderStoryUIComponent(snapCard, 60, 16)
     expect(componentLines[0]).toContain('Validator says hi from home staking')
+    expect(componentLines[0]).toContain(BG.cyan)
+    expect(componentLines[0]).toContain(FG.black)
     expect(componentLines[componentLines.length - 1]).toContain('#21402811 · qwen3.5')
     expect(componentLines.join('\n')).not.toContain('[SNAP')
     expect(componentLines.join('\n')).not.toContain('│ Lens')

@@ -8,7 +8,7 @@ import type { InteractionPage } from '../spine/types.ts'
 import type { CapabilityId, TuiViewState } from '../spine/types.ts'
 import { DOMAIN_ORDER } from '../spine/types.ts'
 import { helpDomainLabel } from '../tools/help.ts'
-import { BOLD, DIM, RESET, visibleWidth } from './ansi.ts'
+import { BG, BOLD, DIM, FG, RESET, padVisible, visibleWidth } from './ansi.ts'
 import { capabilityMark } from './capabilityMark.ts'
 import { renderAiOnboardingUIComponent } from './components/AiOnboardingUIComponent.ts'
 import { renderDebugPageUIComponent } from './components/DebugPageUIComponent.ts'
@@ -293,8 +293,10 @@ export function renderAiOverviewSections(
     const blocks: string[] = []
     const topPad = 1
     const bodyBudget = Math.max(1, innerLines - topPad - 1)
-    for (const ln of wrapSectionText(card.headline, wrapW)) {
-      blocks.push(`${pad}${BOLD}${ln}${RESET}`)
+    const headlineInnerW = Math.max(6, wrapW - 2)
+    for (const ln of wrapSectionText(card.headline, headlineInnerW)) {
+      const padded = padVisible(` ${ln} `, wrapW)
+      blocks.push(`${pad}${BG.cyan}${FG.black}${BOLD}${padded}${RESET}`)
     }
     blocks.push('')
     const paras = card.body.split(/\n\n+/).filter((p) => p.trim().length > 0)

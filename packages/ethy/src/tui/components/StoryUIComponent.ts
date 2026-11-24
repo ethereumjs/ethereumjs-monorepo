@@ -1,5 +1,5 @@
 import type { ChainDispatchCard } from '../../spine/types.ts'
-import { BOLD, DIM, RESET, visibleWidth } from '../ansi.ts'
+import { BG, BOLD, DIM, FG, RESET, padVisible, visibleWidth } from '../ansi.ts'
 import { fixedLine } from '../layout.ts'
 
 function wrapPlain(text: string, wrapW: number): string[] {
@@ -45,8 +45,10 @@ export function renderStoryUIComponent(
     budget -= 1
   }
 
-  for (const ln of wrapPlain(story.headline, wrapW)) {
-    push(`${BOLD}${ln}${RESET}`)
+  const headlineInnerW = Math.max(6, wrapW - 2)
+  for (const ln of wrapPlain(story.headline, headlineInnerW)) {
+    const padded = padVisible(` ${ln} `, wrapW)
+    push(`${' '.repeat(pad)}${BG.cyan}${FG.black}${BOLD}${padded}${RESET}`)
   }
   push('')
 
