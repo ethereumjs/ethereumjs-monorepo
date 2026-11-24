@@ -344,6 +344,13 @@ Every Work Package delivers a **runnable, observable, and live-testable incremen
                                           │        Fast Ecosystem BAL Stack         │
                                           │        (util/statemanager/vm + Ethy     │
                                           │        Async Lookup, bal-tail & Swarm)  │
+                                          └───────────────────┬─────────────────────┘
+                                                              │
+                                                              ▼ (Deep Forensics & Grounded AI)
+                                          ┌─────────────────────────────────────────┐
+                                          │ WP-15: Deep Contract Forensics, Guided- │
+                                          │        Randomness Storytelling, Local   │
+                                          │        Dossier DB & AI Observability    │
                                           └─────────────────────────────────────────┘
 ```
 
