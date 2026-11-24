@@ -78,12 +78,6 @@ export function renderStoryUIComponent(
     push('')
   }
 
-  if (story.curiosityQuestion !== undefined && budget > 0) {
-    for (const ln of wrapPlain(`› Ask: "${story.curiosityQuestion}"`, wrapW)) {
-      push(`${DIM}${ln}${RESET}`)
-    }
-  }
-
   const metaParts: string[] = []
   if (story.blockNumber !== undefined) metaParts.push(`#${story.blockNumber}`)
   if (story.deterministic === true) {

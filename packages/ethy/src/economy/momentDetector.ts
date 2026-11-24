@@ -177,26 +177,19 @@ function tryEip7702(
   ts: number,
   formatAddress?: (address: string) => string,
 ): BlockMoment[] {
-  if (record.txTypeSplit.setCode > 0) {
-    return [
-      {
-        id: `${blockKey}:eip7702:0`,
-        blockNumber: blockKey,
-        timestampSec: ts,
-        kind: 'eip7702',
-        badge: BADGE.eip7702,
-        headline: clampHeadline(
-          `${record.txTypeSplit.setCode} EIP-7702 smart-account delegation tx(s) in block`,
-        ),
-      },
-    ]
-  }
+  const txCount = record.txTypeSplit.setCode
   if (bal !== undefined) {
     for (let i = 0; i < bal.length; i++) {
       const acct = bal[i]!
       for (const ch of acct.codeChanges) {
-        const code = ch.newCode.toLowerCase()
-        if (code.startsWith('0xef0100') || code.startsWith('ef0100')) {
+        const raw = ch.newCode.toLowerCase()
+        const hex = raw.startsWith('0x') ? raw.slice(2) : raw
+        if (hex.startsWith('ef0100')) {
+          const eoaLabel = displayAddr(acct.address, formatAddress)
+          const targetAddr = hex.length >= 46 ? `0x${hex.slice(6, 46)}` : undefined
+          const targetSuffix =
+            targetAddr !== undefined ? ` to ${displayAddr(targetAddr, formatAddress)}` : ''
+          const countSuffix = txCount > 1 ? ` (${txCount} txs in block)` : ''
           return [
             {
               id: `${blockKey}:eip7702:${i}`,
@@ -205,14 +198,26 @@ function tryEip7702(
               kind: 'eip7702',
               badge: BADGE.eip7702,
               headline: clampHeadline(
-                `Account ${displayAddr(acct.address, formatAddress)} activated EIP-7702 delegation`,
+                `Account ${eoaLabel} delegated via EIP-7702${targetSuffix}${countSuffix}`,
               ),
-              address: acct.address.toLowerCase(),
+              address: targetAddr ?? acct.address.toLowerCase(),
             },
           ]
         }
       }
     }
+  }
+  if (txCount > 0) {
+    return [
+      {
+        id: `${blockKey}:eip7702:0`,
+        blockNumber: blockKey,
+        timestampSec: ts,
+        kind: 'eip7702',
+        badge: BADGE.eip7702,
+        headline: clampHeadline(`${txCount} EIP-7702 smart-account delegation tx(s) in block`),
+      },
+    ]
   }
   return []
 }

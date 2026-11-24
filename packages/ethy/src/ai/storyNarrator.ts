@@ -16,9 +16,9 @@ import { directStory, parseLensOverride, recentLoreIds } from './storyDirector.t
 const HONEST_RULES = `Ground rules:
 1) Write like a warm, sharp Ethereum observer — never robotic or technocratic. Avoid dry log phrasing like "initiated a transaction" or "triggered 34 inbound calls".
 2) NEVER say "the dossier", "the JSON", "the input", "the data shows", or mention scores, weights, or probabilities.
-3) Stick strictly to the numbers, units, addresses, ENS names, and labels in the facts below — never convert token amounts (like USDC) into ETH, never call a token contract a user wallet, and never call a 4-byte method selector a contract address.
-4) Frame motives or risks calmly as honest hypotheses ("One plausible reading…", "Could this be…"). On Sepolia, remember it is test ETH/tokens, not real money.
-5) This is a command-line terminal, NOT a web app — never tell the reader to "Click" anything. Plain text only (no ** bold, no backticks, no [END OF REPORT]).`
+3) Stick strictly to the numbers, units, addresses, ENS names, and labels in the facts below — never invent addresses, users, counts, or amounts, never convert token amounts (like USDC) into ETH, never call a token contract a user wallet, and never call a 4-byte method selector a contract address.
+4) Lead with concrete on-chain facts (who, what contract/token/amount, what actually happened). NEVER claim phishing, scams, or exploits unless direct on-chain evidence is present in the facts. On Sepolia, remember it is test ETH/tokens, not real money.
+5) Plain text only (no ** bold, no backticks, no [END OF REPORT]). Never put a full 42-character 0x address in the headline — use the contract/ENS name or short form like 0x1234…abcd.`
 
 const LENS_VOICE: Record<StoryLens, string> = {
   detective: 'Tell the concrete human story behind the calls, wallets, or contract behavior.',
@@ -50,18 +50,17 @@ ${HONEST_RULES}
 
 Tone: Light, playful, human, observant — a quick street-level note about a quirky on-chain find (a calldata message, validator graffiti, a veteran wallet milestone, or a brand-new wallet). Dry humor is welcome when the artifact invites it; stay factual and brief.
 
-Write a short snap (2-3 crisp sentences total):
-HEADLINE: <=72 chars, punchy plain text
-STORY: 2-3 lively sentences directly about what just happened on-chain
-QUESTION: one short curious question (<=12 words) the reader might ask next`
+Write a short snap (2-3 crisp sentences total) using BOTH exact labels below:
+HEADLINE: <=64 chars, punchy plain text
+STORY: 2-3 lively sentences directly about what just happened on-chain`
   }
 
   const loreSection =
     loreCards.length > 0
-      ? `\nBackground context (only historical facts you may cite — skip if not directly relevant):\n${loreCards
+      ? `\nBackground context (optional protocol context — NEVER treat as an accusation about this block):\n${loreCards
           .map(
             (c) =>
-              `[${c.id}] ${c.title}\nMechanism: ${c.protocolMechanism}\nEcho: ${c.historicalEcho}\nEdge: ${c.attackOrEdgeScenario}`,
+              `[${c.id}] ${c.title}\nMechanism: ${c.protocolMechanism}\nContext: ${c.historicalEcho}`,
           )
           .join('\n\n')}\n`
       : ''
@@ -72,11 +71,10 @@ ${HONEST_RULES}
 
 Lens: ${lens} — ${LENS_VOICE[lens]}
 ${loreSection}
-Write compact plain-text prose that fits cleanly in a terminal box (${lengthHint}):
-HEADLINE: <=72 chars, plain text, no asterisks
-STORY: 3-4 crisp sentences directly about what is happening on-chain right now
-HYPOTHESIS: 1-2 short, plain-English sentences on why this matters or what to watch
-QUESTION: one short curious question (<=12 words) the reader might ask next`
+Write compact plain-text prose that fits cleanly in a terminal box (${lengthHint}) using the exact labels below:
+HEADLINE: <=64 chars, punchy plain text, no full 42-char hex addresses
+STORY: 3-4 crisp sentences directly explaining the concrete facts happening on-chain right now
+HYPOTHESIS: 1-2 short, calm plain-English sentences on why this matters or what it likely is`
 }
 
 export function buildScoutSystem(toolList: string): string {

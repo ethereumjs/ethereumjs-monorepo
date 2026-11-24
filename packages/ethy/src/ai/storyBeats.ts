@@ -39,10 +39,10 @@ const TOP_K = 8
 
 // cspell:ignore erigon prysm teku grandine openethereum flashbots beaverbuild bloxroute jetbldr
 const ROUTINE_CLIENT_GRAFFITI_RE =
-  /^(?:geth|erigon|reth|besu|nethermind|nimbus|prysm|lighthouse|teku|lodestar|grandine|ethereumjs|parity|openethereum)(?:[\s/_-]|$)/i
+  /^(?:geth|erigon|reth|besu|nethermind|nimbus|prysm|lighthouse|teku|lodestar|grandine|ethereumjs|parity|openethereum)(?:[\s/._-]|go\d|v\d|$)/i
 
 const ROUTINE_BUILDER_GRAFFITI_RE =
-  /(?:^|[\s/_-])(?:builder|flashbots|beaverbuild|titan|rsync|ultrasound|bloxroute|mev-boost|quasar|eden|manifold|jetbldr)(?:[\s/_-]|$|\d)/i
+  /(?:^|[\s/._-])(?:builder|relay|mev|flashbots|beaverbuild|titan|rsync|ultrasound|bloxroute|mev-boost|quasar|eden|manifold|jetbldr|helix)(?:[\s/._-]|$|\d)/i
 
 /**
  * True when a call/event preview is human-decoded (e.g. `transfer(to: ..., amount: ...)`)
@@ -55,27 +55,26 @@ export function isDecodedPreview(preview: string): boolean {
 }
 
 /**
- * True when validator extraData looks like a human message or .eth identity rather than
- * a routine client version banner, generic block-builder server ID, or raw hex string.
+ * True when validator extraData looks like a genuine multi-word human message rather than
+ * a routine client version banner, generic block-builder / relay ID (including `builder.*.eth`),
+ * or raw hex string.
  */
 export function isInterestingProposerGraffiti(raw?: string): boolean {
   if (raw === undefined) return false
   const trimmed = raw.trim()
-  if (trimmed.length < 3 || trimmed.length > 64) return false
+  if (trimmed.length < 6 || trimmed.length > 64) return false
   if (ROUTINE_CLIENT_GRAFFITI_RE.test(trimmed)) return false
+  if (ROUTINE_BUILDER_GRAFFITI_RE.test(trimmed)) return false
   if (/^(?:0x)?[0-9a-f]{6,}$/i.test(trimmed)) return false
   if (!/[a-zA-Z]/.test(trimmed)) return false
-  // Keep .eth identities (e.g. builder.alice.eth) and multi-word human messages
-  if (trimmed.toLowerCase().includes('.eth') || /\s/.test(trimmed)) return true
-  if (ROUTINE_BUILDER_GRAFFITI_RE.test(trimmed)) return false
-  return true
+  // Require a multi-word human message — single-token hostnames/tags rarely make a real story
+  return /\s/.test(trimmed)
 }
 
 function lensForBeat(beat: StoryBeatKind, signalKind?: string): StoryLens {
-  if (beat === 'protocol_feature_spot' && signalKind === 'delegation_surge') return 'security'
   if (beat === 'storage_slot_pulse') return 'detective'
   if (beat === 'tx_or_address_oddity') return 'lore'
-  if (signalKind === 'delegation_surge' || signalKind === 'l2_blob_pressure') return 'security'
+  if (signalKind === 'l2_blob_pressure') return 'economics'
   if (signalKind === 'congestion_pressure' || signalKind === 'contract_surge') return 'economics'
   return 'detective'
 }
@@ -88,16 +87,19 @@ function buildContractCandidates(brief: StoryBrief, limit: number): StoryBeatCan
     const hasDecodedCalls = (row.callPreviews ?? []).some(isDecodedPreview)
     const hasDecodedEvents = (row.eventPreviews ?? []).some(isDecodedPreview)
     const hasArchetype = row.archetype !== undefined && row.archetype !== 'Contract'
+    const hasSubstance = hasKnownName || hasProxy || hasDecodedCalls || hasDecodedEvents
     const richness =
       (hasKnownName ? 16 : 0) +
       (hasProxy ? 10 : 0) +
       (hasDecodedCalls ? 12 : 0) +
       (hasDecodedEvents ? 8 : 0) +
-      (hasArchetype ? 8 : 0)
-    // Rich contracts lead the deep-dive lane; bare anonymous contracts (even with raw 4-byte
-    // selectors like 0xd36b4ff6) stay low so decoded protocols, notes, and moments win naturally.
-    const score =
-      richness > 0 ? Math.min(95, Math.max(50, 72 - i * 4 + richness)) : Math.max(18, 28 - i * 2)
+      (hasArchetype ? 6 : 0)
+    // Only contracts with concrete story substance (known identity, proxy, or decoded calls/events)
+    // lead the deep-dive lane; anonymous contracts with only an archetype or raw 4-byte hex
+    // selectors stay below the novelty-boost threshold (<40) so real stories win naturally.
+    const score = hasSubstance
+      ? Math.min(95, Math.max(54, 72 - i * 4 + richness))
+      : Math.max(18, (hasArchetype ? 32 : 24) - i * 2)
     return {
       beat: 'contract_deep_dive' as const,
       format: 'field_note' as const,
@@ -139,12 +141,16 @@ function momentBaseScore(moment: StoryBriefMoment, idx: number): number {
       return isMachineStamp ? Math.max(46, 62 - decay) : Math.max(72, 96 - decay)
     }
     case 'eip7702':
+      // Rich BAL-resolved EIP-7702 moments carry a concrete EOA/delegate address; bare tx-count
+      // summaries lack concrete context and stay below novelty boost (<40) so richer stories win.
+      return moment.address !== undefined ? Math.max(54, 78 - decay) : Math.max(24, 34 - decay)
     case 'blob_anchor':
       return Math.max(55, 84 - decay)
     case 'choreography':
-      // Multi-account calls with a decoded function name or venue badge are rich; generic call() paths stay modest
+      // Multi-account calls with a decoded function name or venue badge are rich; undecoded
+      // generic `call() path` flows stay below novelty boost (<40) so they don't flood the box.
       return moment.headline.includes('· call() path')
-        ? Math.max(34, 48 - decay)
+        ? Math.max(22, 32 - decay)
         : Math.max(52, 82 - decay)
     case 'whale':
     case 'revert':
@@ -192,7 +198,7 @@ function buildProposerGraffitiCandidate(brief: StoryBrief): StoryBeatCandidate[]
     {
       beat: 'tx_or_address_oddity',
       format: 'snap',
-      baseScore: 88,
+      baseScore: 44,
       subjectKey: `proposer_graffiti:${msg.toLowerCase()}`,
       lead: `Validator stamped block ${blockLabel} with graffiti: "${msg}"`,
       lens: 'lore',

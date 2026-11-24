@@ -49,15 +49,36 @@ STORY: score 52 on l2_blob_pressure anomaly.`
   })
 
   it('strips markdown bold, [END OF REPORT], and accidental dossier meta-phrases', () => {
-    const raw = `HEADLINE: **0.3 KB contract deployed**
-STORY: The dossier explicitly states that \`0xabc\` was deployed in the dossier. [END OF REPORT]
-QUESTION: Click the transfer to see who owns the wallet?`
+    const raw = `**HEADLINE: Validator graffiti finds alice.eth**
+
+**STORY:** The dossier explicitly states that \`0xabc\` was deployed in the dossier. [END OF REPORT]
+
+**QUESTION:** Click the transfer to see who owns the wallet?`
     const p = parseStoryOutput(raw)!
-    expect(p.headline).toBe('0.3 KB contract deployed')
-    expect(p.story).not.toContain('**')
+    expect(p.headline).toBe('Validator graffiti finds alice.eth')
+    expect(p.headline).not.toContain('*')
+    expect(p.story).not.toContain('*')
     expect(p.story).not.toContain('`')
     expect(p.story).not.toMatch(/dossier/i)
     expect(p.story).not.toMatch(/END OF REPORT/i)
     expect(p.curiosityQuestion).toBe('Check the transfer to see who owns the wallet?')
+  })
+
+  it('recovers story body when STORY: label is omitted after HEADLINE: and shortens 42-char hex in headlines', () => {
+    const raw = `HEADLINE: Contract 0x5263121df28f91ec3c2773814a7c798c0849e148 moves USDC
+
+Three incoming calls moved 1.187 USDC tokens across three accounts on Sepolia.
+
+HYPOTHESIS: Small test amounts look like routine routing checks.`
+    const p = parseStoryOutput(raw)!
+    expect(p.headline).toBe('Contract 0x5263…e148 moves USDC')
+    expect(p.story).toContain('Three incoming calls moved 1.187 USDC')
+    expect(p.angle).toContain('routine routing checks')
+  })
+
+  it('rejects empty-body HEADLINE + HYPOTHESIS output instead of rendering an empty story', () => {
+    const raw = `HEADLINE: Bare headline only
+HYPOTHESIS: Something happened.`
+    expect(parseStoryOutput(raw)).toBeUndefined()
   })
 })

@@ -22,16 +22,17 @@ const sampleCard: ChainDispatchCard = {
 }
 
 describe('story TUI rendering', () => {
-  it('top-aligns editorial AI column with blank pad row first', () => {
+  it('top-aligns headline banner on row 0 to match sibling boxes and omits Ask line', () => {
     const spine = createSpine('mainnet', 1n)
     spine.economy = { hasBlocks: true, topContracts: [], recentBlocks: [] }
     const sections: AiOverviewSections = { dispatches: [sampleCard], storyIndex: 1, storyCount: 6 }
     const lines = renderAiOverviewSections(spine, sections, 60, 20)
-    expect(lines[0]).toBe('')
-    expect(lines[1]?.trim().length).toBeGreaterThan(0)
+    expect(lines[0]).toContain('Blob lane warms up')
+    expect(lines[0]).toContain(BG.cyan)
+    expect(lines.join('\n')).not.toContain('› Ask:')
   })
 
-  it('omits clipped Ask line and never prints /story full or overflow nag on short terminals', () => {
+  it('never prints Ask, /story full, or overflow nag on short terminals', () => {
     const spine = createSpine('mainnet', 1n)
     spine.economy = { hasBlocks: true, topContracts: [], recentBlocks: [] }
     const longBody = Array.from(
@@ -48,7 +49,7 @@ describe('story TUI rendering', () => {
     expect(joined).not.toContain('› Ask:')
   })
 
-  it('StoryUIComponent lines respect innerWidth and wrap long Ask questions without clipping sections', () => {
+  it('StoryUIComponent lines respect innerWidth and omit Ask line cleanly', () => {
     const innerWidth = 60
     const richCard: ChainDispatchCard = {
       ...sampleCard,
@@ -66,7 +67,7 @@ describe('story TUI rendering', () => {
     const joined = lines.join('\n')
     expect(joined).toContain('Observed:')
     expect(joined).toContain('Echo')
-    expect(joined).toContain('ten minutes?')
+    expect(joined).not.toContain('› Ask:')
   })
 
   it('renders /story new without /story full when story fits cleanly in the AI box', () => {
@@ -102,10 +103,10 @@ describe('story TUI rendering', () => {
       60,
       16,
     )
-    expect(overviewLines[1]).toContain('Validator says hi from home staking')
-    expect(overviewLines[1]).toContain(BG.cyan)
-    expect(overviewLines[1]).toContain(FG.black)
-    expect(visibleWidth(overviewLines[1]!)).toBeLessThanOrEqual(60)
+    expect(overviewLines[0]).toContain('Validator says hi from home staking')
+    expect(overviewLines[0]).toContain(BG.cyan)
+    expect(overviewLines[0]).toContain(FG.black)
+    expect(visibleWidth(overviewLines[0]!)).toBeLessThanOrEqual(60)
     const footer = overviewLines[overviewLines.length - 1] ?? ''
     expect(footer).toContain('#21402811 · qwen3.5')
     expect(footer).toContain('/story new')

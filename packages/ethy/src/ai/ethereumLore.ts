@@ -25,14 +25,14 @@ export const ETHEREUM_LORE_CARDS: readonly EthereumLoreCard[] = [
   },
   {
     id: 'eip7702_delegation_lens',
-    tags: ['delegation_surge', 'eip7702', 'security', 'DELEGATECALL'],
+    tags: ['delegation_surge', 'eip7702', 'DELEGATECALL'],
     title: 'EIP-7702 EOA delegation',
     protocolMechanism:
-      'Pectra (2025) lets an EOA temporarily point its code at a delegate (`0xef0100…`), enabling smart-wallet behavior in one signature.',
+      'Pectra (2025) lets an ordinary EOA point its code to a delegate contract (`0xef0100…`) via a signed authorization, unlocking batched calls and sponsored gas.',
     historicalEcho:
-      'EIP-7702 was designed so wallets could upgrade without deploying new contracts; the same opcode pattern can appear in phishing flows.',
+      'EIP-7702 brings smart-wallet UX (batching, session keys, gas sponsorship) directly to existing EOAs without migrating funds to a new address.',
     attackOrEdgeScenario:
-      'One plausible attack: trick a user into signing a delegation to attacker bytecode that drains tokens on the next call — honest wallets use audited delegates.',
+      'Delegations depend on the chosen delegate contract: standard wallet delegates add convenience, so verifying which contract address an EOA delegated to matters.',
   },
   {
     id: 'delegatecall_proxy_risk',
@@ -58,14 +58,14 @@ export const ETHEREUM_LORE_CARDS: readonly EthereumLoreCard[] = [
   },
   {
     id: 'choreography_flash_composability',
-    tags: ['choreography', 'whale_or_flow', 'security'],
+    tags: ['choreography', 'whale_or_flow'],
     title: 'Single-tx composability',
     protocolMechanism:
-      'Routers, flash loans, and DEX paths chain many calls in one transaction — money moves as atomic building blocks.',
+      'Routers, aggregators, and account-abstraction bundles chain calls across multiple contracts in a single atomic transaction.',
     historicalEcho:
-      'bZx (2020) and Euler (2023) showed how flash-loan + oracle manipulation composes in one block.',
+      'Atomic composability is Ethereum’s signature pattern: a single swap or smart-wallet batch often touches a router, pools, and token contracts together.',
     attackOrEdgeScenario:
-      'Multi-account flows in one tx can be innocent arbitrage or an exploit rehearsal — watch oracle reads and liquidations.',
+      'Multi-account transactions are routinely DEX routing, batch settlement, or smart-wallet execution; reverts or large value swings mark the unusual ones.',
   },
   {
     id: 'eip1559_fee_auction',

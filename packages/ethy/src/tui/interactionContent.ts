@@ -291,8 +291,7 @@ export function renderAiOverviewSections(
     const wrapW = Math.max(8, innerWidth - padCols * 2)
     const pad = ' '.repeat(padCols)
     const blocks: string[] = []
-    const topPad = 1
-    const bodyBudget = Math.max(1, innerLines - topPad - 1)
+    const topPad = 0
     const headlineInnerW = Math.max(6, wrapW - 2)
     for (const ln of wrapSectionText(card.headline, headlineInnerW)) {
       const padded = padVisible(` ${ln} `, wrapW)
@@ -318,15 +317,6 @@ export function renderAiOverviewSections(
         blocks.push(`${pad}${DIM}│${RESET} ${ln}`)
       }
       blocks.push('')
-    }
-    if (card.curiosityQuestion !== undefined) {
-      const askLines = wrapSectionText(`› Ask: "${card.curiosityQuestion}"`, wrapW)
-      // Only include the follow-up question when it fits completely above the footer row
-      if (blocks.length + askLines.length <= bodyBudget) {
-        for (const ln of askLines) {
-          blocks.push(`${pad}${DIM}${ln}${RESET}`)
-        }
-      }
     }
     const footerRow = buildStoryFooterRow(pad, wrapW, '› /story new', storyMetaFooter(card))
     let used = 0

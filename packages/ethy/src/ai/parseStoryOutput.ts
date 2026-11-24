@@ -28,7 +28,11 @@ function stripMarkdownFences(text: string): string {
 }
 
 const SECTION_RE =
-  /(?:^|\n)\s*(?:#{1,3}\s*)?\*{0,2}(HEADLINE|STORY|ANGLE|HYPOTHESIS|CURIOSITY|QUESTION|POINTER|COMMAND)\*{0,2}\s*:?\s*/gi
+  /(?:^|\n)\s*(?:#{1,3}\s*)?\*{0,2}(HEADLINE|STORY|ANGLE|HYPOTHESIS|CURIOSITY|QUESTION|POINTER|COMMAND)\*{0,2}\s*:?\s*\*{0,2}\s*/gi
+
+function shortenHexAddresses(text: string): string {
+  return text.replace(/0x[0-9a-fA-F]{40}\b/g, (addr) => `${addr.slice(0, 6)}…${addr.slice(-4)}`)
+}
 
 function parseSectioned(raw: string): Partial<ParsedStory> | undefined {
   const text = stripMarkdownFences(stripThinkingBlocks(raw))
@@ -41,13 +45,18 @@ function parseSectioned(raw: string): Partial<ParsedStory> | undefined {
     const end = i + 1 < matches.length ? matches[i + 1]!.index! : text.length
     parts[key] = text.slice(start, end).trim()
   }
-  const headline = parts.HEADLINE?.split('\n')[0]?.trim() ?? ''
-  const story = parts.STORY ?? ''
-  if (headline.length === 0 && story.length === 0) return undefined
+  const headlineBlock = parts.HEADLINE ?? ''
+  const nlIdx = headlineBlock.indexOf('\n')
+  const headline = (nlIdx >= 0 ? headlineBlock.slice(0, nlIdx) : headlineBlock).trim()
+  // Recover body prose when the model omits the `STORY:` label after `HEADLINE:`
+  const headlineTrailingBody = nlIdx >= 0 ? headlineBlock.slice(nlIdx + 1).trim() : ''
+  const story =
+    parts.STORY !== undefined && parts.STORY.length > 0 ? parts.STORY : headlineTrailingBody
+  if (headline.length === 0 || story.length === 0) return undefined
   const angle = parts.ANGLE ?? parts.HYPOTHESIS
   const curiosity = parts.QUESTION ?? parts.CURIOSITY ?? parts.POINTER
   return {
-    headline: headline.slice(0, 84),
+    headline: shortenHexAddresses(headline).slice(0, 84),
     story,
     angle,
     curiosityQuestion: curiosity?.replace(/^["']|["']$/g, ''),
@@ -85,6 +94,7 @@ export function sanitizeStoryText(text: string): string {
   // Strip accidental markdown bold/emphasis markers, inline backticks, and report footers
   out = out.replace(/\[END OF REPORT\]/gi, '')
   out = out.replace(/\*\*([^*]+)\*\*/g, '$1')
+  out = out.replace(/\*\*/g, '')
   out = out.replace(/(^|\s)\*([^*\n]+)\*(\s|[.,!?;:]|$)/g, '$1$2$3')
   out = out.replace(/`([^`\n]+)`/g, '$1')
   // Clean accidental meta-references ("The dossier shows/flags/notes...")
@@ -104,7 +114,10 @@ export function sanitizeStoryText(text: string): string {
 }
 
 function cleanCuriosityQuestion(raw: string): string {
-  let out = sanitizeStoryText(raw).replace(/^click\s+(?:on\s+)?/i, 'Check ')
+  let out = sanitizeStoryText(raw)
+    .replace(/^["']+|["']+$/g, '')
+    .replace(/^click\s+(?:on\s+)?/i, 'Check ')
+    .trim()
   if (out.length > 100) {
     const cut = out.slice(0, 99)
     const space = cut.lastIndexOf(' ')
@@ -121,7 +134,7 @@ export function parseStoryOutput(raw: string): ParsedStory | undefined {
   const storyRaw = parsed.story?.trim() ?? ''
   if (headlineRaw.length === 0 && storyRaw.length === 0) return undefined
   return {
-    headline: sanitizeStoryText(headlineRaw),
+    headline: shortenHexAddresses(sanitizeStoryText(headlineRaw)),
     story: sanitizeStoryText(storyRaw),
     angle: parsed.angle !== undefined ? sanitizeStoryText(parsed.angle) : undefined,
     curiosityQuestion:
