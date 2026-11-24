@@ -181,19 +181,38 @@ export function createManagedModelRunner(opts: CreateManagedModelRunnerOpts): Ma
     return false
   }
 
-  const startLlamaChild = async (
+  const appendLlamaDiag = (line: string): void => {
+    if (opts.dataDir === undefined) return
+    const logPath = llamaServerLogPath(opts.dataDir, opts.spine.network)
+    try {
+      fs.mkdirSync(path.dirname(logPath), { recursive: true })
+      fs.appendFileSync(logPath, `${new Date().toISOString()} [ethy] ${line}\n`)
+    } catch {
+      // ignore
+    }
+  }
+
+  const spawnOnce = async (
     bin: string,
     modelPath: string,
-    signal?: AbortSignal,
+    signal: AbortSignal | undefined,
+    reasoningBudgetZero: boolean,
   ): Promise<boolean> => {
     const port = await allocFreePort()
-    const { command, args, cwd, env } = spawnLlamaServerCommand(bin, modelPath, port)
+    const { command, args, cwd, env } = spawnLlamaServerCommand(bin, modelPath, port, {
+      reasoningBudgetZero,
+    })
     let llamaLogFd: number | undefined
+    let logPath: string | undefined
     if (opts.dataDir !== undefined) {
-      const logPath = llamaServerLogPath(opts.dataDir, opts.spine.network)
+      logPath = llamaServerLogPath(opts.dataDir, opts.spine.network)
       try {
         fs.mkdirSync(path.dirname(logPath), { recursive: true })
         llamaLogFd = fs.openSync(logPath, 'a')
+        fs.writeSync(
+          llamaLogFd,
+          `${new Date().toISOString()} [ethy] spawn ${command} ${args.join(' ')}\n`,
+        )
       } catch {
         llamaLogFd = undefined
       }
@@ -222,6 +241,7 @@ export function createManagedModelRunner(opts: CreateManagedModelRunnerOpts): Ma
       await stopChild()
       return false
     }
+    appendLlamaDiag(`ready on ${base} reasoningBudgetZero=${reasoningBudgetZero}`)
     setManagedPhase(opts.spine, { phase: 'ready', label: 'Qwen3.5-2B' })
     opts.onPhase({
       phase: 'ready',
@@ -234,6 +254,16 @@ export function createManagedModelRunner(opts: CreateManagedModelRunnerOpts): Ma
       provider: 'openai-compatible',
     })
     return true
+  }
+
+  const startLlamaChild = async (
+    bin: string,
+    modelPath: string,
+    signal?: AbortSignal,
+  ): Promise<boolean> => {
+    if (await spawnOnce(bin, modelPath, signal, true)) return true
+    appendLlamaDiag('retry spawn without --reasoning-budget')
+    return spawnOnce(bin, modelPath, signal, false)
   }
 
   const tryOllamaBridge = async (): Promise<boolean> => {

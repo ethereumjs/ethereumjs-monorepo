@@ -103,6 +103,7 @@ export async function runEthySession(node: EthyNode, opts?: EthySessionOpts): Pr
     chain: chainConfigForNetwork(node.spine.network),
     journal: node.investigationJournal,
     dataDir: node.dataDir,
+    dossierStore: node.dossierStore,
   })
 
   const refreshOverview = (trigger: 'welcome' | 'pulse') => {

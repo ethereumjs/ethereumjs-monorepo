@@ -18,6 +18,13 @@ export type ForensicDossier = {
   eventPreviews?: string[]
   inboundCalls?: number
   priorHypothesis?: string
+  behavior?: {
+    inboundReverts: number
+    gasUsedWei: string
+    valueReceivedWei: string
+    valueTxCount: number
+  }
+  implStatic?: ReturnType<typeof scanBytecodeForensics>
   dice?: { roll?: number; candidates?: StoryLead['beatCandidates'] }
 }
 
@@ -45,6 +52,12 @@ export function buildForensicDossier(opts: {
     dossier.callPreviews = agg.callPreviews.slice(0, 3)
     dossier.eventPreviews = agg.eventPreviews.slice(0, 3)
     dossier.inboundCalls = agg.inboundCalls
+    dossier.behavior = {
+      inboundReverts: agg.inboundReverts,
+      gasUsedWei: agg.gasUsedWei.toString(),
+      valueReceivedWei: agg.valueReceivedWei.toString(),
+      valueTxCount: agg.valueTxCount,
+    }
   }
 
   const lookup = buildCodeLookup(opts.stateManager, opts.chain)
@@ -52,13 +65,21 @@ export function buildForensicDossier(opts: {
   if (code !== undefined && code.length > 0) {
     const scan = scanBytecodeForensics(code)
     dossier.static = scan
-    opts.store?.upsertStatic(
-      addr,
-      opts.blockNumber,
-      scan,
-      scan.fingerprint.proxyKind,
-      scan.fingerprint.proxyTarget,
-    )
+    const implAddr = (() => {
+      if (scan.fingerprint.proxyTarget !== undefined) return scan.fingerprint.proxyTarget
+      if (agg?.implSlotValue !== undefined && /^0x[0-9a-f]{40}$/i.test(agg.implSlotValue)) {
+        return agg.implSlotValue
+      }
+      return undefined
+    })()
+    opts.store?.upsertStatic(addr, opts.blockNumber, scan, scan.fingerprint.proxyKind, implAddr)
+    if (implAddr !== undefined && implAddr.toLowerCase() !== addr.toLowerCase()) {
+      const implAgg = opts.economy.getContractAgg(implAddr)
+      const implCode = resolveCodeForAddress(implAddr, lookup, implAgg)
+      if (implCode !== undefined && implCode.length > 0) {
+        dossier.implStatic = scanBytecodeForensics(implCode)
+      }
+    }
   }
 
   const prior = opts.store?.get(addr)?.aiNotes?.hypothesis

@@ -205,6 +205,51 @@ const FUNCTION_SIGNATURES: Array<{ name: string; signature: string; params: Cata
     signature: 'swap((address,address,address,address,uint256,uint256,uint256,bytes))',
     params: [],
   },
+  { name: 'claim', signature: 'claim()', params: [] },
+  { name: 'drip', signature: 'drip()', params: [] },
+  { name: 'faucet', signature: 'faucet()', params: [] },
+  { name: 'pause', signature: 'pause()', params: [] },
+  { name: 'unpause', signature: 'unpause()', params: [] },
+  {
+    name: 'transferOwnership',
+    signature: 'transferOwnership(address)',
+    params: [{ name: 'newOwner', type: 'address' }],
+  },
+  {
+    name: 'grantRole',
+    signature: 'grantRole(bytes32,address)',
+    params: [],
+  },
+  {
+    name: 'flashLoan',
+    signature: 'flashLoan(address,uint256,bytes)',
+    params: [],
+  },
+  { name: 'latestRoundData', signature: 'latestRoundData()', params: [] },
+  {
+    name: 'fulfillRandomWords',
+    signature: 'fulfillRandomWords(uint256,bytes32[])',
+    params: [],
+  },
+  {
+    name: 'tokenURI',
+    signature: 'tokenURI(uint256)',
+    params: [{ name: 'tokenId', type: 'uint256' }],
+  },
+  {
+    name: 'safeMint',
+    signature: 'safeMint(address,uint256)',
+    params: [
+      { name: 'to', type: 'address' },
+      { name: 'tokenId', type: 'uint256' },
+    ],
+  },
+  { name: 'uri', signature: 'uri(uint256)', params: [{ name: 'id', type: 'uint256' }] },
+  {
+    name: 'royaltyInfo',
+    signature: 'royaltyInfo(uint256,uint256)',
+    params: [],
+  },
 ]
 
 const EVENT_SIGNATURES: Array<{

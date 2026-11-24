@@ -29,6 +29,10 @@ export type ContractAddressAgg = {
   maxTransferLogsInTx: number
   soleCalleeBlocks: number
   inboundCalls: number
+  inboundReverts: number
+  gasUsedWei: bigint
+  valueReceivedWei: bigint
+  valueTxCount: number
   swapEmittersInTx: Set<string>
   latestBalCode?: Uint8Array
   implSlotValue?: string

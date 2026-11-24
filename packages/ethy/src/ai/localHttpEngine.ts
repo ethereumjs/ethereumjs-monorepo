@@ -3,6 +3,7 @@ import type { FlatStateManager } from '@ethereumjs/statemanager'
 import type { ETHEconomyDataManager } from '../economy/economyDataManager.ts'
 import type { EthySandbox } from '../evm/sandbox.ts'
 import type { SnapPivotStore } from '../persist/snapStore.ts'
+import { recordDiagnostic } from '../spine/diagnostics.ts'
 
 import { buildCompactDomainContext } from './compactContext.ts'
 import { composeViewFromRequest, parseComposeAction } from './composeView.ts'
@@ -272,7 +273,18 @@ export class LocalHttpIntentEngine implements IntentEngine {
           }
         }
       }
-    } catch {
+    } catch (e: unknown) {
+      const msg =
+        e instanceof Error
+          ? e.message.slice(0, 96)
+          : typeof e === 'string'
+            ? e.slice(0, 96)
+            : 'error'
+      recordDiagnostic(spine, {
+        subsystem: 'ai',
+        severity: 'warn',
+        message: `intent error ${msg}`,
+      })
       return this.fallback.handle(req)
     }
     return this.fallback.handle(req)

@@ -70,6 +70,10 @@ function emptyContractAgg(): ContractAddressAgg {
     maxTransferLogsInTx: 0,
     soleCalleeBlocks: 0,
     inboundCalls: 0,
+    inboundReverts: 0,
+    gasUsedWei: 0n,
+    valueReceivedWei: 0n,
+    valueTxCount: 0,
     swapEmittersInTx: new Set(),
     callPreviews: [],
     eventPreviews: [],
@@ -297,6 +301,30 @@ export class ETHEconomyDataManager {
           if (contrib !== undefined && contrib.writes >= 15) agg.soleCalleeBlocks += 1
         }
       }
+      for (const log of obs.logs) {
+        if (log.topic0.toLowerCase() !== TOPIC.transferErc20.toLowerCase()) continue
+        const toTopic = log.topics[2]
+        if (toTopic === undefined || toTopic.length < 42) continue
+        const dest = `0x${toTopic.slice(-40).toLowerCase()}`
+        const agg = this.ensureContractAgg(dest)
+        agg.valueTxCount += 1
+        if (log.data.length >= 32) {
+          try {
+            const val = BigInt(`0x${Buffer.from(log.data.subarray(0, 32)).toString('hex')}`)
+            agg.valueReceivedWei += val
+          } catch {
+            // skip malformed transfer data
+          }
+        }
+      }
+    }
+    for (const rev of record.revertsByContract ?? []) {
+      const agg = this.ensureContractAgg(rev.address)
+      agg.inboundReverts += rev.reverts
+    }
+    for (const gas of record.gasUsedByContract ?? []) {
+      const agg = this.ensureContractAgg(gas.address)
+      agg.gasUsedWei += gas.gasUsed
     }
     if (record.balSnapshots !== undefined) {
       for (const snap of record.balSnapshots) {

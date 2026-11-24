@@ -1,6 +1,7 @@
 import type { ChainConfig } from '@ethereumjs/common'
 import type { FlatStateManager } from '@ethereumjs/statemanager'
 
+import type { ContractDossierStore } from '../contracts/contractDossierStore.ts'
 import { getCommandAvailability } from '../domains/commandAvailability.ts'
 import type { ETHEconomyDataManager } from '../economy/economyDataManager.ts'
 import type { EthySandbox } from '../evm/sandbox.ts'
@@ -65,6 +66,7 @@ export type SlashDispatchCtx = {
   chain?: ChainConfig
   journal?: InvestigationJournal
   dataDir?: string
+  dossierStore?: ContractDossierStore
 }
 
 function slashIfLocked(
@@ -198,7 +200,7 @@ export function dispatchSlashWidget(line: string, ctx: SlashDispatchCtx): Widget
       if (economy === undefined || chain === undefined) {
         return economyDeepViewWidget(spine)
       }
-      return contractMicroscopeWidget(spine, stateManager, chain, economy, arg)
+      return contractMicroscopeWidget(spine, stateManager, chain, economy, arg, ctx.dossierStore)
     }
     case '/simulate':
       return {
