@@ -13,10 +13,11 @@ import type { StoryLead, StoryLens } from './storyDirector.ts'
 import { directStory, parseLensOverride, recentLoreIds } from './storyDirector.ts'
 
 const HONEST_RULES = `Honest Speculation Contract:
-1) Cite only addresses, blocks, fees, and selectors from the brief or tool JSON — unknown contracts stay unnamed.
+1) Cite only addresses, blocks, fees, and selectors from the dossier or tool JSON — unknown contracts stay unnamed.
 2) Frame motives and attacks as hypotheses ("One plausible reading…", "Could this be…").
-3) On Sepolia, call it testnet rehearsal — not real money.
-4) Historical facts come only from the supplied lore cards — do not invent EIP dates.`
+3) On Sepolia, call it testnet rehearsal — not real money. Never open with base fee, block fullness, or TPS.
+4) Historical facts come only from the supplied lore cards — do not invent EIP dates.
+5) Open in media res on the concrete artifact in the dossier — no chain-wide macro summaries.`
 
 const LENS_VOICE: Record<StoryLens, string> = {
   detective: 'Follow the strangest live clue; peel bytecode, storage, and sender patterns.',
@@ -48,9 +49,9 @@ ${loreBlock}
 Write sectioned prose (${lengthHint}):
 HEADLINE: <=84 chars, plain language
 STORY: what is happening on-chain now
-ANGLE: history echo OR security what-if OR provocative question
-CURIOSITY: one natural question the user might ask
-COMMAND: optional one slash command like /contract 0x... or /signals`
+HYPOTHESIS: one honest reading of the bytecode/call clues
+POINTER: one concrete thing the user can inspect next
+COMMAND: required one slash command like /contract 0x... when an address is known`
 }
 
 export function buildScoutSystem(toolList: string): string {
@@ -203,5 +204,6 @@ export function cardFromProse(opts: CardFromProseOpts): ChainDispatchCard {
     subjectKey: lead.subjectKey,
     signalScore: brief.signals[0]?.noveltyScore,
     evidence: buildEvidence(brief, lead),
+    beatKind: lead.beat,
   }
 }

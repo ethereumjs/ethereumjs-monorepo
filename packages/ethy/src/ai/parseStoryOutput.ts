@@ -28,7 +28,7 @@ function stripMarkdownFences(text: string): string {
 }
 
 const SECTION_RE =
-  /(?:^|\n)\s*(?:#{1,3}\s*)?\*{0,2}(HEADLINE|STORY|ANGLE|CURIOSITY|COMMAND)\*{0,2}\s*:?\s*/gi
+  /(?:^|\n)\s*(?:#{1,3}\s*)?\*{0,2}(HEADLINE|STORY|ANGLE|HYPOTHESIS|CURIOSITY|POINTER|COMMAND)\*{0,2}\s*:?\s*/gi
 
 function parseSectioned(raw: string): Partial<ParsedStory> | undefined {
   const text = stripMarkdownFences(stripThinkingBlocks(raw))
@@ -44,11 +44,13 @@ function parseSectioned(raw: string): Partial<ParsedStory> | undefined {
   const headline = parts.HEADLINE?.split('\n')[0]?.trim() ?? ''
   const story = parts.STORY ?? ''
   if (headline.length === 0 && story.length === 0) return undefined
+  const angle = parts.ANGLE ?? parts.HYPOTHESIS
+  const curiosity = parts.CURIOSITY ?? parts.POINTER
   return {
     headline: headline.slice(0, 84),
     story,
-    angle: parts.ANGLE,
-    curiosityQuestion: parts.CURIOSITY?.replace(/^["']|["']$/g, ''),
+    angle,
+    curiosityQuestion: curiosity?.replace(/^["']|["']$/g, ''),
     command: parts.COMMAND?.trim(),
   }
 }

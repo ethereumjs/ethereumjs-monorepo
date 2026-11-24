@@ -10,9 +10,6 @@ export function buildDeterministicFieldNote(
   atMs: number,
 ): ChainDispatchCard {
   const head = brief.head
-  const netLabel = brief.network.toUpperCase()
-  const baseFee = head.baseFeeGwei ?? '—'
-  const gas = head.gasFullPct !== undefined ? `${head.gasFullPct}% full` : 'steady gas'
   const moment = brief.moments[0]
   const hot = brief.hotContracts[0]
   const artifact =
@@ -23,28 +20,25 @@ export function buildDeterministicFieldNote(
         : `block ${head.blockNumber ?? '?'}`
 
   const body = [
-    `On ${netLabel}, base fee sits near ${baseFee} with blocks about ${gas}.`,
-    `Right now: ${artifact}.`,
-    loreCard.historicalEcho,
-    `One angle to ponder: ${loreCard.attackOrEdgeScenario}`,
+    artifact,
+    loreCard.attackOrEdgeScenario,
+    `Inspect: ${moment?.address ?? hot?.address ?? head.blockNumber ?? 'signals'}.`,
   ].join(' ')
 
-  const curiosity =
-    brief.network.toLowerCase() === 'sepolia'
-      ? 'Is this a mainnet dress rehearsal or wallet SDK test traffic?'
-      : 'Could this pattern repeat if fees spike again tomorrow?'
+  const curiosity = hot?.knownName ?? moment?.headline ?? 'What changed in the last few blocks?'
 
   return {
     category: lens,
     severity: 'calm',
-    headline: loreCard.title.slice(0, 72),
+    headline: (moment?.headline ?? hot?.knownName ?? artifact).slice(0, 72),
     body: body.slice(0, 900),
     blockNumber: head.blockNumber,
     atMs,
     deterministic: true,
     lens,
     network: brief.network,
-    angle: loreCard.historicalEcho,
+    angle: loreCard.historicalEcho.slice(0, 280),
+    fallbackReason: 'deterministic',
     angleKind: 'history',
     curiosityQuestion: curiosity,
     loreCardId: loreCard.id,

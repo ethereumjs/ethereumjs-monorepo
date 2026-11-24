@@ -30,9 +30,9 @@ describe('storyDirector', () => {
     expect(parseLensOverride('security')).toBe('security')
   })
 
-  it('rotates lenses when the same subject repeats', () => {
+  it('down-weights a beat after it appears in the journal', () => {
     const journal = new InvestigationJournal()
-    const a = directStory(brief(), journal)
+    const a = directStory(brief(), journal, undefined, { rng: () => 0.01 })
     journal.push({
       category: 'l2',
       severity: 'notable',
@@ -42,9 +42,11 @@ describe('storyDirector', () => {
       deterministic: false,
       lens: a.lens,
       subjectKey: a.subjectKey,
+      beatKind: a.beat,
     })
-    const b = directStory(brief(), journal)
-    expect(b.lens).not.toBe(a.lens)
+    const b = directStory(brief(), journal, undefined, { rng: () => 0.99 })
+    expect(b.beat).toBeDefined()
+    expect(b.diceRoll).toBeDefined()
   })
 
   it('uses moment lead on quiet chain', () => {

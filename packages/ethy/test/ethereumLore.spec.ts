@@ -22,9 +22,26 @@ describe('ethereumLore', () => {
     expect(ids.has('sepolia_testnet_rehearsal')).toBe(true)
   })
 
-  it('prefers Sepolia rehearsal on sepolia network', () => {
-    const picked = selectLoreCards(miniBrief({ network: 'sepolia' }), 'lore', [], 1)
-    expect(picked[0]?.id).toBe('sepolia_testnet_rehearsal')
+  it('prefers signal-tagged lore over Sepolia network tag alone', () => {
+    const picked = selectLoreCards(
+      miniBrief({
+        network: 'sepolia',
+        signals: [
+          {
+            id: 's1',
+            kind: 'l2_blob_pressure',
+            severity: 'notable',
+            headline: 'blobs',
+            noveltyScore: 70,
+            metrics: {},
+          },
+        ],
+      }),
+      'economics',
+      [],
+      1,
+    )
+    expect(picked[0]?.id).toBe('l2_blobs_dencun')
   })
 
   it('penalizes recently used lore ids', () => {

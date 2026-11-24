@@ -5,15 +5,15 @@ import type { EthySpine } from '../spine/types.ts'
 import type { ModelTier } from './modelTier.ts'
 
 const MOMENT_PRIORITY: BlockMomentKind[] = [
-  'graffiti_note',
   'birth',
-  'eip7702',
   'choreography',
-  'whale',
   'revert',
+  'whale',
   'veteran',
+  'graffiti_note',
   'first_step',
   'blob_anchor',
+  'eip7702',
   'heartbeat',
 ]
 

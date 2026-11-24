@@ -248,6 +248,25 @@ export function applyLiveSlashRefresh(
   if (cmdLower === '/ai' || cmdLower.startsWith('/ai ') || cmdLower === '/clear') {
     return view
   }
+  if (cmdLower === '/story' || cmdLower.startsWith('/story ') || cmdLower === '/st') {
+    const parts = entry.command.trim().split(/\s+/)
+    const sub = (parts[1] ?? '').toLowerCase()
+    if (sub === 'new' || sub === 'next' || sub === 'full' || sub.length === 0) {
+      return view
+    }
+    const lensBeats = ['detective', 'security', 'economics', 'lore', 'history']
+    if (
+      lensBeats.includes(sub) ||
+      sub.startsWith('contract_') ||
+      sub === 'storage_slot_pulse' ||
+      sub === 'call_pattern_mystery' ||
+      sub === 'newborn_contract' ||
+      sub === 'tx_or_address_oddity' ||
+      sub === 'protocol_feature_spot'
+    ) {
+      return view
+    }
+  }
   const widget = dispatchSlashWidget(entry.command, slashCtx)
   return { ...view, activeWidget: widget }
 }

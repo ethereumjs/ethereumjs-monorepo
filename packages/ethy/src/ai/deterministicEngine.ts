@@ -8,6 +8,7 @@ import type { SnapPivotStore } from '../persist/snapStore.ts'
 import { headInspectUnlocked } from '../spine/headInspect.ts'
 import type { WidgetSpec } from '../spine/types.ts'
 import type { EthySpine } from '../spine/types.ts'
+import { aiLogWidget, parseAiLogLimit } from '../tools/aiLogTools.ts'
 import { clMicroscopeWidget } from '../tools/clTools.ts'
 import { contractMicroscopeWidget } from '../tools/contractTools.ts'
 import { dropPeer, pauseSnapSync, reassignBucket, resumeSnapSync } from '../tools/devActions.ts'
@@ -63,6 +64,7 @@ export type SlashDispatchCtx = {
   economy?: ETHEconomyDataManager
   chain?: ChainConfig
   journal?: InvestigationJournal
+  dataDir?: string
 }
 
 function slashIfLocked(
@@ -218,6 +220,9 @@ export function dispatchSlashWidget(line: string, ctx: SlashDispatchCtx): Widget
       }
     case '/ai': {
       const mode = parts[1]?.toLowerCase() ?? 'status'
+      if (mode === 'log') {
+        return aiLogWidget(spine, ctx.dataDir, parseAiLogLimit(parts))
+      }
       return {
         kind: 'key_value',
         title: 'AI memory',

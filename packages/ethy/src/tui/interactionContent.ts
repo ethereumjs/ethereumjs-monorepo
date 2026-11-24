@@ -232,11 +232,16 @@ function storyEyebrow(card: {
   network?: string
   blockNumber?: string
   atMs: number
+  modelLabel?: string
+  fallbackReason?: string
+  beatKind?: string
 }): string {
+  const shortModel = card.modelLabel?.split(/[\s:/_-]/)[0]?.slice(0, 12) ?? 'local'
+  const beat = card.beatKind !== undefined ? ` · ${card.beatKind}` : ''
   const badge =
     card.deterministic === true
-      ? '[LIVE NOTE]'
-      : `[STORY · ${(card.lens ?? card.category).toUpperCase()}]`
+      ? `[FALLBACK · ${(card.fallbackReason ?? 'offline').slice(0, 24)}]`
+      : `[STORY · ${shortModel}${beat}]`
   const net = (card.network ?? 'mainnet').toUpperCase()
   const block = card.blockNumber !== undefined ? ` · #${card.blockNumber}` : ''
   const age = `${Math.round((Date.now() - card.atMs) / 1000)}s ago`
@@ -260,6 +265,16 @@ export function renderAiOverviewSections(
 ): string[] {
   if (sections?.bootstrapNote !== undefined && sections.bootstrapNote.length > 0) {
     return wrapProseCentered(sections.bootstrapNote, innerWidth, innerLines)
+  }
+  if (sections?.generating !== undefined) {
+    const pad = ' '.repeat(2)
+    const msg = `${DIM}${sections.generating.text}${RESET}`
+    const rows: string[] = []
+    for (let i = 0; i < innerLines; i++) {
+      if (i === 1) rows.push(`${pad}${msg}`)
+      else rows.push('')
+    }
+    return rows
   }
   const card = sections?.dispatches?.[0]
   if (card !== undefined && spine.economy?.hasBlocks === true) {

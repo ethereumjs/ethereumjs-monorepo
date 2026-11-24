@@ -1,5 +1,5 @@
 import type { InvestigationJournal } from '../ai/investigationJournal.ts'
-import { type StoryLens, parseLensOverride } from '../ai/storyDirector.ts'
+import { type StoryLens, parseBeatOverride, parseLensOverride } from '../ai/storyDirector.ts'
 import type { ChainDispatchCard, WidgetSpec } from '../spine/types.ts'
 import type { DebugSectionSpec } from '../spine/types.ts'
 
@@ -19,14 +19,17 @@ export function storyWidgetFromCard(
 }
 
 export function storyListWidget(journal: InvestigationJournal): WidgetSpec {
-  const rows = journal
-    .snapshot(6)
-    .map((card, i) => [
+  const rows = journal.snapshot(6).map((card, i) => {
+    const src =
+      card.fallbackReason !== undefined ? 'FB' : card.modelLabel !== undefined ? 'LLM' : '—'
+    return [
       String(i + 1),
-      card.lens ?? card.category,
-      card.headline.slice(0, 40),
+      src,
+      card.beatKind ?? card.lens ?? card.category,
+      card.headline.slice(0, 36),
       `${Math.round((Date.now() - card.atMs) / 1000)}s`,
-    ])
+    ]
+  })
   if (rows.length === 0) {
     return {
       kind: 'key_value',
@@ -37,13 +40,13 @@ export function storyListWidget(journal: InvestigationJournal): WidgetSpec {
   return {
     kind: 'table',
     title: 'Session stories',
-    headers: ['#', 'Lens', 'Headline', 'Age'],
+    headers: ['#', 'Src', 'Beat', 'Headline', 'Age'],
     rows,
   }
 }
 
 export type StorySlashTrigger =
-  | { action: 'new'; lens?: StoryLens }
+  | { action: 'new'; lens?: StoryLens; beat?: import('../ai/storyBeats.ts').StoryBeatKind }
   | { action: 'open'; index?: number }
   | { action: 'list' }
   | { action: 'full' }
@@ -58,6 +61,8 @@ export function parseStorySlashTrigger(line: string): StorySlashTrigger | undefi
   if (sub === 'full') return { action: 'full' }
   const lens = parseLensOverride(sub)
   if (lens !== undefined) return { action: 'new', lens }
+  const beat = parseBeatOverride(sub)
+  if (beat !== undefined) return { action: 'new', beat }
   const idx = Number(sub)
   if (sub.length > 0 && Number.isFinite(idx) && idx >= 1 && idx <= 6) {
     return { action: 'open', index: Math.floor(idx) }

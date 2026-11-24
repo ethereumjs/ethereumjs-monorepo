@@ -1,8 +1,11 @@
 import { type ChildProcess, spawn } from 'node:child_process'
+import * as fs from 'node:fs'
 import * as net from 'node:net'
+import * as path from 'node:path'
 
 import { deriveCapabilities } from '../spine/createSpine.ts'
 import type { EthySpine, ManagedAiPhase, ManagedAiState } from '../spine/types.ts'
+import { llamaServerLogPath } from './aiRunTrace.ts'
 import { FetchLlmTransport, type LlmTransport } from './fixtureEngine.ts'
 import {
   ensureLlamaServerBin,
@@ -185,7 +188,21 @@ export function createManagedModelRunner(opts: CreateManagedModelRunnerOpts): Ma
   ): Promise<boolean> => {
     const port = await allocFreePort()
     const { command, args, cwd, env } = spawnLlamaServerCommand(bin, modelPath, port)
-    const proc = spawn(command, args, { stdio: 'ignore', cwd, env })
+    let llamaLogFd: number | undefined
+    if (opts.dataDir !== undefined) {
+      const logPath = llamaServerLogPath(opts.dataDir, opts.spine.network)
+      try {
+        fs.mkdirSync(path.dirname(logPath), { recursive: true })
+        llamaLogFd = fs.openSync(logPath, 'a')
+      } catch {
+        llamaLogFd = undefined
+      }
+    }
+    const proc = spawn(command, args, {
+      stdio: llamaLogFd !== undefined ? ['ignore', 'ignore', llamaLogFd] : 'ignore',
+      cwd,
+      env,
+    })
     child = proc
     exitKillHandler = () => {
       try {

@@ -402,6 +402,8 @@ export type ChainDispatchCard = {
   toolsUsed?: string[]
   subjectKey?: string
   signalScore?: number
+  beatKind?: string
+  fallbackReason?: string
 }
 
 export interface AiOverviewSections {
@@ -414,6 +416,8 @@ export interface AiOverviewSections {
   storyIndex?: number
   storyCount?: number
   bootstrapNote?: string
+  /** Right-column status while a manual story cycle runs (WP-15). */
+  generating?: { text: string }
 }
 
 export type WidgetSpec =

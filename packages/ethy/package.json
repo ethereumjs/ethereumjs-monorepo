@@ -54,6 +54,7 @@
     "ethy:swarm-smoke": "tsx scripts/ethy-swarm-smoke.ts",
     "sim:swarm": "tsx scripts/sim-swarm.ts",
     "ai:smoke": "tsx scripts/ai-smoke.ts",
+    "ai:inspect": "tsx scripts/inspect-ai-runs.ts",
     "test:node": "vitest run test/* -c ../../config/vitest.config.mts",
     "tsc": "../../config/cli/ts-compile.sh"
   },

@@ -133,17 +133,20 @@ describe('ChainDetectiveNarrator end-to-end replay', () => {
     const digest = buildSignalDigest(spine.economy)!
     expect(() => digestForPrompt(digest)).not.toThrow()
 
-    const transport = new FixtureReplayTransport([
-      JSON.stringify({
-        mode: 'investigate',
-        calls: [{ tool: 'inspect_l2_blobs', args: {} }],
-      }),
-      `HEADLINE: Base batch pressure climbs
+    const transport = Object.assign(
+      new FixtureReplayTransport([
+        JSON.stringify({
+          mode: 'investigate',
+          calls: [{ tool: 'inspect_l2_blobs', args: {} }],
+        }),
+        `HEADLINE: Base batch pressure climbs
 STORY: Base Batcher posted 8 blobs while blob fees trend up.
 ANGLE: EIP-4844 split blob demand from execution gas in 2024.
 CURIOSITY: Will blob fees cool if batching pauses?
 COMMAND: /signals`,
-    ])
+      ]),
+      { modelName: 'qwen2.5:14b' },
+    )
     const economy = new ETHEconomyDataManager({ spine, chain, hardfork, stateManager })
     const journal = new InvestigationJournal()
     const userInterest = new UserInterestRing()
@@ -153,12 +156,13 @@ COMMAND: /signals`,
       economy,
       stateManager,
       chain,
+      network: 'mainnet',
       journal,
       userInterest,
       onOverview: (s) => updates.push(s),
     })
     narrator.start(spine)
-    await new Promise((r) => setTimeout(r, 50))
+    await new Promise((r) => setTimeout(r, 250))
     narrator.stop()
 
     const last = updates[updates.length - 1]
@@ -217,6 +221,7 @@ CURIOSITY: What changes when demand spikes?`
       economy,
       stateManager,
       chain,
+      network: 'mainnet',
       journal,
       userInterest,
       onOverview: () => {},

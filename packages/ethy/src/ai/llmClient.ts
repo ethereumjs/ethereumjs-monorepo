@@ -1,4 +1,5 @@
 import type { LocalLlmProviderKind } from '../persist/userConfig.ts'
+import { LlmWireError } from './llmWireError.ts'
 import type { ModelTier } from './modelTier.ts'
 import { inferModelTier, maxStoryTokens } from './modelTier.ts'
 
@@ -8,7 +9,7 @@ export type LlmResponseMode = 'json' | 'text'
 
 const PULSE_TIMEOUT_MS = 18_000
 const INTENT_TIMEOUT_MS = 18_000
-const STORY_TIMEOUT_MS = 28_000
+const STORY_TIMEOUT_MS = 45_000
 const HEALTH_TIMEOUT_MS = 1_500
 
 const LOOPBACK_HOSTS = new Set(['127.0.0.1', 'localhost', '::1'])
@@ -29,8 +30,20 @@ export function defaultTemperature(kind: LlmCompletionKind): number {
   return 0.72
 }
 
+function envTimeoutOverride(): number | undefined {
+  try {
+    const raw = globalThis.process?.env?.ETHY_LLM_TIMEOUT_MS
+    if (raw === undefined || raw.length === 0) return undefined
+    const n = Number.parseInt(raw, 10)
+    return Number.isFinite(n) && n > 0 ? n : undefined
+  } catch {
+    return undefined
+  }
+}
+
 export function defaultTimeoutMs(kind: LlmCompletionKind): number {
-  if (kind === 'story') return STORY_TIMEOUT_MS
+  const env = envTimeoutOverride()
+  if (kind === 'story') return env ?? STORY_TIMEOUT_MS
   if (kind === 'intent') return INTENT_TIMEOUT_MS
   return PULSE_TIMEOUT_MS
 }
@@ -187,6 +200,38 @@ export type PostChatOpts = {
   model?: string
   provider?: LocalLlmProviderKind
   overrides?: LlmRequestOverrides
+  /** @internal one-shot reasoning salvage retry */
+  reasoningRetried?: boolean
+}
+
+function salvageFromReasoning(reasoning?: string, thinking?: string): string | undefined {
+  const blob = (reasoning ?? thinking ?? '').trim()
+  if (blob.length === 0) return undefined
+  if (/HEADLINE\s*:/i.test(blob) || /STORY\s*:/i.test(blob) || blob.includes('{')) {
+    return blob
+  }
+  return undefined
+}
+
+type OpenAiLikeMessage = {
+  content?: string | null
+  reasoning_content?: string | null
+  thinking?: string | null
+}
+
+function pickAssistantText(message: OpenAiLikeMessage | undefined): string {
+  const content = message?.content?.trim() ?? ''
+  if (content.length > 0) return content
+  const salvaged = salvageFromReasoning(
+    message?.reasoning_content ?? undefined,
+    message?.thinking ?? undefined,
+  )
+  if (salvaged !== undefined) return salvaged
+  const reasoning = message?.reasoning_content?.trim() ?? message?.thinking?.trim() ?? ''
+  if (reasoning.length > 0) {
+    throw new LlmWireError('reasoning_only', 'LLM returned reasoning without story sections')
+  }
+  throw new LlmWireError('empty_content', 'LLM returned empty content')
 }
 
 async function postOllamaChat(
@@ -197,27 +242,42 @@ async function postOllamaChat(
   signal?: AbortSignal,
   overrides?: LlmRequestOverrides,
 ): Promise<string> {
+  const started = Date.now()
   const resolved = resolveLlmRequest(kind, overrides)
   const body = buildOllamaChatBody(kind, messages, model, overrides)
-  const res = await fetchWithTimeout(
-    `${base}/api/chat`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    },
-    resolved.timeoutMs,
-    signal,
-  )
+  let res: Response
+  try {
+    res = await fetchWithTimeout(
+      `${base}/api/chat`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      },
+      resolved.timeoutMs,
+      signal,
+    )
+  } catch (e: unknown) {
+    const kindErr = signal?.aborted === true ? 'aborted' : 'timeout'
+    throw new LlmWireError(kindErr, (e as Error).message, { durationMs: Date.now() - started })
+  }
   if (!res.ok) {
-    throw new Error(`LLM HTTP ${res.status}`)
+    throw new LlmWireError('http_error', `LLM HTTP ${res.status}`, {
+      httpStatus: res.status,
+      durationMs: Date.now() - started,
+    })
   }
-  const json = (await res.json()) as { message?: { content?: string } }
-  const text = json.message?.content
-  if (text === undefined || text.length === 0) {
-    throw new Error('LLM returned empty content')
+  const json = (await res.json()) as { message?: OpenAiLikeMessage }
+  try {
+    return pickAssistantText(json.message)
+  } catch (e: unknown) {
+    if (e instanceof LlmWireError) {
+      throw new LlmWireError(e.errorKind, e.message, {
+        durationMs: Date.now() - started,
+      })
+    }
+    throw e
   }
-  return text
 }
 
 export async function postChatCompletion(
@@ -243,27 +303,56 @@ export async function postChatCompletion(
   const resolved = resolveLlmRequest(kind, overrides)
   const body = buildOpenAiChatBody(kind, messages, model, overrides)
 
-  const res = await fetchWithTimeout(
-    `${base}/v1/chat/completions`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    },
-    resolved.timeoutMs,
-    signal,
-  )
+  const started = Date.now()
+  let res: Response
+  try {
+    res = await fetchWithTimeout(
+      `${base}/v1/chat/completions`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      },
+      resolved.timeoutMs,
+      signal,
+    )
+  } catch (e: unknown) {
+    const kindErr = signal?.aborted === true ? 'aborted' : 'timeout'
+    throw new LlmWireError(kindErr, (e as Error).message, { durationMs: Date.now() - started })
+  }
   if (!res.ok) {
-    throw new Error(`LLM HTTP ${res.status}`)
+    throw new LlmWireError('http_error', `LLM HTTP ${res.status}`, {
+      httpStatus: res.status,
+      durationMs: Date.now() - started,
+    })
   }
   const json = (await res.json()) as {
-    choices?: Array<{ message?: { content?: string } }>
+    choices?: Array<{ message?: OpenAiLikeMessage }>
   }
-  const text = json.choices?.[0]?.message?.content
-  if (text === undefined || text.length === 0) {
-    throw new Error('LLM returned empty content')
+  try {
+    return pickAssistantText(json.choices?.[0]?.message)
+  } catch (e: unknown) {
+    if (
+      e instanceof LlmWireError &&
+      e.errorKind === 'reasoning_only' &&
+      kind === 'story' &&
+      opts?.reasoningRetried !== true
+    ) {
+      const retryMessages: ChatMessage[] = [
+        ...messages,
+        { role: 'user', content: 'Reply with the requested sections only.' },
+      ]
+      return postChatCompletion(base, kind, retryMessages, signal, {
+        ...opts,
+        reasoningRetried: true,
+        overrides: { ...overrides, temperature: 0.5 },
+      })
+    }
+    if (e instanceof LlmWireError) {
+      throw new LlmWireError(e.errorKind, e.message, { durationMs: Date.now() - started })
+    }
+    throw e
   }
-  return text
 }
 
 /** Remove optional reasoning blocks before JSON extraction. */

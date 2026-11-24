@@ -195,10 +195,7 @@ export function selectLoreCards(
 
   const scored = ETHEREUM_LORE_CARDS.map((card) => {
     let score = tagHits(card, tags)
-    if (recent.has(card.id)) score -= 4
-    if (brief.network.toLowerCase() === 'sepolia' && card.id === 'sepolia_testnet_rehearsal') {
-      score += 5
-    }
+    if (recent.has(card.id)) score -= 8
     return { card, score }
   })
     .sort((a, b) => b.score - a.score)
@@ -209,13 +206,6 @@ export function selectLoreCards(
     if (picked.length >= maxCards) break
     if (picked.some((p) => p.id === row.card.id)) continue
     picked.push(row.card)
-  }
-  if (picked.length === 0) {
-    const fallback =
-      brief.network.toLowerCase() === 'sepolia'
-        ? ETHEREUM_LORE_CARDS.find((c) => c.id === 'sepolia_testnet_rehearsal')
-        : ETHEREUM_LORE_CARDS.find((c) => c.id === 'amsterdam_bal_state_lens')
-    if (fallback !== undefined) picked.push(fallback)
   }
   return picked.slice(0, maxCards)
 }

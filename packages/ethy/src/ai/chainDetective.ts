@@ -1,13 +1,22 @@
 import type { ChainConfig } from '@ethereumjs/common'
 import type { FlatStateManager } from '@ethereumjs/statemanager'
 
+import type { ContractDossierStore } from '../contracts/contractDossierStore.ts'
 import type { ETHEconomyDataManager } from '../economy/economyDataManager.ts'
 import type { SignalCandidate } from '../economy/types.ts'
 import type { EthySandbox } from '../evm/sandbox.ts'
 import { deriveCapabilities } from '../spine/createSpine.ts'
+import { recordDiagnostic } from '../spine/diagnostics.ts'
 import type { AiOverviewSections, ChainDispatchCard, EthySpine } from '../spine/types.ts'
+import {
+  type AiRunLog,
+  type AiRunTraceRecord,
+  capRawPreview,
+  createAiRunLog,
+} from './aiRunTrace.ts'
 import { selectLoreCards } from './ethereumLore.ts'
 import type { LlmTransport } from './fixtureEngine.ts'
+import { type ForensicDossier, buildForensicDossier } from './forensicDossierBuilder.ts'
 import { InvestigationJournal, UserInterestRing } from './investigationJournal.ts'
 import {
   INVESTIGATION_TOOL_NAMES,
@@ -16,8 +25,10 @@ import {
   runInvestigationToolAsync,
 } from './investigationTools.ts'
 import { parseLlmJSONObject } from './llmClient.ts'
-import { type ModelTier, inferModelTier, maxLoreCards } from './modelTier.ts'
+import { LlmWireError, llmErrorKindFromUnknown } from './llmWireError.ts'
+import { type ModelTier, inferModelTier, maxLoreCards, maxStoryTokens } from './modelTier.ts'
 import { parseStoryOutput } from './parseStoryOutput.ts'
+import type { StoryBeatKind } from './storyBeats.ts'
 import { briefForPrompt, buildStoryBrief } from './storyBrief.ts'
 import {
   type StoryLens,
@@ -135,6 +146,10 @@ export type ChainDetectiveNarratorOpts = {
   userInterest: UserInterestRing
   onOverview: (sections: AiOverviewSections) => void
   onUnhealthy?: () => void
+  dataDir?: string
+  network: string
+  dossierStore?: ContractDossierStore
+  aiRunLog?: AiRunLog
 }
 
 export class ChainDetectiveNarrator {
@@ -153,8 +168,12 @@ export class ChainDetectiveNarrator {
   private lastDispatchBlock = 0n
   private userFocusBump = false
   private lensOverride?: StoryLens
+  private beatOverride?: StoryBeatKind
   private pendingManual = false
   spineRef?: EthySpine
+  private readonly dataDir?: string
+  private readonly dossierStore?: ContractDossierStore
+  private readonly aiRunLog: AiRunLog
 
   constructor(opts: ChainDetectiveNarratorOpts) {
     this.transport = opts.transport
@@ -169,6 +188,9 @@ export class ChainDetectiveNarrator {
     this.userInterest = opts.userInterest
     this.onOverview = opts.onOverview
     this.onUnhealthy = opts.onUnhealthy
+    this.dataDir = opts.dataDir
+    this.dossierStore = opts.dossierStore
+    this.aiRunLog = opts.aiRunLog ?? createAiRunLog(opts.dataDir, opts.network)
   }
 
   noteUserPrompt(text: string): void {
@@ -199,12 +221,13 @@ export class ChainDetectiveNarrator {
     this.abort?.abort()
   }
 
-  async triggerNow(lensOverride?: StoryLens): Promise<void> {
+  async triggerNow(lensOverride?: StoryLens, beatOverride?: StoryBeatKind): Promise<void> {
     this.abortInFlight()
     if (this.inFlightPromise !== undefined) {
       await this.inFlightPromise.catch(() => {})
     }
     this.lensOverride = lensOverride
+    this.beatOverride = beatOverride
     this.pendingManual = true
     try {
       if (this.spineRef !== undefined) {
@@ -213,6 +236,7 @@ export class ChainDetectiveNarrator {
     } finally {
       this.pendingManual = false
       this.lensOverride = undefined
+      this.beatOverride = undefined
     }
   }
 
@@ -255,9 +279,11 @@ export class ChainDetectiveNarrator {
   private async runStorytellerTurn(
     brief: ReturnType<typeof buildStoryBrief>,
     lead: ReturnType<typeof directStory>,
+    dossier: ForensicDossier,
     toolResults: Array<{ tool: string; result: string }>,
     tier: ModelTier,
     startedMs: number,
+    llmCalls: AiRunTraceRecord['llmCalls'],
   ): Promise<ChainDispatchCard | undefined> {
     if (brief === undefined) return undefined
     const loreCards = selectLoreCards(
@@ -267,26 +293,67 @@ export class ChainDetectiveNarrator {
       maxLoreCards(tier),
     )
     const system = buildStorytellerSystem(lead.lens, loreCards, tier)
-    const userPayload = {
-      brief: briefForPrompt(brief),
-      lead,
-      toolResults,
-      focus: lead.lead,
+    const userPayload =
+      tier === 'compact'
+        ? { dossier, lead, toolResults, loreId: loreCards[0]?.id }
+        : {
+            dossier,
+            brief: briefForPrompt(brief),
+            lead,
+            toolResults,
+            focus: lead.lead,
+          }
+    const promptChars = JSON.stringify(userPayload).length + system.length
+    const storyStart = Date.now()
+    let raw = ''
+    try {
+      raw = await this.transport.complete(
+        {
+          kind: 'story',
+          messages: [
+            { role: 'system', content: system },
+            { role: 'user', content: JSON.stringify(userPayload) },
+          ],
+          overrides: { modelTier: tier, responseMode: 'text' },
+        },
+        this.abort?.signal,
+      )
+    } catch (e: unknown) {
+      const kind = llmErrorKindFromUnknown(e, this.abort?.signal.aborted === true)
+      llmCalls.push({
+        stage: 'story',
+        promptChars,
+        maxTokens: maxStoryTokens(tier),
+        temperature: 0.72,
+        responseMode: 'text',
+        timeoutMs: 45_000,
+        durationMs: Date.now() - storyStart,
+        rawOutputChars: 0,
+        parsedOk: false,
+        errorKind: kind,
+        errorMessage: e instanceof Error ? e.message : String(e),
+      })
+      throw e
     }
-    const raw = await this.transport.complete(
-      {
-        kind: 'story',
-        messages: [
-          { role: 'system', content: system },
-          { role: 'user', content: JSON.stringify(userPayload) },
-        ],
-        overrides: { modelTier: tier, responseMode: 'text' },
-      },
-      this.abort?.signal,
-    )
+    llmCalls.push({
+      stage: 'story',
+      promptChars,
+      maxTokens: maxStoryTokens(tier),
+      temperature: 0.72,
+      responseMode: 'text',
+      timeoutMs: 45_000,
+      durationMs: Date.now() - storyStart,
+      rawOutputChars: raw.length,
+      rawOutputPreview: capRawPreview(raw),
+      parsedOk: true,
+    })
     const parsed = parseStoryOutput(raw)
-    if (parsed === undefined) return undefined
-    return cardFromProse({
+    if (parsed === undefined) {
+      llmCalls[llmCalls.length - 1]!.parsedOk = false
+      llmCalls[llmCalls.length - 1]!.errorKind = 'prose_parse'
+      return undefined
+    }
+    const card = cardFromProse({
       parsed,
       brief,
       lead,
@@ -296,15 +363,27 @@ export class ChainDetectiveNarrator {
       latencyMs: Date.now() - startedMs,
       atMs: Date.now(),
     })
+    if (lead.relatedAddress !== undefined) {
+      this.dossierStore?.noteFeatured(
+        lead.relatedAddress,
+        parsed.angle ?? parsed.story.slice(0, 120),
+        card.modelLabel,
+      )
+    }
+    return card
   }
 
   private publishFallback(
     brief: NonNullable<ReturnType<typeof buildStoryBrief>>,
     lens: StoryLens,
+    reason = 'offline',
+    beat?: string,
   ): void {
     const lore = selectLoreCards(brief, lens, recentLoreIds(this.journal), 1)[0]
     if (lore === undefined) return
     const card = buildDeterministicFieldNote(brief, lens, lore, Date.now())
+    card.fallbackReason = reason.slice(0, 32)
+    card.beatKind = beat
     this.journal.push(card)
     this.publishStory(card)
   }
@@ -353,75 +432,170 @@ export class ChainDetectiveNarrator {
     this.abort = controller
     this.userFocusBump = false
     const tier = this.modelTier(spine)
-    const lead = directStory(brief, this.journal, this.lensOverride)
-    const journalHeadlines = this.journal.snapshot(5).map(headlineSnippet)
+    const lead = directStory(brief, this.journal, this.lensOverride, {
+      beat: this.beatOverride,
+      dossierNoveltyBoost: (addr) => this.dossierStore?.noveltyBoost(addr) ?? 1,
+    })
+    const blockNumber = snap.latestBlockNumber ?? '0'
+    const dossier = buildForensicDossier({
+      lead,
+      economy: this.economy,
+      stateManager: this.ctx.stateManager,
+      chain: this.ctx.chain,
+      blockNumber,
+      store: this.dossierStore,
+    })
     const startedMs = Date.now()
+    const llmCalls: AiRunTraceRecord['llmCalls'] = []
+    const runId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
 
     let work: Promise<void> | undefined
     work = (async () => {
+      let source: 'llm' | 'fallback' = 'llm'
+      let fallbackReason: string | undefined
       try {
-        const raw1 = await this.transport.complete(
-          {
-            kind: 'pulse',
-            messages: [
-              { role: 'system', content: buildScoutSystem(INVESTIGATION_TOOL_NAMES.join(', ')) },
-              {
-                role: 'user',
-                content: JSON.stringify({
-                  brief: briefForPrompt(brief),
-                  lead,
-                  journalHeadlines,
-                  trigger,
-                }),
-              },
-            ],
-            overrides: { responseMode: 'json', modelTier: tier },
-          },
-          controller.signal,
-        )
-        const triage = parseDetectiveTriage(parseLlmJSONObject(raw1))
         let card: ChainDispatchCard | undefined
         const toolResults: Array<{ tool: string; result: string }> = []
 
-        if (triage?.mode === 'dispatch') {
-          card = triage.card
-          card.blockNumber = snap.latestBlockNumber
-          card.lens = lead.lens
-          card.network = brief.network
-          card.subjectKey = lead.subjectKey
-        } else if (triage?.mode === 'investigate') {
-          for (const call of triage.calls) {
-            toolResults.push({
-              tool: call.tool,
-              result: await runInvestigationToolAsync(call.tool, call.args, this.ctx),
-            })
+        if (tier === 'rich') {
+          const journalHeadlines = this.journal.snapshot(5).map(headlineSnippet)
+          const scoutStart = Date.now()
+          const raw1 = await this.transport.complete(
+            {
+              kind: 'pulse',
+              messages: [
+                {
+                  role: 'system',
+                  content: buildScoutSystem(INVESTIGATION_TOOL_NAMES.join(', ')),
+                },
+                {
+                  role: 'user',
+                  content: JSON.stringify({
+                    dossier,
+                    lead,
+                    journalHeadlines,
+                    trigger,
+                  }),
+                },
+              ],
+              overrides: { responseMode: 'json', modelTier: tier },
+            },
+            controller.signal,
+          )
+          llmCalls.push({
+            stage: 'scout',
+            promptChars: raw1.length,
+            maxTokens: 256,
+            temperature: 0.15,
+            responseMode: 'json',
+            timeoutMs: 18_000,
+            durationMs: Date.now() - scoutStart,
+            rawOutputChars: raw1.length,
+            rawOutputPreview: capRawPreview(raw1),
+            parsedOk: true,
+          })
+          const triage = parseDetectiveTriage(parseLlmJSONObject(raw1))
+          if (triage?.mode === 'dispatch') {
+            card = triage.card
+            card.blockNumber = snap.latestBlockNumber
+            card.lens = lead.lens
+            card.network = brief.network
+            card.subjectKey = lead.subjectKey
+            card.beatKind = lead.beat
+          } else if (triage?.mode === 'investigate') {
+            for (const call of triage.calls.slice(0, 1)) {
+              toolResults.push({
+                tool: call.tool,
+                result: await runInvestigationToolAsync(call.tool, call.args, this.ctx),
+              })
+            }
           }
-          card = await this.runStorytellerTurn(brief, lead, toolResults, tier, startedMs)
-        } else if (triage?.mode === 'tell_story' || triage === undefined) {
-          card = await this.runStorytellerTurn(brief, lead, toolResults, tier, startedMs)
         }
+
+        card =
+          card ??
+          (await this.runStorytellerTurn(
+            brief,
+            lead,
+            dossier,
+            toolResults,
+            tier,
+            startedMs,
+            llmCalls,
+          ))
 
         if (card !== undefined) {
           card.blockNumber = card.blockNumber ?? snap.latestBlockNumber
+          card.beatKind = lead.beat
           this.journal.push(card)
           this.lastDispatchMs = Date.now()
           this.lastDispatchBlock = head
           this.publishStory(card)
           this.consecutiveFailures = 0
           this.setLlmPulseReady(spine, true)
+          recordDiagnostic(spine, {
+            subsystem: 'ai',
+            severity: 'info',
+            message: `story #${card.blockNumber ?? '?'} source=llm beat=${lead.beat} addr=${card.relatedAddress?.slice(0, 12) ?? '—'} ${((Date.now() - startedMs) / 1000).toFixed(1)}s "${card.headline.slice(0, 40)}"`,
+          })
+          this.aiRunLog.append({
+            runId,
+            ts: Date.now(),
+            trigger,
+            network: spine.network,
+            blockNumber: card.blockNumber,
+            aiMode: spine.aiMode,
+            modelLabel: this.activeModelLabel(spine),
+            modelTier: tier,
+            director: { roll: lead.diceRoll, candidates: lead.beatCandidates, beat: lead.beat },
+            dossier,
+            llmCalls,
+            source: 'llm',
+            headline: card.headline,
+            bodyChars: card.body.length,
+            pointersCount: card.suggestedAction !== undefined ? 1 : 0,
+            totalLatencyMs: Date.now() - startedMs,
+          })
           return
         }
-        throw new Error('empty_story')
-      } catch {
-        // Intentional aborts (user prompt or manual /story new) are not model failures.
+        throw new LlmWireError('prose_parse', 'empty_story')
+      } catch (err) {
         if (controller.signal.aborted) return
+        source = 'fallback'
+        fallbackReason =
+          err instanceof LlmWireError
+            ? err.errorKind
+            : err instanceof Error
+              ? err.message.slice(0, 48)
+              : 'error'
         this.consecutiveFailures += 1
         const latest = this.journal.latest()
         if (latest !== undefined && latest.deterministic !== true) {
           this.publishStory(latest)
         } else {
-          this.publishFallback(brief, lead.lens)
+          this.publishFallback(brief, lead.lens, fallbackReason, lead.beat)
         }
+        recordDiagnostic(spine, {
+          subsystem: 'ai',
+          severity: 'warn',
+          message: `story #${blockNumber} source=fallback reason=${fallbackReason}`,
+        })
+        this.aiRunLog.append({
+          runId,
+          ts: Date.now(),
+          trigger,
+          network: spine.network,
+          blockNumber,
+          aiMode: spine.aiMode,
+          modelLabel: this.activeModelLabel(spine),
+          modelTier: tier,
+          director: { roll: lead.diceRoll, candidates: lead.beatCandidates, beat: lead.beat },
+          dossier,
+          llmCalls,
+          source,
+          fallbackReason,
+          totalLatencyMs: Date.now() - startedMs,
+        })
         if (this.consecutiveFailures >= 2) {
           this.setLlmPulseReady(spine, false)
           this.onUnhealthy?.()

@@ -45,10 +45,11 @@ export function renderStoryUIComponent(
     budget -= 1
   }
 
+  const shortModel = story.modelLabel?.split(/[\s:/_-]/)[0]?.slice(0, 12) ?? 'local'
   const badge =
     story.deterministic === true
-      ? '[LIVE NOTE]'
-      : `[STORY · ${(story.lens ?? story.category).toUpperCase()}]`
+      ? `[FALLBACK · ${(story.fallbackReason ?? 'offline').slice(0, 24)}]`
+      : `[STORY · ${shortModel}]`
   const net = (story.network ?? 'NETWORK').toUpperCase()
   const ageSec = Math.max(0, Math.round((Date.now() - story.atMs) / 1000))
   const block = story.blockNumber !== undefined ? ` · #${story.blockNumber}` : ''

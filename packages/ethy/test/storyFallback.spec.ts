@@ -15,7 +15,7 @@ const brief: StoryBrief = {
 }
 
 describe('storyFallback', () => {
-  it('builds LIVE NOTE without Layer 1 signal phrasing', () => {
+  it('builds fallback without Layer 1 signal phrasing', () => {
     const card = buildDeterministicFieldNote(brief, 'lore', ETHEREUM_LORE_CARDS[0]!, 9_000)
     expect(card.deterministic).toBe(true)
     expect(card.body).not.toMatch(/Layer 1 signal/i)

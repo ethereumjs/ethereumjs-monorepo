@@ -3,17 +3,12 @@ import readline from 'node:readline'
 
 import { ChainDetectiveNarrator } from '../ai/chainDetective.ts'
 import type { SlashDispatchCtx } from '../ai/deterministicEngine.ts'
-import { selectLoreCards } from '../ai/ethereumLore.ts'
 import { probeHardware } from '../ai/hardwareCheck.ts'
 import { managedPhaseBlocksOverview } from '../ai/managedAiUi.ts'
-import { inferModelTier, maxLoreCards } from '../ai/modelTier.ts'
 import {
   buildDeterministicOverviewSections,
   clampOverviewSections,
 } from '../ai/overviewNarrator.ts'
-import { buildStoryBrief } from '../ai/storyBrief.ts'
-import { directStory, recentLoreIds } from '../ai/storyDirector.ts'
-import { buildDeterministicFieldNote } from '../ai/storyFallback.ts'
 import type { EthyNode } from '../core/createEthyNode.ts'
 import { advanceDemo } from '../demo/advanceDemo.ts'
 import { readDomainSnapshots } from '../domains/domainManagers.ts'
@@ -107,6 +102,7 @@ export async function runEthySession(node: EthyNode, opts?: EthySessionOpts): Pr
     economy: node.economy,
     chain: chainConfigForNetwork(node.spine.network),
     journal: node.investigationJournal,
+    dataDir: node.dataDir,
   })
 
   const refreshOverview = (trigger: 'welcome' | 'pulse') => {
@@ -114,28 +110,6 @@ export async function runEthySession(node: EthyNode, opts?: EthySessionOpts): Pr
       return
     }
     if (node.spine.economy?.hasBlocks === true) {
-      const tier = inferModelTier(node.spine.managedAi?.label)
-      const brief = buildStoryBrief(node.spine, node.economy, tier)
-      if (brief !== undefined) {
-        const lead = directStory(brief, node.investigationJournal)
-        const lore = selectLoreCards(
-          brief,
-          lead.lens,
-          recentLoreIds(node.investigationJournal),
-          maxLoreCards(tier),
-        )[0]
-        if (lore !== undefined) {
-          view = {
-            ...view,
-            aiOverviewSections: {
-              dispatches: [buildDeterministicFieldNote(brief, lead.lens, lore, Date.now())],
-              storyIndex: 1,
-              storyCount: 1,
-            },
-          }
-          return
-        }
-      }
       view = {
         ...view,
         aiOverviewSections: {
@@ -351,15 +325,23 @@ export async function runEthySession(node: EthyNode, opts?: EthySessionOpts): Pr
     const storyTrigger = parseStorySlashTrigger(text)
     if (storyTrigger?.action === 'new') {
       node.aiRuntime?.wakeIfDeferred()
-      void detectiveNarrator?.triggerNow(storyTrigger.lens).then(() => {
+      const addrHint = node.investigationJournal.latest()?.relatedAddress
+      const hint = addrHint !== undefined ? ` · digging into ${addrHint.slice(0, 10)}…` : ''
+      view = {
+        ...view,
+        aiOverviewSections: {
+          ...view.aiOverviewSections,
+          generating: { text: `Writing a fresh story…${hint}` },
+        },
+      }
+      draw()
+      void detectiveNarrator?.triggerNow(storyTrigger.lens, storyTrigger.beat).then(() => {
         if (gen !== intentGeneration) return
-        if (view.activeWidget?.kind !== 'key_value' || view.activeWidget.title !== 'Story') return
-        const latest = node.investigationJournal.latest()
-        if (latest !== undefined) {
-          view = { ...view, activeWidget: storyWidgetFromCard(latest) }
-          draw()
-        }
+        const { generating: _g, ...rest } = view.aiOverviewSections ?? {}
+        view = { ...view, aiOverviewSections: rest }
+        draw()
       })
+      return
     }
     if (isHelpCommand(text)) {
       const parts = text.split(/\s+/)
@@ -418,6 +400,9 @@ export async function runEthySession(node: EthyNode, opts?: EthySessionOpts): Pr
       economy: node.economy,
       stateManager: node.stateManager,
       chain,
+      network: node.spine.network,
+      dataDir: node.dataDir,
+      dossierStore: node.dossierStore,
       sandbox: node.sandbox,
       journal: node.investigationJournal,
       userInterest: node.userInterest,
