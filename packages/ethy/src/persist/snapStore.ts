@@ -523,6 +523,35 @@ export class SnapPivotStore {
   }
 
   /**
+   * Synchronous size of the directories a shadow refresh actually writes (`accounts/` +
+   * `bal-tail/`). Used for shadow-refresh disk headroom checks so `code/`/`storage/`/`heal/`
+   * do not inflate the required free space or jump asynchronously mid-check.
+   */
+  estimateShadowPivotBytes(): bigint {
+    if (!this.enabled || this.activeStateRoot === undefined) return 0n
+    const root = this.pivotDir(this.activeStateRoot)
+    if (!fs.existsSync(root)) return 0n
+    let total = 0n
+    for (const sub of ['accounts', 'bal-tail']) {
+      const subDir = path.join(root, sub)
+      if (!fs.existsSync(subDir)) continue
+      try {
+        for (const ent of fs.readdirSync(subDir, { withFileTypes: true })) {
+          if (!ent.isFile()) continue
+          try {
+            total += BigInt(fs.statSync(path.join(subDir, ent.name)).size)
+          } catch {
+            // skip
+          }
+        }
+      } catch {
+        // skip
+      }
+    }
+    return total
+  }
+
+  /**
    * Non-blocking estimate of active pivot disk usage for shadow-refresh headroom checks.
    * Returns a cached result immediately (<1ms) and refreshes `code/`/`storage/`/`heal/`
    * sizes asynchronously so pivots with hundreds of thousands of files never stall the event loop.

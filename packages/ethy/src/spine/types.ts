@@ -315,6 +315,9 @@ export type SpineSwarmSnapshot = {
     partialMinterMask?: number
     suppressionState?: 'clear' | 'suppressed' | 'stalled'
     stalledMinterPeerIds?: string[]
+    blockedReason?: 'low-disk'
+    freeBytes?: bigint
+    requiredFreeBytes?: bigint
   }
 }
 

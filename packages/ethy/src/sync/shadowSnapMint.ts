@@ -1,5 +1,29 @@
 import { createSnapBuckets } from '../spine/buckets.ts'
 import type { SnapBucket } from '../spine/types.ts'
+import { CANONICAL_PIVOT_GRID_BLOCKS } from './canonicalPivotGrid.ts'
+import { macroGenerationBlock } from './swarmGenerationPolicy.ts'
+
+/**
+ * Maximum blocks behind head where the current 1024-block macro-generation grid
+ * is still fresh enough for Geth/reth `snap/1` state-trie retention (~128 blocks).
+ */
+export const MAX_SHADOW_SNAP_MINT_LAG_BLOCKS = 64n
+
+/**
+ * Pick a SNAP-servable block for background shadow minting.
+ * Uses the 1024-block macro-generation grid when within `MAX_SHADOW_SNAP_MINT_LAG_BLOCKS`
+ * of `head`; otherwise aligns to the latest 32-block beacon-epoch grid so peers still
+ * retain the state trie root.
+ */
+export function selectShadowMintPivotBlock(head: bigint): bigint {
+  if (head <= 0n) return 0n
+  const gen = macroGenerationBlock(head)
+  if (gen > 0n && head - gen <= MAX_SHADOW_SNAP_MINT_LAG_BLOCKS) {
+    return gen
+  }
+  const aligned32 = (head / CANONICAL_PIVOT_GRID_BLOCKS) * CANONICAL_PIVOT_GRID_BLOCKS
+  return aligned32 > 0n ? aligned32 : head
+}
 
 export type ShadowSnapMintSession = {
   stateRootHex: string

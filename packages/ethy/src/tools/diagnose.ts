@@ -69,6 +69,18 @@ export function ethyOverviewWidget(spine: EthySpine): WidgetSpec {
         title: 'Shadow refresh',
         entries: [
           { key: 'Mode', value: shadowMode },
+          ...(swarm?.shadowRefresh?.blockedReason !== undefined
+            ? [
+                {
+                  key: 'Blocked',
+                  value:
+                    swarm.shadowRefresh.freeBytes !== undefined &&
+                    swarm.shadowRefresh.requiredFreeBytes !== undefined
+                      ? `${swarm.shadowRefresh.blockedReason} (${(Number(swarm.shadowRefresh.freeBytes) / 1024 ** 3).toFixed(1)} / ${(Number(swarm.shadowRefresh.requiredFreeBytes) / 1024 ** 3).toFixed(1)} GiB)`
+                      : swarm.shadowRefresh.blockedReason,
+                },
+              ]
+            : []),
           {
             key: 'Progress',
             value:

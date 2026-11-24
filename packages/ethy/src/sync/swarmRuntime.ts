@@ -15,7 +15,11 @@ import {
   minterZeroMaskSince,
   noteMinterStatus,
 } from './minterLiveness.ts'
-import { pickShadowRefreshMode, shouldStartShadowRefresh } from './shadowRefresh.ts'
+import {
+  type ShadowRefreshEligibility,
+  evaluateShadowRefreshEligibility,
+  pickShadowRefreshMode,
+} from './shadowRefresh.ts'
 import {
   type MinterAnnouncement,
   type MinterSuppressionState,
@@ -41,6 +45,8 @@ export function refreshSpineSwarmTelemetry(opts: {
   spine: EthySpine
   snapStore?: SnapPivotStore
   shadowRefreshEnabled: boolean
+  shadowRefreshInProgress?: boolean
+  freeBytesOverride?: bigint
   nodeId?: Uint8Array
   processStartedAtMs: number
   peers: readonly WorkerPeerSnapshot[]
@@ -67,17 +73,20 @@ export function refreshSpineSwarmTelemetry(opts: {
   }
   const balEarliest = snap.balTailEarliest ?? localPivot + 1n
   const shadow = spine.swarm?.shadowRefresh ?? { mode: 'idle' as const }
-  let shouldRefresh = false
+  let eligibility: ShadowRefreshEligibility | undefined
   if (opts.shadowRefreshEnabled && spine.phase === 'HEAD_FOLLOWING') {
-    const pivotBytes = snapStore?.estimateActivePivotBytes() ?? 0n
-    let freeBytes = 8n * 1024n * 1024n * 1024n
-    try {
-      const st = fs.statfsSync(snapStore?.dataRoot() ?? os.tmpdir())
-      freeBytes = BigInt(st.bavail) * BigInt(st.bsize)
-    } catch {
-      // ignore
+    const pivotBytes =
+      snapStore?.estimateShadowPivotBytes() ?? snapStore?.estimateActivePivotBytes() ?? 0n
+    let freeBytes = opts.freeBytesOverride ?? 8n * 1024n * 1024n * 1024n
+    if (opts.freeBytesOverride === undefined) {
+      try {
+        const st = fs.statfsSync(snapStore?.dataRoot() ?? os.tmpdir())
+        freeBytes = BigInt(st.bavail) * BigInt(st.bsize)
+      } catch {
+        // ignore
+      }
     }
-    shouldRefresh = shouldStartShadowRefresh({
+    eligibility = evaluateShadowRefreshEligibility({
       phase: spine.phase,
       freeBytes,
       pivotBytes,
@@ -85,9 +94,13 @@ export function refreshSpineSwarmTelemetry(opts: {
       localPivot,
       balEarliest,
       enabled: opts.shadowRefreshEnabled,
+      inProgress: opts.shadowRefreshInProgress === true,
     })
   }
-  if (shouldRefresh) {
+  if (eligibility?.eligible === true) {
+    shadow.blockedReason = undefined
+    shadow.freeBytes = undefined
+    shadow.requiredFreeBytes = undefined
     const usableSeeders = opts.peers
       .map((p) => {
         const st = p.ethyStatus
@@ -156,6 +169,15 @@ export function refreshSpineSwarmTelemetry(opts: {
     shadow.targetBlock = shadow.mode === 'ethy-shadow' && freshest !== undefined ? freshest : gen
   } else {
     shadow.mode = 'idle'
+    if (eligibility?.blockedReason === 'low-disk') {
+      shadow.blockedReason = 'low-disk'
+      shadow.freeBytes = eligibility.freeBytes
+      shadow.requiredFreeBytes = eligibility.requiredFreeBytes
+    } else {
+      shadow.blockedReason = undefined
+      shadow.freeBytes = undefined
+      shadow.requiredFreeBytes = undefined
+    }
   }
   snap.shadowRefresh = shadow
   spine.swarm = snap

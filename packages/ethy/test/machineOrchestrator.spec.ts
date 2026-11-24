@@ -138,4 +138,37 @@ describe('machineOrchestrator', () => {
     assert.equal(plan.mode, 'degraded-recovery')
     assert.equal(plan.planes.discovery, 'active')
   })
+
+  it('surfaces low-disk block instead of lying BAL gap — refresh queued', () => {
+    const now = Date.now()
+    const GiB = 1024n * 1024n * 1024n
+    const obs: MachineObservation = {
+      ...calmHeadFollowingObs(now),
+      healthyEthPeers: 4,
+      balTailContiguous: false,
+      generationAgeBlocks: 100_000n,
+      shadowMode: 'idle',
+      shadowBlockedReason: 'low-disk',
+      shadowFreeBytes: 15n * GiB,
+      shadowRequiredFreeBytes: 24n * GiB,
+    }
+    const plan = evaluateMachinePlan(obs)
+    assert.equal(plan.mode, 'live-calm')
+    assert.equal(plan.nextEventSummary, 'BAL gap — low disk (15/24 GB)')
+  })
+
+  it('shows SNAP Mint (starting) before bucket 0 initializes', () => {
+    const now = Date.now()
+    const obs: MachineObservation = {
+      ...calmHeadFollowingObs(now),
+      healthyEthPeers: 4,
+      balTailContiguous: false,
+      generationAgeBlocks: 100_000n,
+      shadowMode: 'snap-mint',
+      shadowMintBucket: undefined,
+    }
+    const plan = evaluateMachinePlan(obs)
+    assert.equal(plan.mode, 'shadow-snap-mint')
+    assert.equal(plan.nextEventSummary, 'SNAP Mint (starting)')
+  })
 })

@@ -105,6 +105,7 @@ import {
   computePartialMinterMask,
   createShadowMintBuckets,
   nextShadowMintBucketCap,
+  selectShadowMintPivotBlock,
   shadowSnapMintProgressPct,
   shadowSnapMintReadyToFlip,
 } from '../sync/shadowSnapMint.ts'
@@ -121,10 +122,7 @@ import {
   resolveLiveNetworkHead,
   shouldReenterBalCatchUp,
 } from '../sync/startupStateMachine.ts'
-import {
-  MACRO_GENERATION_GRID_BLOCKS,
-  macroGenerationBlock,
-} from '../sync/swarmGenerationPolicy.ts'
+import { MACRO_GENERATION_GRID_BLOCKS } from '../sync/swarmGenerationPolicy.ts'
 import {
   type GenerationElectionHandle,
   applyBackupElectionStaggerOnSuppressionLift,
@@ -494,6 +492,7 @@ export async function startPeerCoordinator(
   let shadowEthySwarm: EthySwarmSynchronizer | undefined
   let shadowEthyBuckets: import('../spine/types.ts').SnapBucket[] = []
   const shadowEthyBucketsDone = new Set<number>()
+  let shadowLowDiskWarned = false
 
   const advertisePartialMinter = (
     clientRef: Devp2pWorkerClient,
@@ -709,13 +708,15 @@ export async function startPeerCoordinator(
       pivotAnchor: { blockNumber: shadowSnapMintSession.targetPivotBlock, stateRoot: root },
       backgroundMode: true,
       mintBucketCap: shadowSnapMintSession.mintBucketCap,
-      onBucketDone: (bucketIndex) => {
+      onBucketDone: (_bucketIndex) => {
         if (shadowSnapMintSession === undefined) return
         const cap = nextShadowMintBucketCap(shadowSnapMintSession.buckets)
         shadowSnapMintSession.mintBucketCap = cap
         shadowSnapMintSync?.setMintBucketCap(cap)
         if (spine.swarm?.shadowRefresh) {
-          spine.swarm.shadowRefresh.mintBucket = bucketIndex
+          spine.swarm.shadowRefresh.mintBucket = shadowSnapMintSession.buckets.filter(
+            (b) => b.status === 'done',
+          ).length
         }
         const partial = computePartialMinterMask(shadowSnapMintSession.buckets)
         advertisePartialMinter(
@@ -742,7 +743,7 @@ export async function startPeerCoordinator(
       electionReady
     ) {
       const head = spine.bestPeerHead ?? 0n
-      const targetBlock = macroGenerationBlock(head)
+      const targetBlock = selectShadowMintPivotBlock(head)
       const peer = pickBestPeer(peers, pivotBlockedPeers)
       if (peer === undefined || peer.latestBlock === undefined) return
       if (BigInt(peer.latestBlock) < targetBlock) return
@@ -2516,10 +2517,15 @@ export async function startPeerCoordinator(
     )
     const bestVerifiedHead =
       spine.lastVerifiedBlockNumber ?? spine.headBlockNumber ?? spine.bestPeerHead
+    const shadowRefreshInProgress =
+      shadowPivotSession !== undefined ||
+      shadowSnapMintSession !== undefined ||
+      shadowMintHeaderFlight !== undefined
     refreshSpineSwarmTelemetry({
       spine,
       snapStore,
       shadowRefreshEnabled,
+      shadowRefreshInProgress,
       nodeId: localNodeId,
       processStartedAtMs,
       peers: snap.peers,
@@ -2529,6 +2535,37 @@ export async function startPeerCoordinator(
       bestVerifiedHead,
       nowMs: nowTelemetry,
     })
+    const shadowTelemetry = spine.swarm?.shadowRefresh
+    if (shadowTelemetry?.blockedReason === 'low-disk') {
+      if (!shadowLowDiskWarned) {
+        shadowLowDiskWarned = true
+        const freeGib =
+          shadowTelemetry.freeBytes !== undefined
+            ? (Number(shadowTelemetry.freeBytes) / 1024 ** 3).toFixed(1)
+            : '?'
+        const needGib =
+          shadowTelemetry.requiredFreeBytes !== undefined
+            ? (Number(shadowTelemetry.requiredFreeBytes) / 1024 ** 3).toFixed(1)
+            : '?'
+        recordDiagnostic(spine, {
+          subsystem: 'ethy',
+          severity: 'warn',
+          message: `Shadow refresh paused: low disk (${freeGib} GiB free, need ${needGib} GiB)`,
+        })
+      }
+      if (shadowRefreshInProgress) {
+        shadowSnapMintSync?.stop()
+        shadowSnapMintSync = undefined
+        shadowSnapMintSession = undefined
+        shadowMintHeaderFlight = undefined
+        shadowEthySwarm?.stop()
+        shadowEthySwarm = undefined
+        shadowPivotSession = undefined
+        snapStore?.setShadowPersistRoot(undefined)
+      }
+    } else {
+      shadowLowDiskWarned = false
+    }
     const suppressionState = spine.swarm?.shadowRefresh?.suppressionState
     if (generationElection !== undefined && suppressionState !== undefined) {
       generationElection = applyBackupElectionStaggerOnSuppressionLift({
@@ -2703,6 +2740,7 @@ export async function startPeerCoordinator(
         stage: 'minting',
       }
       if (spine.swarm?.shadowRefresh) {
+        spine.swarm.shadowRefresh.targetBlock = parsed.number
         spine.swarm.shadowRefresh.progressPct = copied > 0 ? 18 : 8
         spine.swarm.shadowRefresh.mintBucket = 0
       }
@@ -2829,6 +2867,8 @@ export async function startPeerCoordinator(
     stop: () => {
       resourceWatchdog.stop()
       snapSync?.stop()
+      shadowSnapMintSync?.stop()
+      shadowEthySwarm?.stop()
       codeSync?.stop()
       headFollower?.stop()
       snapStore?.flushBuckets(spine.snapBuckets)

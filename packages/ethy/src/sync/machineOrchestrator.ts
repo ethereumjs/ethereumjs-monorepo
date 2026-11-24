@@ -56,6 +56,9 @@ export type MachineObservation = {
   shadowMode?: 'idle' | 'ethy-shadow' | 'snap-mint' | 'waiting-election'
   shadowProgressPct?: number
   shadowMintBucket?: number
+  shadowBlockedReason?: 'low-disk'
+  shadowFreeBytes?: bigint
+  shadowRequiredFreeBytes?: bigint
   electionDeadlineMs?: number
   electionSuppressed: boolean
   hasUsableEthyGNew: boolean
@@ -199,17 +202,26 @@ function withDwell(
   return nowMs - dwell.sinceMs < minDwellMs ? dwell.status : next
 }
 
+function formatGibInt(bytes: bigint): string {
+  const gib = Number(bytes) / (1024 * 1024 * 1024)
+  return gib >= 10 ? String(Math.round(gib)) : gib.toFixed(1)
+}
+
 function scheduleSummary(
   mode: MachineOperatingMode,
   obs: MachineObservation,
   ethyServe: EthyServingState,
 ): string {
   if (!obs.shadowRefreshEnabled && mode === 'live-calm') return 'Off (--no-shadow-refresh)'
-  if (mode === 'shadow-ethy-refresh' && obs.shadowProgressPct !== undefined) {
-    return `Shadow ETHY ${Math.round(obs.shadowProgressPct)}%`
+  if (mode === 'shadow-ethy-refresh') {
+    return obs.shadowProgressPct !== undefined
+      ? `Shadow ETHY ${Math.round(obs.shadowProgressPct)}%`
+      : 'Shadow ETHY (starting)'
   }
-  if (mode === 'shadow-snap-mint' && obs.shadowMintBucket !== undefined) {
-    return `SNAP Mint ${obs.shadowMintBucket}/16`
+  if (mode === 'shadow-snap-mint') {
+    return obs.shadowMintBucket !== undefined
+      ? `SNAP Mint ${obs.shadowMintBucket}/16`
+      : 'SNAP Mint (starting)'
   }
   if (mode === 'prewarm-snap-mint' && obs.electionDeadlineMs !== undefined) {
     const min = Math.ceil(Math.max(0, obs.electionDeadlineMs - obs.nowMs) / 60_000)
@@ -222,6 +234,15 @@ function scheduleSummary(
   if (obs.shadowMode === 'waiting-election' && obs.electionDeadlineMs !== undefined) {
     const sec = Math.max(0, Math.ceil((obs.electionDeadlineMs - obs.nowMs) / 1000))
     return `Waiting election (${sec}s)`
+  }
+  if (obs.shadowBlockedReason === 'low-disk') {
+    const detail =
+      obs.shadowFreeBytes !== undefined && obs.shadowRequiredFreeBytes !== undefined
+        ? ` (${formatGibInt(obs.shadowFreeBytes)}/${formatGibInt(obs.shadowRequiredFreeBytes)} GB)`
+        : ''
+    return ethyServe === 'paused-bal-gap'
+      ? `BAL gap — low disk${detail}`
+      : `Refresh paused — low disk${detail}`
   }
   const softMs = Number(SOFT_REFRESH_AGE_BLOCKS - obs.generationAgeBlocks) * BLOCK_MS
   if (softMs > 0 && mode === 'live-calm') {
@@ -408,6 +429,9 @@ export function buildMachineObservation(opts: {
     shadowMode: shadow?.mode,
     shadowProgressPct: shadow?.progressPct,
     shadowMintBucket: shadow?.mintBucket,
+    shadowBlockedReason: shadow?.blockedReason,
+    shadowFreeBytes: shadow?.freeBytes,
+    shadowRequiredFreeBytes: shadow?.requiredFreeBytes,
     electionDeadlineMs: shadow?.electionDeadlineMs,
     electionSuppressed:
       shadow?.suppressionState !== 'clear' && shadow?.suppressionState !== undefined,

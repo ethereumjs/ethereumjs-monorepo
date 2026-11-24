@@ -10,6 +10,11 @@ import { readBalTailBundle } from '../src/persist/balTailArchive.ts'
 import { SnapPivotStore } from '../src/persist/snapStore.ts'
 import { createSpine } from '../src/spine/createSpine.ts'
 import {
+  MIN_FREE_BYTES,
+  evaluateShadowRefreshEligibility,
+  requiredShadowFreeBytes,
+} from '../src/sync/shadowRefresh.ts'
+import {
   type GenerationElectionHandle,
   ensureGenerationElectionArmed,
   refreshSpineSwarmTelemetry,
@@ -129,6 +134,128 @@ describe('[Ethy/Sync]: swarmRuntime election lock, telemetry & shadow store', ()
 
       assert.isTrue(store.promoteShadowPivotToActive(shadowHex))
       assert.equal(store.minActiveBucketPivotBlock(), 2048n)
+    } finally {
+      fs.rmSync(tmp, { recursive: true, force: true })
+    }
+  })
+
+  it('evaluateShadowRefreshEligibility uses 1x shadow footprint + margin and keeps active refresh running above 2 GiB floor', () => {
+    const GiB = 1024n * 1024n * 1024n
+    const shadowPivotBytes = 21n * GiB
+    assert.equal(requiredShadowFreeBytes(shadowPivotBytes), 23n * GiB)
+    assert.equal(requiredShadowFreeBytes(shadowPivotBytes, true), MIN_FREE_BYTES)
+
+    // 37 GiB free with a 21 GiB shadow pivot is eligible (previously blocked by 2x full-pivot check)
+    const ok = evaluateShadowRefreshEligibility({
+      phase: 'HEAD_FOLLOWING',
+      freeBytes: 37n * GiB,
+      pivotBytes: shadowPivotBytes,
+      head: 12_202_094n,
+      localPivot: 12_097_069n,
+      balEarliest: 12_201_700n,
+      enabled: true,
+    })
+    assert.isTrue(ok.eligible)
+    assert.isUndefined(ok.blockedReason)
+
+    // 18 GiB free with a 21 GiB shadow pivot reports low-disk with exact free/required bytes
+    const blocked = evaluateShadowRefreshEligibility({
+      phase: 'HEAD_FOLLOWING',
+      freeBytes: 18n * GiB,
+      pivotBytes: shadowPivotBytes,
+      head: 12_202_094n,
+      localPivot: 12_097_069n,
+      balEarliest: 12_201_700n,
+      enabled: true,
+    })
+    assert.isFalse(blocked.eligible)
+    assert.equal(blocked.blockedReason, 'low-disk')
+    assert.equal(blocked.freeBytes, 18n * GiB)
+    assert.equal(blocked.requiredFreeBytes, 23n * GiB)
+
+    // Once a shadow refresh is already writing to disk, dropping to 16 GiB does not self-abort
+    const active = evaluateShadowRefreshEligibility({
+      phase: 'HEAD_FOLLOWING',
+      freeBytes: 16n * GiB,
+      pivotBytes: shadowPivotBytes,
+      head: 12_202_094n,
+      localPivot: 12_097_069n,
+      balEarliest: 12_201_700n,
+      enabled: true,
+      inProgress: true,
+    })
+    assert.isTrue(active.eligible)
+
+    // Dropping below the 2 GiB emergency floor aborts even an in-progress refresh
+    const emergency = evaluateShadowRefreshEligibility({
+      phase: 'HEAD_FOLLOWING',
+      freeBytes: 1n * GiB,
+      pivotBytes: shadowPivotBytes,
+      head: 12_202_094n,
+      localPivot: 12_097_069n,
+      balEarliest: 12_201_700n,
+      enabled: true,
+      inProgress: true,
+    })
+    assert.isFalse(emergency.eligible)
+    assert.equal(emergency.blockedReason, 'low-disk')
+
+    // Fresh pivot with no BAL gap reports 'fresh', not 'low-disk'
+    const fresh = evaluateShadowRefreshEligibility({
+      phase: 'HEAD_FOLLOWING',
+      freeBytes: 1n * GiB,
+      pivotBytes: shadowPivotBytes,
+      head: 12_097_200n,
+      localPivot: 12_097_069n,
+      balEarliest: 12_097_070n,
+      enabled: true,
+    })
+    assert.isFalse(fresh.eligible)
+    assert.equal(fresh.blockedReason, 'fresh')
+  })
+
+  it('refreshSpineSwarmTelemetry surfaces low-disk block reason and estimateShadowPivotBytes ignores code/storage/heal', async () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'ethy-shadow-bytes-'))
+    try {
+      const store = SnapPivotStore.open({
+        dataDir: tmp,
+        network: 'sepolia',
+        chainId: 11155111n,
+        genesisHash: networkGenesisHash('sepolia'),
+        enabled: true,
+      })
+      const rootA = new Uint8Array(32).fill(0xaa)
+      store.activatePivot({
+        blockNumber: 1024n,
+        blockHash: new Uint8Array(32).fill(0x01),
+        stateRoot: rootA,
+      })
+      const pivotRoot = store.activePivotRootDir()!
+      fs.mkdirSync(path.join(pivotRoot, 'accounts'), { recursive: true })
+      fs.mkdirSync(path.join(pivotRoot, 'code'), { recursive: true })
+      fs.writeFileSync(path.join(pivotRoot, 'accounts', '0.bin'), Buffer.alloc(4096))
+      fs.writeFileSync(path.join(pivotRoot, 'code', 'shard-00.bin'), Buffer.alloc(65536))
+
+      assert.equal(store.estimateShadowPivotBytes(), 4096n)
+
+      const spine = createSpine('sepolia', 11155111n)
+      spine.phase = 'HEAD_FOLLOWING'
+      spine.pivotBlockNumber = 1024n
+      spine.bestPeerHead = 5000n
+
+      refreshSpineSwarmTelemetry({
+        spine,
+        snapStore: store,
+        shadowRefreshEnabled: true,
+        freeBytesOverride: 512n * 1024n * 1024n,
+        processStartedAtMs: 0,
+        peers: [],
+        nowMs: 10_000,
+      })
+      assert.equal(spine.swarm?.shadowRefresh?.mode, 'idle')
+      assert.equal(spine.swarm?.shadowRefresh?.blockedReason, 'low-disk')
+      assert.equal(spine.swarm?.shadowRefresh?.freeBytes, 512n * 1024n * 1024n)
+      assert.isDefined(spine.swarm?.shadowRefresh?.requiredFreeBytes)
     } finally {
       fs.rmSync(tmp, { recursive: true, force: true })
     }

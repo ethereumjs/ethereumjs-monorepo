@@ -273,11 +273,17 @@ function nodePulsePairs(spine: EthySpine): TwoColumnPair[] {
           : (spine.clStatus ?? '—')
     const ethyServe = spine.machine?.servingEthy
     const bucketBits = countBits16(spine.ethyBucketsBitmask ?? 0)
+    const mode = spine.machine?.mode
+    const shadowBlocked = spine.swarm?.shadowRefresh?.blockedReason
     const serveSuffix =
       ethyServe === 'paused-catching-up'
         ? 'paused · catching up'
         : ethyServe === 'paused-bal-gap'
-          ? 'BAL gap — refresh queued'
+          ? shadowBlocked === 'low-disk'
+            ? 'BAL gap — low disk'
+            : mode === 'shadow-ethy-refresh' || mode === 'shadow-snap-mint'
+              ? 'BAL gap — refreshing'
+              : 'BAL gap — refresh queued'
           : ethyServe === 'paused-stale'
             ? 'paused · stale gen'
             : `serve ${bucketBits}/16`
@@ -285,7 +291,6 @@ function nodePulsePairs(spine: EthySpine): TwoColumnPair[] {
       codeCount > 0
         ? `${acc} acc · ${formatCompactCount(codeCount)} code · ${serveSuffix}`
         : `${acc} acc · ${balCount.toLocaleString('en-US')} BALs · CL ${clLabel}`
-    const mode = spine.machine?.mode
     const stage =
       mode === 'shadow-ethy-refresh' && spine.swarm?.shadowRefresh?.progressPct !== undefined
         ? `★ Live · Shadow ETHY ${Math.round(spine.swarm.shadowRefresh.progressPct)}%`
