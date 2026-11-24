@@ -8,7 +8,7 @@ import {
   decodeAbiString,
   ensNameHash,
 } from '../src/contracts/identityResolver.ts'
-import { knownContractName } from '../src/contracts/knownContracts.ts'
+import { knownContractMeta, knownContractName } from '../src/contracts/knownContracts.ts'
 import { createEthySandbox } from '../src/evm/sandbox.ts'
 import { RpcBlockWindowStore } from '../src/rpc/blockWindowStore.ts'
 import { createSpine } from '../src/spine/createSpine.ts'
@@ -52,8 +52,15 @@ function returnConstantBytecode(returnBytes: Uint8Array): Uint8Array {
 }
 
 describe('knownContracts', () => {
-  it('resolves ENS registry on mainnet', () => {
+  it('resolves ENS registry on mainnet & sepolia and exposes token decimals metadata', () => {
     expect(knownContractName(1n, '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e')).toBe('ENS Registry')
+    expect(knownContractName(11155111n, '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e')).toBe(
+      'ENS Registry',
+    )
+    const sepoliaUsdc = knownContractMeta(11155111n, '0x1c7d4b196cb0c7b01d743fbc6116a902379c7238')
+    expect(sepoliaUsdc?.name).toBe('USDC')
+    expect(sepoliaUsdc?.kind).toBe('token')
+    expect(sepoliaUsdc?.decimals).toBe(6)
   })
 })
 
@@ -175,5 +182,40 @@ describe('identityResolver', () => {
     // ensOnly must skip ERC-20 name() (0x06fdde03) and symbol() (0x95d89b41)
     expect(seenCalls).not.toContain('0x06fdde03')
     expect(seenCalls).not.toContain('0x95d89b41')
+  })
+
+  it('reports ensRegistryReady=false and avoids negative caching when ENS Registry code is missing locally', async () => {
+    const chain = Mainnet
+    const common = new Common({ chain, hardfork: Hardfork.Cancun })
+    const stateManager = createFlatStateManager({ common })
+    const spine = createSpine('mainnet', 1n)
+    spine.phase = 'HEAD_FOLLOWING'
+    let ethCallCount = 0
+    const sandbox = {
+      runEthCall: async () => {
+        ethCallCount += 1
+        return { result: '0x' }
+      },
+      runEstimateGas: async () => ({ result: '0x0' }),
+      runCreateAccessList: async () => ({ result: {} }),
+      runSimulateCall: async () => {
+        throw new Error('unused')
+      },
+    }
+    const resolver = new IdentityResolver({
+      chain,
+      sandbox: sandbox as never,
+      spine,
+      stateManager,
+    })
+    expect(resolver.hasLocalEnsRegistry()).toBe(false)
+    await resolver.resolveNow('0x000000000000000000000000000000000000abcd', 10n, { ensOnly: true })
+    expect(ethCallCount).toBe(0)
+    expect(resolver.getStats()).toEqual({
+      ensRegistryReady: false,
+      ensHits: 0,
+      tokenHits: 0,
+      cacheSize: 0,
+    })
   })
 })

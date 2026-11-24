@@ -1,4 +1,5 @@
 import type { ChainConfig } from '@ethereumjs/common'
+import type { FlatStateManager } from '@ethereumjs/statemanager'
 
 import { bytesToBigInt, bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { ethyKeccak256 } from '../crypto/keccak.ts'
@@ -35,14 +36,57 @@ export class IdentityResolver {
   private readonly chain: ChainConfig
   private readonly sandbox?: EthySandbox
   private readonly spine: EthySpine
+  private readonly stateManager?: FlatStateManager
   private readonly cache = new Map<string, CacheEntry>()
   private probeBudget = 0
   private queue: QueueItem[] = []
+  private ensHitsCount = 0
+  private tokenHitsCount = 0
 
-  constructor(opts: { chain: ChainConfig; sandbox?: EthySandbox; spine: EthySpine }) {
+  constructor(opts: {
+    chain: ChainConfig
+    sandbox?: EthySandbox
+    spine: EthySpine
+    stateManager?: FlatStateManager
+  }) {
     this.chain = opts.chain
     this.sandbox = opts.sandbox
     this.spine = opts.spine
+    this.stateManager = opts.stateManager
+  }
+
+  /**
+   * True when local state holds the ENS Registry bytecode (or when no stateManager
+   * was supplied, e.g. mock sandbox tests). On partial code-sync pivots where ENS Registry
+   * code is not yet on disk, returns false so we avoid poisoning the 256-block cache.
+   */
+  hasLocalEnsRegistry(): boolean {
+    const chainId = BigInt(this.chain.chainId)
+    if (chainId !== 1n && chainId !== 11155111n) return false
+    if (this.stateManager === undefined) return true
+    try {
+      const hash = ethyKeccak256(hexToBytes(ENS_REGISTRY_MAINNET))
+      const acc = this.stateManager.getAccountByHash(hash)
+      if (acc === undefined || acc.codeHash === undefined) return false
+      const code = this.stateManager.getCodeByHash(acc.codeHash)
+      return code !== undefined && code.length > 0
+    } catch {
+      return false
+    }
+  }
+
+  getStats(): {
+    ensRegistryReady: boolean
+    ensHits: number
+    tokenHits: number
+    cacheSize: number
+  } {
+    return {
+      ensRegistryReady: this.hasLocalEnsRegistry(),
+      ensHits: this.ensHitsCount,
+      tokenHits: this.tokenHitsCount,
+      cacheSize: this.cache.size,
+    }
   }
 
   getEnsName(address: string): string | undefined {
@@ -133,17 +177,21 @@ export class IdentityResolver {
 
   private async probeOne(address: string, blockNumber: bigint, ensOnly = false): Promise<void> {
     if (this.sandbox === undefined) return
+    const ensReady = this.hasLocalEnsRegistry()
     const name = ensOnly ? undefined : await this.ethCallString(address, NAME_SEL, 48)
     const symbol = ensOnly ? undefined : await this.ethCallString(address, SYMBOL_SEL, 32)
     let ensName: string | undefined
-    const chainId = BigInt(this.chain.chainId)
-    if (chainId === 1n || chainId === 11155111n) {
+    if (ensReady) {
       ensName = await this.resolveEnsReverse(address)
     }
     if (name === undefined && symbol === undefined && ensName === undefined) {
+      // Never cache a 256-block negative miss for ENS-only lookups while ENS Registry code is absent
+      if (ensOnly && !ensReady) return
       this.putCache(address, { block: blockNumber, miss: true })
       return
     }
+    if (ensName !== undefined) this.ensHitsCount += 1
+    if (name !== undefined) this.tokenHitsCount += 1
     this.putCache(address, { block: blockNumber, tokenName: name, symbol, ensName })
   }
 

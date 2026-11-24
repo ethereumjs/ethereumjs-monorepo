@@ -105,6 +105,7 @@ export class ETHEconomyDataManager {
       chain: opts.chain,
       sandbox: opts.sandbox,
       spine: opts.spine,
+      stateManager: opts.stateManager,
     })
   }
 
