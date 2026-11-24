@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { scanBytecodeForensics } from '../src/contracts/contractForensics.ts'
+import { formatCalldataPreview } from '../src/contracts/localAbi.ts'
 
 describe('contractForensics', () => {
   it('finds PUSH20 embedded address in minimal bytecode', () => {
@@ -24,5 +25,21 @@ describe('contractForensics', () => {
     expect(scan.opcodeFlags.tstore).toBe(false)
     expect(scan.opcodeFlags.blobhash).toBe(false)
     expect(scan.embeddedAddresses).toEqual([])
+  })
+
+  it('formats EIP-7702 proxyTarget and calldata previews without double 0x0x prefix', () => {
+    const eip7702 = Buffer.from(`ef0100${'22'.repeat(20)}`, 'hex')
+    const scan = scanBytecodeForensics(eip7702)
+    expect(scan.fingerprint.proxyKind).toBe('EIP-7702')
+    expect(scan.fingerprint.proxyTarget).toBe(`0x${'22'.repeat(20)}`)
+
+    // ERC-20 transfer(address,uint256) selector 0xa9059cbb + recipient + amount
+    const calldata = Buffer.from(
+      `a9059cbb${'0'.repeat(24)}${'33'.repeat(20)}${'0'.repeat(62)}0a`,
+      'hex',
+    )
+    const preview = formatCalldataPreview(calldata)
+    expect(preview).toContain('transfer(')
+    expect(preview).not.toContain('0x0x')
   })
 })

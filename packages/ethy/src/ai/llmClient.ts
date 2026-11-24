@@ -8,8 +8,11 @@ export type LlmCompletionKind = 'pulse' | 'intent' | 'story'
 export type LlmResponseMode = 'json' | 'text'
 
 const PULSE_TIMEOUT_MS = 18_000
+const PULSE_TIMEOUT_RICH_MS = 35_000
 const INTENT_TIMEOUT_MS = 18_000
+const INTENT_TIMEOUT_RICH_MS = 35_000
 const STORY_TIMEOUT_MS = 45_000
+const STORY_TIMEOUT_RICH_MS = 65_000
 const HEALTH_TIMEOUT_MS = 1_500
 
 const LOOPBACK_HOSTS = new Set(['127.0.0.1', 'localhost', '::1'])
@@ -41,11 +44,12 @@ function envTimeoutOverride(): number | undefined {
   }
 }
 
-export function defaultTimeoutMs(kind: LlmCompletionKind): number {
+export function defaultTimeoutMs(kind: LlmCompletionKind, tier: ModelTier = 'compact'): number {
   const env = envTimeoutOverride()
-  if (kind === 'story') return env ?? STORY_TIMEOUT_MS
-  if (kind === 'intent') return INTENT_TIMEOUT_MS
-  return PULSE_TIMEOUT_MS
+  if (env !== undefined) return env
+  if (kind === 'story') return tier === 'rich' ? STORY_TIMEOUT_RICH_MS : STORY_TIMEOUT_MS
+  if (kind === 'intent') return tier === 'rich' ? INTENT_TIMEOUT_RICH_MS : INTENT_TIMEOUT_MS
+  return tier === 'rich' ? PULSE_TIMEOUT_RICH_MS : PULSE_TIMEOUT_MS
 }
 
 export type LlmRequestOverrides = {
@@ -65,7 +69,7 @@ export function resolveLlmRequest(
     responseMode: overrides?.responseMode ?? defaultResponseMode(kind),
     maxTokens: overrides?.maxTokens ?? defaultMaxTokens(kind, tier),
     temperature: overrides?.temperature ?? defaultTemperature(kind),
-    timeoutMs: overrides?.timeoutMs ?? defaultTimeoutMs(kind),
+    timeoutMs: overrides?.timeoutMs ?? defaultTimeoutMs(kind, tier),
   }
 }
 

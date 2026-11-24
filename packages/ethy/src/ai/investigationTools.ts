@@ -338,7 +338,9 @@ function inspectStorageSlot(
   ctx: InvestigationContext,
 ): Record<string, unknown> {
   const addr = normAddr(address)
-  const normSlot = slot.trim().toLowerCase()
+  const normSlot = String(slot ?? '')
+    .trim()
+    .toLowerCase()
   const series = ctx.economy.getSlotTracker().seriesFor(addr, normSlot) ?? []
   const trend = ctx.economy.getSlotTracker().classify(`${addr}:${normSlot}`)
   const identity = ctx.economy.getIdentityResolver()
@@ -491,5 +493,6 @@ export async function probeContractViewLive(
   )
   if ('error' in outcome) return { error: outcome.error }
   const hex = String(outcome.result ?? '')
+  if (hex === '0x' || hex.length <= 2) return { error: 'empty_return' }
   return { address: addr, fn: entry.canonical, value: decodeProbeReturn(entry.canonical, hex) }
 }

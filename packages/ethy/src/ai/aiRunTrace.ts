@@ -104,7 +104,9 @@ export function createAiRunLog(dataDir: string | undefined, network: string): Ai
 
   return {
     append(record: AiRunTraceRecord) {
-      queue.push(`${JSON.stringify(record)}\n`)
+      queue.push(
+        `${JSON.stringify(record, (_k, v) => (typeof v === 'bigint' ? v.toString() : v))}\n`,
+      )
       flush()
     },
     readRecent(limit: number): AiRunTraceRecord[] {

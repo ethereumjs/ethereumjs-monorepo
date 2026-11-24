@@ -40,6 +40,10 @@ import {
 import { buildDeterministicFieldNote } from './storyFallback.ts'
 import { buildScoutSystem, buildStorytellerSystem, cardFromProse } from './storyNarrator.ts'
 
+function safeJSON(obj: unknown): string {
+  return JSON.stringify(obj, (_key, val) => (typeof val === 'bigint' ? val.toString() : val))
+}
+
 export const DETECTIVE_INTERVAL_MS = 75_000
 export const STORY_DWELL_MS = 45_000
 
@@ -303,7 +307,8 @@ export class ChainDetectiveNarrator {
             toolResults,
             focus: lead.lead,
           }
-    const promptChars = JSON.stringify(userPayload).length + system.length
+    const userPayloadJSON = safeJSON(userPayload)
+    const promptChars = userPayloadJSON.length + system.length
     const storyStart = Date.now()
     let raw = ''
     try {
@@ -312,7 +317,7 @@ export class ChainDetectiveNarrator {
           kind: 'story',
           messages: [
             { role: 'system', content: system },
-            { role: 'user', content: JSON.stringify(userPayload) },
+            { role: 'user', content: userPayloadJSON },
           ],
           overrides: { modelTier: tier, responseMode: 'text' },
         },
@@ -461,7 +466,7 @@ export class ChainDetectiveNarrator {
         if (tier === 'rich') {
           const journalHeadlines = this.journal.snapshot(5).map(headlineSnippet)
           const scoutSystem = buildScoutSystem(INVESTIGATION_TOOL_NAMES.join(', '))
-          const scoutUser = JSON.stringify({
+          const scoutUser = safeJSON({
             dossier,
             lead,
             journalHeadlines,
@@ -469,30 +474,48 @@ export class ChainDetectiveNarrator {
           })
           const scoutPromptChars = scoutSystem.length + scoutUser.length
           const scoutStart = Date.now()
-          const raw1 = await this.transport.complete(
-            {
-              kind: 'pulse',
-              messages: [
-                {
-                  role: 'system',
-                  content: scoutSystem,
-                },
-                {
-                  role: 'user',
-                  content: scoutUser,
-                },
-              ],
-              overrides: { responseMode: 'json', modelTier: tier },
-            },
-            controller.signal,
-          )
+          let raw1 = ''
+          try {
+            raw1 = await this.transport.complete(
+              {
+                kind: 'pulse',
+                messages: [
+                  {
+                    role: 'system',
+                    content: scoutSystem,
+                  },
+                  {
+                    role: 'user',
+                    content: scoutUser,
+                  },
+                ],
+                overrides: { responseMode: 'json', modelTier: tier },
+              },
+              controller.signal,
+            )
+          } catch (scoutErr: unknown) {
+            llmCalls.push({
+              stage: 'scout',
+              promptChars: scoutPromptChars,
+              maxTokens: 256,
+              temperature: 0.15,
+              responseMode: 'json',
+              timeoutMs: 35_000,
+              durationMs: Date.now() - scoutStart,
+              rawOutputChars: 0,
+              parsedOk: false,
+              errorKind: llmErrorKindFromUnknown(scoutErr, controller.signal.aborted),
+              errorMessage: scoutErr instanceof Error ? scoutErr.message : String(scoutErr),
+            })
+            throw scoutErr
+          }
           llmCalls.push({
             stage: 'scout',
             promptChars: scoutPromptChars,
             maxTokens: 256,
             temperature: 0.15,
             responseMode: 'json',
-            timeoutMs: 18_000,
+            timeoutMs: 35_000,
             durationMs: Date.now() - scoutStart,
             rawOutputChars: raw1.length,
             rawOutputPreview: capRawPreview(raw1),

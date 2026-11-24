@@ -110,13 +110,16 @@ export async function synthesizeInteractiveStory(
       { role: 'system', content: system },
       {
         role: 'user',
-        content: JSON.stringify({
-          brief,
-          lead,
-          toolResults: opts.toolResults,
-          question: opts.userQuestion,
-          priorStory: opts.journal.latest(),
-        }),
+        content: JSON.stringify(
+          {
+            brief,
+            lead,
+            toolResults: opts.toolResults,
+            question: opts.userQuestion,
+            priorStory: opts.journal.latest(),
+          },
+          (_k, v) => (typeof v === 'bigint' ? v.toString() : v),
+        ),
       },
     ],
     overrides: { modelTier: tier, responseMode: 'text' },

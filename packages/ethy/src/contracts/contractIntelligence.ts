@@ -461,7 +461,7 @@ export function buildCodeLookup(stateManager: FlatStateManager, chain: ChainConf
         const slotHash = ethyKeccak256(hexToBytes(slotNorm))
         const val = stateManager.getStorageByHash(accHash, slotHash)
         if (val === undefined || val.length < 20) return undefined
-        return `0x${bytesToHex(val)}`
+        return bytesToHex(val)
       } catch {
         return undefined
       }
