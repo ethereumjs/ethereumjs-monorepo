@@ -149,8 +149,16 @@ describe('[RLP]: decode null and edge values', () => {
     assert.deepEqual(RLP.decode(Uint8Array.from([0])), Uint8Array.from([0]))
   })
 
-  it('decode() returns empty array for empty input', () => {
-    assert.deepEqual(RLP.decode(Uint8Array.from([])), Uint8Array.from([]))
+  it('decode() throws on empty input (empty string encodes as 0x80)', () => {
+    assert.throws(() => RLP.decode(Uint8Array.from([])), /invalid RLP: input too short/)
+    assert.throws(() => RLP.decode(''), /invalid RLP: input too short/)
+    assert.throws(() => RLP.decode([]), /invalid RLP: input too short/)
+    assert.deepEqual(RLP.decode(Uint8Array.from([0x80])), Uint8Array.from([]))
+  })
+
+  it('decode() still returns empty for null and undefined', () => {
+    assert.deepEqual(RLP.decode(null), Uint8Array.from([]))
+    assert.deepEqual(RLP.decode(undefined), Uint8Array.from([]))
   })
 })
 
