@@ -217,11 +217,22 @@ export function createManagedModelRunner(opts: CreateManagedModelRunnerOpts): Ma
         llamaLogFd = undefined
       }
     }
-    const proc = spawn(command, args, {
-      stdio: llamaLogFd !== undefined ? ['ignore', 'ignore', llamaLogFd] : 'ignore',
-      cwd,
-      env,
-    })
+    let proc: ChildProcess
+    try {
+      proc = spawn(command, args, {
+        stdio: llamaLogFd !== undefined ? ['ignore', 'ignore', llamaLogFd] : 'ignore',
+        cwd,
+        env,
+      })
+    } finally {
+      if (llamaLogFd !== undefined) {
+        try {
+          fs.closeSync(llamaLogFd)
+        } catch {
+          // ignore
+        }
+      }
+    }
     child = proc
     exitKillHandler = () => {
       try {

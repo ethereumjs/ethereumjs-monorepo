@@ -81,6 +81,18 @@ function applyProbeResult(probes: ContractDossierProbes, fn: string, value: unkn
     case 'owner':
       probes.owner = value
       break
+    case 'version':
+      probes.version = value.slice(0, 64)
+      break
+    case 'token0':
+      probes.token0 = value
+      break
+    case 'token1':
+      probes.token1 = value
+      break
+    case 'tokenURI':
+      probes.tokenUriSample = value.slice(0, 120)
+      break
     case 'implementation':
       break
     case 'paused':

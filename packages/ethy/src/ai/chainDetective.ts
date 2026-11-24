@@ -380,7 +380,6 @@ export class ChainDetectiveNarrator {
     beat?: string,
   ): void {
     const lore = selectLoreCards(brief, lens, recentLoreIds(this.journal), 1)[0]
-    if (lore === undefined) return
     const card = buildDeterministicFieldNote(brief, lens, lore, Date.now())
     card.fallbackReason = reason.slice(0, 32)
     card.beatKind = beat
@@ -461,6 +460,14 @@ export class ChainDetectiveNarrator {
 
         if (tier === 'rich') {
           const journalHeadlines = this.journal.snapshot(5).map(headlineSnippet)
+          const scoutSystem = buildScoutSystem(INVESTIGATION_TOOL_NAMES.join(', '))
+          const scoutUser = JSON.stringify({
+            dossier,
+            lead,
+            journalHeadlines,
+            trigger,
+          })
+          const scoutPromptChars = scoutSystem.length + scoutUser.length
           const scoutStart = Date.now()
           const raw1 = await this.transport.complete(
             {
@@ -468,16 +475,11 @@ export class ChainDetectiveNarrator {
               messages: [
                 {
                   role: 'system',
-                  content: buildScoutSystem(INVESTIGATION_TOOL_NAMES.join(', ')),
+                  content: scoutSystem,
                 },
                 {
                   role: 'user',
-                  content: JSON.stringify({
-                    dossier,
-                    lead,
-                    journalHeadlines,
-                    trigger,
-                  }),
+                  content: scoutUser,
                 },
               ],
               overrides: { responseMode: 'json', modelTier: tier },
@@ -486,7 +488,7 @@ export class ChainDetectiveNarrator {
           )
           llmCalls.push({
             stage: 'scout',
-            promptChars: raw1.length,
+            promptChars: scoutPromptChars,
             maxTokens: 256,
             temperature: 0.15,
             responseMode: 'json',

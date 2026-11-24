@@ -326,17 +326,35 @@ export async function runEthySession(node: EthyNode, opts?: EthySessionOpts): Pr
     const storyTrigger = parseStorySlashTrigger(text)
     if (storyTrigger?.action === 'new') {
       node.aiRuntime?.wakeIfDeferred()
-      const addrHint = node.investigationJournal.latest()?.relatedAddress
-      const hint = addrHint !== undefined ? ` · digging into ${addrHint.slice(0, 10)}…` : ''
+      if (detectiveNarrator === undefined) {
+        view = {
+          ...view,
+          aiOverviewSections: {
+            ...view.aiOverviewSections,
+            bootstrapNote:
+              node.spine.aiMode === 'off'
+                ? 'AI mode is off — run /ai to enable stories.'
+                : 'AI runner is still starting — try /story new again in a moment.',
+          },
+        }
+        draw()
+        return
+      }
+      const focusTag =
+        storyTrigger.beat !== undefined
+          ? ` (${storyTrigger.beat.replace(/_/g, ' ')})`
+          : storyTrigger.lens !== undefined
+            ? ` (${storyTrigger.lens})`
+            : ''
       view = {
         ...view,
         aiOverviewSections: {
           ...view.aiOverviewSections,
-          generating: { text: `Writing a fresh story…${hint}` },
+          generating: { text: `Rolling the dice for a fresh story${focusTag}…` },
         },
       }
       draw()
-      void detectiveNarrator?.triggerNow(storyTrigger.lens, storyTrigger.beat).then(() => {
+      void detectiveNarrator.triggerNow(storyTrigger.lens, storyTrigger.beat).then(() => {
         if (gen !== intentGeneration) return
         const { generating: _g, ...rest } = view.aiOverviewSections ?? {}
         view = { ...view, aiOverviewSections: rest }

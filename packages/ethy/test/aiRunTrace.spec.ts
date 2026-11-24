@@ -2,9 +2,12 @@ import * as fs from 'node:fs'
 import * as os from 'node:os'
 import * as path from 'node:path'
 
+import { FlatStateManager } from '@ethereumjs/statemanager'
 import { afterEach, describe, expect, it } from 'vitest'
 
 import { capRawPreview, createAiRunLog } from '../src/ai/aiRunTrace.ts'
+import { HybridIntentEngine } from '../src/ai/hybridEngine.ts'
+import { createSpine } from '../src/spine/createSpine.ts'
 
 describe('aiRunTrace', () => {
   const dirs: string[] = []
@@ -58,5 +61,37 @@ describe('aiRunTrace', () => {
     const long = 'x'.repeat(5000)
     expect(capRawPreview(long).length).toBeLessThan(long.length)
     expect(capRawPreview('short')).toBe('short')
+  })
+
+  it('serves /ai log through HybridIntentEngine with immediate flush', async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'ethy-ai-hybrid-'))
+    dirs.push(root)
+    const log = createAiRunLog(root, 'sepolia')
+    log.append({
+      runId: 'immediate-1',
+      ts: Date.now(),
+      trigger: 'manual',
+      network: 'sepolia',
+      aiMode: 'default',
+      modelTier: 'compact',
+      director: { beat: 'contract_deep_dive' },
+      llmCalls: [],
+      source: 'llm',
+      headline: 'Fresh contract deep dive',
+      totalLatencyMs: 2400,
+    })
+    const engine = new HybridIntentEngine({
+      stateManager: new FlatStateManager(),
+      dataDir: root,
+    })
+    const spine = createSpine('sepolia', 11155111n)
+    const res = await engine.handle({ text: '/ai log 5', spine })
+    expect(res.widget.kind).toBe('table')
+    if (res.widget.kind === 'table') {
+      expect(res.widget.title).toBe('/ai log')
+      expect(res.widget.rows.length).toBe(1)
+      expect(res.widget.rows[0]?.[0]).toBe('LLM')
+      expect(res.widget.rows[0]?.[1]).toBe('contract_deep_dive')
+    }
   })
 })

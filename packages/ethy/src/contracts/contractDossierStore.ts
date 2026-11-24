@@ -92,12 +92,20 @@ export class ContractDossierStore {
     this.flushTimer.unref?.()
   }
 
+  private parseBlockNum(block: string | undefined): bigint {
+    try {
+      return BigInt(block ?? '0')
+    } catch {
+      return 0n
+    }
+  }
+
   private enforceLru(): void {
     while (this.entries.size > LRU_CAP) {
       let oldest: string | undefined
-      let oldestBlock = ''
+      let oldestBlock = 0n
       for (const [addr, row] of this.entries) {
-        const block = row.lastSeenBlock ?? '0'
+        const block = this.parseBlockNum(row.lastSeenBlock)
         if (oldest === undefined || block < oldestBlock) {
           oldest = addr
           oldestBlock = block
@@ -132,17 +140,28 @@ export class ContractDossierStore {
     scan: ForensicStaticScan,
     proxyKind?: string,
     implAddress?: string,
+    implCodeHash?: string,
   ): ContractDossierEntry {
     const key = address.toLowerCase()
     const prev = this.entries.get(key)
-    const codeChanged = prev !== undefined && prev.codeHash !== scan.codeHash
+    const normImpl = implAddress?.toLowerCase()
+    const codeChanged =
+      prev !== undefined &&
+      (prev.codeHash !== scan.codeHash ||
+        (normImpl !== undefined &&
+          prev.implAddress !== undefined &&
+          prev.implAddress.toLowerCase() !== normImpl) ||
+        (implCodeHash !== undefined &&
+          prev.implCodeHash !== undefined &&
+          prev.implCodeHash !== implCodeHash))
     const row: ContractDossierEntry = {
       address: key,
       codeHash: scan.codeHash,
       bytecodeSize: scan.bytecodeSize,
       compilerHint: scan.compilerHint,
       proxyKind: proxyKind ?? scan.fingerprint.proxyKind,
-      implAddress,
+      implAddress: normImpl ?? prev?.implAddress,
+      implCodeHash: implCodeHash ?? (codeChanged ? undefined : prev?.implCodeHash),
       knownSelectors: scan.knownSelectors,
       unknownSelectorCount: scan.unknownSelectors.length,
       embeddedStrings: scan.embeddedStrings,
@@ -152,7 +171,7 @@ export class ContractDossierStore {
       lastSeenBlock: blockNumber,
       timesFeatured: prev?.timesFeatured ?? 0,
       lastFeaturedAtMs: prev?.lastFeaturedAtMs,
-      aiNotes: codeChanged ? prev?.aiNotes : prev?.aiNotes,
+      aiNotes: codeChanged ? undefined : prev?.aiNotes,
       previousHypotheses: codeChanged
         ? [...(prev?.previousHypotheses ?? []), prev?.aiNotes?.hypothesis]
             .filter((x): x is string => typeof x === 'string' && x.length > 0)

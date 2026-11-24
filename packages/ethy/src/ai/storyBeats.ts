@@ -137,16 +137,17 @@ function beatRepeatPenalty(journal: InvestigationJournal, beat: StoryBeatKind): 
   return 1
 }
 
-function sampleWeighted(weights: number[], rng: () => number): number {
+function sampleWeighted(weights: number[], rng: () => number): { idx: number; roll: number } {
   const tempered = weights.map((w) => w ** (1 / BEAT_TEMPERATURE))
   const sum = tempered.reduce((a, b) => a + b, 0)
-  if (sum <= 0) return 0
-  let roll = rng() * sum
+  const rawRoll = rng()
+  if (sum <= 0) return { idx: 0, roll: rawRoll }
+  let cursor = rawRoll * sum
   for (let i = 0; i < tempered.length; i++) {
-    roll -= tempered[i]!
-    if (roll <= 0) return i
+    cursor -= tempered[i]!
+    if (cursor <= 0) return { idx: i, roll: rawRoll }
   }
-  return tempered.length - 1
+  return { idx: tempered.length - 1, roll: rawRoll }
 }
 
 export type PickStoryBeatOpts = {
@@ -190,9 +191,15 @@ export function pickStoryBeat(
       ]
     }
   }
-  pool.sort((a, b) => b.baseScore - a.baseScore)
-  const top = pool.slice(0, TOP_K)
-  const weights = top.map((c) => {
+  // Deduplicate by subjectKey (keeping highest baseScore) before weighting.
+  const deduped = new Map<string, StoryBeatCandidate>()
+  for (const c of pool) {
+    const prev = deduped.get(c.subjectKey)
+    if (prev === undefined || c.baseScore > prev.baseScore) {
+      deduped.set(c.subjectKey, c)
+    }
+  }
+  const scored = [...deduped.values()].map((c) => {
     let w =
       c.baseScore *
       addressRepeatPenalty(journal, c.subjectKey, c.address, c.followUp) *
@@ -200,20 +207,20 @@ export function pickStoryBeat(
     if (c.address !== undefined && opts?.dossierNoveltyBoost !== undefined) {
       w *= opts.dossierNoveltyBoost(c.address)
     }
-    if (w < 0.5 && c.followUp !== true) return 0
-    return w
+    const effective = w < 0.5 && c.followUp !== true ? 0 : w
+    return { candidate: c, weight: effective }
   })
-  const viable = top.filter((_, i) => weights[i]! > 0)
-  const viableWeights = weights.filter((w) => w > 0)
-  const pickFrom = viable.length > 0 ? viable : top
-  const pickWeights = viable.length > 0 ? viableWeights : weights.map((w) => Math.max(w, 0.01))
-  const idx = sampleWeighted(pickWeights, rng)
-  const chosen = pickFrom[idx]!
+  scored.sort((a, b) => b.weight - a.weight || b.candidate.baseScore - a.candidate.baseScore)
+  const top = scored.slice(0, TOP_K)
+  const viable = top.filter((x) => x.weight > 0)
+  const pickPool = viable.length > 0 ? viable : top
+  const pickWeights = pickPool.map((x) => Math.max(x.weight, 0.01))
+  const { idx, roll } = sampleWeighted(pickWeights, rng)
+  const chosen = pickPool[idx]!.candidate
   const lens = opts?.lens ?? chosen.lens
-  const roll = rng()
-  const candidateTable = pickFrom.map((c, i) => ({
-    beat: c.beat,
-    subjectKey: c.subjectKey,
+  const candidateTable = pickPool.map((x, i) => ({
+    beat: x.candidate.beat,
+    subjectKey: x.candidate.subjectKey,
     weight: Math.round(pickWeights[i]! * 10) / 10,
   }))
   return {

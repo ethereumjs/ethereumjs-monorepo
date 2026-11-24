@@ -90,10 +90,8 @@ export function createAiRunLog(dataDir: string | undefined, network: string): Ai
   }
   const filePath = path.join(flightRecorderPaths(dataDir, network).logsDir, 'ai-runs.jsonl')
   const queue: string[] = []
-  let flushScheduled = false
 
   const flush = () => {
-    flushScheduled = false
     if (queue.length === 0) return
     rotateIfNeeded(filePath, AI_RUNS_MAX_BYTES)
     try {
@@ -107,12 +105,10 @@ export function createAiRunLog(dataDir: string | undefined, network: string): Ai
   return {
     append(record: AiRunTraceRecord) {
       queue.push(`${JSON.stringify(record)}\n`)
-      if (!flushScheduled) {
-        flushScheduled = true
-        setImmediate(flush)
-      }
+      flush()
     },
     readRecent(limit: number): AiRunTraceRecord[] {
+      flush()
       if (!fs.existsSync(filePath)) return []
       try {
         const lines = fs.readFileSync(filePath, 'utf8').trim().split('\n')

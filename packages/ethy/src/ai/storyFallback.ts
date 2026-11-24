@@ -6,7 +6,7 @@ import type { StoryLens } from './storyDirector.ts'
 export function buildDeterministicFieldNote(
   brief: StoryBrief,
   lens: StoryLens,
-  loreCard: EthereumLoreCard,
+  loreCard: EthereumLoreCard | undefined,
   atMs: number,
 ): ChainDispatchCard {
   const head = brief.head
@@ -19,11 +19,10 @@ export function buildDeterministicFieldNote(
         ? `${hot.knownName ?? hot.address} active in the window`
         : `block ${head.blockNumber ?? '?'}`
 
-  const body = [
-    artifact,
-    loreCard.attackOrEdgeScenario,
-    `Inspect: ${moment?.address ?? hot?.address ?? head.blockNumber ?? 'signals'}.`,
-  ].join(' ')
+  const bodyParts = [artifact]
+  if (loreCard !== undefined) bodyParts.push(loreCard.attackOrEdgeScenario)
+  bodyParts.push(`Inspect: ${moment?.address ?? hot?.address ?? head.blockNumber ?? 'signals'}.`)
+  const body = bodyParts.join(' ')
 
   const curiosity = hot?.knownName ?? moment?.headline ?? 'What changed in the last few blocks?'
 
@@ -37,13 +36,18 @@ export function buildDeterministicFieldNote(
     deterministic: true,
     lens,
     network: brief.network,
-    angle: loreCard.historicalEcho.slice(0, 280),
+    angle: loreCard?.historicalEcho.slice(0, 280),
     fallbackReason: 'deterministic',
-    angleKind: 'history',
+    angleKind: loreCard !== undefined ? 'history' : undefined,
     curiosityQuestion: curiosity,
-    loreCardId: loreCard.id,
+    loreCardId: loreCard?.id,
     subjectKey: moment !== undefined ? `moment:${moment.id}` : `head:${head.blockNumber ?? '0'}`,
     relatedAddress: moment?.address ?? hot?.address,
-    suggestedAction: '/story new',
+    suggestedAction:
+      moment?.address !== undefined
+        ? `/contract ${moment.address}`
+        : hot?.address !== undefined
+          ? `/contract ${hot.address}`
+          : '/story new',
   }
 }

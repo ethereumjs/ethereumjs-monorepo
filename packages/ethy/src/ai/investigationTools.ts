@@ -45,6 +45,13 @@ const PROBE_ENTRIES: ReadonlyArray<{ selector: `0x${string}`; canonical: string 
   { selector: '0x8da5cb5b', canonical: 'owner' },
   { selector: '0x5c60da1b', canonical: 'implementation' },
   { selector: '0x5c975abb', canonical: 'paused' },
+  { selector: '0x54fd4d50', canonical: 'version' },
+  { selector: '0x0dfe1681', canonical: 'token0' },
+  { selector: '0xd21220a7', canonical: 'token1' },
+  {
+    selector: '0xc87b56dd0000000000000000000000000000000000000000000000000000000000000001',
+    canonical: 'tokenURI',
+  },
 ]
 
 function lookupProbeEntry(fn: string): { selector: `0x${string}`; canonical: string } | undefined {
@@ -419,13 +426,23 @@ function decodeProbeReturn(canonicalFn: string, rawHex: string): string {
   if (!rawHex.startsWith('0x') || rawHex.length <= 2) return rawHex
   try {
     const bytes = hexToBytes(rawHex as `0x${string}`)
-    if (canonicalFn === 'name' || canonicalFn === 'symbol') {
+    if (
+      canonicalFn === 'name' ||
+      canonicalFn === 'symbol' ||
+      canonicalFn === 'version' ||
+      canonicalFn === 'tokenURI'
+    ) {
       return decodeAbiString(bytes) ?? rawHex.slice(0, 66)
     }
     if (canonicalFn === 'decimals' || canonicalFn === 'totalSupply') {
       if (bytes.length >= 32) return bytesToBigInt(bytes.subarray(0, 32)).toString()
     }
-    if (canonicalFn === 'owner' || canonicalFn === 'implementation') {
+    if (
+      canonicalFn === 'owner' ||
+      canonicalFn === 'implementation' ||
+      canonicalFn === 'token0' ||
+      canonicalFn === 'token1'
+    ) {
       if (bytes.length >= 32) return bytesToHex(bytes.subarray(12, 32)).toLowerCase()
     }
     if (canonicalFn === 'paused') {

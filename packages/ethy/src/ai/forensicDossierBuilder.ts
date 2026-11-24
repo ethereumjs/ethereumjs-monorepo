@@ -8,6 +8,7 @@ import type {
 } from '../contracts/contractDossierStore.ts'
 import { scanBytecodeForensics } from '../contracts/contractForensics.ts'
 import { buildCodeLookup, resolveCodeForAddress } from '../contracts/contractIntelligence.ts'
+import { EIP1967_IMPLEMENTATION_SLOT } from '../contracts/signatureCatalog.ts'
 import type { ETHEconomyDataManager } from '../economy/economyDataManager.ts'
 import type { EthySandbox } from '../evm/sandbox.ts'
 import type { EthySpine } from '../spine/types.ts'
@@ -79,9 +80,15 @@ export async function buildForensicDossier(opts: {
       if (agg?.implSlotValue !== undefined && /^0x[0-9a-f]{40}$/i.test(agg.implSlotValue)) {
         return agg.implSlotValue
       }
+      if (scan.fingerprint.pushes1967ImplSlot) {
+        const slotHex = lookup.getStorageSlotForAddress?.(addr, EIP1967_IMPLEMENTATION_SLOT)
+        if (slotHex !== undefined && slotHex.length >= 42) {
+          const candidate = `0x${slotHex.slice(-40).toLowerCase()}`
+          if (candidate !== `0x${'0'.repeat(40)}`) return candidate
+        }
+      }
       return undefined
     })()
-    opts.store?.upsertStatic(addr, opts.blockNumber, scan, scan.fingerprint.proxyKind, implAddr)
     if (implAddr !== undefined && implAddr.toLowerCase() !== addr.toLowerCase()) {
       const implAgg = opts.economy.getContractAgg(implAddr)
       const implCode = resolveCodeForAddress(implAddr, lookup, implAgg)
@@ -89,12 +96,21 @@ export async function buildForensicDossier(opts: {
         dossier.implStatic = scanBytecodeForensics(implCode)
       }
     }
+    opts.store?.upsertStatic(
+      addr,
+      opts.blockNumber,
+      scan,
+      scan.fingerprint.proxyKind,
+      implAddr,
+      dossier.implStatic?.codeHash,
+    )
   }
 
   const prior = opts.store?.get(addr)?.aiNotes?.hypothesis
   if (prior !== undefined) dossier.priorHypothesis = prior
 
-  if (dossier.static !== undefined && opts.sandbox !== undefined && opts.spine !== undefined) {
+  const probeScan = dossier.implStatic ?? dossier.static
+  if (probeScan !== undefined && opts.sandbox !== undefined && opts.spine !== undefined) {
     const ctx: InvestigationContext = {
       economy: opts.economy,
       stateManager: opts.stateManager,
@@ -105,7 +121,7 @@ export async function buildForensicDossier(opts: {
     const probes = await runDossierViewProbes({
       ctx,
       address: addr,
-      scan: dossier.static,
+      scan: probeScan,
       blockNumber: opts.blockNumber,
       store: opts.store,
     })

@@ -90,4 +90,32 @@ describe('ContractDossierStore', () => {
     expect(again.get(addr)?.probes?.name).toBe('Demo')
     fs.rmSync(root, { recursive: true, force: true })
   })
+
+  it('archives hypothesis and clears stale probes/aiNotes on codeHash or proxy impl change', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'ethy-dossier-upgrade-'))
+    const store = ContractDossierStore.open(root, 'sepolia')!
+    const addr = '0x00000000000000000000000000000000000000bb'
+    store.upsertStatic(
+      addr,
+      '100',
+      minimalScan({ erc20: true }),
+      'EIP-1967',
+      '0x1111111111111111111111111111111111111111',
+    )
+    store.mergeProbes(addr, '101', { name: 'OldToken', probedAtBlock: '101' })
+    store.noteFeatured(addr, 'Likely an old ERC-20 test proxy', 'Qwen3.5-2B')
+    // Proxy implementation upgraded to a new address
+    store.upsertStatic(
+      addr,
+      '200',
+      minimalScan({ erc20: true }),
+      'EIP-1967',
+      '0x2222222222222222222222222222222222222222',
+    )
+    const updated = store.get(addr)!
+    expect(updated.probes).toBeUndefined()
+    expect(updated.aiNotes).toBeUndefined()
+    expect(updated.previousHypotheses).toContain('Likely an old ERC-20 test proxy')
+    fs.rmSync(root, { recursive: true, force: true })
+  })
 })

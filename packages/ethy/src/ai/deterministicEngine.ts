@@ -52,6 +52,8 @@ export type DeterministicIntentEngineOpts = {
   chain?: ChainConfig
   sandbox?: EthySandbox
   journal?: InvestigationJournal
+  dataDir?: string
+  dossierStore?: ContractDossierStore
 }
 
 type RawTxSubmitter = (hex: string) => Promise<{ result: string } | { error: { message: string } }>
@@ -248,6 +250,8 @@ export class DeterministicIntentEngine implements IntentEngine {
   private readonly chain?: ChainConfig
   private readonly sandbox?: EthySandbox
   private readonly journal?: InvestigationJournal
+  private readonly dataDir?: string
+  private readonly dossierStore?: ContractDossierStore
   private disconnectPeer?: (peerId: string) => void
   private submitRawTransaction?: RawTxSubmitter
 
@@ -258,6 +262,8 @@ export class DeterministicIntentEngine implements IntentEngine {
     this.chain = opts.chain
     this.sandbox = opts.sandbox
     this.journal = opts.journal
+    this.dataDir = opts.dataDir
+    this.dossierStore = opts.dossierStore
     this.disconnectPeer = opts.disconnectPeer
   }
 
@@ -317,6 +323,8 @@ export class DeterministicIntentEngine implements IntentEngine {
           economy: this.economy,
           chain: this.chain,
           journal: this.journal,
+          dataDir: this.dataDir,
+          dossierStore: this.dossierStore,
         })
       }
     } else if (
@@ -325,7 +333,14 @@ export class DeterministicIntentEngine implements IntentEngine {
     ) {
       const addr = trimmed.match(/0x[0-9a-f]{40}/i)?.[0] ?? ''
       if (this.economy !== undefined && this.chain !== undefined) {
-        widget = contractMicroscopeWidget(spine, this.stateManager, this.chain, this.economy, addr)
+        widget = contractMicroscopeWidget(
+          spine,
+          this.stateManager,
+          this.chain,
+          this.economy,
+          addr,
+          this.dossierStore,
+        )
       } else {
         widget = economyDeepViewWidget(spine)
       }

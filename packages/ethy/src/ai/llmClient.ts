@@ -258,8 +258,11 @@ async function postOllamaChat(
       signal,
     )
   } catch (e: unknown) {
-    const kindErr = signal?.aborted === true ? 'aborted' : 'timeout'
-    throw new LlmWireError(kindErr, (e as Error).message, { durationMs: Date.now() - started })
+    const isAbort = e instanceof Error && e.name === 'AbortError'
+    const kindErr = signal?.aborted === true ? 'aborted' : isAbort ? 'timeout' : 'network'
+    throw new LlmWireError(kindErr, e instanceof Error ? e.message : String(e), {
+      durationMs: Date.now() - started,
+    })
   }
   if (!res.ok) {
     throw new LlmWireError('http_error', `LLM HTTP ${res.status}`, {
@@ -317,8 +320,11 @@ export async function postChatCompletion(
       signal,
     )
   } catch (e: unknown) {
-    const kindErr = signal?.aborted === true ? 'aborted' : 'timeout'
-    throw new LlmWireError(kindErr, (e as Error).message, { durationMs: Date.now() - started })
+    const isAbort = e instanceof Error && e.name === 'AbortError'
+    const kindErr = signal?.aborted === true ? 'aborted' : isAbort ? 'timeout' : 'network'
+    throw new LlmWireError(kindErr, e instanceof Error ? e.message : String(e), {
+      durationMs: Date.now() - started,
+    })
   }
   if (!res.ok) {
     throw new LlmWireError('http_error', `LLM HTTP ${res.status}`, {

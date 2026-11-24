@@ -200,6 +200,8 @@ export function createEthyNode(opts: CreateEthyNodeOptions): EthyNode {
       chain,
       sandbox,
       journal: investigationJournal,
+      dataDir: demo ? undefined : dataDir,
+      dossierStore,
     })
     intentEngine = hybridEngine
   }
@@ -216,6 +218,8 @@ export function createEthyNode(opts: CreateEthyNodeOptions): EthyNode {
       chain,
       sandbox,
       journal: investigationJournal,
+      dataDir: demo ? undefined : dataDir,
+      dossierStore,
     })
   }
   intentEngine = hybridEngine

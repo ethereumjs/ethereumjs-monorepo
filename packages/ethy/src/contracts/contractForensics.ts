@@ -38,18 +38,18 @@ function isTrivialAddress(hex: string): boolean {
 
 function scanPush20(code: Uint8Array): string[] {
   const out: string[] = []
-  for (let pc = 0; pc < code.length; pc++) {
+  for (let pc = 0; pc < code.length; ) {
     const op = code[pc]!
-    if (op >= 0x73 && op <= 0x7b) {
+    if (op >= 0x60 && op <= 0x7f) {
       const width = op - 0x5f
-      if (pc + width >= code.length) continue
-      const slice = code.subarray(pc + 1, pc + 1 + width)
-      if (width < 20) continue
-      const addrBytes = slice.subarray(slice.length - 20)
-      const hex = bytesToHex(addrBytes)
-      if (!isTrivialAddress(hex)) out.push(hex)
-      pc += width
+      if (op === 0x73 && pc + 20 < code.length) {
+        const hex = bytesToHex(code.subarray(pc + 1, pc + 21))
+        if (!isTrivialAddress(hex)) out.push(hex)
+      }
+      pc += 1 + width
+      continue
     }
+    pc += 1
   }
   return [...new Set(out)].slice(0, 6)
 }
@@ -91,13 +91,19 @@ function opcodeFlags(code: Uint8Array): ForensicStaticScan['opcodeFlags'] {
   let tstore = false
   let blobhash = false
   let selfdestruct = false
-  for (const op of code) {
+  for (let pc = 0; pc < code.length; ) {
+    const op = code[pc]!
+    if (op >= 0x60 && op <= 0x7f) {
+      pc += 1 + (op - 0x5f)
+      continue
+    }
     if (op === 0xf0) create = true
-    if (op === 0xf5) create2 = true
-    if (op === 0xf4) delegatecall = true
-    if (op === 0x5c) tstore = true
-    if (op === 0x49) blobhash = true
-    if (op === 0xff) selfdestruct = true
+    else if (op === 0xf5) create2 = true
+    else if (op === 0xf4) delegatecall = true
+    else if (op === 0x5c) tstore = true
+    else if (op === 0x49) blobhash = true
+    else if (op === 0xff) selfdestruct = true
+    pc += 1
   }
   return { create, create2, delegatecall, tstore, blobhash, selfdestruct }
 }
