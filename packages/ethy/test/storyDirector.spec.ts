@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { InvestigationJournal } from '../src/ai/investigationJournal.ts'
+import { isInterestingProposerGraffiti } from '../src/ai/storyBeats.ts'
 import type { StoryBrief } from '../src/ai/storyBrief.ts'
 import { directStory, parseLensOverride } from '../src/ai/storyDirector.ts'
 
@@ -77,5 +78,65 @@ describe('storyDirector', () => {
     })
     const lead = directStory(brief(), journal)
     expect(lead.followUp).toBe(true)
+  })
+
+  it('demotes bare anonymous tiny contracts & births below graffiti notes and rich contracts', () => {
+    const journal = new InvestigationJournal()
+    const mixed = brief({
+      signals: [],
+      moments: [
+        {
+          id: 'b1',
+          kind: 'birth',
+          blockNumber: '500',
+          headline: 'New 0.2 KB deployed at 0x1111..2222',
+          address: '0x1111111111111111111111111111111111112222',
+        },
+        {
+          id: 'g1',
+          kind: 'graffiti_note',
+          blockNumber: '500',
+          headline: 'alice.eth wrote on-chain: "hello sepolia!"',
+          address: '0x000000000000000000000000000000000000abcd',
+        },
+      ],
+      hotContracts: [
+        {
+          address: '0x2222222222222222222222222222222222222222',
+          blocksActive: 4,
+          storageWrites: 2,
+          storageReads: 0,
+          netEthDeltaWei: 0n,
+        },
+      ],
+    })
+    const lead = directStory(mixed, journal, undefined, { rng: () => 0.01 })
+    expect(lead.subjectKey).toBe('moment:g1')
+    expect(lead.format).toBe('snap')
+    const birthCandidate = lead.beatCandidates?.find((c) => c.subjectKey === 'moment:b1')
+    const bareCandidate = lead.beatCandidates?.find(
+      (c) => c.subjectKey === 'contract:0x2222222222222222222222222222222222222222',
+    )
+    const noteCandidate = lead.beatCandidates?.find((c) => c.subjectKey === 'moment:g1')
+    expect(noteCandidate!.weight).toBeGreaterThan(birthCandidate!.weight)
+    expect(noteCandidate!.weight).toBeGreaterThan(bareCandidate!.weight)
+  })
+
+  it('filters routine client graffiti and promotes human validator graffiti as a snap', () => {
+    expect(isInterestingProposerGraffiti('geth/v1.15.0')).toBe(false)
+    expect(isInterestingProposerGraffiti('besu/v25.1.0')).toBe(false)
+    expect(isInterestingProposerGraffiti('0xdeadbeef01')).toBe(false)
+    expect(isInterestingProposerGraffiti('hi mom from home staking')).toBe(true)
+
+    const journal = new InvestigationJournal()
+    const withGraffiti = brief({
+      head: { blockNumber: '500', proposerGraffiti: 'hi mom from home staking' },
+      signals: [],
+      moments: [],
+      hotContracts: [],
+    })
+    const lead = directStory(withGraffiti, journal, undefined, { rng: () => 0.01 })
+    expect(lead.subjectKey).toBe('proposer_graffiti:hi mom from home staking')
+    expect(lead.format).toBe('snap')
   })
 })

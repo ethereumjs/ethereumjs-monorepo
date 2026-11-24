@@ -15,8 +15,11 @@ export type StoryBeatKind =
   | 'tx_or_address_oddity'
   | 'protocol_feature_spot'
 
+export type StoryFormat = 'snap' | 'field_note'
+
 export type StoryBeatCandidate = {
   beat: StoryBeatKind
+  format: StoryFormat
   baseScore: number
   subjectKey: string
   address?: string
@@ -34,6 +37,24 @@ export type StoryBeatPick = StoryBeatCandidate & {
 const BEAT_TEMPERATURE = 0.85
 const TOP_K = 8
 
+// cspell:ignore erigon prysm teku grandine openethereum
+const ROUTINE_CLIENT_GRAFFITI_RE =
+  /^(?:geth|erigon|reth|besu|nethermind|nimbus|prysm|lighthouse|teku|lodestar|grandine|ethereumjs|parity|openethereum)(?:[\s/_-]|$)/i
+
+/**
+ * True when validator extraData looks like a human message or pool tag rather than
+ * a routine execution/consensus client version banner or raw hex string.
+ */
+export function isInterestingProposerGraffiti(raw?: string): boolean {
+  if (raw === undefined) return false
+  const trimmed = raw.trim()
+  if (trimmed.length < 3 || trimmed.length > 64) return false
+  if (ROUTINE_CLIENT_GRAFFITI_RE.test(trimmed)) return false
+  if (/^(?:0x)?[0-9a-f]{6,}$/i.test(trimmed)) return false
+  if (!/[a-zA-Z]/.test(trimmed)) return false
+  return true
+}
+
 function lensForBeat(beat: StoryBeatKind, signalKind?: string): StoryLens {
   if (beat === 'protocol_feature_spot' && signalKind === 'delegation_surge') return 'security'
   if (beat === 'storage_slot_pulse') return 'detective'
@@ -46,10 +67,24 @@ function lensForBeat(beat: StoryBeatKind, signalKind?: string): StoryLens {
 function buildContractCandidates(brief: StoryBrief, limit: number): StoryBeatCandidate[] {
   const rows = [...brief.hotContracts].slice(0, limit)
   return rows.map((row, i) => {
-    const unknown = row.proxyKind !== undefined ? 1 : 0
-    const score = Math.max(25, 90 - i * 6 + unknown * 8)
+    const hasKnownName = row.knownName !== undefined
+    const hasProxy = row.proxyKind !== undefined
+    const hasCalls = (row.callPreviews?.length ?? 0) > 0
+    const hasEvents = (row.eventPreviews?.length ?? 0) > 0
+    const hasArchetype = row.archetype !== undefined && row.archetype !== 'Contract'
+    const richness =
+      (hasKnownName ? 14 : 0) +
+      (hasProxy ? 10 : 0) +
+      (hasCalls ? 10 : 0) +
+      (hasEvents ? 8 : 0) +
+      (hasArchetype ? 8 : 0)
+    // Rich contracts lead the deep-dive lane; bare anonymous silent contracts stay low
+    // so richer moments, notes, and named protocols win naturally.
+    const score =
+      richness > 0 ? Math.min(95, Math.max(48, 72 - i * 5 + richness)) : Math.max(18, 32 - i * 3)
     return {
       beat: 'contract_deep_dive' as const,
+      format: 'field_note' as const,
       baseScore: score,
       subjectKey: `contract:${row.address}`,
       address: row.address,
@@ -60,10 +95,53 @@ function buildContractCandidates(brief: StoryBrief, limit: number): StoryBeatCan
 }
 
 function momentBeat(moment: StoryBriefMoment): StoryBeatKind {
-  if (moment.kind === 'birth' || moment.kind === 'first_step') return 'newborn_contract'
+  if (moment.kind === 'birth') return 'newborn_contract'
   if (moment.kind === 'eip7702' || moment.kind === 'blob_anchor') return 'protocol_feature_spot'
   if (moment.kind === 'choreography' || moment.kind === 'revert') return 'call_pattern_mystery'
   return 'tx_or_address_oddity'
+}
+
+function momentFormat(moment: StoryBriefMoment): StoryFormat {
+  if (
+    moment.kind === 'graffiti_note' ||
+    moment.kind === 'veteran' ||
+    moment.kind === 'first_step' ||
+    moment.kind === 'heartbeat'
+  ) {
+    return 'snap'
+  }
+  return 'field_note'
+}
+
+function momentBaseScore(moment: StoryBriefMoment, idx: number): number {
+  const decay = idx * 4
+  switch (moment.kind) {
+    case 'graffiti_note':
+      return Math.max(70, 94 - decay)
+    case 'eip7702':
+    case 'blob_anchor':
+      return Math.max(55, 84 - decay)
+    case 'choreography':
+    case 'whale':
+    case 'revert':
+      return Math.max(50, 80 - decay)
+    case 'veteran':
+    case 'first_step':
+      return Math.max(48, 74 - decay)
+    case 'birth': {
+      // Bare tiny unnamed deployments (0.0–0.4 KB, no [Archetype] badge) are usually noise;
+      // demote them so rich deployments, notes, and active protocols take priority.
+      const hasArchetypeBadge = /\[[^\]]+\]/.test(moment.headline)
+      const kbMatch = /New\s+(\d+(?:\.\d+)?)\s*KB/i.exec(moment.headline)
+      const kb = kbMatch !== null ? Number.parseFloat(kbMatch[1]!) : 0
+      if (hasArchetypeBadge || kb >= 1.5) {
+        return Math.max(45, 68 - decay)
+      }
+      return Math.max(16, 22 - idx * 2)
+    }
+    default:
+      return Math.max(15, 20 - idx * 2)
+  }
 }
 
 function buildMomentCandidates(brief: StoryBrief): StoryBeatCandidate[] {
@@ -71,13 +149,31 @@ function buildMomentCandidates(brief: StoryBrief): StoryBeatCandidate[] {
     const beat = momentBeat(m)
     return {
       beat,
-      baseScore: Math.max(30, 75 - i * 5),
+      format: momentFormat(m),
+      baseScore: momentBaseScore(m, i),
       subjectKey: `moment:${m.id}`,
       address: m.address,
       lead: m.headline,
       lens: lensForBeat(beat, m.kind),
     }
   })
+}
+
+function buildProposerGraffitiCandidate(brief: StoryBrief): StoryBeatCandidate[] {
+  const msg = brief.head.proposerGraffiti?.trim()
+  if (!isInterestingProposerGraffiti(msg) || msg === undefined) return []
+  const blockLabel =
+    brief.head.blockNumber !== undefined ? `#${brief.head.blockNumber}` : 'the head block'
+  return [
+    {
+      beat: 'tx_or_address_oddity',
+      format: 'snap',
+      baseScore: 88,
+      subjectKey: `proposer_graffiti:${msg.toLowerCase()}`,
+      lead: `Validator stamped block ${blockLabel} with graffiti: "${msg}"`,
+      lens: 'lore',
+    },
+  ]
 }
 
 function buildSignalCandidates(
@@ -100,6 +196,7 @@ function buildSignalCandidates(
     }
     return {
       beat,
+      format: 'field_note' as const,
       baseScore: sig.noveltyScore - i * 3,
       subjectKey: `signal:${sig.id}`,
       address: sig.address,
@@ -164,6 +261,7 @@ export function pickStoryBeat(
 ): StoryBeatPick {
   const rng = opts?.rng ?? Math.random
   let pool: StoryBeatCandidate[] = [
+    ...buildProposerGraffitiCandidate(brief),
     ...buildSignalCandidates(brief, journal),
     ...buildMomentCandidates(brief),
     ...buildContractCandidates(brief, 12),
@@ -171,6 +269,7 @@ export function pickStoryBeat(
   if (pool.length === 0) {
     pool.push({
       beat: 'tx_or_address_oddity',
+      format: 'snap',
       baseScore: 20,
       subjectKey: `head:${brief.head.blockNumber ?? '0'}`,
       lead: `Block ${brief.head.blockNumber ?? '?'} — still watching the window`,
@@ -183,6 +282,7 @@ export function pickStoryBeat(
       pool = [
         {
           beat: opts.beat,
+          format: opts.beat === 'tx_or_address_oddity' ? 'snap' : 'field_note',
           baseScore: 50,
           subjectKey: `beat:${opts.beat}`,
           lead: `Fresh ${opts.beat.replace(/_/g, ' ')} angle`,

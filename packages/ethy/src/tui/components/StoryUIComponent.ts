@@ -49,7 +49,9 @@ export function renderStoryUIComponent(
   const badge =
     story.deterministic === true
       ? `[FALLBACK · ${(story.fallbackReason ?? 'offline').slice(0, 24)}]`
-      : `[STORY · ${shortModel}]`
+      : story.format === 'snap'
+        ? `[SNAP · ${shortModel}]`
+        : `[STORY · ${shortModel}]`
   const net = (story.network ?? 'NETWORK').toUpperCase()
   const ageSec = Math.max(0, Math.round((Date.now() - story.atMs) / 1000))
   const block = story.blockNumber !== undefined ? ` · #${story.blockNumber}` : ''

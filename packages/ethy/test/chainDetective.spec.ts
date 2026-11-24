@@ -241,4 +241,62 @@ CURIOSITY: What changes when demand spikes?`
     expect(journal.latest()?.lens).toBe('security')
     expect(journal.latest()?.modelLabel).toBe('qwen2.5:14b')
   })
+
+  it('sends clean plain-English facts without dossier/dice/candidate leaks and rejects invented slash commands', async () => {
+    const chain = Mainnet
+    const hardfork = Hardfork.Cancun
+    const common = new Common({ chain, hardfork })
+    const stateManager = createFlatStateManager({ common })
+    const spine = createSpine('mainnet', 1n)
+    spine.aiMode = 'local'
+    const targetAddr = '0x000000000000000000000000000000000000abcd'
+    spine.economy = {
+      hasBlocks: true,
+      latestBlockNumber: '102',
+      topContracts: [],
+      recentBlocks: [],
+      signals: [{ ...sampleSignal, address: targetAddr }],
+    }
+
+    const capturedPrompts: Array<{ system: string; user: string }> = []
+    const transport = {
+      modelName: 'qwen3.5-2b',
+      async complete(req: { messages: Array<{ role: string; content: string }> }): Promise<string> {
+        const system = req.messages.find((m) => m.role === 'system')?.content ?? ''
+        const user = req.messages.find((m) => m.role === 'user')?.content ?? ''
+        capturedPrompts.push({ system, user })
+        return `HEADLINE: Delegation wave on mainnet
+STORY: A delegation burst just hit ${targetAddr} on block #102.
+HYPOTHESIS: One plausible reading is an automated wallet rollout.
+POINTER: Inspect the address code.
+COMMAND: /call_pattern 0xdeadbeef`
+      },
+    }
+
+    const economy = new ETHEconomyDataManager({ spine, chain, hardfork, stateManager })
+    const journal = new InvestigationJournal()
+    const userInterest = new UserInterestRing()
+    const narrator = new ChainDetectiveNarrator({
+      transport,
+      economy,
+      stateManager,
+      chain,
+      network: 'mainnet',
+      journal,
+      userInterest,
+      onOverview: () => {},
+    })
+    narrator.start(spine)
+    await new Promise((r) => setTimeout(r, 150))
+    narrator.stop()
+
+    expect(capturedPrompts.length).toBe(1)
+    const { user } = capturedPrompts[0]!
+    expect(user).not.toMatch(/\bdossier\b/i)
+    expect(user).not.toContain('diceRoll')
+    expect(user).not.toContain('beatCandidates')
+    expect(user).toContain('Observation:')
+    // Invented /call_pattern command must be replaced with deterministic /contract <relatedAddress>
+    expect(journal.latest()?.suggestedAction).toBe(`/contract ${targetAddr}`)
+  })
 })

@@ -74,4 +74,34 @@ describe('story TUI rendering', () => {
     expect(lines.join('\n')).toContain('/story full')
     expect(lines.join('\n')).not.toContain('/story to read full story')
   })
+
+  it('renders SNAP eyebrow and omits Lens box for snap-format cards', () => {
+    const snapCard: ChainDispatchCard = {
+      category: 'lore',
+      severity: 'calm',
+      headline: 'Validator says hi from home staking',
+      body: 'Someone stamped block #21402811 with a cheerful note to their mom.',
+      atMs: Date.now() - 4_000,
+      deterministic: false,
+      lens: 'lore',
+      network: 'mainnet',
+      blockNumber: '21402811',
+      modelLabel: 'qwen3.5-2b',
+      format: 'snap',
+    }
+    const spine = createSpine('mainnet', 1n)
+    spine.economy = { hasBlocks: true, topContracts: [], recentBlocks: [] }
+    const overviewLines = renderAiOverviewSections(
+      spine,
+      { dispatches: [snapCard], storyIndex: 1, storyCount: 1 },
+      60,
+      16,
+    ).join('\n')
+    expect(overviewLines).toContain('[SNAP · qwen3.5]')
+    expect(overviewLines).not.toContain('│ Lens')
+
+    const componentLines = renderStoryUIComponent(snapCard, 60, 16).join('\n')
+    expect(componentLines).toContain('[SNAP · qwen3.5]')
+    expect(componentLines).not.toContain('│ Lens')
+  })
 })

@@ -78,4 +78,45 @@ describe('ethereumLore', () => {
     expect(selectLoreCards(brief, 'security', [], 1)).toHaveLength(1)
     expect(selectLoreCards(brief, 'security', [], 2)).toHaveLength(2)
   })
+
+  it('scopes lore strictly to the chosen lead and omits lore on snap cards', () => {
+    const briefWithBlobs = miniBrief({
+      network: 'sepolia',
+      signals: [
+        {
+          id: 's1',
+          kind: 'l2_blob_pressure',
+          severity: 'notable',
+          headline: 'blobs',
+          noveltyScore: 70,
+          metrics: {},
+        },
+      ],
+    })
+    // A newborn contract lead must NOT pull unrelated l2_blobs_dencun lore from brief.signals
+    const birthPicked = selectLoreCards(briefWithBlobs, 'detective', [], 1, {
+      lens: 'detective',
+      lead: 'New 2.1 KB [ERC-20] deployed',
+      subjectKey: 'moment:100:birth:0',
+      followUp: false,
+      quiet: false,
+      beat: 'newborn_contract',
+      format: 'field_note',
+      baseScore: 68,
+    })
+    expect(birthPicked[0]?.id).toBe('contract_birth_code_audit')
+
+    // A short snap card gets no lore cards
+    const snapPicked = selectLoreCards(briefWithBlobs, 'lore', [], 2, {
+      lens: 'lore',
+      lead: 'alice.eth wrote on-chain: "hello"',
+      subjectKey: 'moment:100:graffiti_note:0',
+      followUp: false,
+      quiet: true,
+      beat: 'tx_or_address_oddity',
+      format: 'snap',
+      baseScore: 94,
+    })
+    expect(snapPicked).toHaveLength(0)
+  })
 })

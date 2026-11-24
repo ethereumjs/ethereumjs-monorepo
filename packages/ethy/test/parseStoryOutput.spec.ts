@@ -47,4 +47,15 @@ STORY: score 52 on l2_blob_pressure anomaly.`
     expect(p.headline).not.toMatch(/delegation_surge/i)
     expect(p.story).not.toMatch(/score\s+52/)
   })
+
+  it('strips markdown bold, [END OF REPORT], and accidental dossier meta-phrases', () => {
+    const raw = `HEADLINE: **0.3 KB contract deployed**
+STORY: The dossier explicitly states that \`0xabc\` was deployed in the dossier. [END OF REPORT]`
+    const p = parseStoryOutput(raw)!
+    expect(p.headline).toBe('0.3 KB contract deployed')
+    expect(p.story).not.toContain('**')
+    expect(p.story).not.toContain('`')
+    expect(p.story).not.toMatch(/dossier/i)
+    expect(p.story).not.toMatch(/END OF REPORT/i)
+  })
 })

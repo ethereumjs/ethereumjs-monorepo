@@ -16,7 +16,12 @@ import {
 } from './aiRunTrace.ts'
 import { selectLoreCards } from './ethereumLore.ts'
 import type { LlmTransport } from './fixtureEngine.ts'
-import { type ForensicDossier, buildForensicDossier } from './forensicDossierBuilder.ts'
+import {
+  type ForensicDossier,
+  buildForensicDossier,
+  renderPromptFacts,
+  stripInternalDossierFields,
+} from './forensicDossierBuilder.ts'
 import { InvestigationJournal, UserInterestRing } from './investigationJournal.ts'
 import {
   INVESTIGATION_TOOL_NAMES,
@@ -29,7 +34,7 @@ import { LlmWireError, llmErrorKindFromUnknown } from './llmWireError.ts'
 import { type ModelTier, inferModelTier, maxLoreCards, maxStoryTokens } from './modelTier.ts'
 import { parseStoryOutput } from './parseStoryOutput.ts'
 import type { StoryBeatKind } from './storyBeats.ts'
-import { briefForPrompt, buildStoryBrief } from './storyBrief.ts'
+import { buildStoryBrief } from './storyBrief.ts'
 import {
   type StoryLens,
   directStory,
@@ -295,20 +300,12 @@ export class ChainDetectiveNarrator {
       lead.lens,
       recentLoreIds(this.journal),
       maxLoreCards(tier),
+      lead,
+      dossier,
     )
-    const system = buildStorytellerSystem(lead.lens, loreCards, tier)
-    const userPayload =
-      tier === 'compact'
-        ? { dossier, lead, toolResults, loreId: loreCards[0]?.id }
-        : {
-            dossier,
-            brief: briefForPrompt(brief),
-            lead,
-            toolResults,
-            focus: lead.lead,
-          }
-    const userPayloadJSON = safeJSON(userPayload)
-    const promptChars = userPayloadJSON.length + system.length
+    const system = buildStorytellerSystem(lead.lens, loreCards, tier, lead.format)
+    const userPrompt = renderPromptFacts({ dossier, brief, lead, toolResults })
+    const promptChars = userPrompt.length + system.length
     const storyStart = Date.now()
     let raw = ''
     try {
@@ -317,7 +314,7 @@ export class ChainDetectiveNarrator {
           kind: 'story',
           messages: [
             { role: 'system', content: system },
-            { role: 'user', content: userPayloadJSON },
+            { role: 'user', content: userPrompt },
           ],
           overrides: { modelTier: tier, responseMode: 'text' },
         },
@@ -463,12 +460,13 @@ export class ChainDetectiveNarrator {
         let card: ChainDispatchCard | undefined
         const toolResults: Array<{ tool: string; result: string }> = []
 
-        if (tier === 'rich') {
+        if (tier === 'rich' && lead.format !== 'snap') {
           const journalHeadlines = this.journal.snapshot(5).map(headlineSnippet)
           const scoutSystem = buildScoutSystem(INVESTIGATION_TOOL_NAMES.join(', '))
+          const { diceRoll: _roll, beatCandidates: _candidates, ...cleanLead } = lead
           const scoutUser = safeJSON({
-            dossier,
-            lead,
+            observation: stripInternalDossierFields(dossier),
+            lead: cleanLead,
             journalHeadlines,
             trigger,
           })
@@ -529,6 +527,7 @@ export class ChainDetectiveNarrator {
             card.network = brief.network
             card.subjectKey = lead.subjectKey
             card.beatKind = lead.beat
+            card.format = lead.format
           } else if (triage?.mode === 'investigate') {
             for (const call of triage.calls.slice(0, 1)) {
               toolResults.push({

@@ -1,6 +1,11 @@
 import type { ChainDispatchCard } from '../spine/types.ts'
 import type { InvestigationJournal } from './investigationJournal.ts'
-import { type PickStoryBeatOpts, type StoryBeatKind, pickStoryBeat } from './storyBeats.ts'
+import {
+  type PickStoryBeatOpts,
+  type StoryBeatKind,
+  type StoryFormat,
+  pickStoryBeat,
+} from './storyBeats.ts'
 import type { StoryBrief } from './storyBrief.ts'
 
 export type StoryLens = 'detective' | 'security' | 'economics' | 'lore'
@@ -15,6 +20,7 @@ export type StoryLead = {
   followUp: boolean
   quiet: boolean
   beat: StoryBeatKind
+  format: StoryFormat
   baseScore: number
   diceRoll?: number
   beatCandidates?: Array<{ beat: StoryBeatKind; subjectKey: string; weight: number }>
@@ -69,6 +75,7 @@ export function directStory(
     followUp: picked.followUp ?? false,
     quiet,
     beat: picked.beat,
+    format: picked.format,
     baseScore: picked.baseScore,
     diceRoll: picked.roll,
     beatCandidates: picked.candidates,

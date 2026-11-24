@@ -7,51 +7,75 @@ import type { InvestigationJournal } from './investigationJournal.ts'
 import { inferModelTier, maxLoreCards } from './modelTier.ts'
 import type { ParsedStory } from './parseStoryOutput.ts'
 import { parseStoryOutput } from './parseStoryOutput.ts'
+import type { StoryFormat } from './storyBeats.ts'
 import type { StoryBrief } from './storyBrief.ts'
 import { buildStoryBrief } from './storyBrief.ts'
 import type { StoryLead, StoryLens } from './storyDirector.ts'
 import { directStory, parseLensOverride, recentLoreIds } from './storyDirector.ts'
 
-const HONEST_RULES = `Honest Speculation Contract:
-1) Cite only addresses, blocks, fees, and selectors from the dossier or tool JSON — unknown contracts stay unnamed.
-2) Frame motives and attacks as hypotheses ("One plausible reading…", "Could this be…").
-3) On Sepolia, call it testnet rehearsal — not real money. Never open with base fee, block fullness, or TPS.
-4) Historical facts come only from the supplied lore cards — do not invent EIP dates.
-5) Open in media res on the concrete artifact in the dossier — no chain-wide macro summaries.`
+const HONEST_RULES = `Ground rules:
+1) Speak directly as a sharp human observer watching live Ethereum blocks — NEVER say "the dossier", "the JSON", "the input", "the data shows", or mention scores, candidate weights, or probabilities.
+2) Cite only addresses, blocks, ENS names, and function names given in the facts below — unnamed contracts stay unnamed, and ENS names are self-set by the address owner (never call an ENS name "official").
+3) Frame motives or risks as honest hypotheses ("One plausible reading…", "Could this be…").
+4) On Sepolia, remember it is a testnet rehearsal — never treat test ETH as real money. Do not open with base fee, block fullness, or TPS.
+5) Plain text only — no markdown bold (**), no code fences, no [END OF REPORT] footer.`
 
 const LENS_VOICE: Record<StoryLens, string> = {
-  detective: 'Follow the strangest live clue; peel bytecode, storage, and sender patterns.',
-  security: 'White-hat threat model: what could go wrong if this pattern were malicious?',
-  economics: 'Connect fees, blobs, ETH flows, and gas pressure to user and protocol behavior.',
-  lore: 'Anchor a live artifact to Ethereum history — concrete, curious, not generic.',
+  detective: 'Follow the most interesting concrete clue — calls, bytecode, or wallet behavior.',
+  security: 'Think like a white-hat reviewer: what is the realistic risk or safety check here?',
+  economics: 'Connect ETH moves, fees, or protocol flows to real user and builder behavior.',
+  lore: 'Anchor this live on-chain moment to Ethereum culture and history — curious, never generic.',
 }
+
+const VALID_SLASH_CMDS = new Set([
+  '/contract',
+  '/account',
+  '/bal',
+  '/signals',
+  '/story',
+  '/peers',
+  '/blobs',
+  '/block',
+])
 
 export function buildStorytellerSystem(
   lens: StoryLens,
   loreCards: readonly EthereumLoreCard[],
   tier: 'compact' | 'rich',
+  format: StoryFormat = 'field_note',
 ): string {
-  const loreBlock = loreCards
-    .map(
-      (c) =>
-        `[${c.id}] ${c.title}\nMechanism: ${c.protocolMechanism}\nEcho: ${c.historicalEcho}\nEdge: ${c.attackOrEdgeScenario}`,
-    )
-    .join('\n\n')
-  const lengthHint = tier === 'rich' ? '2-4 crisp paragraphs' : '2 vivid paragraphs'
-  return `You are Ethy's Field Historian on Ethereum execution data — curious, never a syslog bot.
+  if (format === 'snap') {
+    return `You are Ethy, a witty, sharp-eyed observer watching live Ethereum blocks roll by.
+${HONEST_RULES}
+
+Tone: Light, playful, human, observant — a quick street-level note about a quirky on-chain find (a calldata message, validator graffiti, a veteran wallet milestone, or a brand-new wallet). Dry humor is welcome when the artifact invites it; stay factual and brief.
+
+Write a short snap (2-3 crisp sentences total):
+HEADLINE: <=72 chars, punchy plain text
+STORY: 2-3 lively sentences directly about what just happened on-chain
+POINTER: one short, friendly next thing to check`
+  }
+
+  const loreSection =
+    loreCards.length > 0
+      ? `\nBackground context (only historical facts you may cite — skip if not directly relevant):\n${loreCards
+          .map(
+            (c) =>
+              `[${c.id}] ${c.title}\nMechanism: ${c.protocolMechanism}\nEcho: ${c.historicalEcho}\nEdge: ${c.attackOrEdgeScenario}`,
+          )
+          .join('\n\n')}\n`
+      : ''
+  const lengthHint = tier === 'rich' ? '2-3 crisp paragraphs' : '1-2 vivid paragraphs'
+  return `You are Ethy's Field Historian watching live Ethereum execution — curious, clear, never a syslog bot.
 ${HONEST_RULES}
 
 Lens: ${lens} — ${LENS_VOICE[lens]}
-
-Lore cards (only historical source):
-${loreBlock}
-
-Write sectioned prose (${lengthHint}):
-HEADLINE: <=84 chars, plain language
-STORY: what is happening on-chain now
-HYPOTHESIS: one honest reading of the bytecode/call clues
-POINTER: one concrete thing the user can inspect next
-COMMAND: required one slash command like /contract 0x... when an address is known`
+${loreSection}
+Write sectioned plain-text prose (${lengthHint}):
+HEADLINE: <=84 chars, plain text, no asterisks
+STORY: what is happening on-chain right now (start directly with the artifact)
+HYPOTHESIS: one grounded reading of why this matters or what to watch for
+POINTER: one concrete thing the user can inspect next`
 }
 
 export function buildScoutSystem(toolList: string): string {
@@ -101,8 +125,10 @@ export async function synthesizeInteractiveStory(
     lead.lens,
     recentLoreIds(opts.journal),
     maxLoreCards(tier),
+    lead,
   )
-  const system = buildStorytellerSystem(lead.lens, loreCards, tier)
+  const system = buildStorytellerSystem(lead.lens, loreCards, tier, lead.format)
+  const { diceRoll: _roll, beatCandidates: _candidates, ...cleanLead } = lead
   const started = Date.now()
   const raw = await opts.transport.complete({
     kind: 'story',
@@ -113,7 +139,7 @@ export async function synthesizeInteractiveStory(
         content: JSON.stringify(
           {
             brief,
-            lead,
+            lead: cleanLead,
             toolResults: opts.toolResults,
             question: opts.userQuestion,
             priorStory: opts.journal.latest(),
@@ -177,28 +203,44 @@ export function buildEvidence(brief: StoryBrief, lead: StoryLead): ChainDispatch
   return rows.length > 0 ? rows : undefined
 }
 
+function pickSuggestedAction(parsedCommand: string | undefined, lead: StoryLead): string {
+  if (parsedCommand !== undefined) {
+    const trimmed = parsedCommand.trim()
+    const head = trimmed.split(/\s+/)[0]?.toLowerCase() ?? ''
+    if (VALID_SLASH_CMDS.has(head)) {
+      return trimmed
+    }
+  }
+  if (lead.relatedAddress !== undefined) {
+    const isAccountMoment =
+      lead.subjectKey.includes(':veteran:') ||
+      lead.subjectKey.includes(':first_step:') ||
+      lead.subjectKey.includes(':whale:') ||
+      lead.subjectKey.includes(':graffiti_note:')
+    return isAccountMoment ? `/account ${lead.relatedAddress}` : `/contract ${lead.relatedAddress}`
+  }
+  return '/story'
+}
+
 export function cardFromProse(opts: CardFromProseOpts): ChainDispatchCard {
   const { parsed, brief, lead, loreCardId, toolsUsed, modelLabel, latencyMs, atMs } = opts
   const severity = brief.signals[0]?.severity ?? (lead.quiet ? 'calm' : 'notable')
+  const isSnap = lead.format === 'snap'
+  const angle = isSnap ? undefined : parsed.angle
   return {
     category: lead.lens,
     severity,
     headline: parsed.headline.slice(0, 84),
     body: parsed.story,
     relatedAddress: lead.relatedAddress,
-    suggestedAction:
-      parsed.command && parsed.command.startsWith('/')
-        ? parsed.command
-        : lead.relatedAddress !== undefined
-          ? `/contract ${lead.relatedAddress}`
-          : '/story',
+    suggestedAction: pickSuggestedAction(parsed.command, lead),
     blockNumber: brief.head.blockNumber,
     atMs,
     deterministic: false,
     lens: lead.lens,
     network: brief.network,
-    angle: parsed.angle,
-    angleKind: parsed.angle !== undefined ? angleKindFromLens(lead.lens) : undefined,
+    angle,
+    angleKind: angle !== undefined ? angleKindFromLens(lead.lens) : undefined,
     curiosityQuestion: parsed.curiosityQuestion,
     loreCardId,
     modelLabel,
@@ -208,5 +250,6 @@ export function cardFromProse(opts: CardFromProseOpts): ChainDispatchCard {
     signalScore: brief.signals[0]?.noveltyScore,
     evidence: buildEvidence(brief, lead),
     beatKind: lead.beat,
+    format: lead.format,
   }
 }

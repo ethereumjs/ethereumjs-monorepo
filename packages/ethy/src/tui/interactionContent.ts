@@ -235,13 +235,16 @@ function storyEyebrow(card: {
   modelLabel?: string
   fallbackReason?: string
   beatKind?: string
+  format?: 'snap' | 'field_note'
 }): string {
   const shortModel = card.modelLabel?.split(/[\s:/_-]/)[0]?.slice(0, 12) ?? 'local'
   const beat = card.beatKind !== undefined ? ` · ${card.beatKind}` : ''
   const badge =
     card.deterministic === true
       ? `[FALLBACK · ${(card.fallbackReason ?? 'offline').slice(0, 24)}]`
-      : `[STORY · ${shortModel}${beat}]`
+      : card.format === 'snap'
+        ? `[SNAP · ${shortModel}]`
+        : `[STORY · ${shortModel}${beat}]`
   const net = (card.network ?? 'mainnet').toUpperCase()
   const block = card.blockNumber !== undefined ? ` · #${card.blockNumber}` : ''
   const age = `${Math.round((Date.now() - card.atMs) / 1000)}s ago`

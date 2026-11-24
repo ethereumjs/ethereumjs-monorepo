@@ -406,6 +406,7 @@ export type ChainDispatchCard = {
   subjectKey?: string
   signalScore?: number
   beatKind?: string
+  format?: 'snap' | 'field_note'
   fallbackReason?: string
 }
 

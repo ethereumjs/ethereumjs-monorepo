@@ -1,5 +1,6 @@
+import type { ForensicDossier } from './forensicDossierBuilder.ts'
 import type { StoryBrief } from './storyBrief.ts'
-import type { StoryLens } from './storyDirector.ts'
+import type { StoryLead, StoryLens } from './storyDirector.ts'
 
 export type EthereumLoreCard = {
   id: string
@@ -175,21 +176,80 @@ function tagHits(card: EthereumLoreCard, tags: Set<string>): number {
   return score
 }
 
+function subjectTagsFromLead(lead: StoryLead, dossier?: ForensicDossier): Set<string> {
+  const tags = new Set<string>()
+  const key = lead.subjectKey.toLowerCase()
+  const headline = lead.lead.toLowerCase()
+
+  if (lead.beat === 'newborn_contract' || key.includes(':birth:')) tags.add('birth')
+  if (lead.beat === 'storage_slot_pulse' || key.includes('slot_trend')) tags.add('slot_trend')
+  if (
+    key.includes('graffiti') ||
+    headline.includes('graffiti') ||
+    headline.includes('wrote on-chain')
+  ) {
+    tags.add('graffiti_note')
+  }
+  if (
+    key.includes('eip7702') ||
+    key.includes('delegation_surge') ||
+    headline.includes('eip-7702')
+  ) {
+    tags.add('eip7702')
+  }
+  if (
+    key.includes('blob_anchor') ||
+    key.includes('l2_blob_pressure') ||
+    headline.includes('blob')
+  ) {
+    tags.add('l2_blob_pressure')
+  }
+  if (key.includes(':choreography:') || headline.includes('orchestrated')) tags.add('choreography')
+  if (key.includes(':revert:') || headline.includes('reverted')) tags.add('revert')
+  if (key.includes(':whale:') || key.includes('whale_or_flow')) tags.add('whale')
+  if (key.includes(':veteran:')) tags.add('veteran')
+  if (key.includes(':first_step:')) tags.add('first_step')
+  if (key.includes('congestion_pressure')) tags.add('congestion_pressure')
+  if (key.includes('sender_burst')) tags.add('sender_burst')
+  if (key.includes('deployment_or_upgrade')) tags.add('deployment_or_upgrade')
+
+  if (dossier?.static !== undefined) {
+    if (dossier.static.fingerprint.proxyKind !== undefined) tags.add('proxy')
+    if (dossier.static.opcodeFlags.delegatecall) tags.add('DELEGATECALL')
+    if (dossier.static.opcodeFlags.selfdestruct) tags.add('SELFDESTRUCT')
+    if (dossier.static.opcodeFlags.blobhash) tags.add('l2_blob_pressure')
+  }
+  return tags
+}
+
 export function selectLoreCards(
   brief: StoryBrief,
   lens: StoryLens,
   recentLoreIds: readonly string[],
   maxCards: number,
+  lead?: StoryLead,
+  dossier?: ForensicDossier,
 ): EthereumLoreCard[] {
+  // Short snaps stay crisp and observant — no heavy lore attachment.
+  if (lead?.format === 'snap') return []
+
   const tags = new Set<string>()
-  tags.add(`network:${brief.network.toLowerCase()}`)
-  if (lens === 'security') tags.add('security')
-  if (lens === 'economics') tags.add('economics')
-  for (const s of brief.signals) tags.add(s.kind)
-  for (const m of brief.moments) tags.add(m.kind)
-  for (const h of brief.hotContracts) {
-    if (h.proxyKind !== undefined) tags.add('proxy')
-    if (h.archetype?.toLowerCase().includes('dex')) tags.add('choreography')
+  if (lead !== undefined) {
+    for (const t of subjectTagsFromLead(lead, dossier)) tags.add(t)
+    // Only add network lore if nothing specific matched (prevents unrelated mashups).
+    if (tags.size === 0) {
+      tags.add(`network:${brief.network.toLowerCase()}`)
+    }
+  } else {
+    tags.add(`network:${brief.network.toLowerCase()}`)
+    if (lens === 'security') tags.add('security')
+    if (lens === 'economics') tags.add('economics')
+    for (const s of brief.signals) tags.add(s.kind)
+    for (const m of brief.moments) tags.add(m.kind)
+    for (const h of brief.hotContracts) {
+      if (h.proxyKind !== undefined) tags.add('proxy')
+      if (h.archetype?.toLowerCase().includes('dex')) tags.add('choreography')
+    }
   }
   const recent = new Set(recentLoreIds)
 

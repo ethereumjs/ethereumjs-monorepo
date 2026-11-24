@@ -82,6 +82,18 @@ export function sanitizeStoryText(text: string): string {
   }
   out = out.replace(/\bscore\s+\d+\b/gi, '')
   out = out.replace(/\bLayer\s+1\s+signal\b/gi, 'live note')
+  // Strip accidental markdown bold/emphasis markers, inline backticks, and report footers
+  out = out.replace(/\[END OF REPORT\]/gi, '')
+  out = out.replace(/\*\*([^*]+)\*\*/g, '$1')
+  out = out.replace(/(^|\s)\*([^*\n]+)\*(\s|[.,!?;:]|$)/g, '$1$2$3')
+  out = out.replace(/`([^`\n]+)`/g, '$1')
+  // Clean accidental meta-references ("The dossier shows/flags/notes...")
+  out = out.replace(
+    /\bThe\s+dossier\s+(?:explicitly\s+)?(?:shows|flags|notes|reveals|indicates|confirms|states)\s+(?:that\s+)?/gi,
+    '',
+  )
+  out = out.replace(/\bin\s+the\s+dossier\b/gi, 'on-chain')
+  out = out.replace(/\bfrom\s+the\s+dossier\b/gi, 'from live execution')
   return out
     .replace(/\r\n/g, '\n')
     .replace(/[ \t]{2,}/g, ' ')
