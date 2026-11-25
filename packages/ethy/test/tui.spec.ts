@@ -131,6 +131,23 @@ describe('[Ethy/TUI]: renderFrame', () => {
     assert.include(head, 'Refresh')
     assert.include(head, 'Planes')
     assert.include(head, 'eth ●')
+
+    // Partial contract state while HEAD_FOLLOWING surfaces honest backfill progress in Sync box
+    spine.codesSynced = 713_729
+    spine.codesTotal = 23_429_006
+    spine.storageAccountsSynced = 399_019
+    spine.storageAccountsTotal = 21_842_693
+    spine.contractsPerSec = 420
+    const backfilling = stripAnsi(renderCockpit(spine, view, 160).join('\n'))
+    assert.include(backfilling, '★ Live · Backfill 2.5% · 420/s')
+    assert.include(backfilling, 'code 713.7k/23.4M')
+    assert.include(backfilling, 'stor 399k/21.8M')
+
+    spine.contractsPerSec = 0
+    spine.codesQueued = 0
+    spine.storageQueued = 0
+    const partialIdle = stripAnsi(renderCockpit(spine, view, 160).join('\n'))
+    assert.include(partialIdle, '★ Live · Partial state 2.5%')
   })
 
   it('renderFrame() at 100x30 respects column width', () => {

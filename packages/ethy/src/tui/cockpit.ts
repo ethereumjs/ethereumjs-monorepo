@@ -265,6 +265,20 @@ function nodePulsePairs(spine: EthySpine): TwoColumnPair[] {
     const balCount = spine.appliedBalCount ?? spine.balWindow.length
     const acc = formatCompactCount(spine.totalAccountsSynced)
     const codeCount = spine.codesSynced ?? 0
+    const codeTotal = Math.max(spine.codesTotal ?? 0, codeCount + spine.codesQueued)
+    const storSynced = spine.storageAccountsSynced ?? 0
+    const storTotal = Math.max(spine.storageAccountsTotal ?? 0, storSynced + spine.storageQueued)
+    const contractBackfillPending =
+      (codeTotal > 0 && codeCount < codeTotal) || (storTotal > 0 && storSynced < storTotal)
+    const contractBackfillActive =
+      (spine.contractsPerSec ?? 0) > 0 || spine.codesQueued > 0 || spine.storageQueued > 0
+    const totalContracts = codeTotal + storTotal
+    const doneContracts = Math.min(codeCount, codeTotal) + Math.min(storSynced, storTotal)
+    const contractPct =
+      totalContracts > 0 ? Math.min(99.9, (doneContracts / totalContracts) * 100) : 0
+    const contractPctText = contractPct < 10 ? contractPct.toFixed(1) : `${Math.round(contractPct)}`
+    const contractRateText =
+      (spine.contractsPerSec ?? 0) > 0 ? ` · ${Math.round(spine.contractsPerSec ?? 0)}/s` : ''
     const clLabel =
       spine.clStatus === 'verified'
         ? 'verified'
@@ -287,8 +301,9 @@ function nodePulsePairs(spine: EthySpine): TwoColumnPair[] {
           : ethyServe === 'paused-stale'
             ? 'paused · stale gen'
             : `serve ${bucketBits}/16`
-    const stateValue =
-      codeCount > 0
+    const stateValue = contractBackfillPending
+      ? `code ${formatCompactCount(codeCount)}/${formatCompactCount(codeTotal)} · stor ${formatCompactCount(storSynced)}/${formatCompactCount(storTotal)}`
+      : codeCount > 0
         ? `${acc} acc · ${formatCompactCount(codeCount)} code · ${serveSuffix}`
         : `${acc} acc · ${balCount.toLocaleString('en-US')} BALs · CL ${clLabel}`
     const stage =
@@ -296,7 +311,11 @@ function nodePulsePairs(spine: EthySpine): TwoColumnPair[] {
         ? `★ Live · Shadow ETHY ${Math.round(spine.swarm.shadowRefresh.progressPct)}%`
         : mode === 'shadow-snap-mint' && spine.swarm?.shadowRefresh?.mintBucket !== undefined
           ? `★ Live · SNAP Mint ${spine.swarm.shadowRefresh.mintBucket}/16`
-          : '★ Head Following · Live'
+          : contractBackfillPending
+            ? contractBackfillActive
+              ? `★ Live · Backfill ${contractPctText}%${contractRateText}`
+              : `★ Live · Partial state ${contractPctText}%`
+            : '★ Head Following · Live'
     return [
       { label: 'Stage', value: stage },
       {
