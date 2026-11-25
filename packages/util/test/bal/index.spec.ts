@@ -44,6 +44,25 @@ describe('[Util]: basic initialization', () => {
     assert.deepEqual(slotChanges[0][1], hexToBytes('0x02'))
   })
 
+  it('revert restores an outer write without also listing the slot as a read', () => {
+    const bal = createBlockLevelAccessList()
+    const address = '0x0000000000000000000000000000000000000001' as const
+    const key = hexToBytes('0x01')
+    const zero = hexToBytes('0x00')
+    bal.blockAccessIndex = 1
+    // Outer frame: 0 -> 1
+    bal.addStorageWrite(address, key, hexToBytes('0x01'), 1, zero)
+    bal.checkpoint()
+    // Inner frame restores the original value (no-op write, recorded as a read), then reverts
+    bal.addStorageWrite(address, key, zero, 1, zero)
+    bal.revert()
+    const [entry] = bal.toJSON()
+    assert.deepEqual(entry.storageReads, [])
+    assert.deepEqual(entry.storageChanges, [
+      { slot: '0x01', slotChanges: [{ blockAccessIndex: '0x01', postValue: '0x01' }] },
+    ])
+  })
+
   it('creates an access list from Accesses data', () => {
     const bal = new BlockLevelAccessList(balSimple)
     assert.isNotNull(bal)

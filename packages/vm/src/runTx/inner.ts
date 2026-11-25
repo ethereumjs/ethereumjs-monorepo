@@ -987,6 +987,10 @@ export async function runTxInner(vm: VM, opts: RunTxOpts): Promise<RunTxResult> 
   // Prep-region OOG reverts this layer (delegations roll back) without undoing
   // the sender debit.
   await vm.evm.journal.checkpoint()
+  // EIP-7928: the BAL follows the same layer, so rolled-back authorizations drop
+  // their nonce and code changes (the authority address itself stays recorded).
+  const prepBal = vm.common.isActivatedEIP(7928) ? vm.evm.blockLevelAccessList : undefined
+  prepBal?.checkpoint()
 
   // Process EIP-7702 authorization list (if applicable)
   let gasRefund = BIGINT_0
@@ -1039,6 +1043,7 @@ export async function runTxInner(vm: VM, opts: RunTxOpts): Promise<RunTxResult> 
   let results: RunTxResult
   if (authOog) {
     await vm.evm.journal.revert()
+    prepBal?.revert()
     if (vm.common.isActivatedEIP(8037)) {
       vm.evm.stateGasReservoir = stateGasReservoirInitial
       vm.evm.executionStateGasUsed = BIGINT_0
@@ -1069,16 +1074,19 @@ export async function runTxInner(vm: VM, opts: RunTxOpts): Promise<RunTxResult> 
       // EVM's own message checkpoint). Revert it so the outer runTx catch can
       // roll back the tx checkpoint (gas debit + nonce bump).
       await vm.evm.journal.revert()
+      prepBal?.revert()
       throw e
     }
     if (vm.evm.eip2780PrepOog === true) {
       await vm.evm.journal.revert()
+      prepBal?.revert()
       if (vm.common.isActivatedEIP(8037)) {
         vm.evm.stateGasReservoir = stateGasReservoirInitial
         vm.evm.executionStateGasUsed = BIGINT_0
       }
     } else {
       await vm.evm.journal.commit()
+      prepBal?.commit()
     }
   }
 

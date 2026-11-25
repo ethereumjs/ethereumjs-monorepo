@@ -194,9 +194,12 @@ export class BlockLevelAccessList {
         continue
       }
       const target = this.accesses[address as BALAddressHex]
-      // Preserve explicit storageReads
+      // Preserve explicit storageReads, unless the restored state still writes the slot
+      // (a no-op write in the reverted frame turned the outer write into a read).
       for (const slot of access.storageReads) {
-        target.storageReads.add(slot)
+        if (target.storageChanges[slot] === undefined) {
+          target.storageReads.add(slot)
+        }
       }
       // EIP-7928: Convert reverted storageChanges to storageReads
       for (const slot of Object.keys(access.storageChanges)) {
