@@ -351,6 +351,41 @@ Every Work Package delivers a **runnable, observable, and live-testable incremen
                                           │ WP-15: Deep Contract Forensics, Guided- │
                                           │        Randomness Storytelling, Local   │
                                           │        Dossier DB & AI Observability    │
+                                          └───────────────────┬─────────────────────┘
+                                                              │
+                                                              ▼ (Two-Protocol State Suite: STATY/0 + ETHY/0 v0.3)
+                                          ┌─────────────────────────────────────────┐
+                                          │ WP-16a: @ethereumjs/devp2p STATY/0      │
+                                          │         Subprotocol, ETHY/0 v0.3 Upgrade│
+                                          │         & Shared Code / Storage Serving │
+                                          └───────────────────┬─────────────────────┘
+                                                              │
+                                                              ▼
+                                          ┌─────────────────────────────────────────┐
+                                          │ WP-16b: Open-World FlatStateManager,    │
+                                          │         Proven-Empty Tombstones, Local  │
+                                          │         Write-Index & Multi-Proof Core  │
+                                          └───────────────────┬─────────────────────┘
+                                                              │
+                                                              ▼
+                                          ┌─────────────────────────────────────────┐
+                                          │ WP-16c: STATY/0 Default Fast Onboarding,│
+                                          │         Hot Epoch Sync, O(1) Minter &   │
+                                          │         Cold-Miss Witness Pipeline      │
+                                          └───────────────────┬─────────────────────┘
+                                                              │
+                                                              ▼
+                                          ┌─────────────────────────────────────────┐
+                                          │ WP-16d: ETHY/0 v0.3 Full Code/Storage   │
+                                          │         Swarm & Hybrid --full Mode      │
+                                          │         (Open-World -> Closed-World)    │
+                                          └───────────────────┬─────────────────────┘
+                                                              │
+                                                              ▼
+                                          ┌─────────────────────────────────────────┐
+                                          │ WP-16e: The Machine 6th Plane (staty),  │
+                                          │         Cockpit UI, /staty Microscope   │
+                                          │         & ethy-sim STATY Swarm Gates    │
                                           └─────────────────────────────────────────┘
 ```
 
