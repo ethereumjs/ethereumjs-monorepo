@@ -63,7 +63,17 @@ export function createEOACode7702TxFromBytesArray(values: TxValuesArray, opts: T
   ] = values
 
   validateNotArray({ chainId, v })
-  validateNoLeadingZeroes({ nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, value, v, r, s })
+  validateNoLeadingZeroes({
+    chainId,
+    nonce,
+    maxPriorityFeePerGas,
+    maxFeePerGas,
+    gasLimit,
+    value,
+    v,
+    r,
+    s,
+  })
 
   return new EOACode7702Tx(
     {

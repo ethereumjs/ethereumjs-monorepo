@@ -469,6 +469,43 @@ describe('[Tx/Matrix]: numeric guards', () => {
     }
   })
 
+  it('create*FromBytesArray() rejects leading zeroes in chainId', () => {
+    const cases = [
+      {
+        name: 'AccessList2930Tx',
+        raw: eip2930Txs[0].raw(),
+        create: (values: any) => createAccessList2930TxFromBytesArray(values),
+      },
+      {
+        name: 'FeeMarket1559Tx',
+        raw: eip1559Txs[0].raw(),
+        create: (values: any) => create1559FeeMarketTxFromBytesArray(values),
+      },
+      {
+        name: 'Blob4844Tx',
+        raw: blobSigned.raw(),
+        create: (values: any) => createBlob4844TxFromBytesArray(values, { common: cancunCommon }),
+      },
+      {
+        name: 'EOACode7702Tx',
+        raw: eoaSigned.raw(),
+        create: (values: any) =>
+          createEOACode7702TxFromBytesArray(values, { common: pragueCommon }),
+      },
+    ]
+    for (const { name, raw, create } of cases) {
+      const rlpData: any = [...raw]
+      // Canonical chainId bytes, prefixed with a zero byte (e.g. 0x01 -> 0x0001)
+      rlpData[0] = concatBytes(new Uint8Array([0]), rlpData[0])
+      assert.throws(
+        () => create(rlpData),
+        'chainId cannot have leading zeroes',
+        undefined,
+        `${name}: should throw when chainId has leading zeroes`,
+      )
+    }
+  })
+
   it('Blob4844Tx rejects maxFeePerBlobGas above MAX_INTEGER', () => {
     try {
       createBlob4844Tx(
