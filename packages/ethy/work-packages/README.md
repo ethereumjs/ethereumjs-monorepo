@@ -386,6 +386,13 @@ Every Work Package delivers a **runnable, observable, and live-testable incremen
                                           │ WP-16e: The Machine 6th Plane (staty),  │
                                           │         Cockpit UI, /staty Microscope   │
                                           │         & ethy-sim STATY Swarm Gates    │
+                                          └───────────────────┬─────────────────────┘
+                                                              │
+                                                              ▼
+                                          ┌─────────────────────────────────────────┐
+                                          │ WP-16f: Client-Wide STATY/0 Leverage —  │
+                                          │         Priority EVM Pool, False-Zero-  │
+                                          │         Safe RPC/Tx, Live ENS & UX      │
                                           └─────────────────────────────────────────┘
 ```
 

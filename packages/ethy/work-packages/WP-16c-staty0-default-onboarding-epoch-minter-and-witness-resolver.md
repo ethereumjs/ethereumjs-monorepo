@@ -59,13 +59,18 @@ Wire **`STATY/0`** end-to-end as Ethy's **default fast-onboarding protocol** so 
      - JSON-RPC (`eth_getBalance`, `eth_getTransactionCount`, `eth_getCode`, `eth_getStorageAt`, `eth_call`, `eth_estimateGas`, `eth_createAccessList`),
      - Local `IdentityResolver` (live ENS resolution on Sepolia/Mainnet!), and
      - AI Contract Forensics view probes (`WP-15`).
-   - **2-Tier Resolution Strategy:**
+   - **2-Tier Resolution Strategy (Policy-Aware):**
      - **Coalesce:** Batch concurrent misses within a short micro-window (e.g., `10–25 ms` during EVM `SLOAD` bursts) up to `64` accounts / `256` slots.
      - **Tier 1 (`STATY/0` Swarm):** Fan out `GET_WITNESSES (0x05)` (`minAnchorBlock = localBalEarliestBlock`) to `2–3` best `STATY/0` peers. Verify, fold BALs, commit to `FlatStateManager`, cache in `StatyStore`.
-     - **Tier 2 (`snap/1` Global Miss Fallback):** Only for keys unresolved after Tier 1, issue targeted `snap/1` single-key proof request at a recent verified block `B` (`#Head - B <= 64`). Verify against `header(B).stateRoot`, fold BALs, commit to `FlatStateManager`, **persist in `staty/witnesses/`**, and update `STATY/0 STATUS.witnessCountHint` so the swarm never hits `snap/1` twice for the same cold contract!
+     - **Tier 2 (`snap/1` Global Miss Fallback — `'full'` Policy Only):** Only when `policy === 'full'` (user RPC / explicit microscope / wallet tx) AND keys remain unresolved after Tier 1, issue targeted `snap/1` single-key proof request at a recent verified block `B` (`#Head - B <= 64`). Verify against `header(B).stateRoot`, fold BALs, commit to `FlatStateManager`, **persist in `staty/witnesses/`**, and update `STATY/0 STATUS.witnessCountHint` so the swarm never hits `snap/1` twice for the same cold contract! When `policy === 'swarm-only'` (background AI probes), skip Tier 2 completely (zero `snap/1` leeching) and let unresolved keys surface `StateMissUnavailableError` cleanly.
    - **Telemetry Counters:** Track `localHits`, `tombstoneHits`, `statyWitnessHits`, `snapFallbackHits`, and `missTimeouts` on `EthySpine` so `/staty` and diagnostics reflect real hit ratios honestly.
 
-5. **End-to-End Multi-Node `STATY/0` Loopback Integration Tests (`packages/ethy/test/statyLoopback.spec.ts`):**
+5. **Laptop-Sleep & Multi-Day `STATY/0` Resume (`packages/ethy/src/staty/statyResumePolicy.ts`):**
+   - Unlike legacy `SNAP_RESUME_MAX_GAP = 90n` / `MAX_BAL_BRIDGE_BLOCKS = 900n`, `STATY/0` makes restart and laptop-sleep wake-ups fast across any downtime:
+     - **Gap `<= 8,192` blocks (`<= 27.3h`):** Stream only missing `eth/71` BALs (`lastVerifiedBlock + 1 .. #Head`) + fetch missed `E = 256` micro-epochs over `STATY/0` → back live in `15–30s` with 100% of cached `staty/witnesses/` preserved!
+     - **Gap `> 8,192` blocks (days or weeks):** Keep **100% of shared `code/`**, `contract-dossiers.json`, and `peerBook`, evict expired witnesses (`anchorBlock < newLocalBalEarliestBlock`), and re-warm the fresh `2D` rolling BAL tail + `16..32` Hot Epoch Bundles in `3–4` minutes.
+
+6. **End-to-End Multi-Node `STATY/0` Loopback Integration Tests (`packages/ethy/test/statyLoopback.spec.ts`):**
    - Build a realistic offline `@ethereumjs/mpt` world state (ERC-20 contract + ENS-style resolver contract + cold contract) plus a multi-block verified BAL stream.
    - **Test 1 (Full Epoch Sync, Zero `snap/1` on Joiner):** Node A mints micro-epoch `e` from synthetic `snap/1` + BALs; Node B connects **only** to Node A over `eth/71` + `STATY/0` (`snap/1` disabled), syncs the BAL window + Hot Epoch Bundle + Bytecodes, and executes a verified local `eth_call` (`balanceOf` / `name`) returning exact consensus results!
    - **Test 2 (Cold-Miss Swarm Amplification):** Node B queries an untouched cold contract → triggers `1` `snap/1` fallback, verifies, caches in `staty/witnesses/`; Node C queries the exact same cold contract → resolved **100% from Node B over `STATY/0 GET_WITNESSES`** with **zero `snap/1` requests**!

@@ -27,17 +27,19 @@ Build the **cryptographic and state-management foundation** for `STATY/0` (and h
    - **Proven-Empty Tombstones (Open-World Only):**
      - Track verified non-existent accounts (`markAccountEmpty(accountHash)`) and verified zero storage slots (`markStorageEmpty(accountHash, slotHash)`), bounded with LRU/FIFO caps so memory stays flat.
      - Automatically clear a tombstone if `putAccount`, `putStorage`, or `consumeBAL` subsequently writes a non-empty value for that key!
-   - **Async Miss Resolver Hooks (`FlatStateManagerOpts`):**
-     - `resolveAccountMiss?: (accountHash: Uint8Array) => Promise<Uint8Array | 'empty' | undefined>`
-     - `resolveStorageMiss?: (accountHash: Uint8Array, slotHash: Uint8Array) => Promise<Uint8Array | 'empty' | undefined>`
-     - `resolveCodeMiss?: (codeHash: Uint8Array) => Promise<Uint8Array | undefined>`
+   - **Async Miss Resolver Hooks, `ResolutionPolicy` & False-Zero Safety (`FlatStateManagerOpts`):**
+     - `StateResolutionPolicy = 'full' | 'swarm-only' | 'local-only'` (default `'full'`; passed to miss hooks and selectable per `shallowCopy({ resolutionPolicy })` overlay so background AI / ENS probes can run `'swarm-only'` with **zero `snap/1` leeching** while user JSON-RPC runs `'full'`).
+     - `resolveAccountMiss?: (accountHash: Uint8Array, policy: StateResolutionPolicy) => Promise<Uint8Array | 'empty' | undefined>`
+     - `resolveStorageMiss?: (accountHash: Uint8Array, slotHash: Uint8Array, policy: StateResolutionPolicy) => Promise<Uint8Array | 'empty' | undefined>`
+     - `resolveCodeMiss?: (codeHash: Uint8Array, policy: StateResolutionPolicy) => Promise<Uint8Array | undefined>`
+     - **S0/S1 False-Zero Safety Invariant (`StateMissUnavailableError`):** In an **Open-World** bucket, if a key is an **Unknown Miss** and the resolver returns `undefined` (timeout, peer miss, or `'local-only'`/`'swarm-only'` policy hit without a cached witness), `FlatStateManager` MUST throw a typed **`StateMissUnavailableError`** rather than silently returning `undefined` / `0n`! Only a **Closed-World** bucket or a **Proven-Empty Tombstone** may return an empty account or `0` storage value — guaranteeing `eth_getBalance`, `eth_getTransactionCount`, and `eth_call` NEVER fabricate a false zero balance or nonce when peers are unreachable.
      - Resolution order in `getAccount` / `getStorage` / `getCodeByHash` / `getCode`:
        1. RAM overlay / arena / hot cache → return immediately.
        2. Cold disk lookup (`coldAccountLookup` / `coldStorageLookup` / `coldCodeLookup`) → return immediately.
        3. If bucket `b = accountHash[0] >> 4` is **Closed-World** (`(closedBucketsMask & (1 << b)) !== 0`): return empty / `0` immediately (**zero resolver calls, 100% read privacy**).
        4. If bucket `b` is **Open-World** and key has a **Proven-Empty Tombstone** (or account has `storageRoot === KECCAK256_RLP` for storage reads): return empty / `0` immediately (**zero resolver calls**).
-       5. Otherwise (**Unknown Miss**): await the matching `resolve*Miss` hook (deduplicating concurrent misses on the same key via an in-flight `Map`), commit any resolved value or `'empty'` tombstone into `FlatStateManager`, and return it.
-     - Preserve `shallowCopy()` inheritance so `@ethereumjs/evm` `eth_call` overlays seamlessly trigger root open-world resolution while isolating call-frame writes!
+       5. Otherwise (**Unknown Miss**): if overlay policy is `'local-only'`, throw `StateMissUnavailableError`; otherwise await the matching `resolve*Miss(key, policy)` hook (deduplicating concurrent misses on the same key via an in-flight `Map`), commit any resolved value or `'empty'` tombstone into `FlatStateManager` (returning it), or throw `StateMissUnavailableError` if unresolved.
+     - Preserve `shallowCopy({ resolutionPolicy })` inheritance so `@ethereumjs/evm` `eth_call` overlays seamlessly trigger root open-world resolution under the caller's policy while isolating call-frame writes!
 
 2. **`STATY/0` Cryptographic Multi-Proof Verifier (`packages/ethy/src/staty/multiProofVerify.ts`):**
    - Pure verifier for `EPOCH_PART (0x04)` and `WITNESSES (0x06)` anchor groups using `@ethereumjs/mpt` + `@ethereumjs/ethy`'s WASM `ethyKeccak256` (no new runtime deps, pure-JS fallback in library code per `security.mdc` S3):
