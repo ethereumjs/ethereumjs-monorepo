@@ -130,22 +130,32 @@ export function detectEconomySignals(input: DetectEconomySignalsInput): SignalCa
       delegateCounts.set(row.target, (delegateCounts.get(row.target) ?? 0) + row.count)
     }
   }
+  let delegateBlockSpread = 0
+  const blocksWithDelegation = new Set<number>()
+  for (let i = 0; i < window; i++) {
+    const b = ring[i]
+    if (b?.delegationTargets === undefined || b.delegationTargets.length === 0) continue
+    blocksWithDelegation.add(i)
+  }
+  delegateBlockSpread = blocksWithDelegation.size
   for (const [target, count] of delegateCounts) {
-    const baseline = macroBaseline.avgSetCodeTxCount ?? 1
-    if (count >= 3 || (baseline > 0 && count >= baseline * 3)) {
-      const name = knownContractName(chainId, target)
-      pushCandidate(
-        out,
-        'delegation_surge',
-        count >= 5 ? 80 : 55,
-        name !== undefined
-          ? `EIP-7702 cluster → ${name}`
-          : `EIP-7702 delegate cluster (${count} auths)`,
-        window,
-        { count, target },
-        target,
-      )
-    }
+    const baseline = Math.max(1, macroBaseline.avgSetCodeTxCount ?? 1)
+    const burst = count >= 8 && count >= baseline * 4 && delegateBlockSpread >= 2
+    const megaBurst = count >= 20
+    if (!burst && !megaBurst) continue
+    const score = megaBurst ? 62 : 40
+    const name = knownContractName(chainId, target)
+    pushCandidate(
+      out,
+      'delegation_surge',
+      score,
+      name !== undefined
+        ? `EIP-7702 cluster → ${name}`
+        : `EIP-7702 delegate cluster (${count} auths)`,
+      window,
+      { count, target },
+      target,
+    )
   }
 
   // contract_surge — compare per-block average gas vs macro baseline per-block average

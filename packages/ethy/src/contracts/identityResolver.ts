@@ -1,4 +1,5 @@
 import type { ChainConfig } from '@ethereumjs/common'
+import type { FlatStateManager } from '@ethereumjs/statemanager'
 
 import { bytesToBigInt, bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { ethyKeccak256 } from '../crypto/keccak.ts'
@@ -13,7 +14,7 @@ const NAME_BYTES32_SEL = hexToBytes('0x691f3431')
 const ADDR_SEL = hexToBytes('0x3b3b57de')
 const NEGATIVE_TTL_BLOCKS = 256
 const MAX_CACHE = 512
-const MAX_PROBES_PER_BLOCK = 2
+const MAX_PROBES_PER_BLOCK = 4
 const CALL_GAS = 80_000n
 
 const ENS_REGISTRY_MAINNET = '0x00000000000c2e074ec69a0dfb2997ba6c7d2e1e'
@@ -26,18 +27,72 @@ type CacheEntry = {
   miss?: boolean
 }
 
+type QueueItem = {
+  address: string
+  ensOnly: boolean
+}
+
 export class IdentityResolver {
   private readonly chain: ChainConfig
   private readonly sandbox?: EthySandbox
   private readonly spine: EthySpine
+  private readonly stateManager?: FlatStateManager
   private readonly cache = new Map<string, CacheEntry>()
   private probeBudget = 0
-  private queue: string[] = []
+  private queue: QueueItem[] = []
+  private ensHitsCount = 0
+  private tokenHitsCount = 0
 
-  constructor(opts: { chain: ChainConfig; sandbox?: EthySandbox; spine: EthySpine }) {
+  constructor(opts: {
+    chain: ChainConfig
+    sandbox?: EthySandbox
+    spine: EthySpine
+    stateManager?: FlatStateManager
+  }) {
     this.chain = opts.chain
     this.sandbox = opts.sandbox
     this.spine = opts.spine
+    this.stateManager = opts.stateManager
+  }
+
+  /**
+   * True when local state holds the ENS Registry bytecode (or when no stateManager
+   * was supplied, e.g. mock sandbox tests). On partial code-sync pivots where ENS Registry
+   * code is not yet on disk, returns false so we avoid poisoning the 256-block cache.
+   */
+  hasLocalEnsRegistry(): boolean {
+    const chainId = BigInt(this.chain.chainId)
+    if (chainId !== 1n && chainId !== 11155111n) return false
+    if (this.stateManager === undefined) return true
+    try {
+      const hash = ethyKeccak256(hexToBytes(ENS_REGISTRY_MAINNET))
+      const acc = this.stateManager.getAccountByHash(hash)
+      if (acc === undefined || acc.codeHash === undefined) return false
+      const code = this.stateManager.getCodeByHash(acc.codeHash)
+      return code !== undefined && code.length > 0
+    } catch {
+      return false
+    }
+  }
+
+  getStats(): {
+    ensRegistryReady: boolean
+    ensHits: number
+    tokenHits: number
+    cacheSize: number
+  } {
+    return {
+      ensRegistryReady: this.hasLocalEnsRegistry(),
+      ensHits: this.ensHitsCount,
+      tokenHits: this.tokenHitsCount,
+      cacheSize: this.cache.size,
+    }
+  }
+
+  getEnsName(address: string): string | undefined {
+    const row = this.cache.get(address.toLowerCase())
+    if (row === undefined || row.miss === true) return undefined
+    return row.ensName
   }
 
   getKnownName(address: string): string | undefined {
@@ -51,15 +106,44 @@ export class IdentityResolver {
     return undefined
   }
 
-  onBlock(blockNumber: bigint, hotAddresses: string[]): void {
+  /**
+   * On-demand cached lookup (used by AI forensics so subject + embedded addresses
+   * have verified ENS / token identity ready before story generation).
+   */
+  async resolveNow(
+    address: string,
+    blockNumber = 0n,
+    opts: { ensOnly?: boolean } = {},
+  ): Promise<{ knownName?: string; ensName?: string }> {
+    const key = address.toLowerCase()
+    const cached = this.cache.get(key)
+    if (cached !== undefined && !this.isExpired(cached, blockNumber)) {
+      return { knownName: this.getKnownName(key), ensName: this.getEnsName(key) }
+    }
+    if (this.sandbox === undefined || this.spine.phase !== 'HEAD_FOLLOWING') {
+      return { knownName: this.getKnownName(key), ensName: this.getEnsName(key) }
+    }
+    try {
+      await this.probeOne(key, blockNumber, opts.ensOnly === true)
+    } catch {
+      this.putCache(key, { block: blockNumber, miss: true })
+    }
+    return { knownName: this.getKnownName(key), ensName: this.getEnsName(key) }
+  }
+
+  onBlock(blockNumber: bigint, hotAddresses: string[], eoaAddresses: string[] = []): void {
     this.probeBudget = MAX_PROBES_PER_BLOCK
     if (this.spine.phase !== 'HEAD_FOLLOWING') return
-    for (const addr of hotAddresses) {
+    const enqueue = (addr: string, ensOnly: boolean) => {
       const key = addr.toLowerCase()
       const cached = this.cache.get(key)
-      if (cached !== undefined && !this.isExpired(cached, blockNumber)) continue
-      if (!this.queue.includes(key)) this.queue.push(key)
+      if (cached !== undefined && !this.isExpired(cached, blockNumber)) return
+      if (!this.queue.some((q) => q.address === key)) {
+        this.queue.push({ address: key, ensOnly })
+      }
     }
+    for (const addr of hotAddresses) enqueue(addr, false)
+    for (const addr of eoaAddresses) enqueue(addr, true)
     void this.drainQueue(blockNumber)
   }
 
@@ -73,12 +157,12 @@ export class IdentityResolver {
   private async drainQueue(blockNumber: bigint): Promise<void> {
     if (this.sandbox === undefined) return
     while (this.probeBudget > 0 && this.queue.length > 0) {
-      const addr = this.queue.shift()!
+      const item = this.queue.shift()!
       this.probeBudget -= 1
       try {
-        await this.probeOne(addr, blockNumber)
+        await this.probeOne(item.address, blockNumber, item.ensOnly)
       } catch {
-        this.putCache(addr, { block: blockNumber, miss: true })
+        this.putCache(item.address, { block: blockNumber, miss: true })
       }
     }
   }
@@ -91,23 +175,31 @@ export class IdentityResolver {
     this.cache.set(address.toLowerCase(), entry)
   }
 
-  private async probeOne(address: string, blockNumber: bigint): Promise<void> {
+  private async probeOne(address: string, blockNumber: bigint, ensOnly = false): Promise<void> {
     if (this.sandbox === undefined) return
-    const name = await this.ethCallString(address, NAME_SEL)
-    const symbol = await this.ethCallString(address, SYMBOL_SEL)
+    const ensReady = this.hasLocalEnsRegistry()
+    const name = ensOnly ? undefined : await this.ethCallString(address, NAME_SEL, 48)
+    const symbol = ensOnly ? undefined : await this.ethCallString(address, SYMBOL_SEL, 32)
     let ensName: string | undefined
-    const chainId = BigInt(this.chain.chainId)
-    if (chainId === 1n || chainId === 11155111n) {
+    if (ensReady) {
       ensName = await this.resolveEnsReverse(address)
     }
     if (name === undefined && symbol === undefined && ensName === undefined) {
+      // Never cache a 256-block negative miss for ENS-only lookups while ENS Registry code is absent
+      if (ensOnly && !ensReady) return
       this.putCache(address, { block: blockNumber, miss: true })
       return
     }
+    if (ensName !== undefined) this.ensHitsCount += 1
+    if (name !== undefined) this.tokenHitsCount += 1
     this.putCache(address, { block: blockNumber, tokenName: name, symbol, ensName })
   }
 
-  private async ethCallString(contract: string, data: Uint8Array): Promise<string | undefined> {
+  private async ethCallString(
+    contract: string,
+    data: Uint8Array,
+    maxLen = 64,
+  ): Promise<string | undefined> {
     if (this.sandbox === undefined) return undefined
     const outcome = await this.sandbox.runEthCall(
       {
@@ -120,7 +212,7 @@ export class IdentityResolver {
     if ('error' in outcome) return undefined
     const hex = String(outcome.result ?? '')
     if (!hex.startsWith('0x')) return undefined
-    return decodeAbiString(hexToBytes(hex as `0x${string}`))
+    return decodeAbiString(hexToBytes(hex as `0x${string}`), maxLen)
   }
 
   private async resolveEnsReverse(address: string): Promise<string | undefined> {
@@ -178,9 +270,9 @@ function concatCall(sel: Uint8Array, node: Uint8Array): Uint8Array {
   return out
 }
 
-export function decodeAbiString(ret: Uint8Array): string | undefined {
+export function decodeAbiString(ret: Uint8Array, maxLen = 64): string | undefined {
   if (ret.length === 32) {
-    const text = asciiFromBytes32(ret)
+    const text = asciiFromBytes32(ret, maxLen)
     return text !== undefined ? text : undefined
   }
   if (ret.length < 64) return undefined
@@ -191,27 +283,27 @@ export function decodeAbiString(ret: Uint8Array): string | undefined {
     const start = offset + 32
     if (start + len > ret.length) return undefined
     const slice = ret.subarray(start, start + len)
-    return asciiSanitize(slice)
+    return asciiSanitize(slice, maxLen)
   } catch {
     return undefined
   }
 }
 
-function asciiFromBytes32(word: Uint8Array): string | undefined {
+function asciiFromBytes32(word: Uint8Array, maxLen: number): string | undefined {
   let end = word.length
   while (end > 0 && word[end - 1] === 0) end -= 1
   const slice = word.subarray(0, end)
-  return asciiSanitize(slice)
+  return asciiSanitize(slice, maxLen)
 }
 
-function asciiSanitize(bytes: Uint8Array): string | undefined {
+function asciiSanitize(bytes: Uint8Array, maxLen: number): string | undefined {
   let out = ''
   for (const b of bytes) {
     if (b < 0x20 || b > 0x7e) return undefined
     out += String.fromCharCode(b)
   }
   if (out.length === 0) return undefined
-  return out.length > 32 ? out.slice(0, 32) : out
+  return out.length > maxLen ? out.slice(0, maxLen) : out
 }
 
 function ensReverseNode(address: string): Uint8Array {

@@ -193,7 +193,7 @@ export class SnapAccountSynchronizer {
   enqueueAccountRefreshCursor(accountHash: Uint8Array): void {
     if (accountHash.length !== 32) return
     const bucketIndex = accountHash[0]! >> 4
-    const bucket = this.spine.snapBuckets[bucketIndex]
+    const bucket = this.buckets()[bucketIndex]
     if (bucket === undefined) return
     const ranges = ensureBucketSubRanges(bucket)
     const key = bytesToUnprefixedHex(accountHash)
@@ -446,7 +446,8 @@ export class SnapAccountSynchronizer {
   }
 
   private fillPeerSlots(peers: SnapSchedulePeer[], now: number): void {
-    if (this.backgroundMode && this.inFlight.size > 0) return
+    const BACKGROUND_MAX_IN_FLIGHT = 4
+    if (this.backgroundMode && this.inFlight.size >= BACKGROUND_MAX_IN_FLIGHT) return
     for (const bucket of this.buckets()) {
       ensureBucketSubRanges(bucket)
       if (snapBucketCursorExhausted(bucket)) {
@@ -456,6 +457,7 @@ export class SnapAccountSynchronizer {
     const free = () => this.listFreeCursors(now)
     const pivotBlock = this.pivotBlock()
     for (const peer of peers) {
+      if (this.backgroundMode && this.inFlight.size >= BACKGROUND_MAX_IN_FLIGHT) break
       if (now < (this.peerRestUntil.get(peer.id) ?? 0)) continue
       // Only skip a brand-new unproven peer whose initial STATUS block is far (>32 blocks) behind our pivot;
       // proven peers or peers within the 32-block BLOCK_RANGE_UPDATE interval are already at head!
@@ -467,8 +469,9 @@ export class SnapAccountSynchronizer {
       ) {
         continue
       }
-      const maxInFlight = maxInFlightForPeer(peer)
+      const maxInFlight = this.backgroundMode ? 1 : maxInFlightForPeer(peer)
       while (this.flightTracker.inFlightCount(peer.id) < maxInFlight) {
+        if (this.backgroundMode && this.inFlight.size >= BACKGROUND_MAX_IN_FLIGHT) break
         let cursor: SnapRangeCursor | undefined = free()[0]
         const canSplit =
           peer.snapResponsesOk >= 2 || this.flightTracker.inFlightCount(peer.id) === 0
@@ -507,7 +510,9 @@ export class SnapAccountSynchronizer {
     for (const peer of peers) {
       if (now < (this.peerRestUntil.get(peer.id) ?? 0)) resting++
     }
-    this.spine.snapPeersResting = resting
+    if (!this.backgroundMode) {
+      this.spine.snapPeersResting = resting
+    }
     if (peers.length === 0) return
     this.fillPeerSlots(peers, now)
   }
@@ -740,7 +745,7 @@ export class SnapAccountSynchronizer {
       this.inFlightOrigins.delete(originDedupeKey(flight.bucket, flight.origin))
     }
     this.flightTracker.release(peerId, replyId)
-    const bucket = this.spine.snapBuckets[flight.bucket]
+    const bucket = this.buckets()[flight.bucket]
     if (bucket === undefined) {
       this.endCursorVerify(cursor)
       return
@@ -851,7 +856,7 @@ export class SnapAccountSynchronizer {
     let persistSlab: Uint8Array | undefined
     if (result.slab !== undefined && result.count > 0) {
       persistSlab = filterAccountSlabWithin(result.slab, flight.origin, clipLimit)
-      if (persistSlab.length > 0) {
+      if (persistSlab.length > 0 && !this.backgroundMode) {
         this.stateManager.putSnapBinaryAccountsFromSlab(persistSlab)
       }
     }
@@ -860,7 +865,9 @@ export class SnapAccountSynchronizer {
     if (acceptedCount > 0) {
       if (!isRefresh) {
         bucket.accountsLoaded += acceptedCount
-        this.spine.totalAccountsSynced += acceptedCount
+        if (!this.backgroundMode) {
+          this.spine.totalAccountsSynced += acceptedCount
+        }
       }
       this.updateRate()
       this.peerBook?.noteSnapSuccess(peerId, Date.now())

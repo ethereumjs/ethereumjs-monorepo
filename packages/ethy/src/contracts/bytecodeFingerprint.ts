@@ -173,14 +173,16 @@ export function fingerprintBytecode(code: Uint8Array): BytecodeFingerprint {
   let proxyTarget: string | undefined
   if (code.length === 23 && bytesEqual(code, EIP7702_PREFIX, 0, 0, 3)) {
     proxyKind = 'EIP-7702'
-    proxyTarget = `0x${bytesToHex(code.subarray(3, 23))}`
+    proxyTarget = bytesToHex(code.subarray(3, 23)).toLowerCase()
   } else if (
     code.length >= EIP1167_PREFIX.length + 20 + EIP1167_SUFFIX.length &&
     bytesEqual(code, EIP1167_PREFIX) &&
     bytesEqual(code, EIP1167_SUFFIX, EIP1167_PREFIX.length + 20, 0)
   ) {
     proxyKind = 'EIP-1167'
-    proxyTarget = `0x${bytesToHex(code.subarray(EIP1167_PREFIX.length, EIP1167_PREFIX.length + 20))}`
+    proxyTarget = bytesToHex(
+      code.subarray(EIP1167_PREFIX.length, EIP1167_PREFIX.length + 20),
+    ).toLowerCase()
   } else if (hasDelegateCall && pushes1967ImplSlot) {
     proxyKind = 'EIP-1967'
   } else if (hasDelegateCall && pushes1967BeaconSlot) {

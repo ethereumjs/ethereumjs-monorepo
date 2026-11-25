@@ -10,6 +10,8 @@ const READ_COMMANDS = [
   '/live',
   '/peers',
   '/ethy',
+  '/machine',
+  '/sync',
   '/rpc',
   '/buckets',
   '/snap',
@@ -26,6 +28,7 @@ const READ_COMMANDS = [
   '/contract',
   '/clear',
   '/ai',
+  '/story',
 ] as const
 
 const WRITE_COMMANDS = ['/drop', '/reassign', '/pause', '/resume', '/send'] as const

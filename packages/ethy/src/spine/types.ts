@@ -202,6 +202,8 @@ export interface EthySpine {
     total: number
     /** Live catch-up throughput for Node Pulse (WP-07e). */
     blocksPerSec?: number
+    /** Parallel BAL batch flights in progress (WP-14). */
+    balFlightsInAir?: number
   }
   /** Rolling pivot steps completed during snap (WP-04k). */
   pivotStepsCompleted?: number
@@ -268,12 +270,34 @@ export interface EthySpine {
   clEndpoint?: string
   /** Swarm generation / BAL tail / shadow refresh telemetry (WP-11b). */
   swarm?: SpineSwarmSnapshot
+  /** WP-13 machine plan snapshot (telemetry tick; TUI reads only). */
+  machine?: MachineSpineSnapshot
   /** Optional sink hook for the persistent Flight Recorder log files. */
   onDiagnosticRecorded?: (entry: DiagnosticEvent) => void
   /** Active logs directory path (`~/.ethy/networks/<net>/logs`). */
   logsDirPath?: string
   /** Loopback JSON-RPC 2.0 telemetry (WP-08a). */
   rpc?: RpcTelemetry
+}
+
+export type MachinePlaneStatus = 'active' | 'prewarming' | 'standby' | 'off'
+
+export type MachineSpineSnapshot = {
+  mode: string
+  modeReason: string
+  nextEventSummary: string
+  planes: {
+    eth: MachinePlaneStatus
+    ethy: MachinePlaneStatus
+    snap: MachinePlaneStatus
+    discovery: MachinePlaneStatus
+    cl: MachinePlaneStatus
+  }
+  servingEthy: string
+  ethyDiscoveryTag: boolean
+  transitions: string[]
+  vipTarget: number
+  discoveryMode: string
 }
 
 export type SpineSwarmSnapshot = {
@@ -291,6 +315,9 @@ export type SpineSwarmSnapshot = {
     partialMinterMask?: number
     suppressionState?: 'clear' | 'suppressed' | 'stalled'
     stalledMinterPeerIds?: string[]
+    blockedReason?: 'low-disk'
+    freeBytes?: bigint
+    requiredFreeBytes?: bigint
   }
 }
 
@@ -354,6 +381,8 @@ export type InteractionHistoryEntry =
       page: InteractionPage
     }
 
+export type StoryAngleKind = 'history' | 'security' | 'question' | 'lens'
+
 export type ChainDispatchCard = {
   category: string
   severity: string
@@ -364,6 +393,21 @@ export type ChainDispatchCard = {
   blockNumber?: string
   atMs: number
   deterministic?: boolean
+  lens?: 'detective' | 'security' | 'economics' | 'lore'
+  network?: string
+  angle?: string
+  angleKind?: StoryAngleKind
+  curiosityQuestion?: string
+  evidence?: Array<{ label: string; value: string }>
+  loreCardId?: string
+  modelLabel?: string
+  latencyMs?: number
+  toolsUsed?: string[]
+  subjectKey?: string
+  signalScore?: number
+  beatKind?: string
+  format?: 'snap' | 'field_note'
+  fallbackReason?: string
 }
 
 export interface AiOverviewSections {
@@ -373,7 +417,11 @@ export interface AiOverviewSections {
   focusNote?: { domain: CapabilityId; text: string }
   /** WP-10c Dispatch Feed (replaces 3-domain prose when set). */
   dispatches?: ChainDispatchCard[]
+  storyIndex?: number
+  storyCount?: number
   bootstrapNote?: string
+  /** Right-column status while a manual story cycle runs (WP-15). */
+  generating?: { text: string }
 }
 
 export type WidgetSpec =
@@ -432,6 +480,11 @@ export type WidgetSpec =
       discoveredModels?: DiscoveredLocalModel[]
       hardware?: HardwareSnapshot
       statusNote?: string
+      debugPage?: DebugSectionSpec[]
+    }
+  | {
+      kind: 'story'
+      story: ChainDispatchCard
       debugPage?: DebugSectionSpec[]
     }
 

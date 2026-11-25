@@ -1,4 +1,9 @@
-import { DISCONNECT_REASON, DisconnectReasonNames } from '../types.ts'
+import {
+  DISCONNECT_REASON,
+  DisconnectReasonNames,
+  type DiscoveryMode,
+  type NetworkProfile,
+} from '../types.ts'
 import { type HandshakeRejectKey } from './handshakeReject.ts'
 
 /** `Geth/v1.16.1-stable-…/linux` → `Geth/v1.16.1 eth/72`. */
@@ -20,7 +25,11 @@ export interface WorkerDiscoverySnapshot {
   boundTcpPort: number
   localEnode?: string
   tablePeers: number
-  discoveryPaused?: boolean
+  discoveryMode?: DiscoveryMode
+  activeCapabilities?: string[]
+  maxPeers?: number
+  minEthyPeers?: number
+  ethyDiscoveryTag?: boolean
   /** Hardfork, EIP-2124 hash, and next fork this node puts in ETH STATUS. */
   advertisedFork?: { hardfork: string; hash: string; next?: string }
   bootstrap: {
@@ -73,7 +82,11 @@ export class DiscoveryMetrics {
   boundTcpPort = 0
   localEnode?: string
   tablePeers = 0
-  discoveryPaused = false
+  discoveryMode: DiscoveryMode = 'active'
+  activeCapabilities: string[] = []
+  maxPeers = 0
+  minEthyPeers = 0
+  ethyDiscoveryTag = false
   advertisedHardfork?: string
   advertisedForkHash?: string
   advertisedForkNext?: string
@@ -213,8 +226,16 @@ export class DiscoveryMetrics {
     this.rlpxLastSubprotocolError = message.slice(0, 200)
   }
 
-  setDiscoveryPaused(paused: boolean): void {
-    this.discoveryPaused = paused
+  setDiscoveryMode(mode: DiscoveryMode): void {
+    this.discoveryMode = mode
+  }
+
+  setNetworkProfile(profile: NetworkProfile): void {
+    this.discoveryMode = profile.discoveryMode
+    this.activeCapabilities = [...profile.capabilities]
+    this.maxPeers = profile.maxPeers
+    this.minEthyPeers = profile.minEthyPeers ?? 0
+    this.ethyDiscoveryTag = profile.ethyDiscoveryTag
   }
 
   setLocalEnode(url: string): void {
@@ -240,7 +261,11 @@ export class DiscoveryMetrics {
       boundTcpPort: this.boundTcpPort,
       ...(this.localEnode !== undefined ? { localEnode: this.localEnode } : {}),
       tablePeers: this.tablePeers,
-      ...(this.discoveryPaused ? { discoveryPaused: true } : {}),
+      discoveryMode: this.discoveryMode,
+      activeCapabilities: [...this.activeCapabilities],
+      maxPeers: this.maxPeers,
+      minEthyPeers: this.minEthyPeers,
+      ethyDiscoveryTag: this.ethyDiscoveryTag,
       ...(this.advertisedHardfork !== undefined && this.advertisedForkHash !== undefined
         ? {
             advertisedFork: {

@@ -127,6 +127,31 @@ export function validateBlockAccessListHashFromJSON(
 }
 
 /**
+ * `keccak256(balRlp)` without decoding or re-encoding the wire bytes.
+ *
+ * @remarks Experimental (Amsterdam): may change on patch releases.
+ */
+export function hashBlockAccessListRLP(
+  balRlp: Uint8Array,
+  keccak256Fn: (data: Uint8Array) => Uint8Array = keccak_256,
+): Uint8Array {
+  return keccak256Fn(balRlp)
+}
+
+/**
+ * Verifies the header hash against raw RLP wire bytes.
+ *
+ * @remarks Experimental (Amsterdam): may change on patch releases.
+ */
+export function validateBlockAccessListHashFromRLP(
+  balRlp: Uint8Array,
+  expectedHash: Uint8Array,
+  keccak256Fn: (data: Uint8Array) => Uint8Array = keccak_256,
+): void {
+  validateBlockAccessListHashBytes(hashBlockAccessListRLP(balRlp, keccak256Fn), expectedHash)
+}
+
+/**
  * Validates the canonical RLP-oriented structure of a {@link BlockLevelAccessList}.
  *
  * @remarks Experimental (Amsterdam): may change on patch releases.

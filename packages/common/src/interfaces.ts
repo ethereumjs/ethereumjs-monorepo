@@ -5,6 +5,7 @@
 import type {
   Account,
   Address,
+  BALInput,
   BALJSONBlockAccessList,
   BinaryTreeExecutionWitness,
   PrefixedHexString,
@@ -230,7 +231,17 @@ export interface StateManagerInterface {
    * @remarks Experimental (Amsterdam): may change on patch releases.
    */
   consumeBAL?(
-    bal: BALJSONBlockAccessList,
+    bal: BALInput,
+    optsOrExpectedStateRoot?: Uint8Array | ConsumeBALOptions,
+  ): Promise<void>
+
+  /**
+   * Apply multiple consecutive block access lists in one pass (compacted when possible).
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases.
+   */
+  consumeBALBatch?(
+    accessLists: BALInput[],
     optsOrExpectedStateRoot?: Uint8Array | ConsumeBALOptions,
   ): Promise<void>
 

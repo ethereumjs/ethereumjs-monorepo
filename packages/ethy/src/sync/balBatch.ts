@@ -2,7 +2,7 @@ import type { ChainConfig } from '@ethereumjs/common'
 import {
   type BALJSONBlockAccessList,
   createBlockLevelAccessListFromRLP,
-  equalsBytes,
+  validateBlockAccessListHashFromRLP,
 } from '@ethereumjs/util'
 
 import {
@@ -27,6 +27,7 @@ export const BAL_BATCH_MIN_GAP = 4n
 export const SERVING_TAIL_BLOCKS = 64n
 export const TAIL_BUNDLE_BATCH_SIZE = 8
 export const BAL_BATCH_PEER_REST_MS = 15_000
+export const BAL_BATCH_PEER_MAX_REST_MS = 120_000
 
 export type BalBatchMode = 'fast' | 'full'
 
@@ -63,6 +64,10 @@ export function pickBalCatchUpPeer(
   peerRestUntil: ReadonlyMap<string, number>,
   minBlock?: bigint,
   now = Date.now(),
+  opts?: {
+    inFlightByPeer?: ReadonlyMap<string, number>
+    maxPerPeer?: number
+  },
 ): { id: string; ethVersion: number; latestBlock: bigint } | undefined {
   let targetHead = 0n
   for (const p of spine.peers.values()) {
@@ -70,12 +75,21 @@ export function pickBalCatchUpPeer(
     if (p.latestBlock > targetHead) targetHead = p.latestBlock
   }
   if (targetHead === 0n) return undefined
+  const inFlightByPeer = opts?.inFlightByPeer
+  const maxPerPeer = opts?.maxPerPeer
   const filterCandidates = (minEthVersion: number, allowRollingEthy: boolean): PeerTelemetry[] => {
     const out: PeerTelemetry[] = []
     for (const p of spine.peers.values()) {
       if (p.hasHead !== true || p.latestBlock === undefined) continue
       if (highestEthVersion(p.caps) < minEthVersion) continue
       if (minBlock !== undefined && p.latestBlock < minBlock) continue
+      if (
+        inFlightByPeer !== undefined &&
+        maxPerPeer !== undefined &&
+        (inFlightByPeer.get(p.id) ?? 0) >= maxPerPeer
+      ) {
+        continue
+      }
       if (
         p.ethySession === true &&
         minBlock !== undefined &&
@@ -110,9 +124,13 @@ export function pickBalCatchUpPeer(
   if (candidates.length === 0) candidates = filterCandidates(69, true)
   if (candidates.length === 0) return undefined
   const effectiveRtt = (p: PeerTelemetry): number => (p.avgLatencyMs > 0 ? p.avgLatencyMs : 250)
+  const peerLoad = (p: PeerTelemetry): number => inFlightByPeer?.get(p.id) ?? 0
   let best = candidates[0]!
   for (const p of candidates) {
-    if (effectiveRtt(p) < effectiveRtt(best)) best = p
+    const loadDiff = peerLoad(p) - peerLoad(best)
+    if (loadDiff < 0 || (loadDiff === 0 && effectiveRtt(p) < effectiveRtt(best))) {
+      best = p
+    }
   }
   return {
     id: best.id,
@@ -125,8 +143,25 @@ export function restBalCatchUpPeer(
   peerRestUntil: Map<string, number>,
   peerId: string,
   now = Date.now(),
+  failureStreaks?: Map<string, number>,
 ) {
-  peerRestUntil.set(peerId, now + BAL_BATCH_PEER_REST_MS)
+  let restMs = BAL_BATCH_PEER_REST_MS
+  if (failureStreaks !== undefined) {
+    const streak = (failureStreaks.get(peerId) ?? 0) + 1
+    failureStreaks.set(peerId, streak)
+    restMs = Math.min(
+      BAL_BATCH_PEER_MAX_REST_MS,
+      BAL_BATCH_PEER_REST_MS * 2 ** Math.min(streak - 1, 4),
+    )
+  }
+  peerRestUntil.set(peerId, now + restMs)
+}
+
+export function noteBalCatchUpPeerSuccess(
+  failureStreaks: Map<string, number>,
+  peerId: string,
+): void {
+  failureStreaks.delete(peerId)
 }
 
 /** Blocks still to download before `targetHead`. */
@@ -163,8 +198,9 @@ export function startBalBatch(
   startBlock: bigint,
   count: number,
   mode: BalBatchMode,
+  nextRequestId: { value: number } = { value: 1 },
 ): InFlightBalBatch {
-  const headerRequestId = 1
+  const headerRequestId = nextRequestId.value++
   sendEth(
     peerId,
     EthMessageCodes.GET_BLOCK_HEADERS,
@@ -198,6 +234,7 @@ export function advanceBalBatchEthMessage(
   msg: { peerId: string; code: number; payload: Uint8Array },
   sendEth: (peerId: string, code: number, payload: Uint8Array) => void,
   priorTipHash?: Uint8Array,
+  nextRequestId: { value: number } = { value: 1 },
 ): 'progress' | 'complete' | 'failed' | 'ignore' {
   if (msg.peerId !== batch.peerId) return 'ignore'
   if (msg.code === EthMessageCodes.BLOCK_HEADERS && batch.stage === 'headers') {
@@ -222,7 +259,7 @@ export function advanceBalBatchEthMessage(
       }
       batch.stage = 'bal'
       batch.startedAt = Date.now()
-      const balRequestId = 4
+      const balRequestId = nextRequestId.value++
       batch.balRequestId = balRequestId
       const hashes = headers.map((h) => h.hash)
       sendEth(
@@ -234,7 +271,7 @@ export function advanceBalBatchEthMessage(
     }
     batch.stage = 'bodies'
     batch.startedAt = Date.now()
-    const bodiesRequestId = 2
+    const bodiesRequestId = nextRequestId.value++
     batch.bodiesRequestId = bodiesRequestId
     sendEth(
       batch.peerId,
@@ -254,7 +291,7 @@ export function advanceBalBatchEthMessage(
     batch.bodiesRlp = bodies
     batch.stage = 'receipts'
     batch.startedAt = Date.now()
-    const receiptsRequestId = 3
+    const receiptsRequestId = nextRequestId.value++
     batch.receiptsRequestId = receiptsRequestId
     const hashes = batch.headers!.map((h) => h.hash)
     sendEth(
@@ -279,7 +316,7 @@ export function advanceBalBatchEthMessage(
     }
     batch.stage = 'bal'
     batch.startedAt = Date.now()
-    const balRequestId = 4
+    const balRequestId = nextRequestId.value++
     batch.balRequestId = balRequestId
     sendEth(
       batch.peerId,
@@ -296,6 +333,16 @@ export function advanceBalBatchEthMessage(
     if (!requestIdMatches(batch.ethVersion, msg.payload, batch.balRequestId)) return 'ignore'
     const lists = parseBlockAccessListsBatchPayload(msg.payload)
     if (lists === null) return 'failed'
+    if (lists.length === 0) return 'failed'
+    const headers = batch.headers
+    if (headers !== undefined && lists.length < headers.length) {
+      batch.headers = headers.slice(0, lists.length)
+      batch.count = lists.length
+      if (batch.bodiesRlp !== undefined) batch.bodiesRlp = batch.bodiesRlp.slice(0, lists.length)
+      if (batch.receiptsEth69 !== undefined) {
+        batch.receiptsEth69 = batch.receiptsEth69.slice(0, lists.length)
+      }
+    }
     batch.balRlp = lists
     return 'complete'
   }
@@ -304,6 +351,10 @@ export function advanceBalBatchEthMessage(
 
 export function materializeBalBatch(
   batch: InFlightBalBatch,
+  opts?: {
+    keccak256Fn?: (data: Uint8Array) => Uint8Array
+    includeBalJson?: boolean
+  },
 ): { ok: true; blocks: VerifiedBalBatchBlock[] } | { ok: false; reason: string } {
   const headers = batch.headers
   if (headers === undefined || headers.length === 0) {
@@ -337,16 +388,19 @@ export function materializeBalBatch(
       blocks.push({ header, balRlp })
       continue
     }
-    const bal = createBlockLevelAccessListFromRLP(balRlp)
-    if (!equalsBytes(bal.hash(), balHash)) {
+    try {
+      validateBlockAccessListHashFromRLP(balRlp, balHash, opts?.keccak256Fn)
+    } catch {
       return { ok: false, reason: 'BAL hash mismatch' }
     }
+    const balJson =
+      opts?.includeBalJson === true ? createBlockLevelAccessListFromRLP(balRlp).toJSON() : undefined
     blocks.push({
       header,
       balRlp,
       bodyRlp: batch.bodiesRlp?.[i],
       receiptsEth69Rlp: batch.receiptsEth69?.[i],
-      balJson: bal.toJSON(),
+      balJson,
     })
   }
   return { ok: true, blocks }

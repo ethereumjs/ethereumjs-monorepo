@@ -296,10 +296,10 @@ export class SnapCodeAndStorageSynchronizer {
     for (const row of bal) {
       const address = hexToBytes(row.address)
       if (address.length !== 20) continue
-      const accountHash = ethyKeccak256(address)
       const touchedStorageOrCode = row.storageChanges.length > 0 || row.codeChanges.length > 0
+      if (!touchedStorageOrCode) continue
+      const accountHash = ethyKeccak256(address)
       if (
-        touchedStorageOrCode &&
         this.spine.phase === 'SNAP_SYNCING' &&
         isAccountHashSynced(accountHash, this.spine.snapBuckets)
       ) {

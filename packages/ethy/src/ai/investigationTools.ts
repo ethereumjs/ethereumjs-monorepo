@@ -16,6 +16,8 @@ import {
 } from '../contracts/signatureCatalog.ts'
 import { ethyKeccak256 } from '../crypto/keccak.ts'
 import type { ETHEconomyDataManager } from '../economy/economyDataManager.ts'
+import { formatEthFromWei } from '../economy/format.ts'
+import type { BlockMomentKind } from '../economy/types.ts'
 import type { EthySandbox } from '../evm/sandbox.ts'
 import { quantityHex } from '../rpc/quantities.ts'
 import type { EthySpine } from '../spine/types.ts'
@@ -27,6 +29,8 @@ export type InvestigationToolName =
   | 'inspect_l2_blobs'
   | 'inspect_account'
   | 'probe_contract_view'
+  | 'inspect_recent_moments'
+  | 'inspect_block_activity'
 
 const MAX_JSON_CHARS = 1400
 const LIST_CAP = 6
@@ -41,6 +45,13 @@ const PROBE_ENTRIES: ReadonlyArray<{ selector: `0x${string}`; canonical: string 
   { selector: '0x8da5cb5b', canonical: 'owner' },
   { selector: '0x5c60da1b', canonical: 'implementation' },
   { selector: '0x5c975abb', canonical: 'paused' },
+  { selector: '0x54fd4d50', canonical: 'version' },
+  { selector: '0x0dfe1681', canonical: 'token0' },
+  { selector: '0xd21220a7', canonical: 'token1' },
+  {
+    selector: '0xc87b56dd0000000000000000000000000000000000000000000000000000000000000001',
+    canonical: 'tokenURI',
+  },
 ]
 
 function lookupProbeEntry(fn: string): { selector: `0x${string}`; canonical: string } | undefined {
@@ -63,6 +74,8 @@ export const INVESTIGATION_TOOL_NAMES: readonly InvestigationToolName[] = [
   'inspect_l2_blobs',
   'inspect_account',
   'probe_contract_view',
+  'inspect_recent_moments',
+  'inspect_block_activity',
 ]
 
 function safeJSONStringify(obj: unknown): string {
@@ -160,8 +173,77 @@ export function runInvestigationTool(
       return trimPayload(inspectAccount(String(args.address ?? ''), ctx))
     case 'probe_contract_view':
       return trimPayload(probeContractView(String(args.address ?? ''), String(args.fn ?? ''), ctx))
+    case 'inspect_recent_moments':
+      return trimPayload(inspectRecentMoments(ctx, args))
+    case 'inspect_block_activity':
+      return trimPayload(inspectBlockActivity(ctx, args))
     default:
       return trimPayload({ error: 'unknown_tool' })
+  }
+}
+
+function inspectRecentMoments(
+  ctx: InvestigationContext,
+  args: Record<string, unknown>,
+): Record<string, unknown> {
+  const kindFilter =
+    typeof args.kind === 'string' ? (args.kind.trim() as BlockMomentKind) : undefined
+  const limit = Math.min(6, Math.max(1, Number(args.limit ?? 6) || 6))
+  const moments = (ctx.spine.economy?.moments ?? []).filter(
+    (m) => kindFilter === undefined || m.kind === kindFilter,
+  )
+  const rows = moments.slice(0, limit).map((m) => {
+    const row: Record<string, unknown> = {
+      id: m.id,
+      kind: m.kind,
+      blockNumber: m.blockNumber,
+      headline: m.headline,
+      address: m.address,
+    }
+    if (m.address !== undefined) {
+      const agg = ctx.economy.getContractAgg(m.address)
+      if (agg !== undefined) {
+        row.callPreviews = agg.callPreviews.slice(0, 2)
+        row.eventPreviews = agg.eventPreviews.slice(0, 2)
+      }
+    }
+    return row
+  })
+  return { moments: rows, count: rows.length }
+}
+
+function inspectBlockActivity(
+  ctx: InvestigationContext,
+  args: Record<string, unknown>,
+): Record<string, unknown> {
+  let offset = Number(args.blockOffset ?? 0)
+  if (!Number.isFinite(offset)) offset = 0
+  offset = Math.min(15, Math.max(0, Math.floor(offset)))
+  const ring = ctx.economy.getBlockRing()
+  const block = ring[offset]
+  if (block === undefined) return { error: 'block_not_in_window', blockOffset: offset }
+  const largestEth =
+    block.largestTransferWei > 0n ? formatEthFromWei(block.largestTransferWei) : undefined
+  const topGas = (block.gasUsedByContract ?? [])
+    .slice()
+    .sort((a, b) => (a.gasUsed > b.gasUsed ? -1 : 1))
+    .slice(0, 4)
+    .map((g) => ({ address: g.address, gasUsed: g.gasUsed.toString() }))
+  const topReverts = (block.revertsByContract ?? [])
+    .slice()
+    .sort((a, b) => b.reverts - a.reverts)
+    .slice(0, 4)
+  return {
+    blockNumber: block.blockNumber.toString(),
+    proposerGraffiti: block.extraDataAscii,
+    gasFullPct: block.gasFullPct,
+    txTypeSplit: block.txTypeSplit,
+    largestTransferEth: largestEth,
+    largestTransferTo: block.largestTransferTo,
+    topGasContracts: topGas,
+    topRevertingContracts: topReverts,
+    newDeployments: block.newDeployments,
+    txCount: block.txCount,
   }
 }
 
@@ -256,7 +338,9 @@ function inspectStorageSlot(
   ctx: InvestigationContext,
 ): Record<string, unknown> {
   const addr = normAddr(address)
-  const normSlot = slot.trim().toLowerCase()
+  const normSlot = String(slot ?? '')
+    .trim()
+    .toLowerCase()
   const series = ctx.economy.getSlotTracker().seriesFor(addr, normSlot) ?? []
   const trend = ctx.economy.getSlotTracker().classify(`${addr}:${normSlot}`)
   const identity = ctx.economy.getIdentityResolver()
@@ -344,13 +428,23 @@ function decodeProbeReturn(canonicalFn: string, rawHex: string): string {
   if (!rawHex.startsWith('0x') || rawHex.length <= 2) return rawHex
   try {
     const bytes = hexToBytes(rawHex as `0x${string}`)
-    if (canonicalFn === 'name' || canonicalFn === 'symbol') {
+    if (
+      canonicalFn === 'name' ||
+      canonicalFn === 'symbol' ||
+      canonicalFn === 'version' ||
+      canonicalFn === 'tokenURI'
+    ) {
       return decodeAbiString(bytes) ?? rawHex.slice(0, 66)
     }
     if (canonicalFn === 'decimals' || canonicalFn === 'totalSupply') {
       if (bytes.length >= 32) return bytesToBigInt(bytes.subarray(0, 32)).toString()
     }
-    if (canonicalFn === 'owner' || canonicalFn === 'implementation') {
+    if (
+      canonicalFn === 'owner' ||
+      canonicalFn === 'implementation' ||
+      canonicalFn === 'token0' ||
+      canonicalFn === 'token1'
+    ) {
       if (bytes.length >= 32) return bytesToHex(bytes.subarray(12, 32)).toLowerCase()
     }
     if (canonicalFn === 'paused') {
@@ -399,5 +493,6 @@ export async function probeContractViewLive(
   )
   if ('error' in outcome) return { error: outcome.error }
   const hex = String(outcome.result ?? '')
+  if (hex === '0x' || hex.length <= 2) return { error: 'empty_return' }
   return { address: addr, fn: entry.canonical, value: decodeProbeReturn(entry.canonical, hex) }
 }

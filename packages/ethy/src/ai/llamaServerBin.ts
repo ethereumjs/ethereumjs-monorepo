@@ -279,8 +279,11 @@ export function spawnLlamaServerCommand(
   bin: string,
   modelPath: string,
   port: number,
+  opts?: { reasoningBudgetZero?: boolean },
 ): { command: string; args: string[]; cwd: string; env: NodeJS.ProcessEnv } {
+  const reasoningBudgetZero = opts?.reasoningBudgetZero !== false
   const normalized = path.resolve(bin)
+  const resolvedModelPath = path.resolve(modelPath)
   const binDir = path.dirname(normalized)
   const env: NodeJS.ProcessEnv = { ...process.env }
   if (process.platform === 'darwin') {
@@ -294,15 +297,14 @@ export function spawnLlamaServerCommand(
       args: [
         normalized,
         '-m',
-        modelPath,
+        resolvedModelPath,
         '--host',
         '127.0.0.1',
         '--port',
         String(port),
         '--ctx-size',
         '4096',
-        '--reasoning-budget',
-        '0',
+        ...(reasoningBudgetZero ? (['--reasoning-budget', '0'] as const) : []),
       ],
       cwd: binDir,
       env,
@@ -312,15 +314,14 @@ export function spawnLlamaServerCommand(
     command: normalized,
     args: [
       '-m',
-      modelPath,
+      resolvedModelPath,
       '--host',
       '127.0.0.1',
       '--port',
       String(port),
       '--ctx-size',
       '4096',
-      '--reasoning-budget',
-      '0',
+      ...(reasoningBudgetZero ? (['--reasoning-budget', '0'] as const) : []),
     ],
     cwd: binDir,
     env,

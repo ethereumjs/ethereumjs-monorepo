@@ -387,6 +387,8 @@ describe('[Ethy/Startup]: exhaustive startup & resume state machine', () => {
     spine.bestPeerHead = 12_174_007n
     seedBalCatchUp(spine, 12_174_007n)
     assert.equal(spine.phase, 'BAL_CATCHUP')
+    assert.isFalse(isRpcReady(spine))
+    assert.include(capabilityBarClockLabel(spine), '\x1b[2mJSON-RPC')
     assert.equal(spine.balCatchUp?.fromBlock, 12_168_599n)
     assert.equal(spine.balCatchUp?.total, 5_409)
     growBalCatchUpTarget(spine, 12_174_020n)

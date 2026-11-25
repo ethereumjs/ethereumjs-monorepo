@@ -35,10 +35,13 @@ function hintSegment(key: string, prose: string): string {
   return `${BOLD}${key}${RESET}${DIM} ${prose}`
 }
 
-function renderFooterHint(): string {
+function renderFooterHint(spine: EthySpine): string {
+  const canPlaza =
+    spine.phase === 'HEAD_FOLLOWING' ||
+    (spine.demoClock === true && spine.economy?.hasBlocks === true)
   return [
     hintSegment('Tab', 'help'),
-    hintSegment('Enter', 'plaza'),
+    hintSegment('Enter', canPlaza ? 'plaza' : 'home'),
     hintSegment('/', 'command'),
     hintSegment('Esc', 'exit'),
   ].join(`${DIM} · ${RESET}`)
@@ -104,8 +107,8 @@ function renderRightFooterRpc(spine: EthySpine, width: number): string {
   return fixedLineRight(`${DIM}JSON-RPC ${rpc.url}${RESET}`, width)
 }
 
-function renderLeftHint(draft: string, leftW: number): string {
-  const leftHint = `${renderFooterHint()}${RESET}`
+function renderLeftHint(spine: EthySpine, draft: string, leftW: number): string {
+  const leftHint = `${renderFooterHint(spine)}${RESET}`
   const completed = draft.startsWith('/') ? completeSlashDraft(draft) : null
   const slash = completed !== null && completed !== draft ? `${draft} → ${completed}` : ''
   const hintWidth = visibleWidth(leftHint)
@@ -128,7 +131,7 @@ function renderPrompt(spine: EthySpine, view: TuiViewState, cols: number): strin
   const prefix = `${mark} ${BOLD}ethy > ${RESET}`
   const draftWidth = Math.max(0, left - PROMPT_PREFIX_WIDTH)
   const prompt = `${prefix}${fixedField(view.promptDraft, draftWidth)}`
-  const hint = renderLeftHint(view.promptDraft, left)
+  const hint = renderLeftHint(spine, view.promptDraft, left)
   const footerRpc = renderRightFooterRpc(spine, right)
   return [
     fixedLine(`${fixedField(prompt, left)}${gap}${fixedField('', right)}`, cols),

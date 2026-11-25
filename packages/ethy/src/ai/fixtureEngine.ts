@@ -1,13 +1,15 @@
 import type { LocalLlmProviderKind } from '../persist/userConfig.ts'
-import type { ChatMessage, LlmCompletionKind } from './llmClient.ts'
+import type { ChatMessage, LlmCompletionKind, LlmRequestOverrides } from './llmClient.ts'
 import { postChatCompletion } from './llmClient.ts'
 
 export type LlmTransportRequest = {
   kind: LlmCompletionKind
   messages: ChatMessage[]
+  overrides?: LlmRequestOverrides
 }
 
 export interface LlmTransport {
+  readonly modelName?: string
   complete(req: LlmTransportRequest, signal?: AbortSignal): Promise<string>
 }
 
@@ -27,10 +29,15 @@ export class FetchLlmTransport implements LlmTransport {
     this.provider = opts?.provider
   }
 
+  get modelName(): string | undefined {
+    return this.model
+  }
+
   async complete(req: LlmTransportRequest, signal?: AbortSignal): Promise<string> {
     return postChatCompletion(this.base, req.kind, req.messages, signal, {
       model: this.model,
       provider: this.provider,
+      overrides: req.overrides,
     })
   }
 }
@@ -61,6 +68,10 @@ export class RecordingTransport implements LlmTransport {
   constructor(inner: LlmTransport, append?: (line: string) => void) {
     this.inner = inner
     this.append = append
+  }
+
+  get modelName(): string | undefined {
+    return this.inner.modelName
   }
 
   async complete(req: LlmTransportRequest, signal?: AbortSignal): Promise<string> {

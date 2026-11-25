@@ -72,6 +72,10 @@ export class Server {
     this.DEBUG = globalThis.process?.env?.DEBUG?.includes('ethjs') ?? false
   }
 
+  setEthyDiscoveryTag(enabled: boolean): void {
+    this._ethyDiscoveryTag = enabled
+  }
+
   syncEndpointFromSocket(tcpListenPort: number): PeerInfo {
     let bound: ReturnType<DgramSocket['address']> | undefined
     try {

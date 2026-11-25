@@ -58,6 +58,7 @@ type SegmentSlot = { payloadOff: number; headerLen: number; balLen: number }
 
 function ensureSegmentFile(segPath: string): {
   fd: number
+  hdr: Buffer
   slots: SegmentSlot[]
   payloadStart: number
 } {
@@ -85,23 +86,29 @@ function ensureSegmentFile(segPath: string): {
     })
   }
   const stat = fs.fstatSync(fd)
-  return { fd, slots, payloadStart: stat.size }
+  return { fd, hdr, slots, payloadStart: stat.size }
 }
 
-export function appendBalTailBundle(
+export type BalTailBatchEntry = {
+  blockNumber: bigint
+  headerRlp: Uint8Array
+  balRlp: Uint8Array
+}
+
+function writeBalTailSlot(
   pivotRootDir: string,
   blockNumber: bigint,
   headerRlp: Uint8Array,
   balRlp: Uint8Array,
-): void {
+): boolean {
   const segStart = segmentStart(blockNumber)
   const index = Number(blockNumber - segStart)
-  if (index < 0 || index >= 256) return
+  if (index < 0 || index >= 256) return false
   const segPath = path.join(balTailDir(pivotRootDir), `seg-${segStart.toString()}.bin`)
   const { fd, slots, payloadStart } = ensureSegmentFile(segPath)
   try {
     if (slots[index]!.headerLen > 0) {
-      return
+      return false
     }
     const payload = Buffer.concat([Buffer.from(headerRlp), Buffer.from(balRlp)])
     const payloadOff = payloadStart
@@ -112,9 +119,91 @@ export function appendBalTailBundle(
     slot.writeUInt32BE(headerRlp.length, 4)
     slot.writeUInt32BE(balRlp.length, 8)
     fs.writeSync(fd, slot, 0, 12, slotOff)
+    return true
   } finally {
     fs.closeSync(fd)
   }
+}
+
+/**
+ * Append many BAL tail blocks with one segment open/write per touched 256-block segment
+ * and one manifest update per pivot (WP-14).
+ */
+export function appendBalTailBatch(pivotRootDir: string, entries: BalTailBatchEntry[]): void {
+  if (entries.length === 0) return
+  const sorted = [...entries].sort((a, b) =>
+    a.blockNumber < b.blockNumber ? -1 : a.blockNumber > b.blockNumber ? 1 : 0,
+  )
+  const bySegment = new Map<bigint, BalTailBatchEntry[]>()
+  for (const entry of sorted) {
+    const segStart = segmentStart(entry.blockNumber)
+    let group = bySegment.get(segStart)
+    if (group === undefined) {
+      group = []
+      bySegment.set(segStart, group)
+    }
+    group.push(entry)
+  }
+
+  let batchEarliest: bigint | undefined
+  let batchLatest: bigint | undefined
+  for (const [segStart, group] of bySegment) {
+    const segPath = path.join(balTailDir(pivotRootDir), `seg-${segStart.toString()}.bin`)
+    const { fd, hdr, slots, payloadStart } = ensureSegmentFile(segPath)
+    try {
+      const payloadChunks: Uint8Array[] = []
+      let nextOff = payloadStart
+      let dirty = false
+      for (const entry of group) {
+        const index = Number(entry.blockNumber - segStart)
+        if (index < 0 || index >= 256) continue
+        if (slots[index]!.headerLen > 0) continue
+        const payloadOff = nextOff
+        payloadChunks.push(entry.headerRlp, entry.balRlp)
+        nextOff += entry.headerRlp.length + entry.balRlp.length
+        const slotOff = 4 + index * 12
+        hdr.writeUInt32BE(payloadOff, slotOff)
+        hdr.writeUInt32BE(entry.headerRlp.length, slotOff + 4)
+        hdr.writeUInt32BE(entry.balRlp.length, slotOff + 8)
+        slots[index] = {
+          payloadOff,
+          headerLen: entry.headerRlp.length,
+          balLen: entry.balRlp.length,
+        }
+        dirty = true
+        batchEarliest =
+          batchEarliest === undefined || entry.blockNumber < batchEarliest
+            ? entry.blockNumber
+            : batchEarliest
+        batchLatest =
+          batchLatest === undefined || entry.blockNumber > batchLatest
+            ? entry.blockNumber
+            : batchLatest
+      }
+      if (dirty) {
+        const combined = Buffer.concat(payloadChunks)
+        fs.writeSync(fd, combined, 0, combined.length, payloadStart)
+        fs.writeSync(fd, hdr, 0, hdr.length, 0)
+      }
+    } finally {
+      fs.closeSync(fd)
+    }
+  }
+  if (batchEarliest === undefined || batchLatest === undefined) return
+  const prev = readBalTailManifest(pivotRootDir)
+  const earliest =
+    prev === undefined || batchEarliest < prev.earliest ? batchEarliest : prev.earliest
+  const latest = prev === undefined || batchLatest > prev.latest ? batchLatest : prev.latest
+  writeManifest(pivotRootDir, earliest, latest)
+}
+
+export function appendBalTailBundle(
+  pivotRootDir: string,
+  blockNumber: bigint,
+  headerRlp: Uint8Array,
+  balRlp: Uint8Array,
+): void {
+  if (!writeBalTailSlot(pivotRootDir, blockNumber, headerRlp, balRlp)) return
   const prev = readBalTailManifest(pivotRootDir)
   const earliest = prev?.earliest ?? blockNumber
   const latest = prev === undefined || blockNumber > prev.latest ? blockNumber : prev.latest
@@ -202,14 +291,20 @@ export function copyBalTailRange(
   throughBlock: bigint,
 ): number {
   if (throughBlock < fromBlock) return 0
-  let copied = 0
+  const batch: BalTailBatchEntry[] = []
   for (let b = fromBlock; b <= throughBlock; b += 1n) {
     const bundle = readBalTailBundle(sourcePivotRootDir, b)
     if (bundle === undefined) continue
-    appendBalTailBundle(destPivotRootDir, b, bundle.headerRlp, bundle.balRlp)
-    copied += 1
+    batch.push({
+      blockNumber: b,
+      headerRlp: bundle.headerRlp,
+      balRlp: bundle.balRlp,
+    })
   }
-  return copied
+  if (batch.length > 0) {
+    appendBalTailBatch(destPivotRootDir, batch)
+  }
+  return batch.length
 }
 
 export function readBalTailBundle(

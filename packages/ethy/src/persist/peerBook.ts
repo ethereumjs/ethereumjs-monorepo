@@ -50,6 +50,10 @@ export const PEER_BOOK_STARTUP_DIALS = 6
 export const PEER_TOO_MANY_PEERS_HOLD_MAX_MS = 5 * 60 * 1000
 export const PEER_TOO_MANY_PEERS_VIP_CAP_MS = 45 * 1000
 export const PEER_STALE_SUCCESS_MS = 7 * 24 * 60 * 60 * 1000
+/** Recently active ETH STATUS peers (within 24h) outrank stale multi-day SNAP rows. */
+export const PEER_FRESH_STATUS_WINDOW_MS = 24 * 60 * 60 * 1000
+/** Proven SNAP rows keep top priority within 48h; older rows yield to freshly active peers. */
+export const PEER_SNAP_TIER_FRESH_MS = 48 * 60 * 60 * 1000
 export const PEER_RESET_REMOVE_STREAK = 3
 
 export function networkPersistDir(dataDir: string, network: string): string {
@@ -78,11 +82,28 @@ function lastSuccessAt(row: PeerBookRow): number | undefined {
   return m > 0 ? m : undefined
 }
 
-/** Order rows for startup redial: snap success, then STATUS-only, then HELLO-proven snapCapable; skip dial hold. */
-export function rankPeerRows(rows: Iterable<PeerBookRow>, now: number): PeerBookRow[] {
+/**
+ * Order rows for startup/VIP redial:
+ *  5 = recent proven SNAP peer (<= 48h)
+ *  4 = recently active ETH STATUS peer (<= 24h) — prevents stale multi-day SNAP rows starving live peers
+ *  3 = older proven SNAP peer (> 48h)
+ *  2 = older STATUS-only peer (> 24h)
+ *  1 = HELLO-proven snapCapable peer
+ * Skips rows still under dial hold.
+ */
+export function rankPeerRows(
+  rows: Iterable<PeerBookRow>,
+  now: number,
+  opts?: { requireSnap?: boolean },
+): PeerBookRow[] {
+  const requireSnap = opts?.requireSnap ?? true
   const tier = (r: PeerBookRow): number => {
-    if (r.lastSnapSuccessAt !== undefined && r.lastSnapSuccessAt > 0) return 3
-    if (r.lastStatusAt !== undefined && r.lastStatusAt > 0) return 2
+    const snapAt = r.lastSnapSuccessAt ?? 0
+    const statusAt = r.lastStatusAt ?? 0
+    if (snapAt > 0 && now - snapAt <= PEER_SNAP_TIER_FRESH_MS) return 5
+    if (statusAt > 0 && now - statusAt <= PEER_FRESH_STATUS_WINDOW_MS) return 4
+    if (snapAt > 0) return 3
+    if (statusAt > 0) return 2
     if (r.snapCapable === true) return 1
     return 0
   }
@@ -94,7 +115,7 @@ export function rankPeerRows(rows: Iterable<PeerBookRow>, now: number): PeerBook
         r.tcpPort > 0 &&
         tier(r) > 0 &&
         routableAddress(r.address) &&
-        peerBookDialEligible(r),
+        peerBookDialEligible(r, requireSnap),
     )
     .sort((a, b) => {
       const ta = tier(a)
@@ -103,13 +124,26 @@ export function rankPeerRows(rows: Iterable<PeerBookRow>, now: number): PeerBook
       const aPenalty = (a.tooManyPeersStreak ?? 0) + a.resetStreak
       const bPenalty = (b.tooManyPeersStreak ?? 0) + b.resetStreak
       if (aPenalty !== bPenalty) return aPenalty - bPenalty
-      if (ta === 3) {
+      if (ta === 5 || ta === 3) {
         const aAff = clientAffinityRank(a.clientFamily)
         const bAff = clientAffinityRank(b.clientFamily)
         if (aAff !== bAff) return aAff - bAff
         const aScore = peerThroughputScore(a)
         const bScore = peerThroughputScore(b)
         if (aScore !== bScore) return bScore - aScore
+        if (a.snapResponsesOk !== b.snapResponsesOk) {
+          return b.snapResponsesOk - a.snapResponsesOk
+        }
+      }
+      if (ta === 4) {
+        const aBad = a.snapTimeouts > 0 && a.snapResponsesOk === 0 ? 1 : 0
+        const bBad = b.snapTimeouts > 0 && b.snapResponsesOk === 0 ? 1 : 0
+        if (aBad !== bBad) return aBad - bBad
+        const statusDiff = (b.lastStatusAt ?? 0) - (a.lastStatusAt ?? 0)
+        if (Math.abs(statusDiff) > 60_000) return statusDiff
+        const aAff = clientAffinityRank(a.clientFamily)
+        const bAff = clientAffinityRank(b.clientFamily)
+        if (aAff !== bAff) return aAff - bAff
         if (a.snapResponsesOk !== b.snapResponsesOk) {
           return b.snapResponsesOk - a.snapResponsesOk
         }
@@ -133,10 +167,14 @@ function routableAddress(address: string): boolean {
   return address !== '' && address !== '0.0.0.0' && address !== '::'
 }
 
-function peerBookDialEligible(row: PeerBookRow): boolean {
-  if (row.snapCapable === false) return false
+function peerBookDialEligible(row: PeerBookRow, requireSnap = true): boolean {
   const family = row.clientFamily?.toLowerCase() ?? ''
-  if (family.includes('scout') || family.includes('eri' + 'gon')) return false
+  if (family.includes('scout')) return false
+  if (!requireSnap) {
+    return (row.lastStatusAt ?? 0) > 0 || row.snapCapable === true
+  }
+  if (row.snapCapable === false) return false
+  if (family.includes('eri' + 'gon')) return false
   if (family.includes('reth') && !(row.snapCapable === true && row.snapResponsesOk > 0)) {
     return false
   }
@@ -261,14 +299,22 @@ export class PeerBookStore {
     if (this._dirty) this.schedulePersist()
   }
 
-  dialCandidates(now: number, limit = PEER_BOOK_STARTUP_DIALS): PeerInfo[] {
-    const ranked = rankPeerRows(this._rows.values(), now).slice(0, limit)
+  dialCandidates(
+    now: number,
+    limit = PEER_BOOK_STARTUP_DIALS,
+    opts?: { requireSnap?: boolean },
+  ): PeerInfo[] {
+    const ranked = rankPeerRows(this._rows.values(), now, opts).slice(0, limit)
     return ranked.map((row) => this._rowToPeerInfo(row))
   }
 
-  /** VIP snap peers eligible for gentle redial (WP-04a). */
-  vipDialCandidates(now: number, limit = PEER_BOOK_STARTUP_DIALS): PeerInfo[] {
-    const ranked = rankPeerRows(this._rows.values(), now)
+  /** VIP peers eligible for gentle redial (WP-04a). */
+  vipDialCandidates(
+    now: number,
+    limit = PEER_BOOK_STARTUP_DIALS,
+    opts?: { requireSnap?: boolean },
+  ): PeerInfo[] {
+    const ranked = rankPeerRows(this._rows.values(), now, opts)
     return ranked.slice(0, limit).map((row) => this._rowToPeerInfo(row))
   }
 
@@ -281,7 +327,11 @@ export class PeerBookStore {
     }
   }
 
-  noteTelemetryPeer(peer: WorkerPeerSnapshot, now: number): void {
+  noteTelemetryPeer(
+    peer: WorkerPeerSnapshot,
+    now: number,
+    opts?: { localSnapAdvertised?: boolean },
+  ): void {
     if (!this._enabled) return
     if (peer.address === undefined || peer.tcpPort === undefined) return
     const id = peer.id.toLowerCase()
@@ -291,6 +341,7 @@ export class PeerBookStore {
     if (peer.snapSession === true) {
       row.snapCapable = true
     } else if (
+      opts?.localSnapAdvertised !== false &&
       peer.snapSession === false &&
       peer.clientId.length > 0 &&
       row.snapResponsesOk === 0

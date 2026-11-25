@@ -43,6 +43,7 @@ import {
   validateBlockAccessListGasLimit,
   validateBlockAccessListHash,
   validateBlockAccessListHashFromJSON,
+  validateBlockAccessListHashFromRLP,
   validateBlockAccessListJSONStructure,
   validateBlockAccessListStructure,
 } from '@ethereumjs/util'
@@ -151,6 +152,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
       opts.blockAccessList,
       block.header.blockAccessListHash,
       generateFields,
+      vm.common.customCrypto?.keccak256,
     )
     validateBlockAccessListStructure(providedBlockAccessList)
   }
@@ -1112,6 +1114,7 @@ function parseProvidedBlockAccessList(
   blockAccessList: NonNullable<RunBlockOpts['blockAccessList']>,
   blockAccessListHash: Uint8Array | undefined,
   generateFields: boolean,
+  keccak256Fn?: (data: Uint8Array) => Uint8Array,
 ): BlockLevelAccessList {
   if (blockAccessList instanceof BlockLevelAccessList) {
     if (blockAccessListHash !== undefined && generateFields === false) {
@@ -1120,11 +1123,10 @@ function parseProvidedBlockAccessList(
     return blockAccessList
   }
   if (blockAccessList instanceof Uint8Array) {
-    const bal = createBlockLevelAccessListFromRLP(blockAccessList)
     if (blockAccessListHash !== undefined && generateFields === false) {
-      validateBlockAccessListHash(bal, blockAccessListHash)
+      validateBlockAccessListHashFromRLP(blockAccessList, blockAccessListHash, keccak256Fn)
     }
-    return bal
+    return createBlockLevelAccessListFromRLP(blockAccessList)
   }
   const json: BALJSONBlockAccessList = blockAccessList
   validateBlockAccessListJSONStructure(json)

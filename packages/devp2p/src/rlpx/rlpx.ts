@@ -23,7 +23,16 @@ import { Peer } from './peer.ts'
 import type { Common } from '@ethereumjs/common'
 import type { Debugger } from 'debug'
 import type { DPT } from '../dpt/index.ts'
-import type { Capabilities, PeerInfo, RLPxEvent, RLPxOptions } from '../types.ts'
+import { capabilityWireNames, resolveCapabilities } from '../lab/capabilities.ts'
+
+import type {
+  Capabilities,
+  DiscoveryMode,
+  NetworkProfile,
+  PeerInfo,
+  RLPxEvent,
+  RLPxOptions,
+} from '../types.ts'
 
 // note: relative path only valid in .js file in dist
 
@@ -77,8 +86,10 @@ export class RLPx {
 
   protected _refillIntervalId: NodeJS.Timeout
   protected _refillIntervalSelectionCounter: number = 0
-  /** Ethy sync hold: do not auto-resume discovery when connected drops below low water. */
-  protected _syncDiscoveryHold = false
+  protected _profileDiscoveryMode: DiscoveryMode = 'active'
+  protected _preferEthyDiscovery = false
+  protected _wireCapabilityNames: string[] = []
+  protected _peerRtt = new Map<string, number>()
 
   protected _keccakFunction: (msg: Uint8Array) => Uint8Array
   protected _discoveryMetrics: import('../discovery/metrics.ts').DiscoveryMetrics | undefined
@@ -109,6 +120,7 @@ export class RLPx {
 
     this._remoteClientIdFilter = options.remoteClientIdFilter
     this._capabilities = options.capabilities
+    this._wireCapabilityNames = capabilityWireNames(options.capabilities)
     this._common = options.common
     this._listenPort = options.listenPort ?? null
 
@@ -519,9 +531,13 @@ export class RLPx {
 
       this._peers.set(peerKey, peer)
       this._discoveryMetrics?.recordRlpxConnected()
+      peer.events.on('pong', (rttMs?: number) => {
+        if (rttMs !== undefined) this._peerRtt.set(peerKey, rttMs)
+      })
       this._enforceEthyPeerReserve(peer)
       this.events.emit('peer:added', peer)
       this._syncDiscoveryThrottle()
+      this._trimSurplusPeers()
     })
 
     peer.events.once('close', (reason, disconnectWe) => {
@@ -561,6 +577,7 @@ export class RLPx {
     // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for peer lookups.
     const peerKey = bytesToUnprefixedHex(id)
     this._peers.delete(peerKey)
+    this._peerRtt.delete(peerKey)
     const helloClientId = peer.getHelloMessage()?.clientId
     const clientStr =
       helloClientId !== undefined
@@ -602,34 +619,110 @@ export class RLPx {
     return count
   }
 
-  /** Pause discovery for active snap sync; cleared by the worker client when peers drop. */
-  setSyncDiscoveryHold(held: boolean): void {
-    this._syncDiscoveryHold = held
-    if (this._dpt !== null) {
-      this._dpt.setDiscoveryPaused(held)
+  applyNetworkProfile(profile: NetworkProfile): void {
+    this._capabilities = resolveCapabilities(profile.capabilities)
+    this._wireCapabilityNames = [...profile.capabilities]
+    this._maxPeers = profile.maxPeers
+    if (profile.maxInboundPeers !== undefined) {
+      this._maxInboundPeers = profile.maxInboundPeers
     }
+    if (profile.discoveryLowWaterMark !== undefined) {
+      if (profile.discoveryLowWaterMark >= profile.maxPeers) {
+        throw EthereumJSErrorWithoutCode('discoveryLowWaterMark must be less than maxPeers')
+      }
+      this._discoveryLowWaterMark = profile.discoveryLowWaterMark
+    }
+    if (profile.minEthyPeers !== undefined) {
+      this._minEthyPeers = profile.minEthyPeers
+    }
+    this._profileDiscoveryMode = profile.discoveryMode
+    this._preferEthyDiscovery = profile.preferEthyDiscovery === true
+    if (this._dpt !== null) {
+      if (profile.discoveryMode === 'off' || profile.discoveryMode === 'quiet') {
+        this._dpt.setDiscoveryMode(profile.discoveryMode)
+      } else if (this._throttleDiscovery) {
+        this._syncDiscoveryThrottle()
+      } else {
+        this._dpt.setDiscoveryMode('active')
+      }
+      this._dpt.setEthyDiscoveryTag(profile.ethyDiscoveryTag)
+    }
+    this._discoveryMetrics?.setNetworkProfile(profile)
+    this._trimSurplusPeers()
   }
 
-  isSyncDiscoveryHold(): boolean {
-    return this._syncDiscoveryHold
+  getWireCapabilityNames(): string[] {
+    return this._wireCapabilityNames
+  }
+
+  _peerSpeaksSnap(peer: Peer): boolean {
+    return peer.getProtocols().some((p) => p.constructor.name === 'SNAP')
+  }
+
+  _peerSpeaksEth(peer: Peer): boolean {
+    return peer.getProtocols().some((p) => p.constructor.name === 'ETH')
+  }
+
+  _trimSurplusPeers(): void {
+    const connected: Peer[] = []
+    for (const item of this._peers.values()) {
+      if (item instanceof Peer) connected.push(item)
+    }
+    let surplus = connected.length - this._maxPeers
+    if (surplus <= 0) return
+
+    let ethyCount = connected.filter((p) => this._peerSpeaksEthy(p)).length
+    let ethHeadCount = connected.filter(
+      (p) => this._peerSpeaksEth(p) || this._peerSpeaksSnap(p),
+    ).length
+    const snapWanted = this._wireCapabilityNames.includes('snap1')
+
+    const score = (p: Peer): number => {
+      const id = p.getId()
+      const rtt = id ? (this._peerRtt.get(bytesToUnprefixedHex(id)) ?? 0) : 0
+      let s = rtt
+      if (!snapWanted && this._peerSpeaksSnap(p)) s += 10_000
+      if (!this._peerSpeaksEthy(p)) s += 1000
+      return s
+    }
+
+    const victims = [...connected].sort((a, b) => score(b) - score(a))
+    for (const peer of victims) {
+      if (surplus <= 0) break
+      const isEthy = this._peerSpeaksEthy(peer)
+      const isEthHead = this._peerSpeaksEth(peer) || this._peerSpeaksSnap(peer)
+      if (isEthy && ethyCount <= this._minEthyPeers) continue
+      if (isEthHead && ethHeadCount <= 1) continue
+      peer.disconnect(DISCONNECT_REASON.TOO_MANY_PEERS)
+      surplus--
+      if (isEthy) ethyCount--
+      if (isEthHead) ethHeadCount--
+    }
   }
 
   _syncDiscoveryThrottle(): void {
     if (!this._throttleDiscovery || this._dpt === null) return
-    if (this._syncDiscoveryHold) {
-      this._dpt.setDiscoveryPaused(true)
+    if (this._profileDiscoveryMode === 'off' || this._profileDiscoveryMode === 'quiet') {
+      this._dpt.setDiscoveryMode(this._profileDiscoveryMode)
       return
     }
     const connected = this._connectedPeerCount()
     if (connected >= this._maxPeers) {
-      this._dpt.setDiscoveryPaused(true)
+      this._dpt.setDiscoveryMode('quiet')
     } else if (connected <= this._discoveryLowWaterMark) {
-      this._dpt.setDiscoveryPaused(false)
+      this._dpt.setDiscoveryMode('active')
     }
   }
 
   _refillConnections() {
     if (!this._isAlive()) return
+    if (this._preferEthyDiscovery && this._peersQueue.length > 1) {
+      this._peersQueue.sort((a, b) => {
+        const ae = a.peer.ethyCapable === true ? 0 : 1
+        const be = b.peer.ethyCapable === true ? 0 : 1
+        return ae - be
+      })
+    }
     if (this._refillIntervalSelectionCounter === 0) {
       if (this.DEBUG) {
         this._debug(

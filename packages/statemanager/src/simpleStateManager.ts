@@ -2,11 +2,14 @@ import { Account, EthereumJSErrorWithoutCode, bytesToHex } from '@ethereumjs/uti
 import { keccak_256 } from '@noble/hashes/sha3.js'
 
 import { OriginalStorageCache } from './cache/originalStorageCache.ts'
-import { consumeBAL as consumeBALUtil } from './consumeBAL.ts'
+import {
+  consumeBALBatch as consumeBALBatchUtil,
+  consumeBAL as consumeBALUtil,
+} from './consumeBAL.ts'
 import { modifyAccountFields } from './util.ts'
 
 import type { AccountFields, Common, StateManagerInterface } from '@ethereumjs/common'
-import type { Address, BALJSONBlockAccessList, PrefixedHexString } from '@ethereumjs/util'
+import type { Address, BALInput, PrefixedHexString } from '@ethereumjs/util'
 import type { SimpleStateManagerOpts } from './index.ts'
 
 /**
@@ -162,10 +165,17 @@ export class SimpleStateManager implements StateManagerInterface {
    * @remarks Experimental (Amsterdam): may change on patch releases.
    */
   async consumeBAL(
-    bal: BALJSONBlockAccessList,
+    bal: BALInput,
     optsOrExpectedStateRoot?: Uint8Array | import('@ethereumjs/common').ConsumeBALOptions,
   ): Promise<void> {
     return consumeBALUtil(this, bal, optsOrExpectedStateRoot)
+  }
+
+  async consumeBALBatch(
+    accessLists: BALInput[],
+    optsOrExpectedStateRoot?: Uint8Array | import('@ethereumjs/common').ConsumeBALOptions,
+  ): Promise<void> {
+    return consumeBALBatchUtil(this, accessLists, optsOrExpectedStateRoot)
   }
 
   // State root functionality not implemented

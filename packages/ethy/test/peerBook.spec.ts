@@ -6,6 +6,8 @@ import { assert, describe, it } from 'vitest'
 
 import { createEthyNode } from '../src/core/createEthyNode.ts'
 import {
+  PEER_FRESH_STATUS_WINDOW_MS,
+  PEER_SNAP_TIER_FRESH_MS,
   PEER_STALE_SUCCESS_MS,
   PEER_TOO_MANY_PEERS_HOLD_MAX_MS,
   type PeerBookRow,
@@ -379,5 +381,71 @@ describe('[Ethy/Persist]: peer book', () => {
     book.noteDisconnect(unproven, 'Connection timeout', now + 35_000)
     book.noteDisconnect(unproven, 'Connection timeout', now + 100_000)
     assert.isUndefined(book.getRow(unproven))
+  })
+
+  it('ranks recently active STATUS peers ahead of multi-day stale SNAP peers', () => {
+    const now = 10_000_000_000
+    const staleSnapPeer = sampleRow({
+      id: '11'.repeat(32),
+      clientFamily: 'Nethermind',
+      lastSnapSuccessAt: now - PEER_SNAP_TIER_FRESH_MS - 60_000,
+      lastStatusAt: now - PEER_FRESH_STATUS_WINDOW_MS - 60_000,
+      snapResponsesOk: 12_000,
+      snapCapable: true,
+    })
+    const recentLivePeer = sampleRow({
+      id: '22'.repeat(32),
+      clientFamily: 'Geth',
+      lastStatusAt: now - 3_600_000,
+      snapResponsesOk: 0,
+      snapCapable: true,
+    })
+    const ranked = rankPeerRows([staleSnapPeer, recentLivePeer], now)
+    assert.equal(ranked[0]!.id, recentLivePeer.id)
+    assert.equal(ranked[1]!.id, staleSnapPeer.id)
+  })
+
+  it('does not poison snapCapable=false when local profile omits snap1 and redials ETH-only peers when requireSnap is false', () => {
+    const dir = tempDir()
+    const book = openBook(dir)
+    const now = 5_000_000
+    const ethOnlyId = '77'.repeat(32)
+
+    // When WP-13 turns snap off in live-calm / bal-catchup, snapSession is false because WE omitted snap1.
+    book.noteTelemetryPeer(
+      {
+        id: ethOnlyId,
+        clientId: 'Geth/v1.17.9',
+        caps: ['eth/72'],
+        bestHash: '0x' + '33'.repeat(32),
+        snapSession: false,
+        address: '203.0.113.77',
+        tcpPort: 30303,
+        udpPort: 30303,
+      },
+      now,
+      { localSnapAdvertised: false },
+    )
+    assert.equal(book.getRow(ethOnlyId)?.snapCapable, undefined)
+    assert.equal(book.dialCandidates(now, 10, { requireSnap: true }).length, 1)
+
+    // Even if a peer genuinely lacks snap1, BAL_CATCHUP / HEAD_FOLLOWING (requireSnap: false) still redials it.
+    book.noteTelemetryPeer(
+      {
+        id: ethOnlyId,
+        clientId: 'Geth/v1.17.9',
+        caps: ['eth/72'],
+        bestHash: '0x' + '33'.repeat(32),
+        snapSession: false,
+        address: '203.0.113.77',
+        tcpPort: 30303,
+        udpPort: 30303,
+      },
+      now + 1000,
+      { localSnapAdvertised: true },
+    )
+    assert.equal(book.getRow(ethOnlyId)?.snapCapable, false)
+    assert.equal(book.dialCandidates(now + 1000, 10, { requireSnap: true }).length, 0)
+    assert.equal(book.dialCandidates(now + 1000, 10, { requireSnap: false }).length, 1)
   })
 })

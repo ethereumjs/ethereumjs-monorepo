@@ -85,7 +85,9 @@ describe('[Ethy/TUI]: renderFrame', () => {
     spine.balCatchUp = { fromBlock: 101n, applied: 10, total: 25 }
     const catchUp = stripAnsi(renderFrame(spine, view, 160, 30).join('\n'))
     assert.include(catchUp, 'BAL Catch-Up')
+    assert.include(catchUp, '#110 → +15 blk')
     assert.include(catchUp, '10 / 25 BALs applied')
+    assert.include(catchUp, 'Enter home')
     assert.match(catchUp, /%/)
     assert.include(catchUp, '█')
     assert.notInclude(catchUp, 'kept')
@@ -105,11 +107,47 @@ describe('[Ethy/TUI]: renderFrame', () => {
     setPhase(spine, 'HEAD_FOLLOWING')
     spine.headBlockNumber = 125n
     spine.bestPeerHead = 125n
+    spine.machine = {
+      mode: 'live-calm',
+      modeReason: 'test',
+      nextEventSummary: 'Off (--no-shadow-refresh)',
+      planes: {
+        eth: 'active',
+        ethy: 'standby',
+        snap: 'off',
+        discovery: 'off',
+        cl: 'active',
+      },
+      servingEthy: 'serving',
+      ethyDiscoveryTag: true,
+      transitions: [],
+      vipTarget: 3,
+      discoveryMode: 'off',
+    }
     const head = stripAnsi(renderFrame(spine, view, 160, 30).join('\n'))
     assert.include(head, '★ Head Following · Live')
     assert.include(head, '#125')
     assert.include(head, '(live)')
-    assert.include(head, '100%')
+    assert.include(head, 'Refresh')
+    assert.include(head, 'Planes')
+    assert.include(head, 'eth ●')
+
+    // Partial contract state while HEAD_FOLLOWING surfaces honest backfill progress in Sync box
+    spine.codesSynced = 713_729
+    spine.codesTotal = 23_429_006
+    spine.storageAccountsSynced = 399_019
+    spine.storageAccountsTotal = 21_842_693
+    spine.contractsPerSec = 420
+    const backfilling = stripAnsi(renderCockpit(spine, view, 160).join('\n'))
+    assert.include(backfilling, '★ Live · Backfill 2.5% · 420/s')
+    assert.include(backfilling, 'code 713.7k/23.4M')
+    assert.include(backfilling, 'stor 399k/21.8M')
+
+    spine.contractsPerSec = 0
+    spine.codesQueued = 0
+    spine.storageQueued = 0
+    const partialIdle = stripAnsi(renderCockpit(spine, view, 160).join('\n'))
+    assert.include(partialIdle, '★ Live · Partial state 2.5%')
   })
 
   it('renderFrame() at 100x30 respects column width', () => {

@@ -2,142 +2,103 @@ import { parseDetectiveTriage } from './chainDetective.ts'
 import { FixtureReplayTransport, type LlmTransport } from './fixtureEngine.ts'
 import { INVESTIGATION_TOOL_NAMES } from './investigationTools.ts'
 import { parseLlmJSONObject } from './llmClient.ts'
-import { ETHY_USAGE_PLAYBOOK } from './usagePlaybook.ts'
+import { parseStoryOutput as parseProse } from './parseStoryOutput.ts'
+import { buildScoutSystem } from './storyNarrator.ts'
 
 export type SmokeScenarioResult = {
   name: string
   ms: number
   tools: string[]
   headline?: string
-  body?: string
+  story?: string
   validJSON: boolean
 }
 
-const TURN1_SYSTEM = `${ETHY_USAGE_PLAYBOOK}\n\nJSON only. Either { "mode": "investigate", "calls": [{ "tool": "<name>", "args": {} }] } (1-2 tools) OR { "mode": "dispatch", "category": "surge|7702|l2|fee|flow|contract|watch", "severity": "calm|notable|surge", "headline": "<=72 chars", "body": "<=360 chars", "relatedAddress"?: "0x...", "suggestedAction"?: "..." }. Tools: ${INVESTIGATION_TOOL_NAMES.join(', ')}.`
-
-const TURN2_SYSTEM = `${ETHY_USAGE_PLAYBOOK}\n\nJSON only: { "mode": "dispatch", "category": "surge|7702|l2|fee|flow|contract|watch", "severity": "calm|notable|surge", "headline": "<=72 chars", "body": "<=360 chars", "relatedAddress"?: "0x...", "suggestedAction"?: "..." }`
-
 type SmokeScenarioDef = {
   name: string
-  digest: Record<string, unknown>
+  brief: Record<string, unknown>
   mockToolResult: Record<string, unknown>
   cannedTurn1: string
-  cannedTurn2?: string
+  cannedTurn2: string
 }
 
 const SCENARIOS: SmokeScenarioDef[] = [
   {
-    name: 'EIP-7702 delegation surge',
-    digest: {
-      headBlock: '12124050',
+    name: 'Mainnet EIP-7702 unknown proxy',
+    brief: {
+      network: 'mainnet',
       signals: [
         {
-          id: 'delegation_surge:0x1234:16',
           kind: 'delegation_surge',
-          severity: 'surge',
+          headline: 'EIP-7702 delegate cluster',
           noveltyScore: 84,
-          headline: 'EIP-7702 delegate cluster (19 auths)',
-          address: '0x0000000000000000000000000000000000001234',
-          windowBlocks: 16,
-          metrics: { count: 19, target: '0x0000000000000000000000000000000000001234' },
         },
       ],
-      l2: [],
     },
-    mockToolResult: {
-      delegateAddress: '0x0000000000000000000000000000000000001234',
-      delegationCount: 19,
-      revocations: 0,
-      proxyKind: 'EIP-1967',
-      proxyTarget: '0x0000000000000000000000000000000000004567',
-      bytecodeBytes: 148,
-      riskCues: ['DELEGATECALL'],
-    },
+    mockToolResult: { delegationCount: 19, proxyKind: 'EIP-1967', riskCues: ['DELEGATECALL'] },
     cannedTurn1: JSON.stringify({
       mode: 'investigate',
-      calls: [
-        {
-          tool: 'inspect_delegations',
-          args: { delegateAddress: '0x0000000000000000000000000000000000001234' },
-        },
-      ],
+      calls: [{ tool: 'inspect_delegations', args: { delegateAddress: '0x1234' } }],
     }),
-    cannedTurn2: JSON.stringify({
-      mode: 'dispatch',
-      category: '7702',
-      severity: 'surge',
-      headline: 'EIP-7702 proxy delegation wave at 0x1234',
-      body: '19 EOAs delegated to EIP-1967 proxy 0x1234 forwarding to 0x4567 with DELEGATECALL; unknown custom bytecode.',
-      relatedAddress: '0x0000000000000000000000000000000000001234',
-      suggestedAction: '/contract 0x0000000000000000000000000000000000001234',
-    }),
+    cannedTurn2: `HEADLINE: Delegation wave at an unknown proxy
+STORY: Nineteen EOAs pointed code at one delegate in a short window — one plausible reading is wallet upgrades, another is a trap rehearsal.
+ANGLE: EIP-7702 lets EOAs delegate without deploying; attackers abuse the same opcode shape.
+CURIOSITY: Could this delegate drain wallets in one user signature?
+COMMAND: /contract 0x1234`,
   },
   {
-    name: 'L2 blob cost climb',
-    digest: {
-      headBlock: '12124055',
-      signals: [
-        {
-          id: 'l2_blob_pressure:8',
-          kind: 'l2_blob_pressure',
-          severity: 'notable',
-          noveltyScore: 76,
-          headline: 'Blob base fee climbing — L2 batch pressure',
-          windowBlocks: 8,
-          metrics: { blobBaseFee: '4800000000', streak: 5 },
-        },
-      ],
-      l2: [
-        {
-          inbox: '0xff00000000000000000000000000000000008453',
-          displayName: 'Base Batcher',
-          blobCount: 24,
-          estimatedEthWei: '15099494400000000',
-        },
-      ],
+    name: 'Mainnet L2 blob base fee climb',
+    brief: {
+      network: 'mainnet',
+      head: { blobBaseFeeGwei: '4.80 Gwei' },
+      signals: [{ kind: 'l2_blob_pressure' }],
     },
     mockToolResult: {
       blobBaseFeeGwei: '4.80',
-      inboxes: [
-        {
-          inbox: '0xff00000000000000000000000000000000008453',
-          displayName: 'Base Batcher',
-          blobCount: 24,
-          estimatedEthWei: '15099494400000000',
-        },
-      ],
+      inboxes: [{ displayName: 'Base Batcher', blobCount: 24 }],
     },
     cannedTurn1: JSON.stringify({
       mode: 'investigate',
       calls: [{ tool: 'inspect_l2_blobs', args: {} }],
     }),
-    cannedTurn2: JSON.stringify({
-      mode: 'dispatch',
-      category: 'l2',
-      severity: 'notable',
-      headline: 'Base leads rising L2 blob settlement costs',
-      body: 'Blob base fee climbed for 5 blocks to 4.80 Gwei; Base Batcher posted 24 blobs (~0.015 ETH).',
-      suggestedAction: '/signals',
-    }),
+    cannedTurn2: `HEADLINE: Base Batcher pushes blob lane to 4.80 Gwei
+STORY: Rollup batches are buying blob space faster than the lane's target fullness, so blob base fee climbed in step with Base Batcher posts.
+ANGLE: EIP-4844 (Dencun 2024) created this two-dimensional fee market.
+CURIOSITY: Do other inboxes piggyback the same spike?
+COMMAND: /signals`,
   },
   {
-    name: 'Quiet normal block',
-    digest: {
-      headBlock: '12124060',
+    name: 'Sepolia quiet block with birth and graffiti',
+    brief: {
+      network: 'sepolia',
       signals: [],
-      l2: [],
-      momentHeadline: 'Block #12124060: 42 accounts touched across 18 storage writes (38% full)',
+      moments: [
+        { kind: 'birth', headline: 'New contract born' },
+        { kind: 'graffiti_note', headline: 'Hello Sepolia' },
+      ],
     },
     mockToolResult: {},
-    cannedTurn1: JSON.stringify({
-      mode: 'dispatch',
-      category: 'watch',
-      severity: 'calm',
-      headline: 'Quiet chain — steady activity',
-      body: 'Block #12124060 ran at 38% gas fullness with no ranked anomalies across the rolling window.',
-    }),
+    cannedTurn1: JSON.stringify({ mode: 'tell_story', focus: 'quiet testnet artifacts' }),
+    cannedTurn2: `HEADLINE: Sepolia whispers instead of roaring
+STORY: No ranked mainnet-style signals, yet a newborn contract and a graffiti note appeared — dress-rehearsal traffic on testnet ETH.
+ANGLE: Teams stage upgrades here before risking real funds.
+CURIOSITY: Is this graffiti from a validator client test?
+COMMAND: /story list`,
+  },
+  {
+    name: 'Interactive follow-up prose',
+    brief: { network: 'mainnet', signals: [{ kind: 'delegation_surge' }] },
+    mockToolResult: {},
+    cannedTurn1: JSON.stringify({ mode: 'tell_story', focus: '7702 phishing' }),
+    cannedTurn2: `HEADLINE: How an EIP-7702 phishing arc works
+STORY: A user signs a delegation that points their EOA at attacker bytecode; the next call drains allowances — always framed as what-if, not proven here.
+ANGLE: Social engineering sits beside the opcode change.
+CURIOSITY: Which delegate bytecode should wallets allow-list?
+COMMAND: /story security`,
   },
 ]
+
+const SCOUT_SYSTEM = buildScoutSystem(INVESTIGATION_TOOL_NAMES.join(', '))
 
 async function runScenarioOnTransport(
   transport: LlmTransport,
@@ -146,61 +107,37 @@ async function runScenarioOnTransport(
   const t0 = Date.now()
   const tools: string[] = []
   let headline: string | undefined
-  let body: string | undefined
+  let story: string | undefined
   let validJSON = false
   try {
     const raw1 = await transport.complete({
       kind: 'pulse',
       messages: [
-        { role: 'system', content: TURN1_SYSTEM },
+        { role: 'system', content: SCOUT_SYSTEM },
         {
           role: 'user',
-          content: JSON.stringify({
-            digest: JSON.stringify(scenario.digest),
-            journal: [],
-            userCues: [],
-            trigger: 'pulse',
-          }),
+          content: JSON.stringify({ brief: scenario.brief, trigger: 'pulse' }),
         },
       ],
+      overrides: { responseMode: 'json' },
     })
     const triage = parseDetectiveTriage(parseLlmJSONObject(raw1))
     validJSON = triage !== undefined
     if (triage?.mode === 'investigate') {
-      const toolResults = triage.calls.map((c) => {
-        tools.push(c.tool)
-        return { tool: c.tool, result: JSON.stringify(scenario.mockToolResult) }
-      })
-      const raw2 = await transport.complete({
-        kind: 'pulse',
-        messages: [
-          { role: 'system', content: TURN2_SYSTEM },
-          {
-            role: 'user',
-            content: JSON.stringify({
-              digest: JSON.stringify(scenario.digest),
-              toolResults,
-              journalSnippet: [],
-            }),
-          },
-        ],
-      })
-      const parsed = parseLlmJSONObject(raw2) as {
-        headline?: string
-        body?: string
-        mode?: string
-      }
-      if (parsed.mode === 'dispatch' && typeof parsed.headline === 'string') {
-        headline = parsed.headline
-        body = typeof parsed.body === 'string' ? parsed.body : undefined
-        validJSON = true
-      } else if (typeof parsed.headline === 'string') {
-        headline = parsed.headline
-        body = typeof parsed.body === 'string' ? parsed.body : undefined
-      }
-    } else if (triage?.mode === 'dispatch') {
-      headline = triage.card.headline
-      body = triage.card.body
+      for (const c of triage.calls) tools.push(c.tool)
+    }
+    const raw2 = await transport.complete({
+      kind: 'story',
+      messages: [
+        { role: 'system', content: 'Storyteller' },
+        { role: 'user', content: JSON.stringify({ brief: scenario.brief, toolResults: tools }) },
+      ],
+      overrides: { responseMode: 'text' },
+    })
+    const parsed = parseProse(raw2)
+    if (parsed !== undefined) {
+      headline = parsed.headline
+      story = parsed.story
     }
   } catch {
     validJSON = false
@@ -210,7 +147,7 @@ async function runScenarioOnTransport(
     ms: Date.now() - t0,
     tools,
     headline,
-    body,
+    story,
     validJSON,
   }
 }
@@ -224,9 +161,7 @@ export async function runSmokeScenarios(transport?: LlmTransport): Promise<Smoke
     return out
   }
   for (const sc of SCENARIOS) {
-    const canned =
-      sc.cannedTurn2 !== undefined ? [sc.cannedTurn1, sc.cannedTurn2] : [sc.cannedTurn1]
-    const local = new FixtureReplayTransport(canned)
+    const local = new FixtureReplayTransport([sc.cannedTurn1, sc.cannedTurn2])
     out.push(await runScenarioOnTransport(local, sc))
   }
   return out

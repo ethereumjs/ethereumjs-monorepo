@@ -11,6 +11,7 @@ import {
   macroArchetypeBucket,
 } from '../contracts/contractIntelligence.ts'
 import { IdentityResolver } from '../contracts/identityResolver.ts'
+import { knownContractName } from '../contracts/knownContracts.ts'
 import { formatCalldataPreview, formatLogPreview } from '../contracts/localAbi.ts'
 import { TOPIC } from '../contracts/signatureCatalog.ts'
 import type { EthySandbox } from '../evm/sandbox.ts'
@@ -70,6 +71,10 @@ function emptyContractAgg(): ContractAddressAgg {
     maxTransferLogsInTx: 0,
     soleCalleeBlocks: 0,
     inboundCalls: 0,
+    inboundReverts: 0,
+    gasUsedWei: 0n,
+    valueReceivedWei: 0n,
+    valueTxCount: 0,
     swapEmittersInTx: new Set(),
     callPreviews: [],
     eventPreviews: [],
@@ -100,6 +105,7 @@ export class ETHEconomyDataManager {
       chain: opts.chain,
       sandbox: opts.sandbox,
       spine: opts.spine,
+      stateManager: opts.stateManager,
     })
   }
 
@@ -110,6 +116,11 @@ export class ETHEconomyDataManager {
 
   getBlockRing(): readonly BlockEconomyRecord[] {
     return this.ring
+  }
+
+  /** Active decode hardfork label for AI briefs. */
+  getHardfork(): string {
+    return this.hardfork
   }
 
   getSlotTracker(): SlotTrendTracker {
@@ -151,12 +162,18 @@ export class ETHEconomyDataManager {
       this.applyContractSignals(record)
       this.macroRing.noteBlock(record)
       this.slotTracker.noteBlock(record)
-      this.ingestMoments(record, input.balJson ?? record.resolvedBalJson)
+      const freshMoments = this.ingestMoments(record, input.balJson ?? record.resolvedBalJson)
       this.enforceAddressCap()
-      const hot = record.gasUsedByContract?.map((r) => r.address) ?? []
-      if (hot.length < 2 && record.largestTransferTo !== undefined)
-        hot.push(record.largestTransferTo)
-      this.identity.onBlock(record.blockNumber, hot.slice(0, 8))
+      const hotContracts = record.gasUsedByContract?.map((r) => r.address) ?? []
+      const eoaCandidates: string[] = []
+      if (record.largestTransferTo !== undefined) eoaCandidates.push(record.largestTransferTo)
+      for (const m of freshMoments) {
+        if (m.address !== undefined) eoaCandidates.push(m.address)
+      }
+      for (const slice of record.observations?.txSlices.slice(0, 6) ?? []) {
+        if (slice.to !== undefined) eoaCandidates.push(slice.to)
+      }
+      this.identity.onBlock(record.blockNumber, hotContracts.slice(0, 8), eoaCandidates.slice(0, 8))
       if (this.newestIngested === undefined || input.blockNumber >= this.newestIngested) {
         this.newestIngested = input.blockNumber
       }
@@ -292,6 +309,30 @@ export class ETHEconomyDataManager {
           if (contrib !== undefined && contrib.writes >= 15) agg.soleCalleeBlocks += 1
         }
       }
+      for (const log of obs.logs) {
+        if (log.topic0.toLowerCase() !== TOPIC.transferErc20.toLowerCase()) continue
+        const toTopic = log.topics[2]
+        if (toTopic === undefined || toTopic.length < 42) continue
+        const dest = `0x${toTopic.slice(-40).toLowerCase()}`
+        const agg = this.ensureContractAgg(dest)
+        agg.valueTxCount += 1
+        if (log.data.length >= 32) {
+          try {
+            const val = BigInt(`0x${Buffer.from(log.data.subarray(0, 32)).toString('hex')}`)
+            agg.valueReceivedWei += val
+          } catch {
+            // skip malformed transfer data
+          }
+        }
+      }
+    }
+    for (const rev of record.revertsByContract ?? []) {
+      const agg = this.ensureContractAgg(rev.address)
+      agg.inboundReverts += rev.reverts
+    }
+    for (const gas of record.gasUsedByContract ?? []) {
+      const agg = this.ensureContractAgg(gas.address)
+      agg.gasUsedWei += gas.gasUsed
     }
     if (record.balSnapshots !== undefined) {
       for (const snap of record.balSnapshots) {
@@ -456,6 +497,7 @@ export class ETHEconomyDataManager {
   private buildMomentContext(): {
     classifyCode: (code: Uint8Array) => string | undefined
     addressArchetypes: ReadonlyMap<string, string>
+    formatAddress: (address: string) => string
   } {
     const addressArchetypes = new Map<string, string>()
     const pool = this.buildTopContracts(ECONOMY_CLASSIFY_POOL)
@@ -485,7 +527,12 @@ export class ETHEconomyDataManager {
       }
     }
     const classifyCode = (code: Uint8Array) => archetypeLabelFromCode(code, this.fingerprintCache)
-    return { classifyCode, addressArchetypes }
+    const chainId = BigInt(this.chain.chainId)
+    const formatAddress = (address: string): string => {
+      const resolved = knownContractName(chainId, address) ?? this.identity.getKnownName(address)
+      return resolved ?? `${address.slice(0, 6)}..${address.slice(-4)}`
+    }
+    return { classifyCode, addressArchetypes, formatAddress }
   }
 
   private computeWindowStats(): Pick<
@@ -523,7 +570,10 @@ export class ETHEconomyDataManager {
     }
   }
 
-  private ingestMoments(record: BlockEconomyRecord, balJson?: BALJSONBlockAccessList): void {
+  private ingestMoments(
+    record: BlockEconomyRecord,
+    balJson?: BALJSONBlockAccessList,
+  ): BlockMoment[] {
     const ctx = this.buildMomentContext()
     const fresh = detectBlockMoments({ record, balJson, ...ctx })
     for (let i = fresh.length - 1; i >= 0; i--) {
@@ -535,6 +585,7 @@ export class ETHEconomyDataManager {
     while (this.momentFeed.length > ECONOMY_MOMENTS_RING) {
       this.momentFeed.pop()
     }
+    return fresh
   }
 
   private buildSkyline(): EconomySnapshot['skyline'] {

@@ -13,6 +13,7 @@ import type { IntentEngine, IntentResult } from '../ai/intentEngine.ts'
 import { InvestigationJournal, UserInterestRing } from '../ai/investigationJournal.ts'
 import { assertLlmBaseUrl, normalizeLlmBase } from '../ai/llmClient.ts'
 import { DEFAULT_OLLAMA_BASE } from '../ai/localProviders.ts'
+import { ContractDossierStore } from '../contracts/contractDossierStore.ts'
 import { ETHEconomyDataManager } from '../economy/economyDataManager.ts'
 import { type EthySandbox, createEthySandbox } from '../evm/sandbox.ts'
 import { activeHardfork, advertisedForkHash, chainConfigForNetwork } from '../net/chainHardfork.ts'
@@ -79,6 +80,7 @@ export interface EthyNode {
   /** Live AI mode switching (WP-10a). */
   aiRuntime?: AiRuntimeController
   dataDir?: string
+  dossierStore?: ContractDossierStore
   investigationJournal: InvestigationJournal
   userInterest: UserInterestRing
   sandbox: EthySandbox
@@ -110,6 +112,7 @@ export function createEthyNode(opts: CreateEthyNodeOptions): EthyNode {
           common,
           maxResidentAccounts: 500_000,
           coldAccountLookup: (accountHash) => snapStore.lookupBinaryAccountByHash(accountHash),
+          coldAccountBatchLookup: (hashes) => snapStore.lookupBinaryAccountsBatchAsync(hashes),
           coldCodeLookup: (codeHash) => snapStore.lookupCodeByHash(codeHash),
           coldStorageLookup: (accountHash, slotHash) =>
             snapStore.lookupStorageByHash(accountHash, slotHash),
@@ -159,6 +162,7 @@ export function createEthyNode(opts: CreateEthyNodeOptions): EthyNode {
   deriveCapabilities(spine)
   const investigationJournal = new InvestigationJournal()
   const userInterest = new UserInterestRing()
+  const dossierStore = ContractDossierStore.open(demo ? undefined : dataDir, opts.network)
 
   let llm: EthyNode['llm']
   let hybridEngine: HybridIntentEngine | undefined
@@ -196,6 +200,8 @@ export function createEthyNode(opts: CreateEthyNodeOptions): EthyNode {
       chain,
       sandbox,
       journal: investigationJournal,
+      dataDir: demo ? undefined : dataDir,
+      dossierStore,
     })
     intentEngine = hybridEngine
   }
@@ -212,6 +218,8 @@ export function createEthyNode(opts: CreateEthyNodeOptions): EthyNode {
       chain,
       sandbox,
       journal: investigationJournal,
+      dataDir: demo ? undefined : dataDir,
+      dossierStore,
     })
   }
   intentEngine = hybridEngine
@@ -242,6 +250,7 @@ export function createEthyNode(opts: CreateEthyNodeOptions): EthyNode {
     userInterest,
     sandbox,
     dataDir,
+    dossierStore,
     stateManager,
     notices: new NoticeBoard(),
     intentEngine,

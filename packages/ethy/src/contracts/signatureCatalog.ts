@@ -205,6 +205,88 @@ const FUNCTION_SIGNATURES: Array<{ name: string; signature: string; params: Cata
     signature: 'swap((address,address,address,address,uint256,uint256,uint256,bytes))',
     params: [],
   },
+  { name: 'claim', signature: 'claim()', params: [] },
+  { name: 'drip', signature: 'drip()', params: [] },
+  { name: 'faucet', signature: 'faucet()', params: [] },
+  { name: 'pause', signature: 'pause()', params: [] },
+  { name: 'unpause', signature: 'unpause()', params: [] },
+  {
+    name: 'transferOwnership',
+    signature: 'transferOwnership(address)',
+    params: [{ name: 'newOwner', type: 'address' }],
+  },
+  {
+    name: 'grantRole',
+    signature: 'grantRole(bytes32,address)',
+    params: [],
+  },
+  {
+    name: 'flashLoan',
+    signature: 'flashLoan(address,uint256,bytes)',
+    params: [],
+  },
+  { name: 'latestRoundData', signature: 'latestRoundData()', params: [] },
+  {
+    name: 'fulfillRandomWords',
+    signature: 'fulfillRandomWords(uint256,bytes32[])',
+    params: [],
+  },
+  {
+    name: 'tokenURI',
+    signature: 'tokenURI(uint256)',
+    params: [{ name: 'tokenId', type: 'uint256' }],
+  },
+  {
+    name: 'safeMint',
+    signature: 'safeMint(address,uint256)',
+    params: [
+      { name: 'to', type: 'address' },
+      { name: 'tokenId', type: 'uint256' },
+    ],
+  },
+  { name: 'uri', signature: 'uri(uint256)', params: [{ name: 'id', type: 'uint256' }] },
+  {
+    name: 'royaltyInfo',
+    signature: 'royaltyInfo(uint256,uint256)',
+    params: [],
+  },
+  // ENS primary name & registration calls (decodable directly from live calldata)
+  {
+    name: 'setName',
+    signature: 'setName(string)',
+    params: [{ name: 'name', type: 'string' }],
+  },
+  {
+    name: 'setNameForAddr',
+    signature: 'setNameForAddr(address,address,address,string)',
+    params: [
+      { name: 'addr', type: 'address' },
+      { name: 'owner', type: 'address' },
+      { name: 'resolver', type: 'address' },
+      { name: 'name', type: 'string' },
+    ],
+  },
+  {
+    name: 'setAddr',
+    signature: 'setAddr(bytes32,address)',
+    params: [
+      { name: 'node', type: 'bytes32' },
+      { name: 'addr', type: 'address' },
+    ],
+  },
+  {
+    name: 'renew',
+    signature: 'renew(string,uint256)',
+    params: [
+      { name: 'name', type: 'string' },
+      { name: 'duration', type: 'uint256' },
+    ],
+  },
+  {
+    name: 'commit',
+    signature: 'commit(bytes32)',
+    params: [{ name: 'commitment', type: 'bytes32' }],
+  },
 ]
 
 const EVENT_SIGNATURES: Array<{
@@ -319,6 +401,21 @@ const EVENT_SIGNATURES: Array<{
     signature: 'Withdrawal(address,uint256)',
     indexedParams: [{ name: 'receiver', type: 'address' }],
     dataParams: [{ name: 'amount', type: 'uint256' }],
+  },
+  {
+    name: 'NameRegistered',
+    signature: 'NameRegistered(string,bytes32,address,uint256,uint256)',
+    indexedParams: [
+      { name: 'label', type: 'bytes32' },
+      { name: 'owner', type: 'address' },
+    ],
+    dataParams: [{ name: 'name', type: 'string' }],
+  },
+  {
+    name: 'NameRenewed',
+    signature: 'NameRenewed(string,bytes32,uint256,uint256)',
+    indexedParams: [{ name: 'label', type: 'bytes32' }],
+    dataParams: [{ name: 'name', type: 'string' }],
   },
 ]
 

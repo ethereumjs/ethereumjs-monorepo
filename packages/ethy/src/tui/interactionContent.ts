@@ -8,7 +8,7 @@ import type { InteractionPage } from '../spine/types.ts'
 import type { CapabilityId, TuiViewState } from '../spine/types.ts'
 import { DOMAIN_ORDER } from '../spine/types.ts'
 import { helpDomainLabel } from '../tools/help.ts'
-import { BOLD, DIM, RESET, visibleWidth } from './ansi.ts'
+import { BG, BOLD, DIM, FG, RESET, padVisible, visibleWidth } from './ansi.ts'
 import { capabilityMark } from './capabilityMark.ts'
 import { renderAiOnboardingUIComponent } from './components/AiOnboardingUIComponent.ts'
 import { renderDebugPageUIComponent } from './components/DebugPageUIComponent.ts'
@@ -19,6 +19,7 @@ import {
 import { renderKeyValueUIComponent } from './components/KeyValueUIComponent.ts'
 import { renderLiveHeadPlazaUIComponent } from './components/LiveHeadPlazaUIComponent.ts'
 import { renderStartPageUIComponent } from './components/StartPageUIComponent.ts'
+import { renderStoryUIComponent } from './components/StoryUIComponent.ts'
 import { renderTableUIComponent } from './components/TableUIComponent.ts'
 import { composeFixedRow, fixedLine } from './layout.ts'
 import type { SuggestionMarks } from './widgets.ts'
@@ -140,6 +141,9 @@ export function renderInteractionWidgetBody(
     case 'ai_onboarding':
       pushLines(renderAiOnboardingUIComponent(widget, w, budget))
       break
+    case 'story':
+      pushLines(renderStoryUIComponent(widget.story, w, budget))
+      break
   }
 
   return lines
@@ -182,6 +186,8 @@ export function interactionViewTitle(
     base = `${BOLD}${widget.title}${RESET}`
   } else if (widget.kind === 'key_value' && widget.title) {
     base = `${BOLD}${widget.title}${RESET}`
+  } else if (widget.kind === 'story') {
+    base = `${BOLD}${widget.story.headline.slice(0, 56)}${RESET}`
   } else {
     base = `${BOLD}Interaction${RESET}`
   }
@@ -219,9 +225,45 @@ function wrapSectionText(text: string, wrapW: number): string[] {
   return wrapped
 }
 
-function categoryBadge(card: { category: string; deterministic?: boolean }): string {
-  const tag = card.deterministic === true ? 'SIGNAL' : card.category.toUpperCase()
-  return `[${tag}]`
+function storyMetaFooter(card: {
+  deterministic?: boolean
+  blockNumber?: string
+  modelLabel?: string
+  fallbackReason?: string
+}): string {
+  const parts: string[] = []
+  if (card.blockNumber !== undefined) parts.push(`#${card.blockNumber}`)
+  if (card.deterministic === true) {
+    parts.push(`fallback · ${(card.fallbackReason ?? 'offline').slice(0, 18)}`)
+  } else {
+    const shortModel = card.modelLabel?.split(/[\s:/_-]/)[0]?.slice(0, 12) ?? 'local'
+    parts.push(shortModel)
+  }
+  return parts.join(' · ')
+}
+
+function buildStoryFooterRow(
+  pad: string,
+  wrapW: number,
+  leftPlain: string,
+  rightPlain: string,
+): string {
+  const rightFit = rightPlain.length > wrapW ? rightPlain.slice(0, wrapW) : rightPlain
+  const gap = wrapW - leftPlain.length - rightFit.length
+  if (gap >= 2) {
+    return `${pad}${DIM}${leftPlain}${' '.repeat(gap)}${rightFit}${RESET}`
+  }
+  const leadPad = Math.max(0, wrapW - rightFit.length)
+  return `${pad}${DIM}${' '.repeat(leadPad)}${rightFit}${RESET}`
+}
+
+function angleTagForCard(card: {
+  angleKind?: string
+  lens?: string
+}): string {
+  if (card.angleKind === 'history') return 'Echo'
+  if (card.angleKind === 'security') return 'What if'
+  return 'Lens'
 }
 
 export function renderAiOverviewSections(
@@ -233,39 +275,67 @@ export function renderAiOverviewSections(
   if (sections?.bootstrapNote !== undefined && sections.bootstrapNote.length > 0) {
     return wrapProseCentered(sections.bootstrapNote, innerWidth, innerLines)
   }
-  const dispatchList = sections?.dispatches
-  if (dispatchList !== undefined && dispatchList.length > 0 && spine.economy?.hasBlocks === true) {
+  if (sections?.generating !== undefined) {
+    const pad = ' '.repeat(2)
+    const msg = `${DIM}${sections.generating.text}${RESET}`
+    const rows: string[] = []
+    for (let i = 0; i < innerLines; i++) {
+      if (i === 1) rows.push(`${pad}${msg}`)
+      else rows.push('')
+    }
+    return rows
+  }
+  const card = sections?.dispatches?.[0]
+  if (card !== undefined && spine.economy?.hasBlocks === true) {
     const padCols = 2
     const wrapW = Math.max(8, innerWidth - padCols * 2)
     const pad = ' '.repeat(padCols)
     const blocks: string[] = []
-    for (const card of dispatchList.slice(0, 2)) {
-      const badge = categoryBadge(card)
-      const head = `${BOLD}${badge} ${card.headline}${RESET}`
-      const age =
-        card.blockNumber !== undefined
-          ? `${DIM}#${card.blockNumber}${RESET}`
-          : `${DIM}${Math.round((Date.now() - card.atMs) / 1000)}s ago${RESET}`
-      for (const ln of wrapSectionText(`${head}  ${age}`, wrapW)) {
-        blocks.push(`${pad}${ln}`)
-      }
+    const topPad = 0
+    const headlineInnerW = Math.max(6, wrapW - 2)
+    for (const ln of wrapSectionText(card.headline, headlineInnerW)) {
+      const padded = padVisible(` ${ln} `, wrapW)
+      blocks.push(`${pad}${BG.cyan}${FG.black}${BOLD}${padded}${RESET}`)
+    }
+    blocks.push('')
+    const paras = card.body.split(/\n\n+/).filter((p) => p.trim().length > 0)
+    if (paras.length === 0) {
       for (const ln of wrapSectionText(card.body, wrapW)) {
         blocks.push(`${pad}${ln}`)
       }
-      if (card.suggestedAction !== undefined) {
-        for (const ln of wrapSectionText(`› ${card.suggestedAction}`, wrapW)) {
-          blocks.push(`${pad}${DIM}${ln}${RESET}`)
+    } else {
+      for (const p of paras) {
+        for (const ln of wrapSectionText(p.trim(), wrapW)) {
+          blocks.push(`${pad}${ln}`)
         }
+        blocks.push('')
+      }
+    }
+    if (card.angle !== undefined && card.angle.length > 0) {
+      blocks.push(`${pad}${DIM}│${RESET} ${BOLD}${angleTagForCard(card)}${RESET}`)
+      for (const ln of wrapSectionText(card.angle, wrapW - 2)) {
+        blocks.push(`${pad}${DIM}│${RESET} ${ln}`)
       }
       blocks.push('')
     }
-    const body = blocks.filter((b, i, arr) => !(b === '' && arr[i + 1] === ''))
-    if (body[body.length - 1] === '') body.pop()
-    const topPad = Math.max(0, Math.floor((innerLines - body.length) / 2))
+    const footerRow = buildStoryFooterRow(pad, wrapW, '› /story new', storyMetaFooter(card))
+    let used = 0
     const rows: string[] = []
     for (let i = 0; i < innerLines; i++) {
-      if (i < topPad || i >= topPad + body.length) rows.push('')
-      else rows.push(body[i - topPad] ?? '')
+      if (i < topPad) {
+        rows.push('')
+        continue
+      }
+      if (i === innerLines - 1) {
+        rows.push(footerRow)
+        continue
+      }
+      if (used < blocks.length) {
+        rows.push(blocks[used] ?? '')
+        used += 1
+      } else {
+        rows.push('')
+      }
     }
     return rows
   }

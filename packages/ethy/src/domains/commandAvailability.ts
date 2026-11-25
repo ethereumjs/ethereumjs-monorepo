@@ -78,6 +78,8 @@ export function getCommandAvailability(
     case '/e':
     case '/signals':
     case '/si':
+    case '/story':
+    case '/st':
       return economyReady(spine)
     case '/contract':
     case '/co':
@@ -87,6 +89,8 @@ export function getCommandAvailability(
     case '/cl':
     case '/peers':
     case '/ethy':
+    case '/machine':
+    case '/sync':
       return { status: 'ready' }
     case '/rpc':
       return { status: 'ready' }

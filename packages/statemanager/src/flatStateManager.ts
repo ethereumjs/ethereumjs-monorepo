@@ -1,27 +1,42 @@
 import {
   Account,
   Address,
+  type BALInput,
   BINARY_ACCOUNT_SIZE,
   EthereumJSErrorWithoutCode,
   KECCAK256_NULL,
   KECCAK256_RLP,
   accountToBinaryAccount,
   binaryAccountToAccount,
+  bytesToBigInt,
   bytesToHex,
   bytesToUnprefixedHex,
   createAddressFromString,
+  decodeBALToBinary,
   equalsBytes,
+  getBinaryAccountBalance,
+  getBinaryAccountCodeHash,
+  getBinaryAccountNonce,
+  getBinaryAccountStorageRoot,
   hexToBigInt,
   hexToBytes,
+  mergeBALsBinary,
+  setBinaryAccountBalance,
+  setBinaryAccountCodeHash,
+  setBinaryAccountNonce,
+  setBinaryAccountStorageRoot,
   setLengthLeft,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
-import type { BinaryAccount } from '@ethereumjs/util'
+import type { BinaryAccount, CompactBinaryBAL } from '@ethereumjs/util'
 import { keccak_256 } from '@noble/hashes/sha3.js'
 
 import { BinaryAccountArena } from './binaryAccountArena.ts'
 import { OriginalStorageCache } from './cache/originalStorageCache.ts'
-import { consumeBAL as consumeBALUtil, mergeBALs } from './consumeBAL.ts'
+import {
+  consumeBALBatch as consumeBALBatchUtil,
+  consumeBAL as consumeBALUtil,
+} from './consumeBAL.ts'
 import { modifyAccountFields } from './util.ts'
 
 import type {
@@ -30,7 +45,7 @@ import type {
   ConsumeBALOptions,
   StateManagerInterface,
 } from '@ethereumjs/common'
-import type { BALJSONBlockAccessList, PrefixedHexString } from '@ethereumjs/util'
+import type { PrefixedHexString } from '@ethereumjs/util'
 import type { FlatStateManagerOpts } from './types.ts'
 
 export type FlatAccountSample = {
@@ -81,6 +96,11 @@ export class FlatStateManager implements StateManagerInterface {
   private readonly _arena?: BinaryAccountArena
   private readonly _maxResidentAccounts?: number
   private readonly _coldAccountLookup?: (accountHash: Uint8Array) => Uint8Array | undefined
+  private readonly _coldAccountBatchLookup?: (
+    accountHashes: Uint8Array[],
+  ) => Promise<Map<string, Uint8Array | undefined>>
+  private readonly _batchColdMisses = new Set<string>()
+  private readonly _binaryAccountScratch = new Uint8Array(BINARY_ACCOUNT_SIZE)
   private readonly _coldCodeLookup?: (codeHash: Uint8Array) => Uint8Array | undefined
   private readonly _coldStorageLookup?: (
     accountHash: Uint8Array,
@@ -113,6 +133,7 @@ export class FlatStateManager implements StateManagerInterface {
       this._arena = new BinaryAccountArena()
       this._maxResidentAccounts = opts.maxResidentAccounts
       this._coldAccountLookup = opts.coldAccountLookup
+      this._coldAccountBatchLookup = opts.coldAccountBatchLookup
       this._coldCodeLookup = opts.coldCodeLookup
       this._coldStorageLookup = opts.coldStorageLookup
     }
@@ -184,6 +205,9 @@ export class FlatStateManager implements StateManagerInterface {
     const slot = this.slotShard(key).get(key)
     if (slot !== undefined) {
       return this._arena!.copyOutOwned(slot)
+    }
+    if (this._batchColdMisses.has(key)) {
+      return undefined
     }
     if (this._coldAccountLookup !== undefined) {
       const hashBytes = unprefixedHexToBytes(key)
@@ -633,8 +657,140 @@ export class FlatStateManager implements StateManagerInterface {
     return { storage, accounts }
   }
 
+  /** Prefetch cold journal rows into the resident arena (hash keys are unprefixed hex). */
+  hydrateColdAccountsBatch(entries: Iterable<[string, Uint8Array | undefined]>): void {
+    for (const [key, binary] of entries) {
+      if (binary === undefined || binary.length !== BINARY_ACCOUNT_SIZE) {
+        this._batchColdMisses.add(key)
+        continue
+      }
+      this.promoteColdToResident(key, binary)
+    }
+  }
+
+  private async prefetchColdHashes(hashes: Uint8Array[]): Promise<void> {
+    if (this._coldAccountBatchLookup === undefined || hashes.length === 0) return
+    const resolved = await this._coldAccountBatchLookup(hashes)
+    for (const [key, binary] of resolved) {
+      if (binary === undefined) {
+        this._batchColdMisses.add(key)
+      } else {
+        this.promoteColdToResident(key, binary)
+      }
+    }
+  }
+
+  private async applyCompactBinaryBAL(
+    compact: CompactBinaryBAL,
+    shouldApply?: (address: Address) => boolean,
+  ): Promise<void> {
+    if (compact.length === 0) return
+    const prepared: Array<{
+      acc: CompactBinaryBAL[number]
+      address: Address
+      ah: string
+      needsAccountRead: boolean
+    }> = []
+    const coldHashes: Uint8Array[] = []
+    const seenCold = new Set<string>()
+
+    for (const acc of compact) {
+      const address = new Address(acc.address)
+      if (shouldApply !== undefined && !shouldApply(address)) continue
+      const ahBytes = this._keccak(acc.address)
+      const ah = bytesToUnprefixedHex(ahBytes)
+      const needsAccountRead =
+        acc.balance !== undefined ||
+        acc.nonce !== undefined ||
+        acc.code !== undefined ||
+        acc.storageChanges.length === 0
+      prepared.push({ acc, address, ah, needsAccountRead })
+      if (
+        needsAccountRead &&
+        this._coldAccountBatchLookup !== undefined &&
+        !this.slotShard(ah).has(ah) &&
+        !this._batchColdMisses.has(ah) &&
+        !seenCold.has(ah)
+      ) {
+        seenCold.add(ah)
+        coldHashes.push(ahBytes)
+      }
+    }
+
+    try {
+      await this.prefetchColdHashes(coldHashes)
+      const scratch = this._binaryAccountScratch
+      for (const { acc, address, ah, needsAccountRead } of prepared) {
+        this._hashToAddress.set(ah, address)
+
+        let newCodeHash: Uint8Array | undefined
+        if (acc.code !== undefined) {
+          if (acc.code.length === 0) {
+            newCodeHash = KECCAK256_NULL
+          } else {
+            newCodeHash = this._keccak(acc.code)
+            this.writeCodeKey(bytesToUnprefixedHex(newCodeHash), acc.code)
+          }
+        }
+
+        const balance =
+          acc.balance !== undefined
+            ? acc.balance.length === 0
+              ? 0n
+              : bytesToBigInt(acc.balance)
+            : undefined
+        const nonce =
+          acc.nonce !== undefined
+            ? acc.nonce.length === 0
+              ? 0n
+              : bytesToBigInt(acc.nonce)
+            : undefined
+
+        if (needsAccountRead) {
+          this.pinKey(ah)
+          const existingBinary = this.readBinaryAccountKey(ah)
+          const finalBalance =
+            balance ?? (existingBinary ? getBinaryAccountBalance(existingBinary) : 0n)
+          const finalNonce = nonce ?? (existingBinary ? getBinaryAccountNonce(existingBinary) : 0n)
+          const finalCodeHash =
+            newCodeHash ??
+            (existingBinary ? getBinaryAccountCodeHash(existingBinary) : KECCAK256_NULL)
+          const finalStorageRoot = existingBinary
+            ? getBinaryAccountStorageRoot(existingBinary)
+            : KECCAK256_RLP
+          if (
+            finalBalance === 0n &&
+            finalNonce === 0n &&
+            equalsBytes(finalCodeHash, KECCAK256_NULL) &&
+            acc.storageChanges.length === 0
+          ) {
+            this._pinnedKeys.delete(ah)
+            this.writeBinaryAccountKey(ah, undefined, false)
+            continue
+          }
+          setBinaryAccountNonce(scratch, finalNonce)
+          setBinaryAccountBalance(scratch, finalBalance)
+          setBinaryAccountStorageRoot(scratch, finalStorageRoot)
+          setBinaryAccountCodeHash(scratch, finalCodeHash)
+          this.writeBinaryAccountKey(ah, new Uint8Array(scratch), false)
+        } else if (this._coldAccountLookup === undefined && !this.slotShard(ah).has(ah)) {
+          this.pinKey(ah)
+          this.writeBinaryAccountKey(ah, accountToBinaryAccount(new Account()), false)
+        }
+
+        for (const [slotKey, slotVal] of acc.storageChanges) {
+          const slotKey32 = setLengthLeft(slotKey, 32)
+          const sk = this.storageKey(ah, this.slotHashHex(slotKey32))
+          this.writeStorageKey(sk, slotVal.length === 0 ? undefined : setLengthLeft(slotVal, 32))
+        }
+      }
+    } finally {
+      this._batchColdMisses.clear()
+    }
+  }
+
   async consumeBAL(
-    bal: BALJSONBlockAccessList,
+    bal: BALInput,
     optsOrExpectedStateRoot?: Uint8Array | ConsumeBALOptions,
   ): Promise<void> {
     const opts =
@@ -645,95 +801,27 @@ export class FlatStateManager implements StateManagerInterface {
       return consumeBALUtil(this, bal, optsOrExpectedStateRoot)
     }
     const shouldApply = opts.shouldApplyAccount
-    for (const acc of bal) {
-      if (
-        acc.balanceChanges.length === 0 &&
-        acc.nonceChanges.length === 0 &&
-        acc.codeChanges.length === 0 &&
-        acc.storageChanges.length === 0
-      ) {
-        continue
-      }
-      const address = createAddressFromString(acc.address)
-      if (shouldApply !== undefined && !shouldApply(address)) {
-        continue
-      }
-      const ah = this.accountHashHex(address)
-      this._hashToAddress.set(ah, address)
-
-      const lastBalanceChange = acc.balanceChanges.at(-1)
-      const balance =
-        lastBalanceChange?.postBalance !== undefined
-          ? hexToBigInt(lastBalanceChange.postBalance)
-          : undefined
-      const lastNonceChange = acc.nonceChanges.at(-1)
-      const nonce =
-        lastNonceChange?.postNonce !== undefined
-          ? hexToBigInt(lastNonceChange.postNonce)
-          : undefined
-      const codeHex = acc.codeChanges.at(-1)?.newCode
-      let newCodeHash: Uint8Array | undefined
-      if (codeHex !== undefined) {
-        const codeBytes = hexToBytes(codeHex)
-        newCodeHash = this._keccak(codeBytes)
-        this.writeCodeKey(bytesToUnprefixedHex(newCodeHash), codeBytes)
-      }
-
-      if (
-        balance !== undefined ||
-        nonce !== undefined ||
-        newCodeHash !== undefined ||
-        acc.storageChanges.length === 0
-      ) {
-        this.pinKey(ah)
-        const existingAccount = this.readAccountKey(ah)
-        const finalBalance = balance ?? existingAccount?.balance ?? 0n
-        const finalNonce = nonce ?? existingAccount?.nonce ?? 0n
-        const finalCodeHash = newCodeHash ?? existingAccount?.codeHash ?? KECCAK256_NULL
-        const finalStorageRoot = existingAccount?.storageRoot ?? KECCAK256_RLP
-        if (
-          finalBalance === 0n &&
-          finalNonce === 0n &&
-          equalsBytes(finalCodeHash, KECCAK256_NULL) &&
-          acc.storageChanges.length === 0
-        ) {
-          this._pinnedKeys.delete(ah)
-          this.writeBinaryAccountKey(ah, undefined, false)
-          continue
-        }
-        this.writeBinaryAccountKey(
-          ah,
-          accountToBinaryAccount(
-            new Account(finalNonce, finalBalance, finalStorageRoot, finalCodeHash),
-          ),
-          false,
-        )
-      } else if (this._coldAccountLookup === undefined && !this.slotShard(ah).has(ah)) {
-        this.pinKey(ah)
-        this.writeBinaryAccountKey(ah, accountToBinaryAccount(new Account()), false)
-      }
-
-      for (const storage of acc.storageChanges) {
-        const lastSlot = storage.slotChanges.at(-1)
-        if (lastSlot === undefined) continue
-        const slotKey = setLengthLeft(hexToBytes(storage.slot), 32)
-        const slotVal = setLengthLeft(hexToBytes(lastSlot.postValue), 32)
-        const sk = this.storageKey(ah, this.slotHashHex(slotKey))
-        this.writeStorageKey(sk, slotVal.length === 0 ? undefined : slotVal)
-      }
-    }
+    const compact = decodeBALToBinary(bal)
+    await this.applyCompactBinaryBAL(compact, shouldApply)
   }
 
   async consumeBALBatch(
-    accessLists: BALJSONBlockAccessList[],
+    accessLists: BALInput[],
     optsOrExpectedStateRoot?: Uint8Array | ConsumeBALOptions,
   ): Promise<void> {
     if (accessLists.length === 0) return
+    const opts =
+      optsOrExpectedStateRoot instanceof Uint8Array
+        ? { expectedStateRoot: optsOrExpectedStateRoot }
+        : (optsOrExpectedStateRoot ?? {})
+    if (opts.expectedStateRoot !== undefined || this._parent !== undefined) {
+      return consumeBALBatchUtil(this, accessLists, optsOrExpectedStateRoot)
+    }
     if (accessLists.length === 1) {
       return this.consumeBAL(accessLists[0]!, optsOrExpectedStateRoot)
     }
-    const merged = mergeBALs(accessLists)
-    return this.consumeBAL(merged, optsOrExpectedStateRoot)
+    const compact = mergeBALsBinary(accessLists)
+    await this.applyCompactBinaryBAL(compact, opts.shouldApplyAccount)
   }
 
   getStateRoot(): Promise<Uint8Array> {

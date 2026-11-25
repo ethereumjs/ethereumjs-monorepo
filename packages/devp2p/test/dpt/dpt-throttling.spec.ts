@@ -9,7 +9,7 @@ import { Peer } from '../../src/rlpx/peer.ts'
 import { destroyRLPXs, initTwoPeerRLPXSetup } from '../helpers.ts'
 
 describe('[Devp2p/DPT]: discovery throttling', () => {
-  it('DPT.setDiscoveryPaused() skips findneighbours on refresh()', async () => {
+  it('DPT.setDiscoveryMode("quiet") skips findneighbours on refresh()', async () => {
     const basePort = 30440
     const dpt = new DPT(genPrivateKey(), {
       endpoint: { address: '127.0.0.1', udpPort: basePort, tcpPort: basePort },
@@ -25,10 +25,10 @@ describe('[Devp2p/DPT]: discovery throttling', () => {
       vectorClock: 0,
     })
     const findSpy = vi.spyOn(dpt['_server'], 'findneighbours')
-    dpt.setDiscoveryPaused(true)
+    dpt.setDiscoveryMode('quiet')
     await dpt.refresh()
     assert.strictEqual(findSpy.mock.calls.length, 0)
-    dpt.setDiscoveryPaused(false)
+    dpt.setDiscoveryMode('active')
     findSpy.mockClear()
     await dpt.refresh()
     assert.ok(findSpy.mock.calls.length >= 0)
@@ -67,37 +67,50 @@ describe('[Devp2p/DPT]: discovery throttling', () => {
     dpt.destroy()
   })
 
-  it('RLPx throttleDiscovery pauses DPT when peer slots are full', () => {
+  it('RLPx throttleDiscovery sets DPT quiet when peer slots are full', () => {
     const { rlpxs } = initTwoPeerRLPXSetup(2, [ETH.eth68], new Common({ chain: Mainnet }))
     const rlpx = rlpxs[0]!
     const dpt = rlpx['_dpt']!
     rlpx['_throttleDiscovery'] = true
     rlpx['_maxPeers'] = 2
     rlpx['_discoveryLowWaterMark'] = 1
+    rlpx['_profileDiscoveryMode'] = 'active'
     rlpx['_peers'].set('aa', Object.create(Peer.prototype) as Peer)
     rlpx['_peers'].set('bb', Object.create(Peer.prototype) as Peer)
     rlpx['_syncDiscoveryThrottle']()
-    assert.strictEqual(dpt.isDiscoveryPaused(), true)
+    assert.strictEqual(dpt.getDiscoveryMode(), 'quiet')
     rlpx['_peers'].clear()
     rlpx['_syncDiscoveryThrottle']()
-    assert.strictEqual(dpt.isDiscoveryPaused(), false)
+    assert.strictEqual(dpt.getDiscoveryMode(), 'active')
     destroyRLPXs(rlpxs)
   })
 
-  it('RLPx sync discovery hold stays paused when connected is below maxPeers', () => {
+  it('RLPx profile discovery off stays off when connected is below maxPeers', () => {
     const { rlpxs } = initTwoPeerRLPXSetup(2, [ETH.eth68], new Common({ chain: Mainnet }))
     const rlpx = rlpxs[0]!
     const dpt = rlpx['_dpt']!
     rlpx['_throttleDiscovery'] = true
     rlpx['_maxPeers'] = 25
     rlpx['_discoveryLowWaterMark'] = 20
-    rlpx.setSyncDiscoveryHold(true)
+    rlpx.applyNetworkProfile({
+      capabilities: ['eth68'],
+      maxPeers: 25,
+      discoveryLowWaterMark: 20,
+      discoveryMode: 'off',
+      ethyDiscoveryTag: false,
+    })
     rlpx['_peers'].clear()
     rlpx['_syncDiscoveryThrottle']()
-    assert.strictEqual(dpt.isDiscoveryPaused(), true)
-    rlpx.setSyncDiscoveryHold(false)
+    assert.strictEqual(dpt.getDiscoveryMode(), 'off')
+    rlpx.applyNetworkProfile({
+      capabilities: ['eth68'],
+      maxPeers: 25,
+      discoveryLowWaterMark: 20,
+      discoveryMode: 'active',
+      ethyDiscoveryTag: false,
+    })
     rlpx['_syncDiscoveryThrottle']()
-    assert.strictEqual(dpt.isDiscoveryPaused(), false)
+    assert.strictEqual(dpt.getDiscoveryMode(), 'active')
     destroyRLPXs(rlpxs)
   })
 })

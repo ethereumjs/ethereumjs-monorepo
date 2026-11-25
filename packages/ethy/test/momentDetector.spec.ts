@@ -151,4 +151,27 @@ describe('[Ethy/Economy]: momentDetector', () => {
     assert.isDefined(rev)
     assert.include(rev!.headline, '[DEX Router]')
   })
+
+  it('uses formatAddress to surface resolved ENS / known names in Plaza moments', () => {
+    const alice = '0x000000000000000000000000000000000000abcd'
+    const moments = detectBlockMoments({
+      record: baseRecord({
+        largestTransferWei: 3n * 10n ** 18n,
+        largestTransferTo: alice,
+        observations: {
+          calls: [],
+          logs: [],
+          blockAddresses: [],
+          txSlices: [{ to: alice, data: new TextEncoder().encode('gm ethereum'), logs: [] }],
+        },
+      }),
+      formatAddress: (addr) => (addr.toLowerCase() === alice ? 'alice.eth' : addr),
+    })
+    const note = moments.find((m) => m.kind === 'graffiti_note')
+    const whale = moments.find((m) => m.kind === 'whale')
+    assert.isDefined(note)
+    assert.isDefined(whale)
+    assert.include(note!.headline, 'alice.eth')
+    assert.include(whale!.headline, 'alice.eth')
+  })
 })

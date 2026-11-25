@@ -28,6 +28,7 @@ export type ConsensusTrackerOpts = {
 export type ConsensusTrackerHandle = {
   stop: () => void
   notePeerHeader: (blockNumber: bigint, blockHash: Uint8Array) => void
+  setPollIntervalMs: (ms: number) => void
 }
 
 export function syncSpineFromClient(
@@ -117,6 +118,7 @@ export function startConsensusTracker(opts: ConsensusTrackerOpts): ConsensusTrac
       stop: () => {},
       notePeerHeader: (blockNumber, blockHash) =>
         witnessPeerExecutionHeader(opts.spine, blockNumber, blockHash, opts.notices),
+      setPollIntervalMs: () => {},
     }
   }
 
@@ -126,6 +128,7 @@ export function startConsensusTracker(opts: ConsensusTrackerOpts): ConsensusTrac
     return {
       stop: () => {},
       notePeerHeader: () => {},
+      setPollIntervalMs: () => {},
     }
   }
 
@@ -148,7 +151,9 @@ export function startConsensusTracker(opts: ConsensusTrackerOpts): ConsensusTrac
 
   opts.spine.clStatus = 'syncing'
   let stopped = false
-  const slotMs = opts.pollIntervalMs ?? (common.beaconLightClient()?.secondsPerSlot ?? 12) * 1000
+  const pollRef = {
+    ms: opts.pollIntervalMs ?? (common.beaconLightClient()?.secondsPerSlot ?? 12) * 1000,
+  }
 
   const notePeerHeader = (blockNumber: bigint, blockHash: Uint8Array) =>
     witnessPeerExecutionHeader(opts.spine, blockNumber, blockHash, opts.notices)
@@ -217,7 +222,7 @@ export function startConsensusTracker(opts: ConsensusTrackerOpts): ConsensusTrac
           opts.spine.clStatus = 'p2p_only'
         }
       }
-      await new Promise((r) => setTimeout(r, slotMs))
+      await new Promise((r) => setTimeout(r, pollRef.ms))
     }
   })()
 
@@ -227,5 +232,8 @@ export function startConsensusTracker(opts: ConsensusTrackerOpts): ConsensusTrac
       runner.persist()
     },
     notePeerHeader,
+    setPollIntervalMs: (ms: number) => {
+      pollRef.ms = ms
+    },
   }
 }

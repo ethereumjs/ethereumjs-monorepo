@@ -1,5 +1,6 @@
 import { assert, describe, it, vi } from 'vitest'
 
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createFlatStateManager } from '@ethereumjs/statemanager'
 
 import type { AiRuntimeController } from '../src/ai/aiRuntime.ts'
@@ -7,6 +8,7 @@ import { buildCompactDomainContext } from '../src/ai/compactContext.ts'
 import { composeViewFromRequest } from '../src/ai/composeView.ts'
 import { FixtureReplayTransport } from '../src/ai/fixtureEngine.ts'
 import { HybridIntentEngine } from '../src/ai/hybridEngine.ts'
+import { InvestigationJournal } from '../src/ai/investigationJournal.ts'
 import {
   assertLlmBaseUrl,
   normalizeLlmBase,
@@ -23,6 +25,7 @@ import { buildToolCatalog } from '../src/ai/toolCatalog.ts'
 import { TurnMemoryRing } from '../src/ai/turnMemory.ts'
 import { advanceDemo } from '../src/demo/advanceDemo.ts'
 import { readDomainSnapshots } from '../src/domains/domainManagers.ts'
+import { ETHEconomyDataManager } from '../src/economy/economyDataManager.ts'
 import { createSpine } from '../src/spine/createSpine.ts'
 import type { AiOverviewSections } from '../src/spine/types.ts'
 
@@ -121,6 +124,52 @@ describe('[Ethy/AI]: intent engine fixtures', () => {
     assert.equal(r.viewTitle, 'Most used peers')
     assert.equal(r.widget.kind, 'table')
     vi.unstubAllGlobals()
+  })
+
+  it('explain action returns story widget', async () => {
+    const spine = createSpine('sepolia', 11155111n)
+    spine.economy = {
+      hasBlocks: true,
+      latestBlockNumber: '42',
+      signals: [],
+      moments: [],
+      topContracts: [],
+      recentBlocks: [],
+    }
+    advanceDemo(spine, 8000)
+    const chain = Mainnet
+    const common = new Common({ chain, hardfork: Hardfork.Cancun })
+    const stateManager = createFlatStateManager({ common })
+    const economy = new ETHEconomyDataManager({
+      spine,
+      chain,
+      hardfork: Hardfork.Cancun,
+      stateManager,
+    })
+    const journal = new InvestigationJournal()
+    const transport = new FixtureReplayTransport([
+      JSON.stringify({
+        viewTitle: 'Story time',
+        action: { type: 'explain', lens: 'history' },
+      }),
+      `HEADLINE: Sepolia rehearsal
+STORY: Testnet traffic still tells a story worth reading.
+ANGLE: Teams stage here before mainnet.
+CURIOSITY: What upgrade is rehearsing?
+COMMAND: /story`,
+    ])
+    const fallback = new HybridIntentEngine({ stateManager })
+    const engine = new LocalHttpIntentEngine({
+      transport,
+      stateManager,
+      fallback,
+      getTurns: () => [],
+      economy,
+      chain,
+      journal,
+    })
+    const r = await engine.handle({ text: 'tell me what happened', spine })
+    assert.equal(r.widget.kind, 'story')
   })
 
   it('routes tool call with args cleanly and falls back to widget.assistantComment', async () => {

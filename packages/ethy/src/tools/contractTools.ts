@@ -1,5 +1,6 @@
 import type { ChainConfig } from '@ethereumjs/common'
 import type { FlatStateManager } from '@ethereumjs/statemanager'
+import type { ContractDossierStore } from '../contracts/contractDossierStore.ts'
 import {
   buildCodeLookup,
   buildContractProfile,
@@ -34,6 +35,7 @@ export function contractMicroscopeWidget(
   chain: ChainConfig,
   economy: ETHEconomyDataManager,
   arg: string,
+  dossierStore?: ContractDossierStore,
 ): WidgetSpec {
   const address = resolveContractTarget(spine, arg)
   if (address === undefined) {
@@ -69,6 +71,45 @@ export function contractMicroscopeWidget(
     { key: 'Storage reads', value: String(profile.storageReads) },
     { key: 'Net ETH Δ', value: formatSignedEthFromWei(profile.netEthDeltaWei) },
   ]
+  if (agg.inboundReverts > 0) {
+    preface.push({ key: 'Receipt reverts', value: String(agg.inboundReverts) })
+  }
+  if (agg.gasUsedWei > 0n) {
+    preface.push({ key: 'Gas used (window)', value: agg.gasUsedWei.toString() })
+  }
+  if (agg.valueTxCount > 0) {
+    preface.push({
+      key: 'ERC-20 inflow',
+      value: `${agg.valueTxCount} transfers · ${agg.valueReceivedWei.toString()} wei`,
+    })
+  }
+  const dossier = dossierStore?.get(address)
+  if (dossier !== undefined) {
+    if (dossier.unknownSelectorCount > 0) {
+      preface.push({ key: 'Unknown selectors', value: String(dossier.unknownSelectorCount) })
+    }
+    if (dossier.aiNotes?.hypothesis !== undefined) {
+      preface.push({
+        key: 'Last AI hypothesis',
+        value: dossier.aiNotes.hypothesis.slice(0, 72),
+      })
+    }
+    if (dossier.timesFeatured > 0) {
+      preface.push({ key: 'Story features', value: String(dossier.timesFeatured) })
+    }
+    if (dossier.compilerHint !== undefined) {
+      preface.push({ key: 'Compiler', value: dossier.compilerHint })
+    }
+    if (dossier.probes?.name !== undefined) {
+      preface.push({ key: 'Token name', value: dossier.probes.name })
+    }
+    if (dossier.probes?.symbol !== undefined) {
+      preface.push({ key: 'Symbol', value: dossier.probes.symbol })
+    }
+    if (dossier.probes?.owner !== undefined) {
+      preface.push({ key: 'Owner (probe)', value: shortAddress(dossier.probes.owner) })
+    }
+  }
   if (profile.fingerprint !== undefined) {
     preface.push({ key: 'Bytecode', value: `${profile.fingerprint.bytecodeSize} bytes` })
     if (profile.proxyTarget !== undefined) {

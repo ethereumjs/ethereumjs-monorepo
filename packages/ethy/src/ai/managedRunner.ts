@@ -1,8 +1,11 @@
 import { type ChildProcess, spawn } from 'node:child_process'
+import * as fs from 'node:fs'
 import * as net from 'node:net'
+import * as path from 'node:path'
 
 import { deriveCapabilities } from '../spine/createSpine.ts'
 import type { EthySpine, ManagedAiPhase, ManagedAiState } from '../spine/types.ts'
+import { llamaServerLogPath } from './aiRunTrace.ts'
 import { FetchLlmTransport, type LlmTransport } from './fixtureEngine.ts'
 import {
   ensureLlamaServerBin,
@@ -178,14 +181,58 @@ export function createManagedModelRunner(opts: CreateManagedModelRunnerOpts): Ma
     return false
   }
 
-  const startLlamaChild = async (
+  const appendLlamaDiag = (line: string): void => {
+    if (opts.dataDir === undefined) return
+    const logPath = llamaServerLogPath(opts.dataDir, opts.spine.network)
+    try {
+      fs.mkdirSync(path.dirname(logPath), { recursive: true })
+      fs.appendFileSync(logPath, `${new Date().toISOString()} [ethy] ${line}\n`)
+    } catch {
+      // ignore
+    }
+  }
+
+  const spawnOnce = async (
     bin: string,
     modelPath: string,
-    signal?: AbortSignal,
+    signal: AbortSignal | undefined,
+    reasoningBudgetZero: boolean,
   ): Promise<boolean> => {
     const port = await allocFreePort()
-    const { command, args, cwd, env } = spawnLlamaServerCommand(bin, modelPath, port)
-    const proc = spawn(command, args, { stdio: 'ignore', cwd, env })
+    const { command, args, cwd, env } = spawnLlamaServerCommand(bin, modelPath, port, {
+      reasoningBudgetZero,
+    })
+    let llamaLogFd: number | undefined
+    let logPath: string | undefined
+    if (opts.dataDir !== undefined) {
+      logPath = llamaServerLogPath(opts.dataDir, opts.spine.network)
+      try {
+        fs.mkdirSync(path.dirname(logPath), { recursive: true })
+        llamaLogFd = fs.openSync(logPath, 'a')
+        fs.writeSync(
+          llamaLogFd,
+          `${new Date().toISOString()} [ethy] spawn ${command} ${args.join(' ')}\n`,
+        )
+      } catch {
+        llamaLogFd = undefined
+      }
+    }
+    let proc: ChildProcess
+    try {
+      proc = spawn(command, args, {
+        stdio: llamaLogFd !== undefined ? ['ignore', 'ignore', llamaLogFd] : 'ignore',
+        cwd,
+        env,
+      })
+    } finally {
+      if (llamaLogFd !== undefined) {
+        try {
+          fs.closeSync(llamaLogFd)
+        } catch {
+          // ignore
+        }
+      }
+    }
     child = proc
     exitKillHandler = () => {
       try {
@@ -205,6 +252,7 @@ export function createManagedModelRunner(opts: CreateManagedModelRunnerOpts): Ma
       await stopChild()
       return false
     }
+    appendLlamaDiag(`ready on ${base} reasoningBudgetZero=${reasoningBudgetZero}`)
     setManagedPhase(opts.spine, { phase: 'ready', label: 'Qwen3.5-2B' })
     opts.onPhase({
       phase: 'ready',
@@ -217,6 +265,16 @@ export function createManagedModelRunner(opts: CreateManagedModelRunnerOpts): Ma
       provider: 'openai-compatible',
     })
     return true
+  }
+
+  const startLlamaChild = async (
+    bin: string,
+    modelPath: string,
+    signal?: AbortSignal,
+  ): Promise<boolean> => {
+    if (await spawnOnce(bin, modelPath, signal, true)) return true
+    appendLlamaDiag('retry spawn without --reasoning-budget')
+    return spawnOnce(bin, modelPath, signal, false)
   }
 
   const tryOllamaBridge = async (): Promise<boolean> => {

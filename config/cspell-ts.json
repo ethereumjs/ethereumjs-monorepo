@@ -33,6 +33,14 @@
         "Json",
         "pubkeys"
       ]
+    },
+    {
+      "filename": "**/packages/ethy/**",
+      "ignoreWords": [
+        "Dencun",
+        "rollups",
+        "mixtral"
+      ]
     }
   ],
   "words": [

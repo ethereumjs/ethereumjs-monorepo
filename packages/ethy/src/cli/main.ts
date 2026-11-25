@@ -74,6 +74,7 @@ async function main(): Promise<void> {
   let coordinatorStop: (() => void) | undefined
   let consensusStop: (() => void) | undefined
   let rpcHandle: JsonRpcHandle | undefined
+  let shuttingDown = false
   let witnessExecutionHeader: ((blockNumber: bigint, blockHash: Uint8Array) => void) | undefined
   let noteChainHead: ((blockNumber: bigint) => void) | undefined
   let p2pError: string | undefined
@@ -162,10 +163,15 @@ async function main(): Promise<void> {
       syncMode: cli.syncMode,
       shadowRefreshEnabled: cli.shadowRefreshEnabled,
       witnessExecutionHeader,
+      setConsensusPollInterval: consensus.setPollIntervalMs,
       economy: node.economy,
       onRpcBundle: (note) => rpcHandle?.noteBundle(note),
     })
       .then((handle) => {
+        if (shuttingDown) {
+          handle.stop()
+          return
+        }
         bindPeerCoordinator(handle)
         noteChainHead = handle.noteChainHead
         if (
@@ -187,11 +193,35 @@ async function main(): Promise<void> {
   }
 
   const shutdown = () => {
+    shuttingDown = true
     void node.aiRuntime?.stop()
     void rpcHandle?.stop()
     coordinatorStop?.()
     consensusStop?.()
     node.flightRecorder?.stop()
+  }
+
+  const shutdownAndWait = async (): Promise<void> => {
+    shuttingDown = true
+    coordinatorStop?.()
+    consensusStop?.()
+    node.flightRecorder?.stop()
+    const stops: Promise<unknown>[] = []
+    if (node.aiRuntime !== undefined) {
+      stops.push(node.aiRuntime.stop().catch(() => {}))
+    }
+    if (rpcHandle !== undefined) {
+      stops.push(rpcHandle.stop().catch(() => {}))
+    }
+    if (stops.length > 0) {
+      await Promise.race([
+        Promise.allSettled(stops),
+        new Promise<void>((resolve) => {
+          const timer = setTimeout(resolve, 2_500)
+          timer.unref?.()
+        }),
+      ])
+    }
   }
 
   if (cli.headless) {
@@ -216,8 +246,9 @@ async function main(): Promise<void> {
       sessionNoSave: aiResolution.sessionOnly,
     })
   } finally {
-    shutdown()
+    await shutdownAndWait()
   }
+  process.exit(0)
 }
 
 main().catch((err: unknown) => {

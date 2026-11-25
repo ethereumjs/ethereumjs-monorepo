@@ -1,7 +1,7 @@
 import { stdin as input, stdout as output } from 'node:process'
 import readline from 'node:readline'
 
-import { ChainDetectiveNarrator, signalToDispatchCard } from '../ai/chainDetective.ts'
+import { ChainDetectiveNarrator } from '../ai/chainDetective.ts'
 import type { SlashDispatchCtx } from '../ai/deterministicEngine.ts'
 import { probeHardware } from '../ai/hardwareCheck.ts'
 import { managedPhaseBlocksOverview } from '../ai/managedAiUi.ts'
@@ -14,8 +14,10 @@ import { advanceDemo } from '../demo/advanceDemo.ts'
 import { readDomainSnapshots } from '../domains/domainManagers.ts'
 import { chainConfigForNetwork } from '../net/chainHardfork.ts'
 import { describeNotice } from '../notify/board.ts'
+import { deriveCapabilities } from '../spine/createSpine.ts'
 import type { AiOverviewSections, InteractionHistoryEntry, TuiViewState } from '../spine/types.ts'
 import { parseHelpDomainArg } from '../tools/help.ts'
+import { parseStorySlashTrigger, storyWidgetFromCard } from '../tools/storyTools.ts'
 import {
   applyOnboardingCommit,
   buildOnboardingWidget,
@@ -31,7 +33,7 @@ import {
   syncOutputBegin,
   syncOutputEnd,
 } from './ansi.ts'
-import { createInitialViewState, pushKeyChar, reducePromptKey } from './prompt.ts'
+import { type KeyAction, createInitialViewState, pushKeyChar, reducePromptKey } from './prompt.ts'
 import { promptCaretPosition, renderFrame } from './renderFrame.ts'
 import {
   activateHistoryEntry,
@@ -99,6 +101,9 @@ export async function runEthySession(node: EthyNode, opts?: EthySessionOpts): Pr
     disconnectPeer: node.disconnectPeer,
     economy: node.economy,
     chain: chainConfigForNetwork(node.spine.network),
+    journal: node.investigationJournal,
+    dataDir: node.dataDir,
+    dossierStore: node.dossierStore,
   })
 
   const refreshOverview = (trigger: 'welcome' | 'pulse') => {
@@ -106,14 +111,12 @@ export async function runEthySession(node: EthyNode, opts?: EthySessionOpts): Pr
       return
     }
     if (node.spine.economy?.hasBlocks === true) {
-      const sig = node.spine.economy.signals?.[0]
-      const sections: AiOverviewSections =
-        sig !== undefined
-          ? { dispatches: [signalToDispatchCard(sig, Date.now())] }
-          : {
-              bootstrapNote: 'Live blocks — autonomous dispatches appear here when signals rank.',
-            }
-      view = { ...view, aiOverviewSections: sections }
+      view = {
+        ...view,
+        aiOverviewSections: {
+          bootstrapNote: 'Live blocks — field stories arrive once the historian cycles.',
+        },
+      }
       return
     }
     const snapshots = readDomainSnapshots(node.spine)
@@ -320,6 +323,45 @@ export async function runEthySession(node: EthyNode, opts?: EthySessionOpts): Pr
   }
 
   const runIntent = (text: string, gen: number, isNl: boolean) => {
+    const storyTrigger = parseStorySlashTrigger(text)
+    if (storyTrigger?.action === 'new') {
+      node.aiRuntime?.wakeIfDeferred()
+      if (detectiveNarrator === undefined) {
+        view = {
+          ...view,
+          aiOverviewSections: {
+            ...view.aiOverviewSections,
+            bootstrapNote:
+              node.spine.aiMode === 'off'
+                ? 'AI mode is off — run /ai to enable stories.'
+                : 'AI runner is still starting — try /story new again in a moment.',
+          },
+        }
+        draw()
+        return
+      }
+      const focusTag =
+        storyTrigger.beat !== undefined
+          ? ` (${storyTrigger.beat.replace(/_/g, ' ')})`
+          : storyTrigger.lens !== undefined
+            ? ` (${storyTrigger.lens})`
+            : ''
+      view = {
+        ...view,
+        aiOverviewSections: {
+          ...view.aiOverviewSections,
+          generating: { text: `Rolling the dice for a fresh story${focusTag}…` },
+        },
+      }
+      draw()
+      void detectiveNarrator.triggerNow(storyTrigger.lens, storyTrigger.beat).then(() => {
+        if (gen !== intentGeneration) return
+        const { generating: _g, ...rest } = view.aiOverviewSections ?? {}
+        view = { ...view, aiOverviewSections: rest }
+        draw()
+      })
+      return
+    }
     if (isHelpCommand(text)) {
       const parts = text.split(/\s+/)
       const domain = parseHelpDomainArg(parts)
@@ -377,6 +419,9 @@ export async function runEthySession(node: EthyNode, opts?: EthySessionOpts): Pr
       economy: node.economy,
       stateManager: node.stateManager,
       chain,
+      network: node.spine.network,
+      dataDir: node.dataDir,
+      dossierStore: node.dossierStore,
       sandbox: node.sandbox,
       journal: node.investigationJournal,
       userInterest: node.userInterest,
@@ -385,7 +430,8 @@ export async function runEthySession(node: EthyNode, opts?: EthySessionOpts): Pr
         draw()
       },
       onUnhealthy: () => {
-        refreshOverview('pulse')
+        deriveCapabilities(node.spine)
+        draw()
       },
     })
     detectiveNarrator.start(node.spine)
@@ -426,11 +472,110 @@ export async function runEthySession(node: EthyNode, opts?: EthySessionOpts): Pr
       resolve()
     }
 
+    const ESC_FLUSH_MS = 40
+    let escTimer: ReturnType<typeof setTimeout> | undefined
+    const clearEscTimer = () => {
+      if (escTimer !== undefined) {
+        clearTimeout(escTimer)
+        escTimer = undefined
+      }
+    }
+
     const onSignal = () => finish()
     process.once('SIGINT', onSignal)
     process.once('SIGTERM', onSignal)
 
+    const handleAction = (action: KeyAction): boolean => {
+      const onboardingStep = reduceOnboardingKey(view, action)
+      if (onboardingStep !== undefined) {
+        if (onboardingStep.committed !== undefined && node.aiRuntime !== undefined) {
+          void applyOnboardingCommit(
+            node.aiRuntime,
+            onboardingStep.committed,
+            opts?.sessionNoSave === true,
+          ).then(() => {
+            view = {
+              ...onboardingStep.view,
+              aiOnboardingActive: false,
+              activeWidget: { kind: 'start_page' },
+            }
+            if (node.spine.aiMode !== 'off' && node.llm !== undefined) {
+              startDetectiveNarrator()
+            }
+            draw()
+          })
+        } else {
+          view = onboardingStep.view
+        }
+        draw()
+        return false
+      }
+      const {
+        view: nextView,
+        submittedLine,
+        helpToggle,
+        viewHistoryNav,
+        toggleDebug,
+        openPlaza,
+      } = reducePromptKey(view, action)
+      view = nextView
+      if (openPlaza === true) {
+        view = openPlazaView(view, node.spine, slashCtx())
+      }
+      if (toggleDebug === true) {
+        const w = view.activeWidget
+        if (w?.debugPage !== undefined && w.debugPage.length > 0) {
+          const nextPage = view.interactionPage === 'debug' ? 'main' : 'debug'
+          view = {
+            ...view,
+            interactionPage: nextPage,
+          }
+          if (view.viewHistory.length > 0) {
+            const idx = view.viewHistoryIndex
+            const entry = view.viewHistory[idx]
+            if (entry !== undefined) {
+              const updated: InteractionHistoryEntry = { ...entry, page: nextPage }
+              const hist = [...view.viewHistory]
+              hist[idx] = updated
+              view = { ...view, viewHistory: hist }
+            }
+          }
+        }
+      }
+      if (helpToggle === true) {
+        const onHelp = view.activeWidget?.kind === 'domain_help'
+        if (!onHelp) {
+          view = openDomainHelp(view, node.spine)
+        } else if (view.viewHistoryIndex > 0) {
+          navigateHistory('left')
+        } else {
+          const canPlaza =
+            node.spine.phase === 'HEAD_FOLLOWING' ||
+            (node.spine.demoClock === true && node.spine.economy?.hasBlocks === true)
+          if (canPlaza) {
+            view = openPlazaView(view, node.spine, slashCtx())
+          }
+        }
+      }
+      if (viewHistoryNav !== undefined) {
+        navigateHistory(viewHistoryNav)
+      }
+      let dirty = true
+      if (submittedLine !== undefined) {
+        const gen = ++intentGeneration
+        const isNl = !submittedLine.trim().startsWith('/')
+        runIntent(submittedLine, gen, isNl)
+        dirty = false
+      }
+      if (view.shouldExit) {
+        finish()
+        return false
+      }
+      return dirty
+    }
+
     const onData = (buf: Buffer) => {
+      clearEscTimer()
       const chunk = buf.toString('utf8')
       let dirty = false
       for (const ch of chunk) {
@@ -440,92 +585,21 @@ export async function runEthySession(node: EthyNode, opts?: EthySessionOpts): Pr
         if (action === undefined) {
           continue
         }
-        dirty = true
-        const onboardingStep = reduceOnboardingKey(view, action)
-        if (onboardingStep !== undefined) {
-          if (onboardingStep.committed !== undefined && node.aiRuntime !== undefined) {
-            void applyOnboardingCommit(
-              node.aiRuntime,
-              onboardingStep.committed,
-              opts?.sessionNoSave === true,
-            ).then(() => {
-              view = {
-                ...onboardingStep.view,
-                aiOnboardingActive: false,
-                activeWidget: { kind: 'start_page' },
-              }
-              if (node.spine.aiMode !== 'off' && node.llm !== undefined) {
-                startDetectiveNarrator()
-              }
-              draw()
-            })
-          } else {
-            view = onboardingStep.view
-          }
+        if (handleAction(action)) {
           dirty = true
-          if (dirty) draw()
-          continue
         }
-        const {
-          view: nextView,
-          submittedLine,
-          helpToggle,
-          viewHistoryNav,
-          toggleDebug,
-          openPlaza,
-        } = reducePromptKey(view, action)
-        view = nextView
-        if (openPlaza === true) {
-          view = openPlazaView(view, node.spine, slashCtx())
-        }
-        if (toggleDebug === true) {
-          const w = view.activeWidget
-          if (w?.debugPage !== undefined && w.debugPage.length > 0) {
-            const nextPage = view.interactionPage === 'debug' ? 'main' : 'debug'
-            view = {
-              ...view,
-              interactionPage: nextPage,
-            }
-            if (view.viewHistory.length > 0) {
-              const idx = view.viewHistoryIndex
-              const entry = view.viewHistory[idx]
-              if (entry !== undefined) {
-                const updated: InteractionHistoryEntry = { ...entry, page: nextPage }
-                const hist = [...view.viewHistory]
-                hist[idx] = updated
-                view = { ...view, viewHistory: hist }
-              }
+        if (finished) return
+      }
+      if (escapeBuf === '\u001b') {
+        escTimer = setTimeout(() => {
+          escTimer = undefined
+          if (!finished && escapeBuf === '\u001b') {
+            escapeBuf = ''
+            if (handleAction({ type: 'exit' }) && !finished) {
+              draw()
             }
           }
-        }
-        if (helpToggle === true) {
-          const onHelp = view.activeWidget?.kind === 'domain_help'
-          if (!onHelp) {
-            view = openDomainHelp(view, node.spine)
-          } else if (view.viewHistoryIndex > 0) {
-            navigateHistory('left')
-          } else {
-            const canPlaza =
-              node.spine.phase === 'HEAD_FOLLOWING' ||
-              (node.spine.demoClock === true && node.spine.economy?.hasBlocks === true)
-            if (canPlaza) {
-              view = openPlazaView(view, node.spine, slashCtx())
-            }
-          }
-        }
-        if (viewHistoryNav !== undefined) {
-          navigateHistory(viewHistoryNav)
-        }
-        if (submittedLine !== undefined) {
-          const gen = ++intentGeneration
-          const isNl = !submittedLine.trim().startsWith('/')
-          runIntent(submittedLine, gen, isNl)
-          dirty = false
-        }
-        if (view.shouldExit) {
-          finish()
-          return
-        }
+        }, ESC_FLUSH_MS)
       }
       if (dirty) {
         draw()
@@ -533,6 +607,7 @@ export async function runEthySession(node: EthyNode, opts?: EthySessionOpts): Pr
     }
 
     const cleanup = () => {
+      clearEscTimer()
       process.off('SIGINT', onSignal)
       process.off('SIGTERM', onSignal)
       clearInterval(refreshTimer)

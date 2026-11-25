@@ -1,3 +1,8 @@
+export {
+  capabilityWireNames,
+  networkProfilesEqual,
+  resolveCapabilities,
+} from './lab/capabilities.ts'
 export * from './dns/index.ts'
 export * from './dpt/index.ts'
 export * from './protocol/index.ts'

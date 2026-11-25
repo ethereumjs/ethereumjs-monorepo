@@ -328,6 +328,29 @@ Every Work Package delivers a **runnable, observable, and live-testable incremen
                                           │        Engine, Curated Ethereum Lore &  │
                                           │        Threat Grounding, Editorial TUI  │
                                           │        & Conversational Deep-Dives      │
+                                          └───────────────────┬─────────────────────┘
+                                                              │
+                                                              ▼ (Network Citizenship & Machine Control)
+                                          ┌─────────────────────────────────────────┐
+                                          │ WP-13: The Machine — Unified Sync &     │
+                                          │        Network Lifecycle Orchestrator,  │
+                                          │        Dynamic Subprotocol Planes       │
+                                          │        (SNAP/ETHY/Disc/CL) & Cockpit UI │
+                                          └───────────────────┬─────────────────────┘
+                                                              │
+                                                              ▼ (5x-10x BAL Catch-Up & Fast BAL Stack)
+                                          ┌─────────────────────────────────────────┐
+                                          │ WP-14: High-Throughput BAL Catch-Up &   │
+                                          │        Fast Ecosystem BAL Stack         │
+                                          │        (util/statemanager/vm + Ethy     │
+                                          │        Async Lookup, bal-tail & Swarm)  │
+                                          └───────────────────┬─────────────────────┘
+                                                              │
+                                                              ▼ (Deep Forensics & Grounded AI)
+                                          ┌─────────────────────────────────────────┐
+                                          │ WP-15: Deep Contract Forensics, Guided- │
+                                          │        Randomness Storytelling, Local   │
+                                          │        Dossier DB & AI Observability    │
                                           └─────────────────────────────────────────┘
 ```
 

@@ -226,7 +226,7 @@ describe('managed runner lifecycle', () => {
 describe('ai:smoke scenarios', () => {
   it('runs offline fixture replay matrix', async () => {
     const results = await runSmokeScenarios()
-    expect(results).toHaveLength(3)
+    expect(results).toHaveLength(4)
     expect(results.every((r) => r.validJSON)).toBe(true)
   })
 

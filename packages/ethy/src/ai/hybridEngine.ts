@@ -1,8 +1,10 @@
 import type { ChainConfig } from '@ethereumjs/common'
 import type { FlatStateManager } from '@ethereumjs/statemanager'
+import type { ContractDossierStore } from '../contracts/contractDossierStore.ts'
 import type { ETHEconomyDataManager } from '../economy/economyDataManager.ts'
 import type { SnapPivotStore } from '../persist/snapStore.ts'
 import type { LocalLlmProviderKind } from '../persist/userConfig.ts'
+import { aiLogWidget, parseAiLogLimit } from '../tools/aiLogTools.ts'
 
 import type { EthySandbox } from '../evm/sandbox.ts'
 import type { AiRuntimeController } from './aiRuntime.ts'
@@ -31,6 +33,8 @@ export type HybridIntentEngineOpts = {
   chain?: ChainConfig
   sandbox?: EthySandbox
   journal?: InvestigationJournal
+  dataDir?: string
+  dossierStore?: ContractDossierStore
 }
 
 const AI_OFF_HINT = 'Commands start with / — press Tab for /help, or run /ai to enable a model'
@@ -42,6 +46,8 @@ export class HybridIntentEngine implements IntentEngine {
   private readonly chain?: ChainConfig
   private readonly sandbox?: EthySandbox
   private readonly journal?: InvestigationJournal
+  private readonly dataDir?: string
+  private readonly dossierStore?: ContractDossierStore
   private disconnectPeerFn?: (peerId: string) => void
   private readonly deterministic: DeterministicIntentEngine
   private local?: LocalHttpIntentEngine
@@ -62,6 +68,8 @@ export class HybridIntentEngine implements IntentEngine {
     this.chain = opts.chain
     this.sandbox = opts.sandbox
     this.journal = opts.journal
+    this.dataDir = opts.dataDir
+    this.dossierStore = opts.dossierStore
     this.memoryMode = opts.memoryMode ?? 'ephemeral'
     this.memory = new TurnMemoryRing()
     this.deterministic = new DeterministicIntentEngine({
@@ -70,6 +78,9 @@ export class HybridIntentEngine implements IntentEngine {
       economy: opts.economy,
       chain: opts.chain,
       sandbox: opts.sandbox,
+      journal: opts.journal,
+      dataDir: opts.dataDir,
+      dossierStore: opts.dossierStore,
     })
     this.llmBase = opts.llmBase
     this.llmProvider = opts.llmProvider
@@ -198,6 +209,14 @@ export class HybridIntentEngine implements IntentEngine {
         stateHeader: '',
         querySlot: req.spine.currentSlot,
         openOnboarding: true,
+      }
+    }
+
+    if (sub === 'log' || sub === 'diag') {
+      return {
+        widget: aiLogWidget(req.spine, this.dataDir, parseAiLogLimit(parts)),
+        stateHeader: '',
+        querySlot: req.spine.currentSlot,
       }
     }
 
@@ -391,7 +410,10 @@ export class HybridIntentEngine implements IntentEngine {
         kind: 'key_value',
         title: '/ai',
         entries: [
-          { key: 'Commands', value: 'off · local · default · setup · url · ephemeral · stateless' },
+          {
+            key: 'Commands',
+            value: 'log · off · local · default · setup · url · ephemeral · stateless',
+          },
         ],
       },
       stateHeader: '',

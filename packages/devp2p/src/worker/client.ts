@@ -204,9 +204,9 @@ export class Devp2pWorkerClient {
     this._send({ type: 'setBlockRange', earliest, latest, latestHash })
   }
 
-  /** Pause or resume DPT neighbour lookup and DNS peer batches in the worker. */
-  setDiscoveryPaused(paused: boolean): void {
-    this._send({ type: 'setDiscoveryPaused', paused })
+  /** Apply atomic network profile (capabilities, peer budgets, discovery mode). */
+  setNetworkProfile(profile: import('../types.ts').NetworkProfile): void {
+    this._send({ type: 'setNetworkProfile', profile })
   }
 
   /** When true, outbound ETH STATUS and BLOCK_RANGE_UPDATE use the rolling store window. */

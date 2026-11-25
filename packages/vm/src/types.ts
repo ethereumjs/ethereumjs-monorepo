@@ -9,7 +9,7 @@ import type {
 } from '@ethereumjs/evm'
 import type { AccessList, TypedTransaction } from '@ethereumjs/tx'
 import type {
-  BALJSONBlockAccessList,
+  BALInput,
   BigIntLike,
   BlockLevelAccessList,
   CLRequest,
@@ -347,7 +347,7 @@ export interface RunBlockOpts {
    * @remarks Experimental (Amsterdam): may change on patch releases. See `@ethereumjs/vm`
    * README section `Amsterdam hardfork (experimental)` for release ↔ spec tracking.
    */
-  blockAccessList?: BALJSONBlockAccessList | BlockLevelAccessList | Uint8Array
+  blockAccessList?: BALInput
 }
 
 /**

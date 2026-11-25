@@ -1,14 +1,18 @@
 import {
+  type BALInput,
   type BALJSONAccountChanges,
   type BALJSONBlockAccessList,
   EthereumJSErrorWithoutCode,
   KECCAK256_NULL,
   type PrefixedHexString,
+  balInputToJSON,
   bytesToHex,
+  compactBinaryToJSON,
   createAddressFromString,
   equalsBytes,
   hexToBigInt,
   hexToBytes,
+  mergeBALsBinary,
   setLengthLeft,
 } from '@ethereumjs/util'
 
@@ -118,7 +122,7 @@ export function mergeBALs(accessLists: BALJSONBlockAccessList[]): BALJSONBlockAc
  */
 export async function consumeBALBatch(
   stateManager: StateManagerInterface,
-  accessLists: BALJSONBlockAccessList[],
+  accessLists: BALInput[],
   optsOrExpectedStateRoot?: Uint8Array | ConsumeBALOptions,
 ): Promise<void> {
   if (accessLists.length === 0) return
@@ -126,8 +130,15 @@ export async function consumeBALBatch(
     await consumeBAL(stateManager, accessLists[0]!, optsOrExpectedStateRoot)
     return
   }
-  const merged = mergeBALs(accessLists)
-  await consumeBAL(stateManager, merged, optsOrExpectedStateRoot)
+  const jsonOnly = accessLists.every(
+    (a) =>
+      Array.isArray(a) &&
+      (a.length === 0 || (typeof a[0] === 'object' && a[0] !== null && 'address' in a[0])),
+  )
+  const mergedJSON = jsonOnly
+    ? mergeBALs(accessLists as BALJSONBlockAccessList[])
+    : compactBinaryToJSON(mergeBALsBinary(accessLists))
+  await consumeBAL(stateManager, mergedJSON, optsOrExpectedStateRoot)
 }
 
 function normalizeConsumeBALOpts(
@@ -153,12 +164,13 @@ function normalizeConsumeBALOpts(
  */
 export async function consumeBAL(
   stateManager: StateManagerInterface,
-  bal: BALJSONBlockAccessList,
+  bal: BALInput,
   optsOrExpectedStateRoot?: Uint8Array | ConsumeBALOptions,
 ): Promise<void> {
   const opts = normalizeConsumeBALOpts(optsOrExpectedStateRoot)
   const { expectedStateRoot, shouldApplyAccount } = opts
-  for (const acc of bal) {
+  const json = balInputToJSON(bal)
+  for (const acc of json) {
     if (
       acc.balanceChanges.length === 0 &&
       acc.nonceChanges.length === 0 &&

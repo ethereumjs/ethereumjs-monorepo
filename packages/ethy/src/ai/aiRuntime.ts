@@ -4,6 +4,7 @@ import type { EthyNode } from '../core/createEthyNode.ts'
 import type { EthyAiConfig } from '../persist/userConfig.ts'
 import { writeUserConfig } from '../persist/userConfig.ts'
 import { deriveCapabilities } from '../spine/createSpine.ts'
+import { recordDiagnostic } from '../spine/diagnostics.ts'
 import type { EthySpine, ManagedAiPhase } from '../spine/types.ts'
 import { FetchLlmTransport, type LlmTransport, RecordingTransport } from './fixtureEngine.ts'
 import type { HybridIntentEngine } from './hybridEngine.ts'
@@ -110,6 +111,12 @@ export function createAiRuntimeController(opts: {
       onPhase: (update) => {
         if (epoch !== myEpoch) return
         const spine = opts.node.spine
+        const detail = update.model !== undefined ? ` model=${update.model}` : ''
+        recordDiagnostic(spine, {
+          subsystem: 'ai',
+          severity: update.phase === 'needs-runner' ? 'warn' : 'info',
+          message: `managed-ai phase=${update.phase}${detail}`,
+        })
         if (
           update.phase === 'ready' &&
           update.transport !== undefined &&
@@ -162,6 +169,11 @@ export function createAiRuntimeController(opts: {
       hybrid?.clearLlmTransport()
       applyAiModeToSpine(spine, config)
       spine.managedAi = { phase: 'probing' }
+      recordDiagnostic(spine, {
+        subsystem: 'ai',
+        severity: 'info',
+        message: 'managed-ai phase=probing',
+      })
       deriveCapabilities(spine)
       startManagedRunner()
       notify()
@@ -184,6 +196,11 @@ export function createAiRuntimeController(opts: {
     spine.aiMode = 'local'
     const healthy = await probeLlmHealth(wired.base, config.localProvider)
     spine.llmPulseReady = healthy
+    recordDiagnostic(spine, {
+      subsystem: 'ai',
+      severity: healthy ? 'info' : 'warn',
+      message: `local-llm health=${healthy ? 'ok' : 'fail'} base=${wired.base}`,
+    })
     deriveCapabilities(spine)
     notify()
   }

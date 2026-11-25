@@ -1,6 +1,7 @@
 import type { ChainConfig } from '@ethereumjs/common'
 import type { FlatStateManager } from '@ethereumjs/statemanager'
 
+import type { ContractDossierStore } from '../contracts/contractDossierStore.ts'
 import { getCommandAvailability } from '../domains/commandAvailability.ts'
 import type { ETHEconomyDataManager } from '../economy/economyDataManager.ts'
 import type { EthySandbox } from '../evm/sandbox.ts'
@@ -8,6 +9,7 @@ import type { SnapPivotStore } from '../persist/snapStore.ts'
 import { headInspectUnlocked } from '../spine/headInspect.ts'
 import type { WidgetSpec } from '../spine/types.ts'
 import type { EthySpine } from '../spine/types.ts'
+import { aiLogWidget, parseAiLogLimit } from '../tools/aiLogTools.ts'
 import { clMicroscopeWidget } from '../tools/clTools.ts'
 import { contractMicroscopeWidget } from '../tools/contractTools.ts'
 import { dropPeer, pauseSnapSync, reassignBucket, resumeSnapSync } from '../tools/devActions.ts'
@@ -21,12 +23,15 @@ import { economyDeepViewWidget } from '../tools/economyTools.ts'
 import { inspectAccount, inspectLatestBAL } from '../tools/headTools.ts'
 import { buildDomainHelpWidget, buildHelpWidget, parseHelpDomainArg } from '../tools/help.ts'
 import { livePlazaWidget } from '../tools/livePlaza.ts'
+import { machineMicroscopeWidget } from '../tools/machineTools.ts'
 import { inspectRawAccountRange, sampleSyncedAccounts } from '../tools/range.ts'
 import { rpcMicroscopeWidget } from '../tools/rpcTools.ts'
 import { signalsDeepViewWidget } from '../tools/signalTools.ts'
 import { sendTxWidget, simulateMicroscopeWidget } from '../tools/simulateTools.ts'
+import { dispatchStorySlash } from '../tools/storyTools.ts'
 import { renderCommandUnavailableWidget } from '../tui/components/CommandUnavailableUIComponent.ts'
 import type { IntentEngine, IntentRequest, IntentResult } from './intentEngine.ts'
+import type { InvestigationJournal } from './investigationJournal.ts'
 import { expandSlashCommand } from './slashComplete.ts'
 import { formatEthyStateHeader } from './stateHeader.ts'
 
@@ -46,6 +51,9 @@ export type DeterministicIntentEngineOpts = {
   economy?: ETHEconomyDataManager
   chain?: ChainConfig
   sandbox?: EthySandbox
+  journal?: InvestigationJournal
+  dataDir?: string
+  dossierStore?: ContractDossierStore
 }
 
 type RawTxSubmitter = (hex: string) => Promise<{ result: string } | { error: { message: string } }>
@@ -58,6 +66,9 @@ export type SlashDispatchCtx = {
   disconnectPeer?: (peerId: string) => void
   economy?: ETHEconomyDataManager
   chain?: ChainConfig
+  journal?: InvestigationJournal
+  dataDir?: string
+  dossierStore?: ContractDossierStore
 }
 
 function slashIfLocked(
@@ -82,6 +93,9 @@ export function dispatchSlashWidget(line: string, ctx: SlashDispatchCtx): Widget
       return peersTableWidget(spine)
     case '/ethy':
       return ethyOverviewWidget(spine)
+    case '/machine':
+    case '/sync':
+      return machineMicroscopeWidget(spine)
     case '/rpc':
       return rpcMicroscopeWidget(spine)
     case '/buckets':
@@ -169,6 +183,17 @@ export function dispatchSlashWidget(line: string, ctx: SlashDispatchCtx): Widget
       if (locked !== undefined) return locked
       return signalsDeepViewWidget(spine)
     }
+    case '/story':
+    case '/st': {
+      if (ctx.journal === undefined) {
+        return {
+          kind: 'key_value',
+          title: '/story',
+          entries: [{ key: 'Error', value: 'Story journal unavailable' }],
+        }
+      }
+      return dispatchStorySlash(line, ctx.journal)
+    }
     case '/contract':
     case '/co': {
       const arg = parts.slice(1).join(' ')
@@ -177,7 +202,7 @@ export function dispatchSlashWidget(line: string, ctx: SlashDispatchCtx): Widget
       if (economy === undefined || chain === undefined) {
         return economyDeepViewWidget(spine)
       }
-      return contractMicroscopeWidget(spine, stateManager, chain, economy, arg)
+      return contractMicroscopeWidget(spine, stateManager, chain, economy, arg, ctx.dossierStore)
     }
     case '/simulate':
       return {
@@ -199,6 +224,9 @@ export function dispatchSlashWidget(line: string, ctx: SlashDispatchCtx): Widget
       }
     case '/ai': {
       const mode = parts[1]?.toLowerCase() ?? 'status'
+      if (mode === 'log') {
+        return aiLogWidget(spine, ctx.dataDir, parseAiLogLimit(parts))
+      }
       return {
         kind: 'key_value',
         title: 'AI memory',
@@ -221,6 +249,9 @@ export class DeterministicIntentEngine implements IntentEngine {
   private readonly economy?: ETHEconomyDataManager
   private readonly chain?: ChainConfig
   private readonly sandbox?: EthySandbox
+  private readonly journal?: InvestigationJournal
+  private readonly dataDir?: string
+  private readonly dossierStore?: ContractDossierStore
   private disconnectPeer?: (peerId: string) => void
   private submitRawTransaction?: RawTxSubmitter
 
@@ -230,6 +261,9 @@ export class DeterministicIntentEngine implements IntentEngine {
     this.economy = opts.economy
     this.chain = opts.chain
     this.sandbox = opts.sandbox
+    this.journal = opts.journal
+    this.dataDir = opts.dataDir
+    this.dossierStore = opts.dossierStore
     this.disconnectPeer = opts.disconnectPeer
   }
 
@@ -288,6 +322,9 @@ export class DeterministicIntentEngine implements IntentEngine {
           disconnectPeer: this.disconnectPeer,
           economy: this.economy,
           chain: this.chain,
+          journal: this.journal,
+          dataDir: this.dataDir,
+          dossierStore: this.dossierStore,
         })
       }
     } else if (
@@ -296,7 +333,14 @@ export class DeterministicIntentEngine implements IntentEngine {
     ) {
       const addr = trimmed.match(/0x[0-9a-f]{40}/i)?.[0] ?? ''
       if (this.economy !== undefined && this.chain !== undefined) {
-        widget = contractMicroscopeWidget(spine, this.stateManager, this.chain, this.economy, addr)
+        widget = contractMicroscopeWidget(
+          spine,
+          this.stateManager,
+          this.chain,
+          this.economy,
+          addr,
+          this.dossierStore,
+        )
       } else {
         widget = economyDeepViewWidget(spine)
       }

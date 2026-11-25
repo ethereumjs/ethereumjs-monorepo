@@ -58,7 +58,18 @@ function sanitizeAsciiMessage(data: Uint8Array): string {
   return out.trim().replace(/\s+/g, ' ').slice(0, 120)
 }
 
-function tryGraffitiNote(record: BlockEconomyRecord, blockKey: string, ts: number): BlockMoment[] {
+function displayAddr(address: string, formatAddress?: (address: string) => string): string {
+  const label = formatAddress?.(address)
+  if (label !== undefined && label.length > 0) return label
+  return shortAddress(address)
+}
+
+function tryGraffitiNote(
+  record: BlockEconomyRecord,
+  blockKey: string,
+  ts: number,
+  formatAddress?: (address: string) => string,
+): BlockMoment[] {
   const slices = record.observations?.txSlices ?? []
   const out: BlockMoment[] = []
   for (let i = 0; i < slices.length; i++) {
@@ -72,7 +83,7 @@ function tryGraffitiNote(record: BlockEconomyRecord, blockKey: string, ts: numbe
     if (printableRatio(data) < 0.9) continue
     const msg = sanitizeAsciiMessage(data)
     if (msg.length < 4) continue
-    const addr = slice.to !== undefined ? shortAddress(slice.to) : 'a wallet'
+    const addr = slice.to !== undefined ? displayAddr(slice.to, formatAddress) : 'a wallet'
     out.push({
       id: `${blockKey}:graffiti_note:${i}`,
       blockNumber: blockKey,
@@ -103,6 +114,7 @@ function tryBirth(
   blockKey: string,
   ts: number,
   classifyCode?: (code: Uint8Array) => string | undefined,
+  formatAddress?: (address: string) => string,
 ): BlockMoment[] {
   const out: BlockMoment[] = []
   if (bal !== undefined) {
@@ -136,7 +148,7 @@ function tryBirth(
         kind: 'birth',
         badge: BADGE.birth,
         headline: clampHeadline(
-          `New ${kb} KB${archTag} deployed at ${shortAddress(acct.address)}${suffix}`,
+          `New ${kb} KB${archTag} deployed at ${displayAddr(acct.address, formatAddress)}${suffix}`,
         ),
         address: acct.address.toLowerCase(),
       })
@@ -163,27 +175,21 @@ function tryEip7702(
   bal: BALJSONBlockAccessList | undefined,
   blockKey: string,
   ts: number,
+  formatAddress?: (address: string) => string,
 ): BlockMoment[] {
-  if (record.txTypeSplit.setCode > 0) {
-    return [
-      {
-        id: `${blockKey}:eip7702:0`,
-        blockNumber: blockKey,
-        timestampSec: ts,
-        kind: 'eip7702',
-        badge: BADGE.eip7702,
-        headline: clampHeadline(
-          `${record.txTypeSplit.setCode} EIP-7702 smart-account delegation tx(s) in block`,
-        ),
-      },
-    ]
-  }
+  const txCount = record.txTypeSplit.setCode
   if (bal !== undefined) {
     for (let i = 0; i < bal.length; i++) {
       const acct = bal[i]!
       for (const ch of acct.codeChanges) {
-        const code = ch.newCode.toLowerCase()
-        if (code.startsWith('0xef0100') || code.startsWith('ef0100')) {
+        const raw = ch.newCode.toLowerCase()
+        const hex = raw.startsWith('0x') ? raw.slice(2) : raw
+        if (hex.startsWith('ef0100')) {
+          const eoaLabel = displayAddr(acct.address, formatAddress)
+          const targetAddr = hex.length >= 46 ? `0x${hex.slice(6, 46)}` : undefined
+          const targetSuffix =
+            targetAddr !== undefined ? ` to ${displayAddr(targetAddr, formatAddress)}` : ''
+          const countSuffix = txCount > 1 ? ` (${txCount} txs in block)` : ''
           return [
             {
               id: `${blockKey}:eip7702:${i}`,
@@ -192,14 +198,26 @@ function tryEip7702(
               kind: 'eip7702',
               badge: BADGE.eip7702,
               headline: clampHeadline(
-                `Account ${shortAddress(acct.address)} activated EIP-7702 delegation`,
+                `Account ${eoaLabel} delegated via EIP-7702${targetSuffix}${countSuffix}`,
               ),
-              address: acct.address.toLowerCase(),
+              address: targetAddr ?? acct.address.toLowerCase(),
             },
           ]
         }
       }
     }
+  }
+  if (txCount > 0) {
+    return [
+      {
+        id: `${blockKey}:eip7702:0`,
+        blockNumber: blockKey,
+        timestampSec: ts,
+        kind: 'eip7702',
+        badge: BADGE.eip7702,
+        headline: clampHeadline(`${txCount} EIP-7702 smart-account delegation tx(s) in block`),
+      },
+    ]
   }
   return []
 }
@@ -218,6 +236,7 @@ function tryChoreography(
   blockKey: string,
   ts: number,
   addressArchetypes?: ReadonlyMap<string, string>,
+  formatAddress?: (address: string) => string,
 ): BlockMoment[] {
   const indexAccounts = new Map<number, number>()
   if (bal !== undefined) {
@@ -263,9 +282,9 @@ function tryChoreography(
       slice?.selector !== undefined && lookupFunctionSelector(slice.selector) !== undefined
     let headline: string
     if (knownSel && to !== undefined) {
-      headline = `Tx #${bestIdx} orchestrated ${bestCount} accounts · ${label}() on ${shortAddress(to)}${badge}`
+      headline = `Tx #${bestIdx} orchestrated ${bestCount} accounts · ${label}() on ${displayAddr(to, formatAddress)}${badge}`
     } else if (to !== undefined && badge.length > 0) {
-      headline = `Tx #${bestIdx} orchestrated ${bestCount} accounts via ${shortAddress(to)}${badge}`
+      headline = `Tx #${bestIdx} orchestrated ${bestCount} accounts via ${displayAddr(to, formatAddress)}${badge}`
     } else {
       headline = `Tx #${bestIdx} orchestrated ${bestCount} accounts · ${label}() path`
     }
@@ -277,6 +296,7 @@ function tryChoreography(
         kind: 'choreography',
         badge: BADGE.choreography,
         headline: clampHeadline(headline),
+        address: to?.toLowerCase(),
       },
     ]
   }
@@ -293,6 +313,7 @@ function tryChoreography(
           kind: 'choreography',
           badge: BADGE.choreography,
           headline: clampHeadline(`Tx #${i + 1} emitted ${slice.logs.length} events · ${label}()`),
+          address: slice.to?.toLowerCase(),
         },
       ]
     }
@@ -300,11 +321,18 @@ function tryChoreography(
   return []
 }
 
-function tryWhale(record: BlockEconomyRecord, blockKey: string, ts: number): BlockMoment[] {
+function tryWhale(
+  record: BlockEconomyRecord,
+  blockKey: string,
+  ts: number,
+  formatAddress?: (address: string) => string,
+): BlockMoment[] {
   if (record.largestTransferWei < WHALE_WEI) return []
   const eth = formatEthFromWei(record.largestTransferWei)
   const to =
-    record.largestTransferTo !== undefined ? shortAddress(record.largestTransferTo) : 'unknown'
+    record.largestTransferTo !== undefined
+      ? displayAddr(record.largestTransferTo, formatAddress)
+      : 'unknown'
   return [
     {
       id: `${blockKey}:whale:0`,
@@ -331,6 +359,7 @@ function tryFirstStep(
   bal: BALJSONBlockAccessList | undefined,
   blockKey: string,
   ts: number,
+  formatAddress?: (address: string) => string,
 ): BlockMoment[] {
   if (bal === undefined) return []
   for (let i = 0; i < bal.length; i++) {
@@ -346,7 +375,7 @@ function tryFirstStep(
             kind: 'first_step',
             badge: BADGE.first_step,
             headline: clampHeadline(
-              `New wallet ${shortAddress(acct.address)} signed its very first transaction on Ethereum`,
+              `New wallet ${displayAddr(acct.address, formatAddress)} signed its very first transaction on Ethereum`,
             ),
             address: acct.address.toLowerCase(),
           },
@@ -361,6 +390,7 @@ function tryVeteran(
   bal: BALJSONBlockAccessList | undefined,
   blockKey: string,
   ts: number,
+  formatAddress?: (address: string) => string,
 ): BlockMoment[] {
   if (bal === undefined) return []
   let best: { addr: string; nonce: bigint } | undefined
@@ -383,7 +413,7 @@ function tryVeteran(
       kind: 'veteran',
       badge: BADGE.veteran,
       headline: clampHeadline(
-        `Veteran actor ${shortAddress(best.addr)} signed its #${best.nonce.toLocaleString('en-US')}th lifetime transaction`,
+        `Veteran actor ${displayAddr(best.addr, formatAddress)} signed its #${best.nonce.toLocaleString('en-US')}th lifetime transaction`,
       ),
       address: best.addr,
     },
@@ -395,10 +425,14 @@ function tryRevert(
   blockKey: string,
   ts: number,
   addressArchetypes?: ReadonlyMap<string, string>,
+  formatAddress?: (address: string) => string,
 ): BlockMoment[] {
   const reverts = record.receiptReverts ?? 0
   if (reverts <= 0) return []
-  const to = record.firstRevertTo !== undefined ? shortAddress(record.firstRevertTo) : 'a contract'
+  const to =
+    record.firstRevertTo !== undefined
+      ? displayAddr(record.firstRevertTo, formatAddress)
+      : 'a contract'
   const badge = archetypeBadge(record.firstRevertTo, addressArchetypes)
   return [
     {
@@ -453,22 +487,24 @@ export type DetectBlockMomentsInput = {
   balJson?: BALJSONBlockAccessList
   classifyCode?: (code: Uint8Array) => string | undefined
   addressArchetypes?: ReadonlyMap<string, string>
+  /** Optional display formatter (e.g. verified ENS or known contract name); falls back to shortAddress. */
+  formatAddress?: (address: string) => string
 }
 
 /** Pure zero-EVM moment extraction; up to 3 moments by rarity. */
 export function detectBlockMoments(input: DetectBlockMomentsInput): BlockMoment[] {
-  const { record, balJson, classifyCode, addressArchetypes } = input
+  const { record, balJson, classifyCode, addressArchetypes, formatAddress } = input
   const blockKey = record.blockNumber.toString()
   const ts = record.timestamp ?? 0
   const candidates: BlockMoment[] = [
-    ...tryGraffitiNote(record, blockKey, ts),
-    ...tryBirth(record, balJson, blockKey, ts, classifyCode),
-    ...tryEip7702(record, balJson, blockKey, ts),
-    ...tryChoreography(record, balJson, blockKey, ts, addressArchetypes),
-    ...tryWhale(record, blockKey, ts),
-    ...tryFirstStep(balJson, blockKey, ts),
-    ...tryRevert(record, blockKey, ts, addressArchetypes),
-    ...tryVeteran(balJson, blockKey, ts),
+    ...tryGraffitiNote(record, blockKey, ts, formatAddress),
+    ...tryBirth(record, balJson, blockKey, ts, classifyCode, formatAddress),
+    ...tryEip7702(record, balJson, blockKey, ts, formatAddress),
+    ...tryChoreography(record, balJson, blockKey, ts, addressArchetypes, formatAddress),
+    ...tryWhale(record, blockKey, ts, formatAddress),
+    ...tryFirstStep(balJson, blockKey, ts, formatAddress),
+    ...tryRevert(record, blockKey, ts, addressArchetypes, formatAddress),
+    ...tryVeteran(balJson, blockKey, ts, formatAddress),
     ...tryBlob(record, blockKey, ts),
   ]
   if (candidates.length === 0) {

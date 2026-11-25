@@ -27,7 +27,7 @@ function readWord(data: Uint8Array, offset: number): Uint8Array | undefined {
 function decodeScalar(type: AbiScalarType, word: Uint8Array): string | undefined {
   switch (type) {
     case 'address':
-      return `0x${bytesToHex(word.subarray(12, 32))}`
+      return bytesToHex(word.subarray(12, 32))
     case 'uint256':
     case 'uint128':
     case 'uint64':
@@ -65,14 +65,14 @@ function decodeDynamicAt(
   const len = Number(bytesToBigInt(lenWord))
   if (len < 0 || off + 32 + len > data.length) return undefined
   const payload = data.subarray(off + 32, off + 32 + len)
-  if (type === 'bytes') return `0x${bytesToHex(payload)}`
+  if (type === 'bytes') return bytesToHex(payload)
   if (type === 'string') {
     try {
       const s = new TextDecoder('utf-8', { fatal: false }).decode(payload)
       const printable = /^[\x20-\x7e\u00a0-\ufffd]*$/.test(s)
-      return printable ? `"${s}"` : `0x${bytesToHex(payload)}`
+      return printable ? `"${s}"` : bytesToHex(payload)
     } catch {
-      return `0x${bytesToHex(payload)}`
+      return bytesToHex(payload)
     }
   }
   if (type === 'address[]' || type === 'uint256[]') {
@@ -83,7 +83,7 @@ function decodeDynamicAt(
       const w = readWord(data, off + 32 + i * 32)
       if (w === undefined) return undefined
       if (type === 'address[]') {
-        parts.push(shortAddress(`0x${bytesToHex(w.subarray(12, 32))}`))
+        parts.push(shortAddress(bytesToHex(w.subarray(12, 32))))
       } else {
         parts.push(bytesToBigInt(w).toString())
       }
@@ -155,9 +155,9 @@ export function formatDecodedCall(entry: FunctionCatalogEntry, data: Uint8Array)
 
 export function formatCalldataPreview(data: Uint8Array, maxLen = 80): string {
   if (data.length < 4) return '0x'
-  const sel = bytesToHex(data.subarray(0, 4))
-  const entry = lookupFunctionSelector(`0x${sel}`)
-  const base = entry !== undefined ? formatDecodedCall(entry, data) : `0x${sel}`
+  const sel = bytesToHex(data.subarray(0, 4)).toLowerCase()
+  const entry = lookupFunctionSelector(sel)
+  const base = entry !== undefined ? formatDecodedCall(entry, data) : sel
   return base.length <= maxLen ? base : `${base.slice(0, maxLen - 1)}…`
 }
 

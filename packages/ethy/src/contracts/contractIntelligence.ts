@@ -29,6 +29,10 @@ export type ContractAddressAgg = {
   maxTransferLogsInTx: number
   soleCalleeBlocks: number
   inboundCalls: number
+  inboundReverts: number
+  gasUsedWei: bigint
+  valueReceivedWei: bigint
+  valueTxCount: number
   swapEmittersInTx: Set<string>
   latestBalCode?: Uint8Array
   implSlotValue?: string
@@ -457,7 +461,7 @@ export function buildCodeLookup(stateManager: FlatStateManager, chain: ChainConf
         const slotHash = ethyKeccak256(hexToBytes(slotNorm))
         const val = stateManager.getStorageByHash(accHash, slotHash)
         if (val === undefined || val.length < 20) return undefined
-        return `0x${bytesToHex(val)}`
+        return bytesToHex(val)
       } catch {
         return undefined
       }
