@@ -970,6 +970,100 @@ export class BinaryPathMPT {
       throw EthereumJSErrorWithoutCode('External leaf store is read-only')
     }
   }
+
+  /**
+   * Yield every leaf `(key, value)` in unsigned lexicographic key order.
+   * Optional `anchorId` reads through the reverse-diff snapshot overlay.
+   */
+  async *walkLeaves(
+    anchorId?: string | bigint,
+  ): AsyncGenerator<{ key: Uint8Array; value: Uint8Array }> {
+    const rootBytes = await this._readRecordAt(ROOT_PATH_KEY, anchorId)
+    if (rootBytes === null) return
+    yield* this._walkLeavesDfs(new Uint8Array(0), rootBytes, anchorId)
+  }
+
+  private async *_walkLeavesDfs(
+    pathNibbles: Uint8Array,
+    recordBytes: Uint8Array,
+    anchorId?: string | bigint,
+  ): AsyncGenerator<{ key: Uint8Array; value: Uint8Array }> {
+    const node = await this._materializeRecord(pathNibbles, recordBytes)
+    if (node.kind === 'leaf') {
+      const fullNibbles = concatNibbles(concatNibbles(this._prefix, pathNibbles), node.path)
+      const key = nibblesToKeyBytes(fullNibbles)
+      this._assertKeyMatchesPrefix(key)
+      yield { key, value: new Uint8Array(node.value) }
+      return
+    }
+    if (node.kind === 'extension') {
+      const nextPath = concatNibbles(pathNibbles, node.path)
+      if (node.child.inline) {
+        const childNode = decodeRlpToBinaryNode(node.child.rlp)
+        yield* this._walkLeavesFromNode(nextPath, childNode, anchorId)
+      } else {
+        const childBytes = await this._readRecordAt(packPath(nextPath), anchorId)
+        if (childBytes !== null) {
+          yield* this._walkLeavesDfs(nextPath, childBytes, anchorId)
+        }
+      }
+      return
+    }
+    // Branch
+    for (let nibble = 0; nibble < 16; nibble++) {
+      const childRef = node.children[nibble]
+      if (childRef === null || childRef === undefined) continue
+      const childPath = appendNibble(pathNibbles, nibble)
+      if (childRef.inline) {
+        const childNode = decodeRlpToBinaryNode(childRef.rlp)
+        yield* this._walkLeavesFromNode(childPath, childNode, anchorId)
+      } else {
+        const childBytes = await this._readRecordAt(packPath(childPath), anchorId)
+        if (childBytes !== null) {
+          yield* this._walkLeavesDfs(childPath, childBytes, anchorId)
+        }
+      }
+    }
+  }
+
+  private async *_walkLeavesFromNode(
+    pathNibbles: Uint8Array,
+    node: BinaryBranchNode | BinaryExtensionNode | BinaryLeafNode,
+    anchorId?: string | bigint,
+  ): AsyncGenerator<{ key: Uint8Array; value: Uint8Array }> {
+    if (node.kind === 'leaf') {
+      const fullNibbles = concatNibbles(concatNibbles(this._prefix, pathNibbles), node.path)
+      const key = nibblesToKeyBytes(fullNibbles)
+      this._assertKeyMatchesPrefix(key)
+      yield { key, value: new Uint8Array(node.value) }
+      return
+    }
+    if (node.kind === 'extension') {
+      const nextPath = concatNibbles(pathNibbles, node.path)
+      if (node.child.inline) {
+        yield* this._walkLeavesFromNode(nextPath, decodeRlpToBinaryNode(node.child.rlp), anchorId)
+      } else {
+        const childBytes = await this._readRecordAt(packPath(nextPath), anchorId)
+        if (childBytes !== null) {
+          yield* this._walkLeavesDfs(nextPath, childBytes, anchorId)
+        }
+      }
+      return
+    }
+    for (let nibble = 0; nibble < 16; nibble++) {
+      const childRef = node.children[nibble]
+      if (childRef === null || childRef === undefined) continue
+      const childPath = appendNibble(pathNibbles, nibble)
+      if (childRef.inline) {
+        yield* this._walkLeavesFromNode(childPath, decodeRlpToBinaryNode(childRef.rlp), anchorId)
+      } else {
+        const childBytes = await this._readRecordAt(packPath(childPath), anchorId)
+        if (childBytes !== null) {
+          yield* this._walkLeavesDfs(childPath, childBytes, anchorId)
+        }
+      }
+    }
+  }
 }
 
 function toWorkingNode(node: BinaryBranchNode | BinaryExtensionNode | BinaryLeafNode): WorkingNode {

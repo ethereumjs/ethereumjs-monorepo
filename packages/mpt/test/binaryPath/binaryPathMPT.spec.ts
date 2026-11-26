@@ -366,6 +366,50 @@ describe('BinaryPathMPT', () => {
     expect(verifiedAtAnchor).toEqual(origVals[0]!)
   })
 
+  it('walkLeaves yields ascending keys and respects anchor overlay', async () => {
+    const store = new SpyBinaryPathStore()
+    const leafMap = new Map<string, Uint8Array>()
+    const leaves = {
+      get: async (key: Uint8Array) => leafMap.get(bytesToHex(key)) ?? null,
+      put: async (key: Uint8Array, val: Uint8Array) => {
+        leafMap.set(bytesToHex(key), val)
+      },
+      del: async (key: Uint8Array) => {
+        leafMap.delete(bytesToHex(key))
+      },
+    }
+    const trie = new BinaryPathMPT({ store, leaves })
+    const rows: { key: Uint8Array; value: Uint8Array }[] = []
+    for (let i = 0; i < 48; i++) {
+      const key = setLengthLeft(intToBytes(i * 17 + 3), 32)
+      const val = randomBytes(12)
+      rows.push({ key, value: val })
+      await trie.put(key, val)
+    }
+    rows.sort((a, b) => compareBytes(a.key, b.key))
+
+    const liveWalk: { key: Uint8Array; value: Uint8Array }[] = []
+    for await (const row of trie.walkLeaves()) {
+      liveWalk.push(row)
+    }
+    expect(liveWalk.length).toBe(rows.length)
+    for (let i = 0; i < rows.length; i++) {
+      expect(liveWalk[i]!.key).toEqual(rows[i]!.key)
+      expect(liveWalk[i]!.value).toEqual(rows[i]!.value)
+    }
+
+    trie.captureAnchor('wl-1')
+    await trie.put(rows[10]!.key, randomBytes(20))
+    const anchorWalk: { key: Uint8Array; value: Uint8Array }[] = []
+    for await (const row of trie.walkLeaves('wl-1')) {
+      anchorWalk.push(row)
+    }
+    expect(anchorWalk.length).toBe(rows.length)
+    const idx = anchorWalk.findIndex((r) => equalsBytes(r.key, rows[10]!.key))
+    expect(idx).toBeGreaterThanOrEqual(0)
+    expect(anchorWalk[idx]!.value).toEqual(rows[10]!.value)
+  })
+
   it('read-only external leaf store rejects mutations while serving reads and proofs', async () => {
     const leafMap = new Map<string, Uint8Array>()
     const rows: { key: Uint8Array; value: Uint8Array }[] = []
