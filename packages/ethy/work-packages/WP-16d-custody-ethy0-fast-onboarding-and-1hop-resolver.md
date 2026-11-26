@@ -1,4 +1,4 @@
-# WP-16d: Unified Custody `ETHY/0` — Default Fast Onboarding (`--custody 1`), Background 3-Plane Custody Sync & 1-Hop Cold-Miss Resolver (Option B)
+# WP-16d: Unified Custody `ETHY/0` — Default Fast Onboarding (`--custody 2`), Background 3-Plane Custody Sync & 1-Hop Cold-Miss Resolver (Option B)
 
 - **Status:** `READY_FOR_PLANNING`
 - **Dependencies:** `WP-16b` (`DONE`), `WP-16c` (`READY_FOR_PLANNING`), `WP-06f` (`DONE`), `WP-08b` (`DONE`), `WP-11b` (`DONE`), `WP-14` (`DONE`)
@@ -12,9 +12,9 @@
 ### Goal
 Ship **Option B (Unified Custody `ETHY/0`)** end-to-end as Ethy's default operating mode so a fresh `ethy sepolia` (or `ethy mainnet`) node:
 1. **Goes live in 2–3 minutes** by syncing its rolling `eth/71` BAL window (`4,096..8,192` blocks) and immediately serving verified JSON-RPC (`eth_call`, ENS, ERC-20/DeFi, AI forensics) via Open-World `FlatStateManager`.
-2. **Custodies `1/16th` of Ethereum by default (`--custody 1`, ~8–10 GB Mainnet / ~1.5 GB Sepolia)** — syncing all three planes (`Accounts` + `Bytecode` + `Storage`) for its deterministic primary nibble bucket(s) in the background over `ETHY/0` `v0.4` (falling back to `snap/1` only on Day-1 empty swarm) and atomically flipping each finished custody bucket to **Closed-World** (`stateManager.markBucketClosed(b)`).
+2. **Custodies `2/16` (`1/8th`) of Ethereum by default (`--custody 2`, ~16–20 GB flat / ~20–26 GB with Option-C trie on Mainnet, ~3–4 GB on Sepolia)** — syncing all three planes (`Accounts` + `Bytecode` + `Storage`) for its deterministic nibble buckets in the background over `ETHY/0` `v0.4` (falling back to `snap/1` only on Day-1 empty swarm) and atomically flipping each finished custody bucket to **Closed-World** (`stateManager.markBucketClosed(b)`). Holding 2 buckets per node means **only 7 peers give 100% 1-hop coverage, `14–20` peers give 2× fault-tolerant redundancy, and just 8 Ethy nodes bootstrap a 100% self-sustaining swarm!**
 3. **Resolves cold misses in 1 hop directly from `ETHY/0` custody peers — with `0` `snap/1` calls whenever a custodian for that bucket is connected!**
-4. Supports seamless scaling up via the single **Custody Dial**: `--custody 0` (ephemeral), `--custody 1` (default), `--custody 2..15` (multi-bucket custodian), and `--full` (`--custody 16`, 100% Closed-World read privacy).
+4. Supports clean scaling via the **Custody Dial (`1..16`, no free-rider `0`)**: `--custody 1` (minimum, tight-disk laptops/CI), `--custody 2` (**default**, 1/8th), `--custody 3..15` (multi-bucket custodian), and `--full` (`--custody 16`, 100% Closed-World read privacy).
 
 ---
 
@@ -22,13 +22,12 @@ Ship **Option B (Unified Custody `ETHY/0`)** end-to-end as Ethy's default operat
 
 1. **CLI Custody Dial & Deterministic Bucket Assignment (`packages/ethy/src/cli/args.ts`, `src/custody/custodyPlan.ts`):**
    - Add first-class custody flags:
-     - `--custody <0..16>` (default `1`).
+     - `--custody <1..16>` (**default `2`**; values `< 1` or `> 16` rejected with a clear CLI usage error — no `--custody 0` free-rider mode!).
      - `--full` (alias for `--custody 16`).
      - Preserve `--sync-mode auto | ethy | snap` for explicit transport control and local 2-node tests.
-   - **Deterministic Primary Custody Assignment (`selectCustodyBuckets(localNodeId, count)`):**
-     - `count === 0`: `[]` (`custodyMask = 0x0000`).
+   - **Deterministic Custody Assignment (`selectCustodyBuckets(localNodeId, count)`):**
      - `count === 16`: `[0..15]` (`custodyMask = 0xffff`).
-     - `1 <= count <= 15`: deterministically derive `start = keccak256(localNodeId)[0] >> 4` and select `count` contiguous/spread buckets mod 16 (persisted in `ActiveMeta` so restarts keep the same assigned custody buckets instead of re-downloading different nibbles!).
+     - `1 <= count <= 15`: deterministically derive `start = keccak256(localNodeId)[0] >> 4` and select `count` well-spread buckets (e.g. for `count = 2`, `(start, (start + 8) & 0xf)` — opposite halves of the address space; for general `count`, deterministic stride/permutation from `keccak256(localNodeId)`), persisted in `ActiveMeta` so restarts keep the same assigned custody buckets instead of re-downloading different nibbles!
    - **Shared Binary Block Calendar (`packages/ethy/src/sync/blockCalendar.ts`):**
      - Power-of-two constants: `CANONICAL_PIVOT_GRID_BLOCKS = 32n`, `ANCHOR_EPOCH_BLOCKS = 256n`, `MACRO_GENERATION_GRID_BLOCKS = 1_024n`, `BAL_RETENTION_WINDOW_BLOCKS = 8_192n` (`~27.3 h`), `ONBOARDING_BAL_WINDOW_BLOCKS = 4_096n` (`~13.6 h`).
 
@@ -81,7 +80,7 @@ Ship **Option B (Unified Custody `ETHY/0`)** end-to-end as Ethy's default operat
 ---
 
 ### Acceptance Criteria (`WP-16d`)
-- [ ] `ethy` defaults to `--custody 1` (live in minutes via rolling `eth/71` BALs + background `1/16th` 3-plane custody sync); `--custody 0..16` and `--full` (`16`) work cleanly.
+- [ ] `ethy` defaults to `--custody 2` (1/8th of Ethereum; live in minutes via rolling `eth/71` BALs + background 3-plane custody sync); `--custody 1..16` and `--full` (`16`) work cleanly, and `--custody 0` is rejected.
 - [ ] Open-World cold misses resolve in 1 hop over `ETHY/0` (`0x0b` witness → `0x03`/`0x05` targeted custody chunk + BAL fold) with **zero `snap/1` calls** when a bucket custodian is connected.
 - [ ] Unresolved misses throw `StateMissUnavailableError`; `'swarm-only'` never calls `snap/1`; completed custody buckets flip atomically to Closed-World and advertise honest per-plane `ETHY/0 STATUS` bitmasks.
 - [ ] `npm run tsc`, `npm test`, and `npm run spellcheck` pass in `packages/ethy`.

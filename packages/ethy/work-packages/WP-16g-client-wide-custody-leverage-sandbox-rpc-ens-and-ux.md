@@ -22,7 +22,7 @@ Audit of the live Ethy codebase identified six concrete subsystems that would ot
    - Currently one global FIFO promise chain serializes all `eth_call`, `eth_estimateGas`, `IdentityResolver`, and AI `ContractDossierProbes` calls.
    - Under Open-World Custody mode, a single cold-miss `eth_call` waiting `50–250 ms` on a 1-hop `ETHY/0` witness/chunk blocks hot MetaMask calls, prevents concurrent witness coalescing, and blows past AI probe budgets (`PROBE_BUDGET_MS = 100`).
 2. **False-Zero Danger in JSON-RPC & Tx Validation (`src/rpc/methods.ts`, `src/txpool/validate.ts`):**
-   - `eth_getBalance` / `eth_getTransactionCount` / `validateRawTransaction` currently treat `account === undefined` as `0n`. In Open-World buckets (the 15 remote buckets under `--custody 1`), an unresolved network timeout MUST NOT fabricate a `0 ETH` balance or `nonce = 0`!
+   - `eth_getBalance` / `eth_getTransactionCount` / `validateRawTransaction` currently treat `account === undefined` as `0n`. In Open-World buckets (the 14 remote buckets under default `--custody 2`), an unresolved network timeout MUST NOT fabricate a `0 ETH` balance or `nonce = 0`!
 3. **Synchronous ENS Registry Gate (`src/contracts/identityResolver.ts`):**
    - `hasLocalEnsRegistry()` synchronously checks RAM/disk only, missing the chance to warm the ENS Registry + Reverse Registrar in 1 hop from their bucket custodians immediately on boot and unlock live `.eth` resolution within minutes.
 4. **Background AI `snap/1` Leeching Risk (`src/contracts/contractDossierProbes.ts`, `src/ai/investigationTools.ts`):**
@@ -45,11 +45,11 @@ Audit of the live Ethy codebase identified six concrete subsystems that would ot
 
 2. **False-Zero-Safe JSON-RPC, End-to-End Tx Broadcast & `ethy_custodyStatus` (`packages/ethy/src/rpc/methods.ts`, `txpool/validate.ts`, `tools/rpcTools.ts`):**
    - Catch `StateMissUnavailableError` across `eth_getBalance`, `eth_getTransactionCount`, `eth_getCode`, `eth_getStorageAt`, `eth_call`, `eth_estimateGas`, `eth_createAccessList`, and `eth_sendRawTransaction` → return an explicit, honest JSON-RPC error (`code: -32000`, `message: "State witness unavailable for open-world key; retry"`). **Never fabricate `0x0` on an unresolved miss.**
-   - Verify end-to-end wallet / MetaMask transaction workflow under `--custody 1`:
+   - Verify end-to-end wallet / MetaMask transaction workflow under default `--custody 2`:
      - Cold wallet `eth_getBalance` + `eth_getTransactionCount` → 1-hop `ETHY/0` witness/chunk from the wallet's bucket custodian.
      - Active ERC-20 / DEX `eth_estimateGas` → hot contract local + 1-hop verified `balances[sender]` witness.
      - `eth_sendRawTransaction` → verified sender balance/nonce + P2P `eth/71` broadcast + receipt in 64-block window.
-   - Add **`ethy_custodyStatus`** JSON-RPC method and extend **`ethy_status`** with `custodyCount` (`0..16`), `custodyBucketsMask`, `closedBucketsMask`, `trieBucketsMask`, `swarmReachableBucketsMask`, `privateBucketsCount` (`0..16`), `balHorizon`, and `resolutionStats` (for external wallets, dashboards, and MCP consumers).
+   - Add **`ethy_custodyStatus`** JSON-RPC method and extend **`ethy_status`** with `custodyCount` (`1..16`), `custodyBucketsMask`, `closedBucketsMask`, `trieBucketsMask`, `swarmReachableBucketsMask`, `privateBucketsCount` (`0..16`), `balHorizon`, and `resolutionStats` (for external wallets, dashboards, and MCP consumers).
    - Update `/rpc` method status matrix (`tools/rpcTools.ts`) so `Head State`, `EVM Sandbox`, and `Tx Broadcast` show `● active` immediately upon entering live `HEAD_FOLLOWING` (not waiting for 16 SNAP buckets).
 
 3. **Live ENS Unlock, Zero-Leech Contract Forensics & Provenance Badges (`packages/ethy/src/contracts/identityResolver.ts`, `contractDossierProbes.ts`, `tools/contractTools.ts`, `tools/headTools.ts`):**
@@ -63,9 +63,9 @@ Audit of the live Ethy codebase identified six concrete subsystems that would ot
 
 4. **Mode-Aware Command Gating, Start Page, Plaza 16-District Lights & Persistent Config (`packages/ethy/src/domains/commandAvailability.ts`, `spine/createSpine.ts`, `tui/`, `persist/userConfig.ts`):**
    - **Command Gating:** Unlock `/account`, `/contract`, `/simulate`, and `/rpc` as soon as `HEAD_FOLLOWING` is active (regardless of whether `closedBucketsMask` is `1/16` or `16/16`), and keep `/range` / `/sample` clearly scoped to locally closed custody buckets.
-   - **Start Page (`StartPageUIComponent.ts`):** Replace legacy *"waiting for 16 SNAP buckets"* copy with crisp 2-stage Custody onboarding (`Rolling BALs → ★ Live + Background 1/16th Custody`), showing live custody bucket progress and 1-hop swarm coverage.
+   - **Start Page (`StartPageUIComponent.ts`):** Replace legacy *"waiting for 16 SNAP buckets"* copy with crisp 2-stage Custody onboarding (`Rolling BALs → ★ Live + Background 2/16 Custody`), showing live custody bucket progress and 1-hop swarm coverage.
    - **Ethereum Plaza 16-District Custody & Privacy Lights (`LiveHeadPlazaUIComponent.ts`):** Visually distinguish each of the 16 nibble districts (`0x0..0xf`) between **Local Closed-World (`●` Private + Trie)**, **1-Hop Swarm Reachable (`◐`)**, and **Uncovered (`○`)**, so `--full` users watch all 16 districts lock into private local custody in real time.
-   - **Persistent Custody Preference (`persist/userConfig.ts`):** Persist optional `custodyCount?: number` (`0..16`) in `<dataDir>/config.json` with clean CLI override precedence (`--full` / `--custody <N>` > `config.json` > default `1`).
+   - **Persistent Custody Preference (`persist/userConfig.ts`):** Persist optional `custodyCount?: number` (`1..16`, rejecting `< 1`) in `<dataDir>/config.json` with clean CLI override precedence (`--full` / `--custody <N>` > `config.json` > default `2`).
 
 5. **Comprehensive Client-Wide Regression Suite (`packages/ethy/test/custodyClientLeverage.spec.ts`):**
    - Concurrent sandbox priority test: 1 slow cold `'ai_probe'` miss does not block a concurrent hot `'rpc'` `eth_call`; `'ai_probe'` strictly receives `resolutionPolicy: 'swarm-only'`.
