@@ -1,6 +1,6 @@
 # WP-16d: Unified Custody `ETHY/0` — Default Fast Onboarding (`--custody 2`), Background 3-Plane Custody Sync & 1-Hop Cold-Miss Resolver (Option B)
 
-- **Status:** `READY_FOR_PLANNING`
+- **Status:** `PLANNED`
 - **Dependencies:** `WP-16b` (`DONE`), `WP-16c` (`DONE`), `WP-06f` (`DONE`), `WP-08b` (`DONE`), `WP-11b` (`DONE`), `WP-14` (`DONE`)
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
@@ -89,7 +89,91 @@ Ship **Option B (Unified Custody `ETHY/0`)** end-to-end as Ethy's default operat
 
 ## 2. Concrete Implementation Plan (Planner — Grok 4.7)
 
-*(To be filled out by Grok 4.7 before implementation begins.)*
+Wire contract source of truth: [`protocols/devp2p/ETHY-0-SPEC.md`](../../../../protocols/devp2p/ETHY-0-SPEC.md) `v0.4`. Message codes, serve path, PEX, and mask-0 reciprocity are **DONE** in `@ethereumjs/devp2p` (**WP-16c**). Open-world hooks, tombstones, and `StateMissUnavailableError` are **DONE** on `FlatStateManager` (**WP-16b**). Crypto helpers `verifyStatyMultiProof`, `foldWitnessToHead`, and `StatyWriteIndex` live under `packages/ethy/src/staty/` (tests only today).
+
+**Out of scope (later WPs):** New devp2p message codes or `BinaryPathMPT` (**WP-16e**); live subtree tries / client `0x0d`/`0x0e` (**WP-16f**); Machine cockpit & swarm gates (**WP-16g**); client-wide RPC/ENS UX (**WP-16h**). No new runtime dependencies.
+
+### 2.1 Design locks
+
+| Topic | Rule |
+| --- | --- |
+| Default `HELLO` | `eth/69`–`eth/72` + `ethy/0` only. `snap/1` mounted only when `--snap-bootstrap` (or `--sync-mode snap`, which implies it). `--sync-mode ethy` never mounts snap. `--sync-mode auto` (default) is ETHY-only. |
+| Honest STATUS | `bucketsBitmask`, `storageBucketsBitmask`, and `codeBucketsBitmask` gain bit `b` together only in the atomic three-plane closed-world flip. Fresh node stays mask `0` until the first bucket finishes. Resolver treats empty `0x0c` as “try step 2”, not a stall (mask-0 witness throttle is server-side in devp2p). |
+| Live before custody | After onboarding BAL window, enter existing `HEAD_FOLLOWING`; JSON-RPC stays up while background custody runs. No new Machine phase name — `spine.custodyBackgroundActive` only. |
+| Closed-world mask | `createEthyNode` passes `closedBucketsMask` from disk (`0` fresh); not statemanager default `0xffff`. Completed buckets re-close on restart. |
+| One account synchronizer | Extend `ethySwarmSync.ts` with optional `buckets: number[]`; no second account-chunk downloader. Code/storage = new `ethyCodeStorageSync.ts`. |
+| Block calendar | Single module `blockCalendar.ts` owns grid constants; re-export existing `PIVOT_STEP_BLOCKS` / `MAX_SERVABLE_BAL_TAIL_BLOCKS` names so call sites do not duplicate `32` / `8192`. |
+| Peer faults | Timeout or bad proof rests **peer**, bucket plane returns `pending` (Architecture Law 1). Sole custodian: no long `peerRestUntil` on transient timeout. |
+| Resolver contract | Return `Uint8Array` → commit; `'empty'` → `FlatStateManager` tombstone; `undefined` → `StateMissUnavailableError`. Resolver does not call `markAccountEmpty` directly. |
+
+### 2.2 Boot flow
+
+```mermaid
+flowchart TD
+  cli["CLI --custody N default 2"] --> plan["selectCustodyBuckets persisted in active.json"]
+  plan --> hello["HELLO eth plus ethy0 snap only if snap-bootstrap"]
+  hello --> anchor["Anchor head beacon-light or best eth peer"]
+  anchor --> bal["Verify eth/71 BALs onboarding window to head"]
+  bal --> live["HEAD_FOLLOWING open-world JSON-RPC"]
+  live --> bg["Background per assigned bucket"]
+  bg --> acc["0x01 then 0x03 accounts"]
+  acc --> code["0x05 kind 0 bytecode"]
+  code --> stor["0x05 kind 2 then kind 1 storage"]
+  stor --> flip["markBucketClosed and STATUS three masks"]
+  live --> miss["Open bucket miss"]
+  miss --> w["0x0b witness then fold"]
+  w --> chunk["0x03 or 0x05 chunk then fold"]
+  chunk --> fail["undefined or snap only if snap-bootstrap and policy full"]
+```
+
+### 2.3 CLI & custody plan (`src/cli/`, `src/custody/custodyPlan.ts`, `snapStore.ts`)
+
+- `args.ts`: `--custody <1..16>` default `2`; reject `<1`, `>16`, and `0`. `--full` → `16`; usage error if both `--full` and explicit `--custody`. `--snap-bootstrap` default `false`; `--sync-mode snap` forces it. Update usage string for custody-first defaults.
+- `selectCustodyBuckets(nodeId, count)`: `count === 16` → `[0..15]`; else `start = keccak256(nodeId)[0] >> 4`, bucket `i` = `(start + round(i * 16 / count)) & 0xf`, walk `+1` on collision; `count === 2` = `(start, (start + 8) & 0xf)`.
+- `loadOrAssignCustody(activeMeta, nodeId, count)`: persist assignment when `custodyNodeId` matches; recompute on id change.
+- `ActiveMeta` (`snapStore.ts`): `custodyCount`, `custodyNodeId`, `custodyBuckets`, `custodyPlanes` per bucket `{ accounts, code, storage }`; reload finished planes as closed.
+
+### 2.4 Onboarding & background sync (`custodyOnboarding.ts`, `blockCalendar.ts`, sync/)
+
+- `blockCalendar.ts`: `CANONICAL_PIVOT_GRID_BLOCKS = 32n`, `ANCHOR_EPOCH_BLOCKS = 256n`, `MACRO_GENERATION_GRID_BLOCKS = 1024n`, `BAL_RETENTION_WINDOW_BLOCKS = 8192n`, `ONBOARDING_BAL_WINDOW_BLOCKS = 4096n`; re-export from `balSync.ts` / `balRetentionPolicy.ts`.
+- **Stage 1** (`custodyOnboarding.ts`): BAL pipeline `head - 4096 .. head` (clamp genesis); `StatyWriteIndex.ingestVerifiedBal` per block; `consumeBAL` with `closedBucketsMask` from disk; tail archive; transition `HEAD_FOLLOWING`. Restart: close completed buckets, catch up `lastVerifiedBlock + 1 .. head`, resume incomplete bucket.
+- **Stage 2**: `ResourceBudget`-aware lane. Per bucket: accounts via extended `EthySwarmSynchronizer` (`0x01`/`0x03`, `putEthyAccountChunk`); `ethyCodeStorageSync.ts` for `0x05` kind 0/1/2 with verify + BAL fold; snap fallback only when `snapBootstrapEnabled` and no ETHY peer for plane (v0.2 → storage/code mask `0`, no disconnect).
+- **Atomic flip**: all three planes + BAL at head → `markBucketClosed(b)` → `refreshEthyWorkerAdvertisement` with all three STATUS masks.
+
+### 2.5 Coordinator, capabilities, advertisement
+
+- `machineOrchestrator.ts` `bootNetworkProfile(syncMode, snapBootstrap)`: omit `snap1` unless bootstrap or `sync-mode snap`; `reconcileMachine` must not re-add snap on default client.
+- `peerCoordinator.ts`: capability list follows profile; after pivot, start custody onboarding (not 16-bucket snap gate); `ensureSnapSync` only when snap-bootstrap; `setNetworkProfile({ desiredEthyBucketsMask })` = OR of assigned buckets; ETHY handler routes `0x05`/`0x06` and `0x0b`/`0x0c` to code/storage sync + resolver (extend beyond manifest/chunk/BAL-only notes).
+- `ethyAdvertise.ts`: set `storageBucketsBitmask` and `codeBucketsBitmask` equal to closed custody mask; omit `trieBucketsBitmask` until **WP-16f**.
+- `spine/types.ts`: `custodyBuckets`, `closedBucketsMask`, `custodyBackgroundActive`; treat `ethyBucketsBitmask` as closed mask, not legacy “all snap buckets done”.
+- `createEthyNode.ts`: `closedBucketsMask` from store; wire `resolveAccountMiss` / `resolveStorageMiss` / `resolveCodeMiss` to `custodyStateResolver.ts` (construct resolver with peer-send closure filled by coordinator).
+
+### 2.6 1-hop resolver (`custodyStateResolver.ts`)
+
+- Micro-batch 10–25 ms for distinct keys (manager coalesces duplicate keys). One `0x0b` per batch within devp2p witness caps.
+- **Ladder:** (1) Pick peer for bucket `b = accountHash[0] >> 4` (prefer `trieBucketsBitmask` when nonzero); verify `0x0c` via `verifyStatyMultiProof`; `foldWitnessToHead(anchor+1..head)`; `putEthyWitness`. (2) `0x03` targeted account chunk + Merkle verify + fold; proven-absent via chunk bounds + `StatyWriteIndex`; storage `KECCAK256_RLP` → `'empty'`; else `0x05` kind 2 then 1. (3) Snap only if `snapBootstrapEnabled && policy === 'full'`. `swarm-only` never snap.
+- **Code:** `SharedCodeStore` → `0x05` kind 0 → keccak verify → persist.
+- In-flight map keyed by request id; timeout → rest peer, try alternate, then `undefined`.
+
+### 2.7 Tests
+
+| File | Coverage |
+| --- | --- |
+| `test/custodyPlan.spec.ts` | Bucket selection spread; CLI rejects `0`/`17`/`--full`+`--custody`; persistence vs node-id change |
+| `test/custodyStateResolver.spec.ts` | Witness/chunk/tombstone/code-fail; policies; snap guard |
+| `test/custodyEthySync.spec.ts` | Zero-snap loopback (pattern `ethySwarmLoopback.spec.ts` + devp2p `ethy-custody-swarm.spec.ts`); policy isolation; full flip; v0.2 interop |
+| Existing coordinator specs | Pass `snapBootstrap` where legacy assumes always-on `snap1`; assert default profile omits `snap1` |
+
+### 2.8 Finish gates (implementer)
+
+`packages/ethy`: `npm run tsc`, `npm test`, `npm run spellcheck`. No `packages/devp2p` change expected; upstream fixes in a separate commit + **Upstream Library Touch Queue** in `PROGRESS.md`.
+
+### Design refinements (planner)
+
+1. Reuse `EthySwarmSynchronizer` with bucket filter instead of a parallel account synchronizer.
+2. Stay on `HEAD_FOLLOWING` after BAL window — no new Machine phase strings in this WP.
+3. Never set STATUS plane bits before the atomic three-plane flip (mask-0 throttle already limits dishonest witness serve).
+4. `blockCalendar.ts` aliases existing `32` / `8192` constants rather than forking literals.
 
 ---
 
