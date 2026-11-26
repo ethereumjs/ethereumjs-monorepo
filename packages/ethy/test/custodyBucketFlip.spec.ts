@@ -1,7 +1,7 @@
-import { assert, describe, it, vi } from 'vitest'
-
+import type { Devp2pWorkerClient } from '@ethereumjs/devp2p'
 import { createFlatStateManager } from '@ethereumjs/statemanager'
 import { Account, BINARY_ACCOUNT_SIZE } from '@ethereumjs/util'
+import { assert, describe, it, vi } from 'vitest'
 
 import { noteCustodyPlaneComplete } from '../src/custody/custodyBucketFlip.ts'
 import { accountMissFromRlpOrBinary } from '../src/custody/custodyStateResolver.ts'
@@ -23,9 +23,7 @@ describe('custodyBucketFlip', () => {
     const spine = createSpine('sepolia', 11155111n)
     spine.lastVerifiedBlockNumber = 100n
     const sm = createFlatStateManager({ closedBucketsMask: 0 })
-    const client = { setEthyStatus: vi.fn() } as unknown as import(
-      '@ethereumjs/devp2p',
-    ).Devp2pWorkerClient
+    const client = { setEthyStatus: vi.fn() } as unknown as Devp2pWorkerClient
     const store = {
       updateCustodyPlane: vi.fn(),
       getCustodyMeta: () => ({

@@ -12,23 +12,28 @@ import type {
 } from '@ethereumjs/statemanager'
 import {
   BINARY_ACCOUNT_SIZE,
+  KECCAK256_RLP,
   accountToBinaryAccount,
   bigIntToUnpaddedBytes,
+  bytesToBigInt,
   bytesToUnprefixedHex,
   createAccountFromRLP,
   equalsBytes,
+  getBinaryAccountStorageRoot,
   intToUnpaddedBytes,
 } from '@ethereumjs/util'
 import { keccak_256 } from '@noble/hashes/sha3.js'
 
 import { ethyKeccak256 } from '../crypto/keccak.ts'
 import { peerIdToBytes } from '../net/pivotHeader.ts'
+import type { SnapPivotStore } from '../persist/snapStore.ts'
 import type { EthySpine } from '../spine/types.ts'
 import { verifyStatyMultiProof } from '../staty/multiProofVerify.ts'
 import { foldWitnessToHead } from '../staty/witnessFold.ts'
 import type { WitnessFoldContext } from '../staty/witnessFold.ts'
 import type { StatyWriteIndex } from '../staty/writeIndex.ts'
-import { verifyProvenAccountChunkJob } from '../sync/snapVerifyJob.ts'
+import { verifyProvenAccountChunkJob, verifyProvenStorageKind1Job } from '../sync/snapVerifyJob.ts'
+import { findSlotInKind1Slab, parseProvenCodePairs } from './custodyStorageCodec.ts'
 import { accountHashHex, buildWitnessFoldContext } from './custodyWitnessFold.ts'
 
 const RESOLVER_TIMEOUT_MS = 12_000
@@ -39,6 +44,7 @@ export type CustodyResolverDeps = {
   getPeers: () => WorkerPeerSnapshot[]
   spine: EthySpine
   writeIndex: StatyWriteIndex
+  snapStore?: SnapPivotStore
   snapBootstrapEnabled: boolean
   balEarliestBlock: () => bigint
   /** Optional fold context override (defaults to spine + writeIndex builder). */
@@ -146,12 +152,22 @@ export class CustodyStateResolver {
   }
 
   resolveStorageMiss = async (
-    _accountHash: Uint8Array,
-    _slotHash: Uint8Array,
+    accountHash: Uint8Array,
+    slotHash: Uint8Array,
     policy: StateResolutionPolicy,
   ): Promise<StorageMissResult> => {
-    if (this.deps.snapBootstrapEnabled && policy === 'full') return undefined
-    return undefined
+    if (policy === 'local-only') return undefined
+    const bucket = accountHash[0]! >> 4
+    const storageRoot = await this.resolveStorageRootForAccount(accountHash, bucket)
+    if (storageRoot === 'empty') return 'empty'
+    if (storageRoot === undefined) {
+      return this.deps.snapBootstrapEnabled && policy === 'full' ? undefined : undefined
+    }
+    const peer = this.pickCustodianForBucket(bucket, 'storage')
+    if (peer === undefined) {
+      return this.deps.snapBootstrapEnabled && policy === 'full' ? undefined : undefined
+    }
+    return this.tryStorageKind1(peer, accountHash, storageRoot, slotHash)
   }
 
   resolveCodeMiss = async (
@@ -176,11 +192,11 @@ export class CustodyStateResolver {
     try {
       const raw = await this.waitResponse(peer.id, reqId)
       const decoded = RLP.decode(raw) as unknown[]
-      if (Number(decoded[1]) !== 0) return undefined
-      const pairs = decoded[2] as [Uint8Array, Uint8Array][]
+      const pairs = parseProvenCodePairs(decoded)
       const row = pairs.find((p) => equalsBytes(p[0], codeHash))
       if (row === undefined) return undefined
       if (!equalsBytes(keccak_256(row[1]), codeHash)) return undefined
+      this.deps.snapStore?.appendCode(codeHash, row[1])
       return row[1]
     } catch {
       return undefined
@@ -242,6 +258,86 @@ export class CustodyStateResolver {
         return accountToBinaryAccount(folded.account)
       }
       return accountMissFromRlpOrBinary(hit.accountRlpOrEmpty)
+    } catch {
+      return undefined
+    }
+  }
+
+  private async resolveStorageRootForAccount(
+    accountHash: Uint8Array,
+    bucket: number,
+  ): Promise<Uint8Array | 'empty' | undefined> {
+    const witness = await this.tryWitnessAccount(accountHash, bucket)
+    if (witness === 'empty') return 'empty'
+    if (witness instanceof Uint8Array) {
+      const root = getBinaryAccountStorageRoot(witness)
+      return equalsBytes(root, KECCAK256_RLP) ? 'empty' : root
+    }
+    const chunk = await this.tryAccountChunk(accountHash, bucket)
+    if (chunk === 'empty') return 'empty'
+    if (chunk instanceof Uint8Array) {
+      const root = getBinaryAccountStorageRoot(chunk)
+      return equalsBytes(root, KECCAK256_RLP) ? 'empty' : root
+    }
+    return undefined
+  }
+
+  private async tryStorageKind1(
+    peer: WorkerPeerSnapshot,
+    accountHash: Uint8Array,
+    storageRoot: Uint8Array,
+    slotHash: Uint8Array,
+  ): Promise<StorageMissResult> {
+    const reqId = this.allocReqId()
+    if (
+      !this.sendEthy(peer.id, EthyMessageCodes.GET_PROVEN_STORAGE_OR_CODE, [
+        bigIntToUnpaddedBytes(reqId),
+        intToUnpaddedBytes(1),
+        accountHash,
+        storageRoot,
+        slotHash,
+      ])
+    ) {
+      return undefined
+    }
+    try {
+      const raw = await this.waitResponse(peer.id, reqId)
+      const decoded = RLP.decode(raw) as unknown[]
+      if (Number(decoded[1]) !== 1) return undefined
+      const responseRoot = decoded[3]
+      if (!(responseRoot instanceof Uint8Array) || !equalsBytes(responseRoot, storageRoot)) {
+        return undefined
+      }
+      const chunkBlock = fieldToBlockNumber(decoded[4])
+      const origin = decoded[5] as Uint8Array
+      const last = decoded[6] as Uint8Array
+      const hasRight = Number(decoded[7] ?? 0) !== 0
+      const slab = (decoded[8] as Uint8Array) ?? new Uint8Array(0)
+      const proofs = (decoded[9] as Uint8Array[]) ?? []
+      const verified = await verifyProvenStorageKind1Job({
+        storageRoot,
+        originSlotHash: origin,
+        slotsSlab64B: slab,
+        proofNodes: proofs,
+        hasRightHint: hasRight,
+      })
+      if (!verified.ok) return undefined
+      const hit = findSlotInKind1Slab(slab, slotHash)
+      if (hit !== undefined) return hit
+      if (
+        compareBytes32(slotHash, origin) >= 0 &&
+        compareBytes32(slotHash, last) <= 0 &&
+        slab.length > 0
+      ) {
+        const accountHex = bytesToUnprefixedHex(accountHash)
+        const slotHex = bytesToUnprefixedHex(slotHash)
+        const touched = this.deps.writeIndex.lastSlotWriteBlock(accountHex, slotHex)
+        const pivotBlock = Number(peer.ethyStatus?.basePivotBlock ?? chunkBlock)
+        if (touched === undefined || touched <= chunkBlock || touched <= pivotBlock) {
+          return 'empty'
+        }
+      }
+      return undefined
     } catch {
       return undefined
     }
@@ -349,6 +445,17 @@ function findAccountBinaryInSlab(
 }
 
 type EthyPeerStatusView = NonNullable<WorkerPeerSnapshot['ethyStatus']>
+
+function fieldToBlockNumber(field: unknown): number {
+  if (field instanceof Uint8Array) {
+    try {
+      return Number(bytesToBigInt(field))
+    } catch {
+      return 0
+    }
+  }
+  return 0
+}
 
 function ethyMaskFromStatus(st: EthyPeerStatusView, plane: 'buckets' | 'code' | 'storage'): number {
   const raw =

@@ -155,6 +155,71 @@ export async function verifyAccountRangeJob(
   }
 }
 
+const STORAGE_KIND1_SLAB_STRIDE = 64
+
+/** CPU-heavy ETHY/0 `GET_PROVEN_STORAGE_OR_CODE` kind=1 verify (safe off the main thread). */
+export async function verifyProvenStorageKind1Job(
+  opts: {
+    storageRoot: Uint8Array
+    originSlotHash: Uint8Array
+    slotsSlab64B: Uint8Array
+    proofNodes: Uint8Array[]
+    hasRightHint: boolean
+  },
+  useKeyHashingFunction: HashKeysFunction = ethyKeccak256,
+): Promise<ProvenChunkVerifyResult> {
+  await initEthyKeccak()
+  const slab = opts.slotsSlab64B
+  if (slab.length % STORAGE_KIND1_SLAB_STRIDE !== 0) {
+    return { ok: false, hasRight: false, count: 0, reason: 'invalid storage kind-1 slab length' }
+  }
+  const count = slab.length / STORAGE_KIND1_SLAB_STRIDE
+  if (count === 0) {
+    return {
+      ok: true,
+      hasRight: opts.hasRightHint,
+      count: 0,
+      lastKey: new Uint8Array(32),
+      slab: new Uint8Array(0),
+      rangeOrigin: new Uint8Array(opts.originSlotHash),
+    }
+  }
+  const keys: Uint8Array[] = []
+  const values: Uint8Array[] = []
+  for (let i = 0; i < count; i++) {
+    const off = i * STORAGE_KIND1_SLAB_STRIDE
+    const slotHash = slab.subarray(off, off + 32)
+    const slotValue = slab.subarray(off + 32, off + STORAGE_KIND1_SLAB_STRIDE)
+    keys.push(new Uint8Array(slotHash))
+    values.push(RLP.encode(bytesToBigInt(slotValue)))
+  }
+  if (compareBytes32(opts.originSlotHash, keys[0]!) > 0) {
+    return { ok: false, hasRight: false, count: 0, reason: 'storage chunk origin mismatch' }
+  }
+  const lastKey = keys[keys.length - 1]!
+  try {
+    const hasRight = await verifyMerkleRangeProof(
+      opts.storageRoot,
+      opts.originSlotHash,
+      lastKey,
+      keys,
+      values,
+      opts.proofNodes,
+      useKeyHashingFunction,
+    )
+    return {
+      ok: true,
+      hasRight: opts.hasRightHint || hasRight,
+      count,
+      lastKey: new Uint8Array(lastKey),
+      slab: new Uint8Array(slab),
+      rangeOrigin: new Uint8Array(opts.originSlotHash),
+    }
+  } catch (err: unknown) {
+    return { ok: false, hasRight: false, count: 0, reason: errorText(err) }
+  }
+}
+
 /** CPU-heavy ETHY/0 PROVEN_ACCOUNT_CHUNK verify (safe off the main thread). */
 export async function verifyProvenAccountChunkJob(
   opts: {

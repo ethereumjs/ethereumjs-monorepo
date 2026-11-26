@@ -185,4 +185,6 @@ flowchart TD
 
 **Tranche 3:** Resolver returns `BINARY_ACCOUNT_SIZE` slabs; witness path uses `foldWitnessToHead` + `buildWitnessFoldContext`; `noteCustodyPlaneComplete` atomic three-mask STATUS on accounts+code+storage + head; accounts background marks plane on bucket done.
 
-**Still open:** Storage miss ladder + `ethyCodeStorageSync` verify/persist; code/storage plane completion hooks; `custodyEthySync` loopback integration; PEX redundancy gates (WP-16g).
+**Tranche 4:** `resolveStorageMiss` kind-1 ladder + `verifyProvenStorageKind1Job` + write-index proven-empty; code miss persists via `snapStore.appendCode`; `EthyCodeStorageSynchronizer` verifies `kind=0` and marks **code** plane; `custodyStorageCodec` + focused `custodyEthySync` tests.
+
+**Still open:** Storage **background** plane completion + kind-2 batch sync; full zero-snap loopback (`custodyEthySync` live mesh); PEX redundancy gates (WP-16g).

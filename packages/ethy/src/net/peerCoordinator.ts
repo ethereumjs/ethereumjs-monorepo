@@ -2122,6 +2122,7 @@ export async function startPeerCoordinator(
     getPeers: () => lastTelemetryPeers,
     spine,
     writeIndex: statyWriteIndex,
+    snapStore,
     snapBootstrapEnabled: snapBootstrap,
     balEarliestBlock: () => {
       const w = spine.balWindow
@@ -2213,6 +2214,19 @@ export async function startPeerCoordinator(
       stateManager,
       snapStore,
       buckets: spine.custodyBuckets ?? [],
+      onCodeBatchForBucket: (idx) => {
+        const head =
+          spine.bestPeerHead ?? spine.lastVerifiedBlockNumber ?? spine.pivotBlockNumber ?? 0n
+        noteCustodyPlaneComplete({
+          snapStore,
+          stateManager,
+          spine,
+          client,
+          bucketIndex: idx,
+          plane: 'code',
+          headBlock: head,
+        })
+      },
     })
     custodyCodeSync.start()
     ethySwarm.start()

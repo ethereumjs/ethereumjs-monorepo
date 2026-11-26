@@ -297,6 +297,9 @@ Track every modification or planned modification to sibling monorepo packages he
 
 *Agents: Append a new dated subsection at the top of this list after each Planning (Grok 4.7) or Implementation (Composer 2.5) pass.*
 
+### 2026-11-26 — `WP-16d` tranche 4: storage kind-1 miss, code sync persist (Implementer — Composer 2.5)
+- `resolveStorageMiss` + `verifyProvenStorageKind1Job`; `EthyCodeStorageSynchronizer` kind-0 verify/persist and code-plane flip hook; `custodyStorageCodec` + unit tests. WP-16d §3 updated.
+
 ### 2026-11-26 — `WP-16d` tranche 3: witness fold, binary miss bytes, bucket flip (Implementer — Composer 2.5)
 - `foldWitnessToHead` on resolver witness path; `noteCustodyPlaneComplete` for atomic closed-world STATUS; binary account miss encoding. WP-16d §3 updated.
 
