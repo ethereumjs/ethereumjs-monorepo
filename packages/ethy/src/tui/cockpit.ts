@@ -240,8 +240,16 @@ function nodePulsePairs(spine: EthySpine): TwoColumnPair[] {
     const etaMin =
       rate !== undefined && rate > 0 && remaining > 0 ? remaining / rate / 60 : undefined
     const rateText = rate !== undefined && rate > 0 ? ` · ${Math.round(rate)}/s` : ''
+    const isCustodyWarmup =
+      spine.machine?.mode === 'custody-bal-warmup' || spine.custodyBalOnboarding === true
+    const balStage =
+      isCustodyWarmup && total > 0
+        ? `Rolling BALs ${formatCompactCount(applied)}/${formatCompactCount(total)}`
+        : isCustodyWarmup
+          ? 'Rolling BALs'
+          : 'BAL Catch-Up'
     return [
-      { label: 'Stage', value: 'BAL Catch-Up' },
+      { label: 'Stage', value: balStage },
       {
         label: 'Target',
         value: `${formatBlockNum(current)} → +${remaining.toLocaleString('en-US')} blk`,
@@ -306,8 +314,26 @@ function nodePulsePairs(spine: EthySpine): TwoColumnPair[] {
       : codeCount > 0
         ? `${acc} acc · ${formatCompactCount(codeCount)} code · ${serveSuffix}`
         : `${acc} acc · ${balCount.toLocaleString('en-US')} BALs · CL ${clLabel}`
-    const assignedN = spine.custodyBuckets?.length ?? 0
-    const closedN = countBits16(spine.closedBucketsMask ?? 0)
+    const assignedBuckets = spine.custodyBuckets ?? []
+    const assignedN = assignedBuckets.length
+    const closedMask = spine.closedBucketsMask ?? 0
+    const closedN = countBits16(closedMask)
+    let assignedMask = 0
+    for (const b of assignedBuckets) {
+      if (b >= 0 && b <= 15) assignedMask |= 1 << b
+    }
+    const closedAssigned = countBits16(assignedMask & closedMask)
+    const trieReady =
+      assignedMask !== 0 && ((spine.ethyTrieBucketsBitmask ?? 0) & assignedMask) === assignedMask
+    const activeSyncDetail = (() => {
+      const pctMap = spine.custodyBucketSyncPct
+      for (const b of assignedBuckets) {
+        if ((closedMask & (1 << b)) !== 0) continue
+        const pct = pctMap?.[b]
+        if (pct !== undefined) return `#${b.toString(16)} ${pct}%`
+      }
+      return formatBucketList(assignedBuckets)
+    })()
     const hop = spine.machine?.hopBuckets ?? 0
     const resolve = spine.custodyResolve
     const localHits = resolve?.local ?? 0
@@ -322,14 +348,17 @@ function nodePulsePairs(spine: EthySpine): TwoColumnPair[] {
     const custodyStage =
       isCustodyMachineMode(mode) && assignedN > 0
         ? mode === 'full-backfill'
-          ? `★ Live · Full Backfill ${closedN}/16`
+          ? `★ Live · Full Backfill ${closedN}/16 (${Math.round((closedN / 16) * 100)}%)`
           : mode === 'custody-sync'
-            ? `★ Live · Custody ${closedN}/${assignedN} (${formatBucketList(spine.custodyBuckets)})`
-            : `★ Live · Custody ${assignedN}/16 (${formatBucketList(spine.custodyBuckets)} · Trie ✓)`
+            ? `★ Live · Custody ${closedAssigned}/${assignedN} (${activeSyncDetail})`
+            : assignedN === 16 && closedN === 16
+              ? '★ Live · Full 16/16 (Private)'
+              : `★ Live · Custody ${assignedN}/16 (${formatBucketList(assignedBuckets)} · ${trieReady ? 'Trie ✓' : 'Flat'})`
         : undefined
+    const snapCount = snapSessionCount(spine)
     const workingSet =
       isCustodyMachineMode(mode) && hop > 0
-        ? `${hop}/16 1-hop${localPct !== undefined ? ` · ${localPct}` : ''} · 0 snap`
+        ? `${hop}/16 1-hop${localPct !== undefined ? ` · ${localPct}` : ''} · ${snapCount} snap`
         : undefined
     const stage =
       custodyStage ??
@@ -351,7 +380,7 @@ function nodePulsePairs(spine: EthySpine): TwoColumnPair[] {
       { label: 'Refresh', value: spine.machine?.nextEventSummary ?? 'Synced' },
       {
         label: 'State',
-        value: workingSet !== undefined ? `${stateValue} · ${workingSet}` : stateValue,
+        value: workingSet ?? stateValue,
       },
     ]
   }
@@ -446,13 +475,22 @@ function servedMetric(spine: EthySpine): string {
   const prf = s?.ethyWitnessesServed ?? 0
   const ch = s?.ethyChunksServed ?? 0
   const code = s?.ethyCodesServed ?? 0
-  const ethyServed = prf + ch + code > 0 ? ` · ETHY ${prf} prf / ${ch} ch / ${code} code` : ''
-  const bals = s?.ethyBalBlocksServed ?? 0
-  const balTag = bals > 0 ? `BALs ${bals.toLocaleString('en-US')}` : ''
-  let engineTag = `${balTag}${ethyServed} (eth ${ethBlocks}b · ethy ${ethyBuckets}/16)`
-  if (ethyServe === 'paused-catching-up') engineTag = 'paused · catching up'
-  else if (ethyServe === 'paused-bal-gap') engineTag = 'paused · BAL gap'
-  else if (ethyServe === 'partial-minting') engineTag = `minting · ${ethyBuckets}/16`
+  const balBlocks = s?.ethyBalBlocksServed ?? 0
+  const giveParts: string[] = []
+  if (balBlocks > 0) giveParts.push(`BALs ${formatCompactCount(balBlocks)}`)
+  if (prf + ch + code > 0) giveParts.push(`ETHY ${prf} prf / ${ch} ch / ${code} code`)
+  const pausedTag =
+    ethyServe === 'paused-catching-up'
+      ? 'paused · catching up'
+      : ethyServe === 'paused-bal-gap'
+        ? 'paused · BAL gap'
+        : ethyServe === 'partial-minting'
+          ? `minting · ${ethyBuckets}/16`
+          : undefined
+  if (pausedTag === undefined && giveParts.length > 0) {
+    return giveParts.join(' · ')
+  }
+  const engineTag = pausedTag ?? `(eth ${ethBlocks}b · ethy ${ethyBuckets}/16)`
   if (s === undefined) return `0 replies ${engineTag}`
   if (s.totalRequestsServed > 0) {
     return `${s.totalRequestsServed} replies · ${formatServeBytes(s.totalBytesServed)} ${engineTag}`

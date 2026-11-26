@@ -1,6 +1,7 @@
 import type { PeerTelemetry } from '../spine/types.ts'
 
 export type CustodyCoveragePeer = {
+  id?: string
   ethySession?: boolean
   bucketsBitmask: number
 }
@@ -82,6 +83,7 @@ export function custodyPeersFromSpine(peers: Iterable<PeerTelemetry>): CustodyCo
   for (const p of peers) {
     if (p.ethySession !== true || p.ethyStatus === undefined) continue
     out.push({
+      id: p.id,
       ethySession: true,
       bucketsBitmask: parseMask(p.ethyStatus.bucketsBitmask),
     })
@@ -100,4 +102,50 @@ export function custodyBitmask(buckets: readonly number[]): number {
 /** True when every assigned nibble is closed locally. */
 export function assignedBucketsClosed(assignedMask: number, closedMask: number): boolean {
   return assignedMask !== 0 && (assignedMask & ~closedMask) === 0
+}
+
+/**
+ * Pick at most one connected ETHY peer to disconnect when at `maxPeers` and
+ * `desiredEthyBucketsMask !== 0`: never evict a peer overlapping `desired`,
+ * and never evict the sole remaining custodian of any bucket (Law 1).
+ */
+export function pickRedundantEthyPeerToRotate(input: {
+  closedBucketsMask: number
+  desiredEthyBucketsMask: number
+  peers: readonly CustodyCoveragePeer[]
+}): string | undefined {
+  const desired = input.desiredEthyBucketsMask & 0xffff
+  if (desired === 0) return undefined
+  const closed = input.closedBucketsMask & 0xffff
+  const counts = new Uint8Array(16)
+  for (let b = 0; b < 16; b++) {
+    if ((closed >> b) & 1) counts[b]!++
+  }
+  for (const p of input.peers) {
+    const m = peerMask(p)
+    for (let b = 0; b < 16; b++) {
+      if ((m >> b) & 1) counts[b]!++
+    }
+  }
+  let bestId: string | undefined
+  let bestBits = Number.POSITIVE_INFINITY
+  for (const p of input.peers) {
+    if (p.ethySession !== true || p.id === undefined) continue
+    const m = peerMask(p)
+    if ((m & desired) !== 0) continue
+    let soleCustodian = false
+    for (let b = 0; b < 16; b++) {
+      if (((m >> b) & 1) !== 0 && counts[b]! <= 1) {
+        soleCustodian = true
+        break
+      }
+    }
+    if (soleCustodian) continue
+    const bits = countBits16(m)
+    if (bits < bestBits) {
+      bestBits = bits
+      bestId = p.id
+    }
+  }
+  return bestId
 }

@@ -79,7 +79,7 @@ type PendingEthy = {
 
 let nextReqId = 1000n
 
-type CustodyResolveKind = 'ethyProof' | 'ethyChunk'
+type CustodyResolveKind = 'local' | 'tombstone' | 'ethyProof' | 'ethyChunk' | 'snap'
 
 function noteCustodyResolve(spine: EthySpine, kind: CustodyResolveKind): void {
   const row = spine.custodyResolve ?? {
@@ -254,14 +254,20 @@ export class CustodyStateResolver {
       noteCustodyResolve(this.deps.spine, 'ethyProof')
       return witness
     }
-    if (witness === 'empty') return witness
+    if (witness === 'empty') {
+      noteCustodyResolve(this.deps.spine, 'tombstone')
+      return witness
+    }
     const chunk = await this.tryAccountChunk(accountHash, bucket)
     if (chunk instanceof Uint8Array) {
       this.cacheStorageRootFromBinary(accountHash, chunk)
       noteCustodyResolve(this.deps.spine, 'ethyChunk')
       return chunk
     }
-    if (chunk === 'empty') return chunk
+    if (chunk === 'empty') {
+      noteCustodyResolve(this.deps.spine, 'tombstone')
+      return chunk
+    }
     if (this.deps.snapBootstrapEnabled && policy === 'full') return undefined
     return undefined
   }
@@ -274,7 +280,10 @@ export class CustodyStateResolver {
     if (policy === 'local-only') return undefined
     const bucket = accountHash[0]! >> 4
     const storageRoot = await this.resolveStorageRootForAccount(accountHash, slotHash, bucket)
-    if (storageRoot === 'empty') return 'empty'
+    if (storageRoot === 'empty') {
+      noteCustodyResolve(this.deps.spine, 'tombstone')
+      return 'empty'
+    }
     if (storageRoot === undefined) {
       return this.deps.snapBootstrapEnabled && policy === 'full' ? undefined : undefined
     }
@@ -282,7 +291,13 @@ export class CustodyStateResolver {
     if (peer === undefined) {
       return this.deps.snapBootstrapEnabled && policy === 'full' ? undefined : undefined
     }
-    return this.tryStorageKind1(peer, accountHash, storageRoot, slotHash)
+    const slotRes = await this.tryStorageKind1(peer, accountHash, storageRoot, slotHash)
+    if (slotRes instanceof Uint8Array) {
+      noteCustodyResolve(this.deps.spine, 'ethyChunk')
+    } else if (slotRes === 'empty') {
+      noteCustodyResolve(this.deps.spine, 'tombstone')
+    }
+    return slotRes
   }
 
   resolveCodeMiss = async (

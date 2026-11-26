@@ -182,6 +182,8 @@ export interface EthySpine {
   /** Assigned custody buckets for this node (WP-16d). */
   custodyBuckets?: number[]
   closedBucketsMask?: number
+  /** Per-bucket background sync percent (`0..100`) when manifest is known (WP-16g). */
+  custodyBucketSyncPct?: Record<number, number>
   custodyBackgroundActive?: boolean
   /** BAL-window onboarding before background custody sync (WP-16d). */
   custodyBalOnboarding?: boolean

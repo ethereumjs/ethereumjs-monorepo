@@ -4,6 +4,7 @@ import {
   assignedBucketsClosed,
   custodyBitmask,
   evaluateCustodyCoverage,
+  pickRedundantEthyPeerToRotate,
 } from '../src/custody/custodyCoverage.ts'
 
 describe('custodyCoverage', () => {
@@ -50,5 +51,33 @@ describe('custodyCoverage', () => {
     assert.equal(custodyBitmask([0, 8]), 0x0101)
     assert.equal(assignedBucketsClosed(0x0101, 0x0101), true)
     assert.equal(assignedBucketsClosed(0x0101, 0x0001), false)
+  })
+
+  it('pickRedundantEthyPeerToRotate respects desired overlap and sole-custodian Law 1', () => {
+    // Peer a covers desired bucket 0x4 -> never evict
+    // Peer b is sole custodian of bucket 0x2 -> never evict
+    // Peer c and d both cover bucket 0x1 (redundant) -> evict c or d
+    const victim = pickRedundantEthyPeerToRotate({
+      closedBucketsMask: 0x0001, // bucket 0 closed locally
+      desiredEthyBucketsMask: 0x0010, // want bucket 4
+      peers: [
+        { id: 'peer-a', ethySession: true, bucketsBitmask: 0x0012 }, // overlaps desired bit 4
+        { id: 'peer-b', ethySession: true, bucketsBitmask: 0x0004 }, // sole custodian of bit 2
+        { id: 'peer-c', ethySession: true, bucketsBitmask: 0x0002 }, // redundant on bit 1
+        { id: 'peer-d', ethySession: true, bucketsBitmask: 0x0002 }, // redundant on bit 1
+      ],
+    })
+    assert.equal(victim, 'peer-c')
+
+    // When every non-desired peer is a sole custodian, return undefined
+    const none = pickRedundantEthyPeerToRotate({
+      closedBucketsMask: 0,
+      desiredEthyBucketsMask: 0x0010,
+      peers: [
+        { id: 'peer-sole-1', ethySession: true, bucketsBitmask: 0x0002 },
+        { id: 'peer-sole-2', ethySession: true, bucketsBitmask: 0x0004 },
+      ],
+    })
+    assert.isUndefined(none)
   })
 })

@@ -206,10 +206,18 @@ function deriveMode(obs: MachineObservation): { mode: MachineOperatingMode; reas
 
 function ethyServing(obs: MachineObservation, mode: MachineOperatingMode): EthyServingState {
   if (obs.bucketsMask === 0) return 'off'
-  if (mode === 'bal-catchup' || obs.phase === 'BAL_CATCHUP') return 'paused-catching-up'
+  if (mode === 'bal-catchup' || mode === 'custody-bal-warmup' || obs.phase === 'BAL_CATCHUP') {
+    return 'paused-catching-up'
+  }
   if (!obs.balTailContiguous) return 'paused-bal-gap'
   if (obs.generationAgeBlocks > HARD_PREFER_SNAP_AGE_BLOCKS && obs.shadowMode !== 'snap-mint') {
     return 'paused-stale'
+  }
+  if (
+    obs.custodyActive === true &&
+    assignedBucketsClosed(obs.assignedBucketsMask ?? 0, obs.bucketsMask)
+  ) {
+    return 'serving'
   }
   if (obs.bucketsMask < 0xffff) return 'partial-minting'
   return 'serving'
@@ -309,11 +317,11 @@ function scheduleSummary(
       : `Refresh paused — low disk${detail}`
   }
   const softMs = Number(SOFT_REFRESH_AGE_BLOCKS - obs.generationAgeBlocks) * BLOCK_MS
-  if (softMs > 0 && mode === 'live-calm') {
+  if (softMs > 0 && (mode === 'live-calm' || mode === 'custody-live-calm')) {
     return `Gen ${obs.generationAgeBlocks}/${SOFT_REFRESH_AGE_BLOCKS} blk · ~${(softMs / 3_600_000).toFixed(1)}h`
   }
   if (ethyServe === 'paused-bal-gap') return 'BAL gap — refresh queued'
-  return mode === 'bal-catchup' ? 'Catching up' : 'Live'
+  return mode === 'bal-catchup' || mode === 'custody-bal-warmup' ? 'Catching up' : 'Live'
 }
 
 export function evaluateMachinePlan(obs: MachineObservation): MachinePlan {
@@ -360,7 +368,10 @@ export function evaluateMachinePlan(obs: MachineObservation): MachinePlan {
       ? 'standby'
       : mode === 'prewarm-ethy'
         ? 'prewarming'
-        : mode === 'cold-ethy-sync' || mode === 'shadow-ethy-refresh' || servingEthy === 'serving'
+        : mode === 'cold-ethy-sync' ||
+            mode === 'shadow-ethy-refresh' ||
+            isCustodyMode(mode) ||
+            servingEthy === 'serving'
           ? 'active'
           : 'standby'
 
@@ -370,6 +381,7 @@ export function evaluateMachinePlan(obs: MachineObservation): MachinePlan {
       : mode === 'live-calm' ||
           mode === 'custody-live-calm' ||
           mode === 'custody-sync' ||
+          mode === 'full-backfill' ||
           mode === 'boot-warmup'
         ? 'active'
         : 'standby'
@@ -410,7 +422,7 @@ export function snapDormancyReason(
   obs: Pick<MachineObservation, 'snapBootstrap' | 'closedBucketsMask' | 'custodyCount'>,
 ): SnapDormancyReason {
   if (plan.profile.capabilities.includes('snap1')) return 'bootstrap-active'
-  if (obs.custodyCount === 16 && (obs.closedBucketsMask ?? 0) === 0xffff) {
+  if (obs.snapBootstrap && obs.custodyCount === 16 && (obs.closedBucketsMask ?? 0) === 0xffff) {
     return 'dropped-after-close'
   }
   return 'default-off'

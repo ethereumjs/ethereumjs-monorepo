@@ -60,10 +60,10 @@ Wire Unified Custody `ETHY/0` (Option B + Option C) cleanly into **`The Machine`
 ---
 
 ### Acceptance Criteria (`WP-16g`)
-- [ ] `The Machine` cleanly orchestrates 5 planes (`eth`, `ethy`, `snap`, `discovery`, `cl`), steers bucket-diverse `ETHY_PEX` toward `16/16` 1-hop coverage, and drops `snap1` from `HELLO` in `custody-live-calm` and `Full 16/16`.
-- [ ] 3-Box Cockpit and `/ethy` + `/machine` microscopes surface honest custody mode, 16-bucket local/swarm coverage, `RootNode` assembly, and zero-`snap` serving telemetry.
-- [ ] All 3 `ethy-sim` custody swarm gates pass deterministically in CI alongside existing `WP-11a`/`WP-11b` gates.
-- [ ] `npm run tsc`, `npm test`, and `npm run spellcheck` pass in `packages/ethy`.
+- [x] `The Machine` cleanly orchestrates 5 planes (`eth`, `ethy`, `snap`, `discovery`, `cl`), steers bucket-diverse `ETHY_PEX` toward `16/16` 1-hop coverage, and drops `snap1` from `HELLO` in `custody-live-calm` and `Full 16/16`.
+- [x] 3-Box Cockpit and `/ethy` + `/machine` microscopes surface honest custody mode, 16-bucket local/swarm coverage, `RootNode` assembly, and zero-`snap` serving telemetry.
+- [x] All 3 `ethy-sim` custody swarm gates pass deterministically in CI alongside existing `WP-11a`/`WP-11b` gates.
+- [x] `npm run tsc`, `npm test`, and `npm run spellcheck` pass in `packages/ethy`.
 
 ---
 
@@ -193,9 +193,9 @@ Finish: `npm run tsc` (`ethy` + `devp2p` if touched), `npm test` in `ethy`, `npm
 
 ---
 
-## 3. Implementation Notes & Deviations (Implementer — Composer 2.5)
+## 3. Implementation Notes & Deviations (Implementer — Composer 2.5 · Review & Hardening — Coordinator)
 
-- **`custodySwarm.ts`:** Discrete-event reachability uses a synthetic `N=32` two-peers-per-nibble layout (deterministic CI) plus real `assembleRootBranch` Byzantine quarantine; does not import `selectEthyPexPeers` into `ethy` tsc (stays sibling to `world.ts`).
-- **Coordinator:** Boot no longer pins PEX to assigned buckets; `reconcileMachine` plan owns `desiredEthyBucketsMask`.
-- **devp2p:** `setNetworkProfile` re-broadcasts `GET_ETHY_PEERS` when `desiredEthyBucketsMask` changes (D-008 commit).
-- **Deferred:** ETHY peer rotation at `maxPeers`, full 16-row `/ethy` matrix UI, and `EthySwarmSynchronizer.bucketSyncPct` cockpit percents — spine fields and `/machine` coverage rows landed; matrix can follow in a polish pass.
+- **`custodySwarm.ts` + `scripts/sim-swarm.ts`:** Non-tautological discrete-event custody swarm gates using real `selectCustodyBuckets(nodeId, 2)`, bucket-aware `ETHY_PEX` convergence with strict `maxPeers <= 18` and Law-1 `pickRedundantEthyPeerToRotate`, real 1-hop cold-read routing across `32 × 500` queries with `0` `snap/1` dials, and real `assembleRootBranch` Byzantine quarantine across 2 macro-generations (`N = 16`, 2 Byzantine peers). Wired into both `test/swarmSimulator.spec.ts` and `scripts/sim-swarm.ts`.
+- **Machine & Coordinator:** Boot no longer pins PEX to assigned buckets; `reconcileMachine` owns `desiredEthyBucketsMask`, returns `serving` / `ethy: active` on closed `--custody 2` nodes, rotates at most one redundant ETHY peer at `maxPeers` (Law 1), and publishes `subtreeApplyMs`, `custodyLastAssembly`, `custodyAssemblyLog`, and `custodyBucketSyncPct` onto `spine`.
+- **Cockpit & Microscopes:** 3-Box Cockpit renders honest `Rolling BALs`, `Custody 1/2 (#2 62%)`, `Flat` vs `Trie ✓`, `Full Backfill N/16 (P%)`, `Full 16/16 (Private)`, `5`-plane row including `cl`, and clean `Served` spacing. `/ethy` (`ethyOverviewWidget`) renders the full 16-bucket custody matrix (`Local state`, `Acc·Code·Stor`, `1-hop swarm`, `🔒 Private` vs `1-hop`), custody preface, swarm summary `secondaryTable`, and `Ctrl+D` debug page (`Connected ETHY/0 peers`, `Root assembly log`, `Shadow refresh`).
+- **devp2p (`D-008`):** `setNetworkProfile` re-broadcasts incrementing-`reqId` `GET_ETHY_PEERS` when `desiredEthyBucketsMask` changes to a non-zero mask, verified end-to-end in `test/worker/ethy-custody-swarm.spec.ts`.

@@ -349,6 +349,15 @@ export class EthySwarmSynchronizer {
     this.rebuildAssignments()
   }
 
+  /** Chunk sync progress `0..100` for one bucket once its manifest has arrived. */
+  bucketSyncPct(bucketIndex: number): number | undefined {
+    if (this.bucketsDone.has(bucketIndex)) return 100
+    const origins = this.manifestOrigins.get(bucketIndex)
+    if (origins === undefined || origins.length === 0) return undefined
+    const done = this.bucketDoneCount.get(bucketIndex) ?? 0
+    return Math.min(99, Math.round((done / origins.length) * 100))
+  }
+
   removeSeeder(peerId: string): void {
     this.seeders.delete(peerId.toLowerCase())
     this.rebuildAssignments()

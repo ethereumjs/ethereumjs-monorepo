@@ -44,6 +44,7 @@ export type RootAssemblyResult =
       slots: Uint8Array[]
       rootNodeRlp: Uint8Array
       byzantinePeerIds: string[]
+      viaBootstrap?: boolean
     }
   | { ok: false; reason: 'incomplete' | 'conflict' | 'mismatch' }
 
@@ -106,6 +107,7 @@ export function assembleRootBranch(
         slots: snapSlots,
         rootNodeRlp: new Uint8Array(snapRootBranchRlp),
         byzantinePeerIds: collectByzantinePeers(candidates, snapSlots),
+        viaBootstrap: true,
       }
     } catch {
       return undefined
@@ -135,6 +137,7 @@ export function assembleRootBranch(
       slots,
       rootNodeRlp: encodeRootBranch(slots),
       byzantinePeerIds: collectByzantinePeers(candidates, slots),
+      viaBootstrap: false,
     }
   }
   return trySnapFallback() ?? { ok: false, reason: 'mismatch' }

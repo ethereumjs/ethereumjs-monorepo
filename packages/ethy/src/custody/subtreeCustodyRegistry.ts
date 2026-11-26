@@ -24,6 +24,7 @@ export type VerifiedAnchor = {
   rootNodeRlp: Uint8Array
   slots: Uint8Array[]
   byzantinePeerIds: string[]
+  viaBootstrap: boolean
 }
 
 export type SubtreeCustodyRegistryOpts = {
@@ -247,6 +248,7 @@ export class SubtreeCustodyRegistry {
         rootNodeRlp: asm.rootNodeRlp,
         slots: asm.slots,
         byzantinePeerIds: asm.byzantinePeerIds,
+        viaBootstrap: asm.viaBootstrap === true,
       }
       this._verified.set(key, rec)
       while (this._verified.size > MAX_TRACKED_ANCHORS) {

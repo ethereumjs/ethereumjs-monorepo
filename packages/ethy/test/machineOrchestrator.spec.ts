@@ -186,9 +186,65 @@ describe('machineOrchestrator', () => {
     })
     const plan = evaluateMachinePlan(obs)
     assert.equal(plan.mode, 'custody-live-calm')
+    assert.equal(plan.servingEthy, 'serving')
+    assert.equal(plan.planes.ethy, 'active')
+    assert.equal(plan.planes.snap, 'off')
+    assert.equal(plan.planes.cl, 'active')
     assert.notInclude(plan.profile.capabilities, 'snap1')
     assert.equal(plan.profile.desiredEthyBucketsMask, obs.desiredEthyBucketsMask)
     assert.equal(snapDormancyReason(plan, obs), 'default-off')
+  })
+
+  it('full-backfill with snapBootstrap arms snap1 until 16/16 closed then drops snap1 permanently', () => {
+    const now = Date.now()
+    const spine = createSpine('sepolia', 11155111n)
+    setPhase(spine, 'HEAD_FOLLOWING')
+    spine.custodyBuckets = Array.from({ length: 16 }, (_, i) => i)
+    spine.closedBucketsMask = 0x00ff
+    spine.ethyBucketsBitmask = 0x00ff
+
+    const obsBackfill = buildMachineObservation({
+      spine,
+      peerSnapshots: [
+        { id: 'a', clientId: 't', caps: ['eth71'], bestHash: '0x01', ethySession: true },
+      ],
+      syncMode: 'auto',
+      snapBootstrap: true,
+      shadowRefreshEnabled: true,
+      nowMs: now,
+      snapDiscoveryHold: false,
+      ethySwarmActive: true,
+      degradedStall: false,
+      hasUsableEthyGNew: false,
+    })
+    const planBackfill = evaluateMachinePlan(obsBackfill)
+    assert.equal(planBackfill.mode, 'full-backfill')
+    assert.include(planBackfill.profile.capabilities, 'snap1')
+    assert.equal(planBackfill.planes.snap, 'active')
+    assert.equal(planBackfill.planes.cl, 'active')
+    assert.equal(snapDormancyReason(planBackfill, obsBackfill), 'bootstrap-active')
+
+    spine.closedBucketsMask = 0xffff
+    spine.ethyBucketsBitmask = 0xffff
+    const obsClosed = buildMachineObservation({
+      spine,
+      peerSnapshots: [
+        { id: 'a', clientId: 't', caps: ['eth71'], bestHash: '0x01', ethySession: true },
+      ],
+      syncMode: 'auto',
+      snapBootstrap: true,
+      shadowRefreshEnabled: true,
+      nowMs: now + 1000,
+      snapDiscoveryHold: false,
+      ethySwarmActive: false,
+      degradedStall: false,
+      hasUsableEthyGNew: false,
+    })
+    const planClosed = evaluateMachinePlan(obsClosed)
+    assert.equal(planClosed.mode, 'custody-live-calm')
+    assert.notInclude(planClosed.profile.capabilities, 'snap1')
+    assert.equal(planClosed.planes.snap, 'off')
+    assert.equal(snapDormancyReason(planClosed, obsClosed), 'dropped-after-close')
   })
 
   it('shows SNAP Mint (starting) before bucket 0 initializes', () => {

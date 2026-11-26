@@ -29,6 +29,7 @@ import { DEFAULT_CUSTODY_COUNT } from '../cli/args.ts'
 import { getEthyClientVersion } from '../clientMeta.ts'
 import { ethyKeccak256 } from '../crypto/keccak.ts'
 import { noteCustodyPlaneComplete } from '../custody/custodyBucketFlip.ts'
+import { custodyPeersFromSpine, pickRedundantEthyPeerToRotate } from '../custody/custodyCoverage.ts'
 import type { CustodyMissDelegate } from '../custody/custodyMissDelegate.ts'
 import {
   beginCustodyBalOnboarding,
@@ -548,6 +549,12 @@ export async function startPeerCoordinator(
   spine.custodyBalOnboarding = custodyFastOnboard
   const localNodeId = pk2id(secp256k1.getPublicKey(privateKey, false))
   const localPeerIdHex = bytesToUnprefixedHex(localNodeId)
+  const appendAssemblyLog = (line: string) => {
+    const log = spine.custodyAssemblyLog ?? []
+    log.push(line)
+    if (log.length > 16) log.shift()
+    spine.custodyAssemblyLog = log
+  }
   const subtreeRegistry = new SubtreeCustodyRegistry({
     localPeerIdHex,
     buckets: custodyAssign.buckets,
@@ -557,6 +564,7 @@ export async function startPeerCoordinator(
     onByzantinePeers: (anchorBlock, peerIds) => {
       for (const pid of peerIds) {
         if (pid === localPeerIdHex) continue
+        appendAssemblyLog(`#${anchorBlock} quarantined ${pid.slice(0, 12)} (bad h_b)`)
         recordDiagnostic(spine, {
           subsystem: 'devp2p',
           severity: 'warn',
@@ -1130,6 +1138,7 @@ export async function startPeerCoordinator(
   let machineState = createMachineState()
   let lastMachinePlan: MachinePlan | undefined
   let lastClPollMs: number | undefined
+  let lastCustodyRotateMs = 0
 
   const noteDiscovery = (message: string) => {
     if (discoveryLooksBlocked(message)) dnsTimedOut = true
@@ -1730,14 +1739,24 @@ export async function startPeerCoordinator(
             : spine.pivotBlockNumber === appliedBlock
               ? spine.pivotStateRoot
               : spine.balWindow.find((r) => r.blockNumber === appliedBlock)?.stateRoot)
+        const applyStartedAt = Date.now()
         void subtreeRegistry
           .applyVerifiedBal(appliedBlock, bal)
           .then(async () => {
+            spine.subtreeApplyMs = Math.max(0, Date.now() - applyStartedAt)
             if (appliedBlock % CANONICAL_PIVOT_GRID_BLOCKS !== 0n) return
             publishLocalSubtreeRoots(client, subtreeRegistry, appliedBlock)
             if (blockStateRoot === undefined) return
             const rec = await subtreeRegistry.verifyAnchor(appliedBlock, blockStateRoot)
             if (rec === undefined) return
+            spine.custodyLastAssembly = {
+              anchorBlock: appliedBlock.toString(),
+              assembled: true,
+              viaBootstrap: rec.viaBootstrap,
+            }
+            appendAssemblyLog(
+              `#${appliedBlock} assembled (${rec.viaBootstrap ? 'bootstrap 530B' : '16/16 h_b'})`,
+            )
             refreshEthyWorkerAdvertisement(client, spine, subtreeRegistry)
           })
           .catch(() => undefined)
@@ -2749,6 +2768,42 @@ export async function startPeerCoordinator(
         severity: 'info',
         message: `Network profile ${plan.mode} (${plan.profile.discoveryMode})`,
       })
+    }
+
+    if (ethySwarm !== undefined && spine.custodyBuckets !== undefined) {
+      const pctMap: Record<number, number> = {}
+      for (const b of spine.custodyBuckets) {
+        const pct = ethySwarm.bucketSyncPct(b)
+        if (pct !== undefined) pctMap[b] = pct
+      }
+      spine.custodyBucketSyncPct = pctMap
+    }
+
+    const desiredMask = plan.profile.desiredEthyBucketsMask ?? 0
+    if (
+      desiredMask !== 0 &&
+      snap.peers.length >= plan.profile.maxPeers &&
+      nowMs - lastCustodyRotateMs >= 15_000
+    ) {
+      const victimId = pickRedundantEthyPeerToRotate({
+        closedBucketsMask: spine.closedBucketsMask ?? 0,
+        desiredEthyBucketsMask: desiredMask,
+        peers: custodyPeersFromSpine(spine.peers.values()),
+      })
+      if (victimId !== undefined) {
+        lastCustodyRotateMs = nowMs
+        try {
+          clientRef.disconnectPeer(peerIdToBytes(victimId))
+          recordDiagnostic(spine, {
+            subsystem: 'ethy',
+            severity: 'info',
+            peerId: victimId,
+            message: `Rotated redundant ETHY peer ${victimId.slice(0, 12)} to open slot for desired buckets 0x${desiredMask.toString(16)}`,
+          })
+        } catch {
+          /* ignore malformed peer id */
+        }
+      }
     }
 
     if (opts.setConsensusPollInterval !== undefined && spine.clStatus !== 'p2p_only') {
