@@ -2133,6 +2133,13 @@ export async function startPeerCoordinator(
     workerModuleUrl,
   )
   client.setNetworkProfile(lastAppliedProfile)
+  if (snapStore !== undefined) {
+    client.setSharedCodeDir(snapStore.sharedCodeDir())
+    const storageChunksDir = snapStore.activePivotStorageChunksDir()
+    if (storageChunksDir !== undefined) {
+      client.setEthyStorageDir(storageChunksDir)
+    }
+  }
 
   custodyResolver = new CustodyStateResolver({
     getClient: () => client,

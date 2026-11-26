@@ -537,4 +537,115 @@ describe('[Devp2p/ETHY]: worker serving', () => {
     const groups = served!.rlp[1] as unknown[]
     assert.equal(groups.length, 0)
   })
+
+  it('EthyStorageStore persists and serves kind-2 complete and multi-chunk kind-1 from disk', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ethy-storage-disk-'))
+    try {
+      const acctComplete = new Uint8Array(32).fill(0xaa)
+      const rootComplete = new Uint8Array(32).fill(0x11)
+      const s01 = new Uint8Array(32)
+      s01[31] = 0x01
+      const slabComplete = new Uint8Array(64)
+      slabComplete.set(s01, 0)
+      slabComplete[63] = 0x42
+      EthyStorageStore.writeDiskComplete(dir, {
+        accountHash: acctComplete,
+        storageRoot: rootComplete,
+        chunkBlockNumber: 50n,
+        slotsSlab64B: slabComplete,
+      })
+
+      const acctChunked = new Uint8Array(32).fill(0xbb)
+      const rootChunked = new Uint8Array(32).fill(0x22)
+      const s10 = new Uint8Array(32)
+      s10[31] = 0x10
+      const s30 = new Uint8Array(32)
+      s30[31] = 0x30
+      const slab1 = new Uint8Array(64)
+      slab1.set(s10, 0)
+      slab1[63] = 0x07
+      const slab2 = new Uint8Array(64)
+      slab2.set(s30, 0)
+      slab2[63] = 0x09
+      const proof1 = [new Uint8Array([0xaa, 0x01])]
+      const proof2 = [new Uint8Array([0xbb, 0x02])]
+
+      EthyStorageStore.writeDiskChunk(dir, {
+        accountHash: acctChunked,
+        storageRoot: rootChunked,
+        chunkBlockNumber: 60n,
+        originSlotHash: s10,
+        lastSlotHash: s10,
+        hasRight: 1,
+        slotsSlab64B: slab1,
+        proofNodes: proof1,
+      })
+      EthyStorageStore.writeDiskChunk(dir, {
+        accountHash: acctChunked,
+        storageRoot: rootChunked,
+        chunkBlockNumber: 60n,
+        originSlotHash: s30,
+        lastSlotHash: s30,
+        hasRight: 0,
+        slotsSlab64B: slab2,
+        proofNodes: proof2,
+      })
+
+      // Fresh store with zero RAM entries reads straight from disk
+      const fresh = new EthyStorageStore()
+      fresh.setStorageDir(dir)
+
+      // kind-2 complete served from disk (chunked incomplete contract omitted)
+      const kind2 = fresh.entriesKind2(
+        [
+          { accountHash: acctComplete, storageRoot: rootComplete },
+          { accountHash: acctChunked, storageRoot: rootChunked },
+        ],
+        524_288,
+      )
+      assert.equal(kind2.length, 1)
+      assert.isTrue(equalsBytes(kind2[0]!.accountHash, acctComplete))
+      assert.isTrue(equalsBytes(kind2[0]!.slotsSlab64B, slabComplete))
+
+      // kind-1 on complete disk record works with empty proofNodes (whole trie)
+      const completeSlice = fresh.sliceKind1(
+        acctComplete,
+        rootComplete,
+        new Uint8Array(32),
+        524_288,
+      )
+      assert.isDefined(completeSlice)
+      assert.equal(completeSlice!.hasRight, 0)
+      assert.equal(completeSlice!.proofNodes.length, 0)
+
+      // kind-1 on multi-chunk disk record serves exact covering chunk + proofs
+      const c1 = fresh.sliceKind1(acctChunked, rootChunked, s10, 524_288)
+      assert.isDefined(c1)
+      assert.equal(c1!.hasRight, 1)
+      assert.isTrue(equalsBytes(c1!.slotsSlab64B, slab1))
+      assert.isTrue(equalsBytes(c1!.proofNodes[0]!, proof1[0]!))
+
+      // Sequential crawl target between s10 and s30 advances to chunk 2
+      const s20 = new Uint8Array(32)
+      s20[31] = 0x20
+      const c2 = fresh.sliceKind1(acctChunked, rootChunked, s20, 524_288)
+      assert.isDefined(c2)
+      assert.equal(c2!.hasRight, 0)
+      assert.isTrue(equalsBytes(c2!.slotsSlab64B, slab2))
+      assert.isTrue(equalsBytes(c2!.proofNodes[0]!, proof2[0]!))
+
+      // Right-tail past s30 returns chunk 2 (hasRight = 0)
+      const s40 = new Uint8Array(32)
+      s40[31] = 0x40
+      const tail = fresh.sliceKind1(acctChunked, rootChunked, s40, 524_288)
+      assert.isDefined(tail)
+      assert.equal(tail!.hasRight, 0)
+      assert.isTrue(equalsBytes(tail!.lastSlotHash, s30))
+
+      // Wrong storageRoot is rejected
+      assert.equal(fresh.sliceKind1(acctChunked, rootComplete, s10, 524_288), undefined)
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true })
+    }
+  })
 })

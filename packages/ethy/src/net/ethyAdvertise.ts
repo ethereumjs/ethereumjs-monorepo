@@ -1,3 +1,5 @@
+import * as path from 'node:path'
+
 import type { Devp2pWorkerClient } from '@ethereumjs/devp2p'
 import { bytesToUnprefixedHex } from '@ethereumjs/util'
 
@@ -69,4 +71,11 @@ export function syncEthyPivotServeDir(
   accountsDir: string | undefined,
 ): void {
   client.setEthyPivotAccountsDir(accountsDir)
+  if (typeof client.setEthyStorageDir === 'function') {
+    client.setEthyStorageDir(
+      accountsDir !== undefined
+        ? path.join(path.dirname(accountsDir), 'storage-chunks')
+        : undefined,
+    )
+  }
 }

@@ -547,6 +547,23 @@ export class CustodyStateResolver {
         hasRightHint: hasRight,
       })
       if (!verified.ok) return undefined
+      if (
+        origin instanceof Uint8Array &&
+        origin.length === 32 &&
+        last instanceof Uint8Array &&
+        last.length === 32
+      ) {
+        this.deps.snapStore?.appendProvenStorageChunk({
+          accountHash,
+          storageRoot,
+          chunkBlockNumber: BigInt(chunkBlock),
+          originSlotHash: origin,
+          lastSlotHash: last,
+          hasRight: hasRight ? 1 : 0,
+          slotsSlab64B: slab,
+          proofNodes: proofs,
+        })
+      }
       const accountHex = bytesToUnprefixedHex(accountHash)
       const slotHex = bytesToUnprefixedHex(slotHash)
       const touched = this.deps.writeIndex.lastSlotWriteBlock(accountHex, slotHex)

@@ -99,10 +99,10 @@ export class EthyCodeStorageSynchronizer {
     this.running = true
     this.spine.custodyBackgroundActive = true
     if (this.snapStore !== undefined) {
-      const root = this.snapStore.activePivotRootDir()
-      if (root !== undefined) {
-        this.client.setSharedCodeDir(`${root}/code`)
-        this.client.setEthyStorageDir(`${root}/storage`)
+      this.client.setSharedCodeDir(this.snapStore.sharedCodeDir())
+      const storageChunksDir = this.snapStore.activePivotStorageChunksDir()
+      if (storageChunksDir !== undefined) {
+        this.client.setEthyStorageDir(storageChunksDir)
       }
     }
   }
@@ -240,6 +240,12 @@ export class EthyCodeStorageSynchronizer {
       if (!verified.ok) continue
       const slots = storageSlotsFromKindSlab(entry.slotsSlab64B)
       await this.snapStore?.appendStorageSlots(entry.accountHash, slots)
+      this.snapStore?.appendProvenStorageComplete({
+        accountHash: entry.accountHash,
+        storageRoot: entry.storageRoot,
+        chunkBlockNumber: this.spine.pivotBlockNumber ?? 0n,
+        slotsSlab64B: entry.slotsSlab64B,
+      })
       queue?.delete(acctKey)
     }
     for (const key of requestedKeys) {
@@ -298,9 +304,26 @@ export class EthyCodeStorageSynchronizer {
       hasRightHint: hasRight,
     })
     if (!verified.ok) return
+    const chunkBlockField = decoded[4]
+    const chunkBlockNumber =
+      chunkBlockField instanceof Uint8Array && chunkBlockField.length > 0
+        ? bytesToBigInt(chunkBlockField)
+        : (this.spine.pivotBlockNumber ?? 0n)
     if (slab.length > 0) {
       const slots = storageSlotsFromKindSlab(slab)
       await this.snapStore?.appendStorageSlots(task.accountHash, slots)
+    }
+    if (last instanceof Uint8Array && last.length === 32) {
+      this.snapStore?.appendProvenStorageChunk({
+        accountHash: task.accountHash,
+        storageRoot: task.storageRoot,
+        chunkBlockNumber,
+        originSlotHash: origin,
+        lastSlotHash: last,
+        hasRight: hasRight ? 1 : 0,
+        slotsSlab64B: slab,
+        proofNodes: proofs,
+      })
     }
     if (hasRight && last instanceof Uint8Array) {
       const nextOrigin = incrementKey32(last)

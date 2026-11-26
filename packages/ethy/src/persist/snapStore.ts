@@ -1,6 +1,7 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 
+import { EthyStorageStore } from '@ethereumjs/devp2p'
 import { RLP } from '@ethereumjs/rlp'
 import type { FlatStateManager } from '@ethereumjs/statemanager'
 import {
@@ -420,10 +421,21 @@ export class SnapPivotStore {
     return this.activeStateRoot
   }
 
+  /** Shared content-addressed bytecode dir (`networks/<net>/code/<xx>/<rest62>`) served by `SharedCodeDisk`. */
+  sharedCodeDir(): string {
+    return path.join(this.networkDir, 'code')
+  }
+
   /** Active pivot filesystem root (`pivots/<stateRoot>/`). */
   activePivotRootDir(): string | undefined {
     if (this.activeStateRoot === undefined) return undefined
     return this.pivotDir(this.activeStateRoot)
+  }
+
+  /** Active pivot proven storage-chunks dir (`pivots/<stateRoot>/storage-chunks/`) served by `EthyStorageStore`. */
+  activePivotStorageChunksDir(): string | undefined {
+    const root = this.activePivotRootDir()
+    return root !== undefined ? path.join(root, 'storage-chunks') : undefined
   }
 
   pivotDirForRoot(stateRootHex: string): string {
@@ -1144,7 +1156,15 @@ export class SnapPivotStore {
   }
 
   hasPersistedCode(codeHash: Uint8Array): boolean {
-    return this.persistedCodeHashes.has(bytesToHex(codeHash).slice(2).toLowerCase())
+    const hex = bytesToHex(codeHash).slice(2).toLowerCase()
+    if (this.persistedCodeHashes.has(hex)) return true
+    if (!this.enabled) return false
+    const sharedPath = path.join(this.networkDir, 'code', hex.slice(0, 2), hex.slice(2))
+    if (fs.existsSync(sharedPath)) {
+      this.persistedCodeHashes.add(hex)
+      return true
+    }
+    return false
   }
 
   hasPersistedStorageAccount(accountHash: Uint8Array): boolean {
@@ -1334,9 +1354,18 @@ export class SnapPivotStore {
     return entries
   }
 
-  /** Cold bytecode lookup for {@link FlatStateManager} (`code/shard-*.bin` journals). */
+  /** Cold bytecode lookup for {@link FlatStateManager} (shared `code/<xx>/<rest>` first, legacy `code/shard-*.bin` fallback). */
   lookupCodeByHash(codeHash: Uint8Array): Uint8Array | undefined {
     if (!this.enabled) return undefined
+    const hashHex = bytesToHex(codeHash).slice(2).toLowerCase()
+    const sharedPath = path.join(this.networkDir, 'code', hashHex.slice(0, 2), hashHex.slice(2))
+    if (fs.existsSync(sharedPath)) {
+      try {
+        return new Uint8Array(fs.readFileSync(sharedPath))
+      } catch {
+        // fall through to legacy shard
+      }
+    }
     if (this.activeStateRoot === undefined) {
       const active = this.readActive()
       if (active === undefined) return undefined
@@ -1345,7 +1374,6 @@ export class SnapPivotStore {
     const shard = codeHash[0]!.toString(16).padStart(2, '0')
     const file = path.join(this.pivotDir(this.activeStateRoot), 'code', `shard-${shard}.bin`)
     if (!fs.existsSync(file)) return undefined
-    const hashHex = bytesToHex(codeHash).slice(2).toLowerCase()
     const stat = fs.statSync(file)
     let cached = this.codeLookupIndex.get(file)
     if (cached === undefined || cached.fileSize !== stat.size) {
@@ -2285,9 +2313,21 @@ export class SnapPivotStore {
   }
 
   appendCode(codeHash: Uint8Array, code: Uint8Array): void {
-    if (!this.enabled || this.activeStateRoot === undefined) return
+    if (!this.enabled) return
     const hex = bytesToHex(codeHash).slice(2).toLowerCase()
     this.persistedCodeHashes.add(hex)
+    const sharedFile = path.join(this.networkDir, 'code', hex.slice(0, 2), hex.slice(2))
+    try {
+      if (!fs.existsSync(sharedFile)) {
+        fs.mkdirSync(path.dirname(sharedFile), { recursive: true })
+        const tmp = `${sharedFile}.${process.pid}.${Date.now()}.tmp`
+        fs.writeFileSync(tmp, code)
+        fs.renameSync(tmp, sharedFile)
+      }
+    } catch {
+      // Best-effort shared code mirror; legacy shard write still runs below.
+    }
+    if (this.activeStateRoot === undefined) return
     const pivot = this.pivotDir(this.activeStateRoot)
     const shard = codeHash[0]!.toString(16).padStart(2, '0')
     const file = path.join(pivot, 'code', `shard-${shard}.bin`)
@@ -2304,6 +2344,44 @@ export class SnapPivotStore {
     void next.catch(() => {
       if (this.codeWriteChains.get(file) === next) this.codeWriteChains.delete(file)
     })
+  }
+
+  /** Persist a verified complete storage trie slab (`kind = 2`) for direct `EthyStorageStore` peer re-serving. */
+  appendProvenStorageComplete(opts: {
+    accountHash: Uint8Array
+    storageRoot: Uint8Array
+    chunkBlockNumber: bigint
+    slotsSlab64B: Uint8Array
+  }): void {
+    if (!this.enabled) return
+    const dir = this.activePivotStorageChunksDir()
+    if (dir === undefined) return
+    try {
+      EthyStorageStore.writeDiskComplete(dir, opts)
+    } catch {
+      // Best-effort serving mirror.
+    }
+  }
+
+  /** Persist a verified `kind = 1` proven storage chunk + boundary proofs for direct `EthyStorageStore` peer re-serving. */
+  appendProvenStorageChunk(opts: {
+    accountHash: Uint8Array
+    storageRoot: Uint8Array
+    chunkBlockNumber: bigint
+    originSlotHash: Uint8Array
+    lastSlotHash: Uint8Array
+    hasRight: number
+    slotsSlab64B: Uint8Array
+    proofNodes: Uint8Array[]
+  }): void {
+    if (!this.enabled) return
+    const dir = this.activePivotStorageChunksDir()
+    if (dir === undefined) return
+    try {
+      EthyStorageStore.writeDiskChunk(dir, opts)
+    } catch {
+      // Best-effort serving mirror.
+    }
   }
 
   appendHealBal(blockNumber: bigint, balRlp: Uint8Array): void {
