@@ -39,6 +39,11 @@ import { accountHashHex, buildWitnessFoldContext } from './custodyWitnessFold.ts
 
 const RESOLVER_TIMEOUT_MS = 12_000
 const ACCOUNT_SLAB_STRIDE = 136
+const WITNESS_BYTE_BUDGET = 524_288
+
+export const CUSTODY_WITNESS_BATCH_MS_DEFAULT = 15
+export const CUSTODY_WITNESS_BATCH_MS_MIN = 10
+export const CUSTODY_WITNESS_BATCH_MS_MAX = 25
 
 export type CustodyResolverDeps = {
   getClient: () => Devp2pWorkerClient | undefined
@@ -50,6 +55,20 @@ export type CustodyResolverDeps = {
   balEarliestBlock: () => bigint
   /** Optional fold context override (defaults to spine + writeIndex builder). */
   foldContext?: () => WitnessFoldContext
+  /** Coalesce distinct witness lookups (10–25 ms, WP-16d). `0` flushes immediately (tests). */
+  witnessBatchWindowMs?: number
+}
+
+type WitnessBatchEntry = {
+  accountHash: Uint8Array
+  callbacks: Array<(value: AccountMissResult | undefined) => void>
+}
+
+type WitnessBatchLane = {
+  peer: WorkerPeerSnapshot
+  bucket: number
+  entries: WitnessBatchEntry[]
+  timer?: ReturnType<typeof setTimeout>
 }
 
 type PendingEthy = {
@@ -60,12 +79,40 @@ type PendingEthy = {
 
 let nextReqId = 1000n
 
+function pendingEthyKey(peerId: string, reqId: bigint): string {
+  return `${peerId.toLowerCase()}:${reqId.toString(16)}`
+}
+
+function reqIdFromRlpField(field: unknown): bigint | undefined {
+  if (!(field instanceof Uint8Array)) return undefined
+  try {
+    return bytesToBigInt(field)
+  } catch {
+    try {
+      return BigInt(`0x${bytesToUnprefixedHex(field)}`)
+    } catch {
+      return undefined
+    }
+  }
+}
+
 export class CustodyStateResolver {
   private readonly deps: CustodyResolverDeps
   private readonly pending = new Map<string, PendingEthy>()
+  private readonly witnessBatches = new Map<string, WitnessBatchLane>()
+  private readonly witnessBatchWindowMs: number
 
   constructor(deps: CustodyResolverDeps) {
     this.deps = deps
+    const raw = deps.witnessBatchWindowMs ?? CUSTODY_WITNESS_BATCH_MS_DEFAULT
+    if (raw === 0) {
+      this.witnessBatchWindowMs = 0
+    } else {
+      this.witnessBatchWindowMs = Math.min(
+        CUSTODY_WITNESS_BATCH_MS_MAX,
+        Math.max(CUSTODY_WITNESS_BATCH_MS_MIN, raw),
+      )
+    }
   }
 
   handleEthyResponse(peerId: string, code: number, payload: Uint8Array): void {
@@ -77,14 +124,9 @@ export class CustodyStateResolver {
       return
     }
     const decoded = RLP.decode(payload) as unknown[]
-    const reqIdBytes = decoded[0] as Uint8Array
-    let reqKey: string
-    try {
-      reqKey = BigInt(`0x${bytesToUnprefixedHex(reqIdBytes)}`).toString(16)
-    } catch {
-      reqKey = bytesToUnprefixedHex(reqIdBytes)
-    }
-    const key = `${peerId}:${reqKey}`
+    const reqId = reqIdFromRlpField(decoded[0])
+    if (reqId === undefined) return
+    const key = pendingEthyKey(peerId, reqId)
     const row = this.pending.get(key)
     if (row === undefined) return
     clearTimeout(row.timer)
@@ -99,13 +141,22 @@ export class CustodyStateResolver {
 
   private waitResponse(peerId: string, reqId: bigint): Promise<Uint8Array> {
     return new Promise((resolve, reject) => {
-      const key = `${peerId}:${reqId.toString(16)}`
+      const key = pendingEthyKey(peerId, reqId)
       const timer = setTimeout(() => {
         this.pending.delete(key)
         reject(new Error('custody ethy timeout'))
       }, RESOLVER_TIMEOUT_MS)
       this.pending.set(key, { resolve, reject, timer })
     })
+  }
+
+  private dropPending(peerId: string, reqId: bigint, err?: Error): void {
+    const key = pendingEthyKey(peerId, reqId)
+    const row = this.pending.get(key)
+    if (row === undefined) return
+    clearTimeout(row.timer)
+    this.pending.delete(key)
+    row.reject(err ?? new Error('custody ethy send failed'))
   }
 
   private sendEthy(peerId: string, code: number, rlp: unknown[]): boolean {
@@ -126,6 +177,7 @@ export class CustodyStateResolver {
     accountHash: Uint8Array,
     policy: StateResolutionPolicy,
   ): Promise<AccountMissResult> => {
+    if (policy === 'local-only') return undefined
     const bucket = accountHash[0]! >> 4
     const witness = await this.tryWitnessAccount(accountHash, bucket)
     if (witness !== undefined) return witness
@@ -158,12 +210,14 @@ export class CustodyStateResolver {
     codeHash: Uint8Array,
     policy: StateResolutionPolicy,
   ): Promise<CodeMissResult> => {
+    if (policy === 'local-only') return undefined
     const bucket = codeHash[0]! >> 4
     const peer = this.pickCustodianForBucket(bucket, 'code')
     if (peer === undefined) {
       return this.deps.snapBootstrapEnabled && policy === 'full' ? undefined : undefined
     }
     const reqId = this.allocReqId()
+    const responsePromise = this.waitResponse(peer.id, reqId)
     if (
       !this.sendEthy(peer.id, EthyMessageCodes.GET_PROVEN_STORAGE_OR_CODE, [
         bigIntToUnpaddedBytes(reqId),
@@ -171,10 +225,11 @@ export class CustodyStateResolver {
         [codeHash],
       ])
     ) {
+      this.dropPending(peer.id, reqId)
       return undefined
     }
     try {
-      const raw = await this.waitResponse(peer.id, reqId)
+      const raw = await responsePromise
       const decoded = RLP.decode(raw) as unknown[]
       const pairs = parseProvenCodePairs(decoded)
       const row = pairs.find((p) => equalsBytes(p[0], codeHash))
@@ -187,32 +242,103 @@ export class CustodyStateResolver {
     }
   }
 
-  private async tryWitnessAccount(
+  private tryWitnessAccount(
     accountHash: Uint8Array,
     bucket: number,
   ): Promise<AccountMissResult | undefined> {
     const peer = this.pickCustodianForBucket(bucket, 'accounts')
-    if (peer === undefined) return undefined
+    if (peer === undefined) return Promise.resolve(undefined)
+    const laneKey = `${peer.id.toLowerCase()}:${bucket}`
+    return new Promise((resolve) => {
+      let lane = this.witnessBatches.get(laneKey)
+      if (lane === undefined) {
+        lane = { peer, bucket, entries: [] }
+        this.witnessBatches.set(laneKey, lane)
+      }
+      const existing = lane.entries.find((e) => equalsBytes(e.accountHash, accountHash))
+      if (existing !== undefined) {
+        existing.callbacks.push(resolve)
+        return
+      }
+      lane.entries.push({ accountHash, callbacks: [resolve] })
+      if (this.witnessBatchWindowMs === 0) {
+        void this.flushWitnessBatch(laneKey)
+        return
+      }
+      if (lane.timer === undefined) {
+        lane.timer = setTimeout(() => {
+          void this.flushWitnessBatch(laneKey)
+        }, this.witnessBatchWindowMs)
+      }
+    })
+  }
+
+  private async flushWitnessBatch(laneKey: string): Promise<void> {
+    const lane = this.witnessBatches.get(laneKey)
+    if (lane === undefined) return
+    this.witnessBatches.delete(laneKey)
+    if (lane.timer !== undefined) clearTimeout(lane.timer)
+    const entries = lane.entries
+    if (entries.length === 0) return
+
+    const uniqueHashes = entries.map((e) => e.accountHash)
+
+    const settle = (results: Map<string, AccountMissResult | undefined>) => {
+      for (const entry of entries) {
+        const key = bytesToUnprefixedHex(entry.accountHash)
+        const value = results.get(key)
+        for (const cb of entry.callbacks) cb(value)
+      }
+    }
+
     const reqId = this.allocReqId()
     const minAnchor = this.deps.balEarliestBlock()
+    const queries = uniqueHashes.map((h) => [h, []])
+    const responsePromise = this.waitResponse(lane.peer.id, reqId)
     if (
-      !this.sendEthy(peer.id, EthyMessageCodes.GET_STATE_WITNESS, [
+      !this.sendEthy(lane.peer.id, EthyMessageCodes.GET_STATE_WITNESS, [
         bigIntToUnpaddedBytes(reqId),
         minAnchor,
-        intToUnpaddedBytes(524_288),
-        [[accountHash, []]],
+        intToUnpaddedBytes(WITNESS_BYTE_BUDGET),
+        queries,
       ])
     ) {
-      return undefined
+      this.dropPending(lane.peer.id, reqId)
+      settle(new Map())
+      return
     }
     try {
-      const raw = await this.waitResponse(peer.id, reqId)
-      const decoded = RLP.decode(raw) as unknown[]
-      const groups = decoded[1] as unknown[][]
-      if (!Array.isArray(groups) || groups.length === 0) return undefined
-      const anchorRoot = groups[0]![1] as Uint8Array
-      const proofNodes = (decoded[2] as Uint8Array[]) ?? []
-      const accounts = ((groups[0]![2] as [Uint8Array, Uint8Array][]) ?? []).map(([h, rlp]) => ({
+      const raw = await responsePromise
+      const results = await this.accountResultsFromWitness(lane.peer, uniqueHashes, raw, minAnchor)
+      settle(results)
+    } catch {
+      settle(new Map())
+    }
+  }
+
+  private async accountResultsFromWitness(
+    peer: WorkerPeerSnapshot,
+    accountHashes: Uint8Array[],
+    raw: Uint8Array,
+    minAnchor: bigint,
+  ): Promise<Map<string, AccountMissResult | undefined>> {
+    const out = new Map<string, AccountMissResult | undefined>()
+    for (const h of accountHashes) out.set(bytesToUnprefixedHex(h), undefined)
+
+    const decoded = RLP.decode(raw) as unknown[]
+    const groups = decoded[1] as unknown[][]
+    if (!Array.isArray(groups) || groups.length === 0) return out
+
+    const pending = new Set(accountHashes.map((h) => bytesToUnprefixedHex(h)))
+    const anchorBlock = Number(peer.ethyStatus?.basePivotBlock ?? minAnchor)
+    const ctx =
+      this.deps.foldContext?.() ?? buildWitnessFoldContext(this.deps.spine, this.deps.writeIndex)
+
+    for (const group of groups) {
+      const anchorRoot = group[1] as Uint8Array
+      const proofNodes = (group[4] as Uint8Array[]) ?? []
+      const wireAccounts = (group[2] as [Uint8Array, Uint8Array][]) ?? []
+      const accounts = wireAccounts.map(([h, rlp]) => ({
         accountHash: h,
         accountRlpOrEmpty: rlp,
       }))
@@ -220,31 +346,50 @@ export class CustodyStateResolver {
         { anchorStateRoot: anchorRoot, accounts, slots: [], proofNodes },
         ethyKeccak256,
       )
-      if (!verified.ok) return undefined
-      const hit = accounts.find((a) => equalsBytes(a.accountHash, accountHash))
-      if (hit === undefined) return 'empty'
-      if (hit.accountRlpOrEmpty.length === 0) return 'empty'
-      const anchorBlock = Number(peer.ethyStatus?.basePivotBlock ?? minAnchor)
-      const ctx =
-        this.deps.foldContext?.() ?? buildWitnessFoldContext(this.deps.spine, this.deps.writeIndex)
-      const folded = foldWitnessToHead(
-        {
-          anchorBlock,
-          anchorStateRoot: anchorRoot,
-          accountHashHex: accountHashHex(accountHash),
-          accountRlpOrEmpty: hit.accountRlpOrEmpty,
-          slotWitnesses: [],
-        },
-        ctx,
-      )
-      if (folded.ok && folded.provenEmptyAccount) return 'empty'
-      if (folded.ok && folded.account !== undefined) {
-        return accountToBinaryAccount(folded.account)
+      if (!verified.ok) continue
+
+      for (const accountHash of accountHashes) {
+        const key = bytesToUnprefixedHex(accountHash)
+        if (!pending.has(key) || out.get(key) !== undefined) continue
+        const hit = accounts.find((a) => equalsBytes(a.accountHash, accountHash))
+        if (hit === undefined) {
+          out.set(key, 'empty')
+          pending.delete(key)
+          continue
+        }
+        if (hit.accountRlpOrEmpty.length === 0) {
+          out.set(key, 'empty')
+          pending.delete(key)
+          continue
+        }
+        const folded = foldWitnessToHead(
+          {
+            anchorBlock,
+            anchorStateRoot: anchorRoot,
+            accountHashHex: accountHashHex(accountHash),
+            accountRlpOrEmpty: hit.accountRlpOrEmpty,
+            slotWitnesses: [],
+          },
+          ctx,
+        )
+        if (folded.ok && folded.provenEmptyAccount) {
+          out.set(key, 'empty')
+          pending.delete(key)
+          continue
+        }
+        if (folded.ok && folded.account !== undefined) {
+          out.set(key, accountToBinaryAccount(folded.account))
+          pending.delete(key)
+          continue
+        }
+        out.set(key, accountMissFromRlpOrBinary(hit.accountRlpOrEmpty))
+        pending.delete(key)
       }
-      return accountMissFromRlpOrBinary(hit.accountRlpOrEmpty)
-    } catch {
-      return undefined
     }
+    for (const key of pending) {
+      out.set(key, 'empty')
+    }
+    return out
   }
 
   private async resolveStorageRootForAccount(
@@ -273,6 +418,7 @@ export class CustodyStateResolver {
     slotHash: Uint8Array,
   ): Promise<StorageMissResult> {
     const reqId = this.allocReqId()
+    const responsePromise = this.waitResponse(peer.id, reqId)
     if (
       !this.sendEthy(peer.id, EthyMessageCodes.GET_PROVEN_STORAGE_OR_CODE, [
         bigIntToUnpaddedBytes(reqId),
@@ -282,10 +428,11 @@ export class CustodyStateResolver {
         slotHash,
       ])
     ) {
+      this.dropPending(peer.id, reqId)
       return undefined
     }
     try {
-      const raw = await this.waitResponse(peer.id, reqId)
+      const raw = await responsePromise
       const decoded = RLP.decode(raw) as unknown[]
       if (Number(decoded[1]) !== 1) return undefined
       const responseRoot = decoded[3]
@@ -336,6 +483,7 @@ export class CustodyStateResolver {
     const st = peer.ethyStatus!
     if (BigInt(st.basePivotBlock) < this.deps.balEarliestBlock()) return undefined
     const reqId = this.allocReqId()
+    const responsePromise = this.waitResponse(peer.id, reqId)
     if (
       !this.sendEthy(peer.id, EthyMessageCodes.GET_PROVEN_ACCOUNT_CHUNK, [
         bigIntToUnpaddedBytes(reqId),
@@ -343,10 +491,11 @@ export class CustodyStateResolver {
         accountHash,
       ])
     ) {
+      this.dropPending(peer.id, reqId)
       return undefined
     }
     try {
-      const raw = await this.waitResponse(peer.id, reqId)
+      const raw = await responsePromise
       const decoded = RLP.decode(raw) as unknown[]
       const origin = decoded[2] as Uint8Array
       const last = decoded[3] as Uint8Array

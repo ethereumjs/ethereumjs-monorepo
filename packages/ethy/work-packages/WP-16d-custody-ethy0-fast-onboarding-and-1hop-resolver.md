@@ -193,4 +193,6 @@ flowchart TD
 
 **Tranche 7:** Vitest workspace aliases (`@ethereumjs/statemanager` / `@ethereumjs/devp2p` `src`); custody fast-path onboarding anchors from dial peer `ETHY STATUS`; `custodyFastOnboard` override for legacy swarm loopback; persisted `node-key.txt` honored in `inProcess` tests; `custodyEthyLoopback.spec.ts` green (zero `snap/1`, assigned buckets only).
 
-**Still open:** Resolver 10–25 ms micro-batch; PEX redundancy gates (WP-16g); policy isolation / v0.2 interop tests (§4).
+**Tranche 8:** `CustodyStateResolver` witness micro-batch (10–25 ms, default 15 ms) with one `GET_STATE_WITNESS` per peer/bucket lane; `local-only` policy guards; policy + batch coverage in `custodyStateResolver.spec.ts`.
+
+**Still open:** PEX redundancy gates (WP-16g); full zero-snap cold-miss loopback (§4); v0.2 interop.
