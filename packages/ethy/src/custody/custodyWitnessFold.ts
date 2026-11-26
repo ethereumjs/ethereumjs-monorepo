@@ -12,11 +12,12 @@ export function buildWitnessFoldContext(
   writeIndex: StatyWriteIndex,
 ): WitnessFoldContext {
   const latest = Number(spine.lastVerifiedBlockNumber ?? spine.pivotBlockNumber ?? 0n)
-  const earliest = Number(
+  const pivot = Number(spine.pivotBlockNumber ?? 0n)
+  const balFromWindow =
     spine.balWindow.length > 0
-      ? spine.balWindow[0]!.blockNumber
-      : onboardingBalStartBlock(BigInt(latest)),
-  )
+      ? Number(spine.balWindow[0]!.blockNumber)
+      : Number(onboardingBalStartBlock(BigInt(latest)))
+  const earliest = Math.min(pivot, balFromWindow)
   const balByBlock = new Map<number, BALInput>()
   for (const row of spine.balWindow) {
     if (row.balJson !== undefined) {

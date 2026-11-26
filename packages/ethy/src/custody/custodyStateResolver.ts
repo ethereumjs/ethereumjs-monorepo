@@ -15,6 +15,7 @@ import {
   KECCAK256_RLP,
   accountToBinaryAccount,
   bigIntToUnpaddedBytes,
+  binaryAccountToAccount,
   bytesToBigInt,
   bytesToUnprefixedHex,
   createAccountFromRLP,
@@ -34,7 +35,7 @@ import type { WitnessFoldContext } from '../staty/witnessFold.ts'
 import type { StatyWriteIndex } from '../staty/writeIndex.ts'
 import { verifyProvenAccountChunkJob, verifyProvenStorageKind1Job } from '../sync/snapVerifyJob.ts'
 import { pickEthyCustodianForBucket } from './custodyPeerPick.ts'
-import { findSlotInKind1Slab, parseProvenCodePairs } from './custodyStorageCodec.ts'
+import { ethyWireKind, findSlotInKind1Slab, parseProvenCodePairs } from './custodyStorageCodec.ts'
 import { accountHashHex, buildWitnessFoldContext } from './custodyWitnessFold.ts'
 
 const RESOLVER_TIMEOUT_MS = 12_000
@@ -100,6 +101,9 @@ export class CustodyStateResolver {
   private readonly deps: CustodyResolverDeps
   private readonly pending = new Map<string, PendingEthy>()
   private readonly witnessBatches = new Map<string, WitnessBatchLane>()
+  /** Avoid re-running witness/chunk when resolving storage after a warm account. */
+  private readonly storageRootByAccount = new Map<string, Uint8Array | 'empty'>()
+  private readonly storageSlotCache = new Map<string, Uint8Array | 'empty'>()
   private readonly witnessBatchWindowMs: number
 
   constructor(deps: CustodyResolverDeps) {
@@ -173,6 +177,15 @@ export class CustodyStateResolver {
     return pickEthyCustodianForBucket(this.deps.getPeers(), bucket, plane)
   }
 
+  private cacheStorageRoot(accountHash: Uint8Array, root: Uint8Array): void {
+    const value = equalsBytes(root, KECCAK256_RLP) ? 'empty' : root
+    this.storageRootByAccount.set(bytesToUnprefixedHex(accountHash), value)
+  }
+
+  private cacheStorageRootFromBinary(accountHash: Uint8Array, binary: Uint8Array): void {
+    this.cacheStorageRoot(accountHash, getBinaryAccountStorageRoot(binary))
+  }
+
   resolveAccountMiss = async (
     accountHash: Uint8Array,
     policy: StateResolutionPolicy,
@@ -180,9 +193,17 @@ export class CustodyStateResolver {
     if (policy === 'local-only') return undefined
     const bucket = accountHash[0]! >> 4
     const witness = await this.tryWitnessAccount(accountHash, bucket)
-    if (witness !== undefined) return witness
+    if (witness instanceof Uint8Array) {
+      this.cacheStorageRootFromBinary(accountHash, witness)
+      return witness
+    }
+    if (witness === 'empty') return witness
     const chunk = await this.tryAccountChunk(accountHash, bucket)
-    if (chunk !== undefined) return chunk
+    if (chunk instanceof Uint8Array) {
+      this.cacheStorageRootFromBinary(accountHash, chunk)
+      return chunk
+    }
+    if (chunk === 'empty') return chunk
     if (this.deps.snapBootstrapEnabled && policy === 'full') return undefined
     return undefined
   }
@@ -193,6 +214,9 @@ export class CustodyStateResolver {
     policy: StateResolutionPolicy,
   ): Promise<StorageMissResult> => {
     if (policy === 'local-only') return undefined
+    const slotKey = `${bytesToUnprefixedHex(accountHash)}:${bytesToUnprefixedHex(slotHash)}`
+    const cachedSlot = this.storageSlotCache.get(slotKey)
+    if (cachedSlot !== undefined) return cachedSlot
     const bucket = accountHash[0]! >> 4
     const storageRoot = await this.resolveStorageRootForAccount(accountHash, bucket)
     if (storageRoot === 'empty') return 'empty'
@@ -203,7 +227,11 @@ export class CustodyStateResolver {
     if (peer === undefined) {
       return this.deps.snapBootstrapEnabled && policy === 'full' ? undefined : undefined
     }
-    return this.tryStorageKind1(peer, accountHash, storageRoot, slotHash)
+    const resolved = await this.tryStorageKind1(peer, accountHash, storageRoot, slotHash)
+    if (resolved !== undefined) {
+      this.storageSlotCache.set(slotKey, resolved)
+    }
+    return resolved
   }
 
   resolveCodeMiss = async (
@@ -396,17 +424,26 @@ export class CustodyStateResolver {
     accountHash: Uint8Array,
     bucket: number,
   ): Promise<Uint8Array | 'empty' | undefined> {
+    const cached = this.storageRootByAccount.get(bytesToUnprefixedHex(accountHash))
+    if (cached !== undefined) return cached
     const witness = await this.tryWitnessAccount(accountHash, bucket)
     if (witness === 'empty') return 'empty'
     if (witness instanceof Uint8Array) {
       const root = getBinaryAccountStorageRoot(witness)
-      return equalsBytes(root, KECCAK256_RLP) ? 'empty' : root
+      const out = equalsBytes(root, KECCAK256_RLP) ? 'empty' : root
+      this.storageRootByAccount.set(bytesToUnprefixedHex(accountHash), out)
+      return out
     }
     const chunk = await this.tryAccountChunk(accountHash, bucket)
-    if (chunk === 'empty') return 'empty'
+    if (chunk === 'empty') {
+      this.storageRootByAccount.set(bytesToUnprefixedHex(accountHash), 'empty')
+      return 'empty'
+    }
     if (chunk instanceof Uint8Array) {
       const root = getBinaryAccountStorageRoot(chunk)
-      return equalsBytes(root, KECCAK256_RLP) ? 'empty' : root
+      const out = equalsBytes(root, KECCAK256_RLP) ? 'empty' : root
+      this.storageRootByAccount.set(bytesToUnprefixedHex(accountHash), out)
+      return out
     }
     return undefined
   }
@@ -434,7 +471,7 @@ export class CustodyStateResolver {
     try {
       const raw = await responsePromise
       const decoded = RLP.decode(raw) as unknown[]
-      if (Number(decoded[1]) !== 1) return undefined
+      if (ethyWireKind(decoded[1]) !== 1) return undefined
       const responseRoot = decoded[3]
       if (!(responseRoot instanceof Uint8Array) || !equalsBytes(responseRoot, storageRoot)) {
         return undefined
@@ -442,7 +479,7 @@ export class CustodyStateResolver {
       const chunkBlock = fieldToBlockNumber(decoded[4])
       const origin = decoded[5] as Uint8Array
       const last = decoded[6] as Uint8Array
-      const hasRight = Number(decoded[7] ?? 0) !== 0
+      const hasRight = ethyWireKind(decoded[7]) !== 0
       const slab = (decoded[8] as Uint8Array) ?? new Uint8Array(0)
       const proofs = (decoded[9] as Uint8Array[]) ?? []
       const verified = await verifyProvenStorageKind1Job({
@@ -502,7 +539,7 @@ export class CustodyStateResolver {
       const root = decoded[5] as Uint8Array
       const slab = decoded[7] as Uint8Array
       const proofs = decoded[8] as Uint8Array[]
-      const hasRight = Number(decoded[4] ?? 0) !== 0
+      const hasRight = ethyWireKind(decoded[4]) !== 0
       const verified = await verifyProvenAccountChunkJob({
         chunkStateRoot: root,
         originHash: origin,
@@ -512,7 +549,33 @@ export class CustodyStateResolver {
       })
       if (!verified.ok) return undefined
       const binary = findAccountBinaryInSlab(slab, accountHash)
-      if (binary !== undefined) return binary
+      if (binary !== undefined) {
+        const chunkBlock = fieldToBlockNumber(decoded[6]) || Number(st.basePivotBlock)
+        const head = Number(
+          this.deps.spine.headBlockNumber ??
+            this.deps.spine.lastVerifiedBlockNumber ??
+            st.basePivotBlock,
+        )
+        if (head > chunkBlock) {
+          const ctx =
+            this.deps.foldContext?.() ??
+            buildWitnessFoldContext(this.deps.spine, this.deps.writeIndex)
+          const folded = foldWitnessToHead(
+            {
+              anchorBlock: chunkBlock,
+              anchorStateRoot: root,
+              accountHashHex: accountHashHex(accountHash),
+              accountRlpOrEmpty: binaryAccountToAccount(binary).serialize(),
+            },
+            ctx,
+          )
+          if (folded.ok && folded.provenEmptyAccount) return 'empty'
+          if (folded.ok && folded.account !== undefined) {
+            return accountToBinaryAccount(folded.account)
+          }
+        }
+        return binary
+      }
       if (compareBytes32(accountHash, origin) >= 0 && compareBytes32(accountHash, last) <= 0) {
         const touched = this.deps.writeIndex.accountIndex(bytesToUnprefixedHex(accountHash))
         const chunkBlock = Number(st.basePivotBlock)

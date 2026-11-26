@@ -1,6 +1,6 @@
 # WP-16d: Unified Custody `ETHY/0` — Default Fast Onboarding (`--custody 2`), Background 3-Plane Custody Sync & 1-Hop Cold-Miss Resolver (Option B)
 
-- **Status:** `IN_PROGRESS`
+- **Status:** `DONE`
 - **Dependencies:** `WP-16b` (`DONE`), `WP-16c` (`DONE`), `WP-06f` (`DONE`), `WP-08b` (`DONE`), `WP-11b` (`DONE`), `WP-14` (`DONE`)
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
@@ -80,10 +80,10 @@ Ship **Option B (Unified Custody `ETHY/0`)** end-to-end as Ethy's default operat
 ---
 
 ### Acceptance Criteria (`WP-16d`)
-- [ ] `ethy` defaults to `--custody 2` (1/8th of Ethereum; live in minutes via rolling `eth/71` BALs + background 3-plane custody sync); `--custody 1..16` and `--full` (`16`) work cleanly, and `--custody 0` is rejected.
-- [ ] Open-World cold misses resolve in 1 hop over `ETHY/0` (`0x0b` witness → `0x03`/`0x05` targeted custody chunk + BAL fold) with **zero `snap/1` calls** when a bucket custodian is connected.
-- [ ] Unresolved misses throw `StateMissUnavailableError`; `'swarm-only'` never calls `snap/1`; completed custody buckets flip atomically to Closed-World and advertise honest per-plane `ETHY/0 STATUS` bitmasks.
-- [ ] `npm run tsc`, `npm test`, and `npm run spellcheck` pass in `packages/ethy`.
+- [x] `ethy` defaults to `--custody 2` (1/8th of Ethereum; live in minutes via rolling `eth/71` BALs + background 3-plane custody sync); `--custody 1..16` and `--full` (`16`) work cleanly, and `--custody 0` is rejected.
+- [x] Open-World cold misses resolve in 1 hop over `ETHY/0` (`0x0b` witness → `0x03`/`0x05` targeted custody chunk + BAL fold) with **zero `snap/1` calls** when a bucket custodian is connected.
+- [x] Unresolved misses throw `StateMissUnavailableError`; `'swarm-only'` never calls `snap/1`; completed custody buckets flip atomically to Closed-World and advertise honest per-plane `ETHY/0 STATUS` bitmasks.
+- [x] `npm run tsc`, `npm test`, and `npm run spellcheck` pass in `packages/ethy`.
 
 ---
 
@@ -199,4 +199,6 @@ flowchart TD
 
 **Tranche 10:** Fix `tryAccountChunk` `PROVEN_ACCOUNT_CHUNK` tuple decode (`chunkStateRoot` field 5, not 6 — matches `parseProvenAccountChunk` / `ethyServer`). `custodyColdMissLoopback.spec.ts` — seeded pivot loopback: witness ladder then `0x03` chunk, `eth_getBalance`, zero `snap/1`; closed-world cache stops extra ETHY after `markBucketClosed`.
 
-**Still open:** PEX redundancy gates (WP-16g); §4 remainder (storage/code/`eth_call` cold miss + BAL fold over post-pivot mutations).
+**Tranche 11 (DONE — §4 E2E):** `custodySection4.spec.ts` + `custodyLoopbackHarness.ts`: zero-`snap/1` balance/code/storage kind-1 + `eth_call` loopback; BAL fold past pivot (`buildWitnessFoldContext` includes pivot in `localBalEarliestBlock`); hybrid closed-world `eth_call`. Resolver: `parseProvenCodePairs` wire list form, `ethyWireKind` on chunk/`hasRight`, account chunk BAL fold, storage-root/slot resolver caches. `syntheticPeer` contract storage trie aligns ETHY keccak + 32-byte slot keys. `custodyStorageKind2.spec.ts` kind-1 verify helper. **WP-16d** → **`DONE`** (client scope; **WP-16g** owns PEX / Machine gates).
+
+**Still open (other WPs):** PEX redundancy and Machine integration — **WP-16g** only, not WP-16d.

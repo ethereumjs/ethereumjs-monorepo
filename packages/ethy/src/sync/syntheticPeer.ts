@@ -13,9 +13,11 @@ import {
   getBinaryAccountStorageRoot,
   isBinaryAccountContract,
   isBinaryAccountEmptyStorage,
+  setLengthLeft,
 } from '@ethereumjs/util'
 import { keccak_256 } from '@noble/hashes/sha3.js'
 
+import { ethyKeccak256, initEthyKeccak } from '../crypto/keccak.ts'
 import { verifyAccountRangeJob } from './snapVerifyJob.ts'
 
 import type { Account, AccountBodyBytes } from '@ethereumjs/util'
@@ -81,6 +83,7 @@ export class SyntheticSnapPeer {
   }
 
   static async create(accountsPerBucket = 10): Promise<SyntheticSnapPeer> {
+    await initEthyKeccak()
     const trie = new MerklePatriciaTrie({ useKeyHashing: false })
     const accounts: SyntheticAccount[] = []
     for (let nibble = 0; nibble < 16; nibble++) {
@@ -204,11 +207,13 @@ async function attachContractToFirstAccount(
 ): Promise<void> {
   const row = accounts[0]
   if (row === undefined) return
-  const code = new Uint8Array([0x60, 0x00, 0x60, 0x00, 0xfd])
+  const code = new Uint8Array([0x00])
   const codeHash = keccak_256(code)
-  const storageTrie = new MerklePatriciaTrie({ useKeyHashing: false })
-  const slotHash = keccak_256(new Uint8Array([0x01]))
-  const slotRlp = RLP.encode(new Uint8Array([0x02]))
+  const storageTrie = new MerklePatriciaTrie({ useKeyHashingFunction: ethyKeccak256 })
+  const slotHash = keccak_256(setLengthLeft(new Uint8Array([0x01]), 32))
+  const slotValBe = new Uint8Array(32)
+  slotValBe[31] = 2
+  const slotRlp = RLP.encode(bytesToBigInt(slotValBe))
   await storageTrie.put(slotHash, slotRlp)
   const account = createAccount({
     nonce: row.account.nonce,

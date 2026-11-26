@@ -1,7 +1,21 @@
-import { equalsBytes } from '@ethereumjs/util'
+import { bytesToBigInt, equalsBytes } from '@ethereumjs/util'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 
 /** 64-byte ETHY/0 storage slab row: `slotHash || value`. */
 export const STORAGE_SLAB_STRIDE = 64
+
+export function ethyWireKind(field: unknown): number {
+  if (typeof field === 'number') return field
+  if (field instanceof Uint8Array) {
+    if (field.length === 0) return 0
+    try {
+      return Number(bytesToBigInt(field))
+    } catch {
+      return field[0] ?? 0
+    }
+  }
+  return 0
+}
 
 export function findSlotInKind1Slab(
   slab: Uint8Array,
@@ -18,11 +32,15 @@ export function findSlotInKind1Slab(
 export function parseProvenCodePairs(
   decoded: unknown[],
 ): Array<[codeHash: Uint8Array, code: Uint8Array]> {
-  if (Number(decoded[1]) !== 0) return []
+  if (ethyWireKind(decoded[1]) !== 0) return []
   const pairs = decoded[2]
   if (!Array.isArray(pairs)) return []
   const out: Array<[Uint8Array, Uint8Array]> = []
   for (const row of pairs) {
+    if (row instanceof Uint8Array && row.length > 0) {
+      out.push([keccak_256(row), row])
+      continue
+    }
     if (!Array.isArray(row) || row.length < 2) continue
     const h = row[0]
     const c = row[1]
@@ -40,7 +58,7 @@ export type Kind2StorageEntry = {
 }
 
 export function parseProvenStorageKind2Entries(decoded: unknown[]): Kind2StorageEntry[] {
-  if (Number(decoded[1]) !== 2) return []
+  if (ethyWireKind(decoded[1]) !== 2) return []
   const rows = decoded[2]
   if (!Array.isArray(rows)) return []
   const out: Kind2StorageEntry[] = []
