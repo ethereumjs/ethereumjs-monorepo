@@ -1,11 +1,12 @@
-import {
-  MerklePatriciaTrie,
-  createMPTFromProof,
-  updateMPTFromMerkleProof,
-  verifyMPTWithMerkleProof,
-} from '@ethereumjs/mpt'
+import { MerklePatriciaTrie, updateMPTFromMerkleProof } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
-import { KECCAK256_RLP, createAccountFromRLP, equalsBytes } from '@ethereumjs/util'
+import {
+  KECCAK256_RLP,
+  MapDB,
+  bytesToUnprefixedHex,
+  createAccountFromRLP,
+  equalsBytes,
+} from '@ethereumjs/util'
 
 import { MAX_STATY_MESSAGE_BYTES, MAX_STATY_PROOF_NODES } from './constants.ts'
 
@@ -42,17 +43,15 @@ function compareBytes32(a: Uint8Array, b: Uint8Array): number {
   return 0
 }
 
-async function stateScratch(proof: Uint8Array[], root: Uint8Array): Promise<MerklePatriciaTrie> {
-  const trie = new MerklePatriciaTrie({ useKeyHashing: false, root })
-  await updateMPTFromMerkleProof(trie, proof, false)
-  trie.root(root)
-  await trie.persistRoot()
-  return trie
-}
-
+/**
+ * Pure STATY/0 multi-proof verifier for EPOCH_PART and WITNESSES anchor groups.
+ * Populates one shared in-memory MapDB from `proofNodes[]` (O(P) hashes using `keccak256`)
+ * and verifies every account against `anchorStateRoot` and every storage slot against its
+ * proven parent account's `storageRoot`.
+ */
 export async function verifyStatyMultiProof(
   group: StatyMultiProofGroup,
-  _keccak256: (data: Uint8Array) => Uint8Array,
+  keccak256: (data: Uint8Array) => Uint8Array,
 ): Promise<StatyMultiProofVerifyResult> {
   if (group.anchorStateRoot.length !== 32) {
     return { ok: false, code: 'invalid_anchor', detail: 'anchorStateRoot' }
@@ -80,22 +79,29 @@ export async function verifyStatyMultiProof(
     }
   }
 
-  const proof = group.proofNodes
-  const storageRoots = new Map<string, Uint8Array>()
+  const sharedDb = new MapDB<string, string | Uint8Array>()
+  const stateTrie = new MerklePatriciaTrie({
+    db: sharedDb,
+    useKeyHashing: false,
+    useKeyHashingFunction: keccak256,
+    root: group.anchorStateRoot,
+  })
+  if (group.proofNodes.length > 0) {
+    try {
+      await updateMPTFromMerkleProof(stateTrie, group.proofNodes, false)
+    } catch {
+      return { ok: false, code: 'invalid_account_proof', detail: 'proof ingest' }
+    }
+  }
 
-  const stateTrie = await stateScratch(proof, group.anchorStateRoot)
+  const storageRoots = new Map<string, Uint8Array>()
 
   for (const row of group.accounts) {
     if (row.accountHash.length !== 32) {
       return { ok: false, code: 'invalid_account_proof' }
     }
     try {
-      const got = await verifyMPTWithMerkleProof(
-        stateTrie,
-        group.anchorStateRoot,
-        row.accountHash,
-        proof,
-      )
+      const got = await stateTrie.get(row.accountHash, true)
       if (row.accountRlpOrEmpty.length === 0) {
         if (got !== null) {
           return { ok: false, code: 'invalid_account_proof', detail: 'exclusion' }
@@ -106,12 +112,13 @@ export async function verifyStatyMultiProof(
         return { ok: false, code: 'invalid_account_proof', detail: 'inclusion' }
       }
       const acc = createAccountFromRLP(row.accountRlpOrEmpty)
-      const hex = row.accountHash.reduce((s, b) => s + b.toString(16).padStart(2, '0'), '')
-      storageRoots.set(hex, acc.storageRoot)
+      storageRoots.set(bytesToUnprefixedHex(row.accountHash), acc.storageRoot)
     } catch {
       return { ok: false, code: 'invalid_account_proof' }
     }
   }
+
+  const storageTries = new Map<string, MerklePatriciaTrie>()
 
   for (const row of group.slots) {
     if (row.accountHash.length !== 32 || row.slotHash.length !== 32) {
@@ -120,7 +127,7 @@ export async function verifyStatyMultiProof(
     if (!slotValCanonical(row.slotValOrEmpty)) {
       return { ok: false, code: 'invalid_storage_proof', detail: 'slot encoding' }
     }
-    const parentHex = row.accountHash.reduce((s, b) => s + b.toString(16).padStart(2, '0'), '')
+    const parentHex = bytesToUnprefixedHex(row.accountHash)
     const storageRoot = storageRoots.get(parentHex)
     if (storageRoot === undefined) {
       return { ok: false, code: 'missing_parent_account' }
@@ -131,12 +138,18 @@ export async function verifyStatyMultiProof(
       }
       continue
     }
-    try {
-      const storageTrie = await createMPTFromProof(proof, {
-        root: storageRoot,
+    let storageTrie = storageTries.get(parentHex)
+    if (storageTrie === undefined) {
+      storageTrie = new MerklePatriciaTrie({
+        db: sharedDb,
         useKeyHashing: false,
+        useKeyHashingFunction: keccak256,
+        root: storageRoot,
       })
-      const proved = await verifyMPTWithMerkleProof(storageTrie, storageRoot, row.slotHash, proof)
+      storageTries.set(parentHex, storageTrie)
+    }
+    try {
+      const proved = await storageTrie.get(row.slotHash, true)
       if (row.slotValOrEmpty.length === 0) {
         if (proved !== null) {
           return { ok: false, code: 'invalid_storage_proof', detail: 'exclusion' }

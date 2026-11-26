@@ -3,6 +3,8 @@ import path from 'node:path'
 
 import { bytesToUnprefixedHex } from '@ethereumjs/util'
 
+const MAX_MEM_CODES = 512
+
 export type SharedCodeStoreOpts = {
   /** `<networkDir>/code/` */
   codeDir: string
@@ -21,6 +23,18 @@ export class SharedCodeStore {
     fs.mkdirSync(this._codeDir, { recursive: true })
   }
 
+  private _cachePut(hex: string, code: Uint8Array): void {
+    if (this._mem.has(hex)) {
+      this._mem.delete(hex)
+    }
+    this._mem.set(hex, code)
+    while (this._mem.size > MAX_MEM_CODES) {
+      const oldest = this._mem.keys().next().value as string | undefined
+      if (oldest === undefined) break
+      this._mem.delete(oldest)
+    }
+  }
+
   put(codeHash: Uint8Array, code: Uint8Array): void {
     if (codeHash.length !== 32) return
     const hex = bytesToUnprefixedHex(codeHash)
@@ -30,19 +44,22 @@ export class SharedCodeStore {
     const tmp = `${target}.tmp`
     fs.writeFileSync(tmp, code)
     fs.renameSync(tmp, target)
-    this._mem.set(hex, new Uint8Array(code))
+    this._cachePut(hex, new Uint8Array(code))
   }
 
   get(codeHash: Uint8Array): Uint8Array | undefined {
     if (codeHash.length !== 32) return undefined
     const hex = bytesToUnprefixedHex(codeHash)
     const hit = this._mem.get(hex)
-    if (hit !== undefined) return hit
+    if (hit !== undefined) {
+      this._cachePut(hex, hit)
+      return hit
+    }
     const rel = `${hex.slice(0, 2)}/${hex.slice(2)}`
     const target = path.join(this._codeDir, rel)
     if (fs.existsSync(target)) {
       const buf = new Uint8Array(fs.readFileSync(target))
-      this._mem.set(hex, buf)
+      this._cachePut(hex, buf)
       return buf
     }
     const legacy = this._legacy?.(codeHash)

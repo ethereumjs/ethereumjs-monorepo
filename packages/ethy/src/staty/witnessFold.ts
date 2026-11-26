@@ -1,4 +1,15 @@
-import { Account, createAccountFromRLP, equalsBytes } from '@ethereumjs/util'
+import {
+  Account,
+  type BALInput,
+  KECCAK256_NULL,
+  KECCAK256_RLP,
+  bytesToBigInt,
+  bytesToUnprefixedHex,
+  createAccountFromRLP,
+  decodeBALToBinary,
+  equalsBytes,
+} from '@ethereumjs/util'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 
 import type { StatyWriteIndex } from './writeIndex.ts'
 
@@ -35,9 +46,9 @@ export type WitnessFoldContext = {
   localBalEarliestBlock: number
   latestVerifiedBlock: number
   stateRootAt(block: number): Uint8Array | undefined
-  readVerifiedBal(block: number): import('@ethereumjs/util').BALInput | undefined
+  readVerifiedBal(block: number): BALInput | undefined
   writeIndex: StatyWriteIndex
-  accountExistsAtHead(accountHashHex: string, slotHashHex: string, slotVal: Uint8Array): boolean
+  keccak256?: (data: Uint8Array) => Uint8Array
 }
 
 function anchorAccount(accountRlpOrEmpty: Uint8Array): WitnessFoldAnchorAccount | undefined {
@@ -66,33 +77,43 @@ export function foldWitnessToHead(
     return { ok: false, code: 'invalid_anchor' }
   }
 
+  const hashFn = ctx.keccak256 ?? keccak_256
   const anchor = anchorAccount(input.accountRlpOrEmpty)
-  const provenEmptyAccount = anchor === undefined
   const idx = ctx.writeIndex.accountIndex(input.accountHashHex)
+
   let nonce = anchor?.nonce ?? 0n
   let balance = anchor?.balance ?? 0n
-  let codeHash = anchor?.codeHash
-  let storageRoot = anchor?.storageRoot
+  let codeHash = anchor?.codeHash ?? KECCAK256_NULL
+  const storageRoot = anchor?.storageRoot ?? KECCAK256_RLP
+  let exists = anchor !== undefined
+
   if (idx !== undefined) {
     if (idx.lastDeletedBlock > input.anchorBlock) {
       return { ok: true, provenEmptyAccount: true, slots: [] }
     }
-    for (let b = input.anchorBlock + 1; b <= ctx.latestVerifiedBlock; b++) {
-      const bal = ctx.readVerifiedBal(b)
-      if (bal === undefined) continue
-      // Per-field folding applied via write index timestamps only in this lean core;
-      // callers with BAL apply paths merge post-values at head separately.
-      if (idx.lastBalanceBlock >= b && idx.lastBalanceBlock > input.anchorBlock) {
-        /* balance post already at head via FlatStateManager */
+    const maxAccountWrite = Math.max(idx.lastBalanceBlock, idx.lastNonceBlock, idx.lastCodeBlock)
+    if (maxAccountWrite > input.anchorBlock) {
+      const upper = Math.min(maxAccountWrite, ctx.latestVerifiedBlock)
+      for (let b = input.anchorBlock + 1; b <= upper; b++) {
+        const bal = ctx.readVerifiedBal(b)
+        if (bal === undefined) continue
+        const compact = decodeBALToBinary(bal)
+        for (const row of compact) {
+          if (bytesToUnprefixedHex(hashFn(row.address)) !== input.accountHashHex) continue
+          if (row.balance !== undefined) {
+            balance = row.balance.length === 0 ? 0n : bytesToBigInt(row.balance)
+            exists = true
+          }
+          if (row.nonce !== undefined) {
+            nonce = row.nonce.length === 0 ? 0n : bytesToBigInt(row.nonce)
+            exists = true
+          }
+          if (row.code !== undefined) {
+            codeHash = row.code.length === 0 ? KECCAK256_NULL : hashFn(row.code)
+            exists = true
+          }
+        }
       }
-    }
-    if (idx.lastNonceBlock <= input.anchorBlock) {
-      /* keep anchor nonce */
-    } else {
-      nonce = anchor?.nonce ?? nonce
-    }
-    if (idx.lastCodeBlock <= input.anchorBlock) {
-      /* keep anchor codeHash */
     }
   }
 
@@ -113,14 +134,18 @@ export function foldWitnessToHead(
     }
   }
 
-  let account: Account | undefined
-  if (!provenEmptyAccount && storageRoot !== undefined && codeHash !== undefined) {
-    account = new Account()
-    account.nonce = nonce
-    account.balance = balance
-    account.storageRoot = storageRoot
-    account.codeHash = codeHash
+  const isEmptyPost =
+    !exists || (balance === 0n && nonce === 0n && equalsBytes(codeHash, KECCAK256_NULL))
+
+  if (isEmptyPost) {
+    return { ok: true, provenEmptyAccount: true, slots }
   }
 
-  return { ok: true, account, provenEmptyAccount, slots }
+  const account = new Account()
+  account.nonce = nonce
+  account.balance = balance
+  account.storageRoot = storageRoot
+  account.codeHash = codeHash
+
+  return { ok: true, account, provenEmptyAccount: false, slots }
 }

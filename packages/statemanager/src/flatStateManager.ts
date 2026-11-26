@@ -267,20 +267,38 @@ export class FlatStateManager implements StateManagerInterface {
     }
   }
 
+  private hasAccountTombstone(key: string): boolean {
+    let cur: FlatStateManager | undefined = this
+    while (cur !== undefined) {
+      if (cur._tombstones.has(key)) return true
+      cur = cur._parent
+    }
+    return false
+  }
+
+  private hasStorageTombstone(storageKey: string): boolean {
+    let cur: FlatStateManager | undefined = this
+    while (cur !== undefined) {
+      if (cur._storageTombstones.has(storageKey)) return true
+      cur = cur._parent
+    }
+    return false
+  }
+
   private async coalesceAccountMiss(
     accountHash: Uint8Array,
     policy: StateResolutionPolicy,
   ): Promise<AccountMissResult> {
     const root = this.root()
-    const key = this.accountHashKey(accountHash)
-    const existing = root._accountMissInflight.get(key)
+    const inflightKey = `${policy}:${this.accountHashKey(accountHash)}`
+    const existing = root._accountMissInflight.get(inflightKey)
     if (existing !== undefined) return existing
     const resolver = root._resolveAccountMiss
     if (resolver === undefined) return undefined
     const flight = resolver(accountHash, policy).finally(() => {
-      root._accountMissInflight.delete(key)
+      root._accountMissInflight.delete(inflightKey)
     })
-    root._accountMissInflight.set(key, flight)
+    root._accountMissInflight.set(inflightKey, flight)
     return flight
   }
 
@@ -291,14 +309,15 @@ export class FlatStateManager implements StateManagerInterface {
   ): Promise<StorageMissResult> {
     const root = this.root()
     const sk = this.storageKey(this.accountHashKey(accountHash), bytesToUnprefixedHex(slotHash))
-    const existing = root._storageMissInflight.get(sk)
+    const inflightKey = `${policy}:${sk}`
+    const existing = root._storageMissInflight.get(inflightKey)
     if (existing !== undefined) return existing
     const resolver = root._resolveStorageMiss
     if (resolver === undefined) return undefined
     const flight = resolver(accountHash, slotHash, policy).finally(() => {
-      root._storageMissInflight.delete(sk)
+      root._storageMissInflight.delete(inflightKey)
     })
-    root._storageMissInflight.set(sk, flight)
+    root._storageMissInflight.set(inflightKey, flight)
     return flight
   }
 
@@ -307,20 +326,28 @@ export class FlatStateManager implements StateManagerInterface {
     policy: StateResolutionPolicy,
   ): Promise<CodeMissResult> {
     const root = this.root()
-    const key = bytesToUnprefixedHex(codeHash)
-    const existing = root._codeMissInflight.get(key)
+    const inflightKey = `${policy}:${bytesToUnprefixedHex(codeHash)}`
+    const existing = root._codeMissInflight.get(inflightKey)
     if (existing !== undefined) return existing
     const resolver = root._resolveCodeMiss
     if (resolver === undefined) return undefined
     const flight = resolver(codeHash, policy).finally(() => {
-      root._codeMissInflight.delete(key)
+      root._codeMissInflight.delete(inflightKey)
     })
-    root._codeMissInflight.set(key, flight)
+    root._codeMissInflight.set(inflightKey, flight)
     return flight
   }
 
   private commitResolvedAccountBinary(key: string, binary: Uint8Array): void {
     this.root().writeBinaryAccountKey(key, binary, false)
+  }
+
+  private commitResolvedStorage(storageKey: string, value: Uint8Array): void {
+    this.root().writeStorageKey(storageKey, value)
+  }
+
+  private commitResolvedCode(codeHashHex: string, code: Uint8Array): void {
+    this.root().writeCodeKey(codeHashHex, code)
   }
 
   private clearProvenEmptyAccount(key: string): void {
@@ -341,6 +368,7 @@ export class FlatStateManager implements StateManagerInterface {
 
   private async resolveAccountIfMissing(key: string, accountHash: Uint8Array): Promise<void> {
     if (this.readAccountKey(key) !== undefined) return
+    if (this.hasAccountTombstone(key)) return
     const root = this.root()
     if (root.bucketClosedForHash(accountHash)) return
     if (root.isProvenEmptyAccountKey(key)) return
@@ -373,6 +401,7 @@ export class FlatStateManager implements StateManagerInterface {
     storageKey: string,
   ): Promise<void> {
     if (this.readStorageKey(storageKey) !== undefined) return
+    if (this.hasStorageTombstone(storageKey)) return
     const root = this.root()
     if (root.bucketClosedForHash(accountHash)) return
     if (root.isProvenEmptyStorageKey(storageKey)) return
@@ -389,7 +418,7 @@ export class FlatStateManager implements StateManagerInterface {
       return
     }
     this.clearProvenEmptyStorage(storageKey)
-    this.writeStorageKey(storageKey, result)
+    this.commitResolvedStorage(storageKey, result)
   }
 
   private slotShard(key: string): Map<string, number> {
@@ -724,7 +753,7 @@ export class FlatStateManager implements StateManagerInterface {
   async putAccount(address: Address, account?: Account): Promise<void> {
     const key = this.accountHashHex(address)
     this._hashToAddress.set(key, address)
-    if (account !== undefined) {
+    if (this._parent === undefined && account !== undefined) {
       this.clearProvenEmptyAccount(key)
     }
     this.writeAccountKey(key, account)
@@ -761,7 +790,7 @@ export class FlatStateManager implements StateManagerInterface {
     if (resolved === undefined) {
       throw new StateMissUnavailableError('code', account.codeHash)
     }
-    this.writeCodeKey(codeHashHex, resolved)
+    this.commitResolvedCode(codeHashHex, resolved)
     return resolved
   }
 
@@ -820,13 +849,14 @@ export class FlatStateManager implements StateManagerInterface {
     this.pinKey(this.accountHashHex(address))
     const ah = this.accountHashHex(address)
     const sk = this.storageKey(ah, this.slotHashHex(key))
-    const ahHex = this.accountHashHex(address)
-    if (value.length === 0) {
-      const accountHash = this._keccak(address.bytes)
-      const slotHash = unprefixedHexToBytes(this.slotHashHex(key))
-      this.root().markStorageEmpty(accountHash, slotHash)
-    } else {
-      this.clearProvenEmptyStorage(this.storageKey(ahHex, this.slotHashHex(key)))
+    if (this._parent === undefined) {
+      if (value.length === 0) {
+        const accountHash = this._keccak(address.bytes)
+        const slotHash = unprefixedHexToBytes(this.slotHashHex(key))
+        this.markStorageEmpty(accountHash, slotHash)
+      } else {
+        this.clearProvenEmptyStorage(sk)
+      }
     }
     this.writeStorageKey(sk, value.length === 0 ? undefined : value)
   }
@@ -1074,6 +1104,7 @@ export class FlatStateManager implements StateManagerInterface {
             acc.storageChanges.length === 0
           ) {
             this._pinnedKeys.delete(ah)
+            this.markAccountEmpty(unprefixedHexToBytes(ah))
             this.writeBinaryAccountKey(ah, undefined, false)
             continue
           }
@@ -1081,15 +1112,23 @@ export class FlatStateManager implements StateManagerInterface {
           setBinaryAccountBalance(scratch, finalBalance)
           setBinaryAccountStorageRoot(scratch, finalStorageRoot)
           setBinaryAccountCodeHash(scratch, finalCodeHash)
+          this.clearProvenEmptyAccount(ah)
           this.writeBinaryAccountKey(ah, new Uint8Array(scratch), false)
         } else if (this._coldAccountLookup === undefined && !this.slotShard(ah).has(ah)) {
           this.pinKey(ah)
+          this.clearProvenEmptyAccount(ah)
           this.writeBinaryAccountKey(ah, accountToBinaryAccount(new Account()), false)
         }
 
         for (const [slotKey, slotVal] of acc.storageChanges) {
           const slotKey32 = setLengthLeft(slotKey, 32)
-          const sk = this.storageKey(ah, this.slotHashHex(slotKey32))
+          const slotHashHex = this.slotHashHex(slotKey32)
+          const sk = this.storageKey(ah, slotHashHex)
+          if (slotVal.length === 0) {
+            this.markStorageEmpty(unprefixedHexToBytes(ah), unprefixedHexToBytes(slotHashHex))
+          } else {
+            this.clearProvenEmptyStorage(sk)
+          }
           this.writeStorageKey(sk, slotVal.length === 0 ? undefined : setLengthLeft(slotVal, 32))
         }
       }

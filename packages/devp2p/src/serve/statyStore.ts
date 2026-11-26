@@ -51,6 +51,7 @@ const partKey = (epoch: bigint, shard: number, part: number): string => `${epoch
 
 const MANIFEST_MAGIC = Buffer.from([0x53, 0x54, 0x59, 0x4d])
 const PART_MAGIC = Buffer.from([0x53, 0x54, 0x59, 0x50])
+const WITNESS_MAGIC = Buffer.from([0x53, 0x54, 0x59, 0x58])
 
 function scalarBigInt(v: unknown): bigint {
   if (v instanceof Uint8Array) {
@@ -64,6 +65,11 @@ function scalarBigInt(v: unknown): bigint {
   return 0n
 }
 
+function scalarInt(v: unknown): number {
+  const big = scalarBigInt(v)
+  return big > BigInt(Number.MAX_SAFE_INTEGER) ? Number.MAX_SAFE_INTEGER : Number(big)
+}
+
 function parseManifestFile(raw: Buffer): StatyEpochManifest | undefined {
   if (raw.length < 4 || !raw.subarray(0, 4).equals(MANIFEST_MAGIC)) return undefined
   const decoded = RLP.decode(raw.subarray(4)) as unknown[]
@@ -72,20 +78,22 @@ function parseManifestFile(raw: Buffer): StatyEpochManifest | undefined {
   const shards: StatyEpochShardRow[] = []
   if (Array.isArray(shardsRaw)) {
     for (const row of shardsRaw) {
-      const r = row as unknown[]
+      if (!Array.isArray(row) || row.length < 5) continue
       shards.push({
-        shardIndex: Number(r[0]),
-        partCount: Number(r[1]),
-        accountCount: Number(r[2]),
-        slotCount: Number(r[3]),
-        totalBytes: Number(r[4]),
+        shardIndex: scalarInt(row[0]),
+        partCount: scalarInt(row[1]),
+        accountCount: scalarInt(row[2]),
+        slotCount: scalarInt(row[3]),
+        totalBytes: scalarInt(row[4]),
       })
     }
   }
+  const anchorStateRoot = decoded[2]
+  if (!(anchorStateRoot instanceof Uint8Array) || anchorStateRoot.length !== 32) return undefined
   return {
     epochNumber: scalarBigInt(decoded[0]),
     anchorBlock: scalarBigInt(decoded[1]),
-    anchorStateRoot: decoded[2] as Uint8Array,
+    anchorStateRoot,
     dedupBaseEpoch: scalarBigInt(decoded[3]),
     shards,
   }
@@ -102,30 +110,41 @@ function parseEpochPartFile(raw: Buffer): StatyEpochPart | undefined {
   const accounts: StatyEpochPart['accounts'] = []
   if (Array.isArray(accountsRaw)) {
     for (const row of accountsRaw) {
-      const r = row as unknown[]
-      accounts.push({ accountHash: r[0] as Uint8Array, accountRlpOrEmpty: r[1] as Uint8Array })
+      if (!Array.isArray(row) || row.length < 2) continue
+      if (!(row[0] instanceof Uint8Array) || !(row[1] instanceof Uint8Array)) continue
+      accounts.push({ accountHash: row[0], accountRlpOrEmpty: row[1] })
     }
   }
   const slots: StatyEpochPart['slots'] = []
   if (Array.isArray(slotsRaw)) {
     for (const row of slotsRaw) {
-      const r = row as unknown[]
+      if (!Array.isArray(row) || row.length < 3) continue
+      if (
+        !(row[0] instanceof Uint8Array) ||
+        !(row[1] instanceof Uint8Array) ||
+        !(row[2] instanceof Uint8Array)
+      ) {
+        continue
+      }
       slots.push({
-        accountHash: r[0] as Uint8Array,
-        slotHash: r[1] as Uint8Array,
-        slotValOrEmpty: r[2] as Uint8Array,
+        accountHash: row[0],
+        slotHash: row[1],
+        slotValOrEmpty: row[2],
       })
     }
   }
   const proofNodes = Array.isArray(proofRaw)
     ? proofRaw.filter((n): n is Uint8Array => n instanceof Uint8Array)
     : []
+  const anchorStateRoot = decoded[3]
+  if (!(anchorStateRoot instanceof Uint8Array) || anchorStateRoot.length !== 32) return undefined
+  const epochNumber = scalarBigInt(decoded[0])
   return {
-    epochNumber: scalarBigInt(decoded[0]),
-    shardIndex: Number(decoded[1]),
-    partIndex: Number(decoded[2]),
-    anchorBlock: scalarBigInt(decoded[0]) * 256n,
-    anchorStateRoot: decoded[3] as Uint8Array,
+    epochNumber,
+    shardIndex: scalarInt(decoded[1]),
+    partIndex: scalarInt(decoded[2]),
+    anchorBlock: epochNumber * 256n,
+    anchorStateRoot,
     accounts,
     slots,
     proofNodes,
@@ -196,6 +215,63 @@ export class StatyStore {
     }
   }
 
+  private _loadDiskWitness(accountHash: Uint8Array): StatyWitnessRecord[] {
+    if (this._dataDir === undefined) return []
+    const hex = bytesToUnprefixedHex(accountHash)
+    const file = path.join(this._dataDir, 'witnesses', `${hex}.rlp`)
+    try {
+      if (!fs.existsSync(file)) return []
+      const raw = fs.readFileSync(file)
+      if (raw.length < 4 || !raw.subarray(0, 4).equals(WITNESS_MAGIC)) return []
+      const decoded = RLP.decode(raw.subarray(4)) as unknown[]
+      if (!Array.isArray(decoded) || decoded.length < 5) return []
+      const anchorBlock = scalarBigInt(decoded[0])
+      const anchorStateRoot = decoded[1]
+      if (!(anchorStateRoot instanceof Uint8Array) || anchorStateRoot.length !== 32) return []
+      const accountsRaw = Array.isArray(decoded[2]) ? (decoded[2] as unknown[]) : []
+      const slotsRaw = Array.isArray(decoded[3]) ? (decoded[3] as unknown[]) : []
+      const proofRaw = Array.isArray(decoded[4]) ? (decoded[4] as unknown[]) : []
+      let accountRlpOrEmpty: Uint8Array = new Uint8Array(0)
+      let foundAccount = false
+      for (const row of accountsRaw) {
+        if (!Array.isArray(row) || row.length < 2) continue
+        if (!(row[0] instanceof Uint8Array) || !(row[1] instanceof Uint8Array)) continue
+        if (bytesToUnprefixedHex(row[0]) === hex) {
+          accountRlpOrEmpty = row[1]
+          foundAccount = true
+          break
+        }
+      }
+      if (!foundAccount) return []
+      const slots: Array<{ slotHash: Uint8Array; slotValOrEmpty: Uint8Array }> = []
+      for (const row of slotsRaw) {
+        if (!Array.isArray(row) || row.length < 3) continue
+        if (
+          !(row[0] instanceof Uint8Array) ||
+          !(row[1] instanceof Uint8Array) ||
+          !(row[2] instanceof Uint8Array)
+        ) {
+          continue
+        }
+        if (bytesToUnprefixedHex(row[0]) !== hex) continue
+        slots.push({ slotHash: row[1], slotValOrEmpty: row[2] })
+      }
+      const proofNodes = proofRaw.filter((n): n is Uint8Array => n instanceof Uint8Array)
+      const rec: StatyWitnessRecord = {
+        accountHash,
+        anchorBlock,
+        anchorStateRoot,
+        accountRlpOrEmpty,
+        slots,
+        proofNodes,
+      }
+      this._witnesses.set(hex, [rec])
+      return [rec]
+    } catch {
+      return []
+    }
+  }
+
   resolveWitnesses(
     minAnchorBlock: bigint,
     maxBytes: number,
@@ -225,7 +301,8 @@ export class StatyStore {
 
     for (const q of accountQueries) {
       if (q.accountHash.length !== 32) continue
-      const records = this._witnesses.get(bytesToUnprefixedHex(q.accountHash)) ?? []
+      const keyHex = bytesToUnprefixedHex(q.accountHash)
+      const records = this._witnesses.get(keyHex) ?? this._loadDiskWitness(q.accountHash)
       const best = records
         .filter((r) => r.anchorBlock >= minAnchorBlock)
         .sort((a, b) =>

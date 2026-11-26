@@ -13,6 +13,7 @@
     "RPCStateManager",
     "SNAP_BINARY_ACCOUNT_SLAB_RECORD_SIZE",
     "SimpleStateManager",
+    "StateMissUnavailableError",
     "StatefulBinaryTreeStateManager",
     "StorageCache",
     "addMerkleStateProofData",

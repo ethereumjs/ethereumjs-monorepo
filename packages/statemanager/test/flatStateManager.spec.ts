@@ -487,4 +487,83 @@ describe('[StateManager/FlatStateManager]', () => {
       assert.isTrue(e instanceof StateMissUnavailableError)
     }
   })
+
+  it('overlay SSTORE(0) -> SLOAD returns 0 without network miss or polluting root tombstones', async () => {
+    let storageCalls = 0
+    const address = new Address(hexToBytes(`0x${'22'.repeat(20)}`))
+    const slot = setLengthLeft(hexToBytes('0x01'), 32)
+    const rootVal = setLengthLeft(hexToBytes('0x42'), 32)
+    const base = new FlatStateManager({
+      closedBucketsMask: 0x0000,
+      resolveStorageMiss: async () => {
+        storageCalls++
+        return rootVal
+      },
+    })
+    const acct = createAccount({ nonce: 1n })
+    acct.storageRoot = new Uint8Array(32).fill(0x99)
+    await base.putAccount(address, acct)
+
+    const overlay = base.shallowCopy() as FlatStateManager
+    await overlay.putStorage(address, slot, new Uint8Array(0))
+    const inOverlay = await overlay.getStorage(address, slot)
+    assert.deepEqual(inOverlay, new Uint8Array(0))
+    assert.strictEqual(storageCalls, 0)
+
+    // Root was NOT polluted with a proven-empty tombstone — root read still resolves the real slot
+    const fromRoot = await base.getStorage(address, slot)
+    assert.deepEqual(fromRoot, rootVal)
+    assert.strictEqual(storageCalls, 1)
+  })
+
+  it('full-policy read does not fail behind concurrent swarm-only miss', async () => {
+    const address = new Address(hexToBytes(`0x${'33'.repeat(20)}`))
+    const base = new FlatStateManager({
+      closedBucketsMask: 0x0000,
+      resolveAccountMiss: async (_hash, policy) => {
+        await new Promise((r) => setTimeout(r, 15))
+        if (policy === 'swarm-only') return undefined
+        return accountToBinaryAccount(createAccount({ nonce: 9n }))
+      },
+    })
+    const swarmOverlay = base.shallowCopy({ resolutionPolicy: 'swarm-only' }) as FlatStateManager
+    const fullOverlay = base.shallowCopy({ resolutionPolicy: 'full' }) as FlatStateManager
+    const [swarmRes, fullRes] = await Promise.allSettled([
+      swarmOverlay.getAccount(address),
+      fullOverlay.getAccount(address),
+    ])
+    assert.strictEqual(swarmRes.status, 'rejected')
+    assert.strictEqual(fullRes.status, 'fulfilled')
+    if (fullRes.status === 'fulfilled') {
+      assert.strictEqual(fullRes.value?.nonce, 9n)
+    }
+  })
+
+  it('consumeBAL clears proven-empty account and storage tombstones', async () => {
+    const address = new Address(hexToBytes(`0x${'44'.repeat(20)}`))
+    const accountHash = keccak_256(address.bytes)
+    const slot = setLengthLeft(hexToBytes('0x05'), 32)
+    const slotHash = keccak_256(slot)
+    const sm = new FlatStateManager({ closedBucketsMask: 0x0000 })
+    sm.markAccountEmpty(accountHash)
+    sm.markStorageEmpty(accountHash, slotHash)
+    assert.isUndefined(await sm.getAccount(address))
+
+    await sm.consumeBAL([
+      {
+        address: bytesToHex(address.bytes),
+        balanceChanges: [{ blockAccessIndex: '0x1', postBalance: '0x100' }],
+        nonceChanges: [{ blockAccessIndex: '0x1', postNonce: '0x02' }],
+        storageChanges: [
+          { slot: bytesToHex(slot), slotChanges: [{ blockAccessIndex: '0x1', postValue: '0x77' }] },
+        ],
+        storageReads: [],
+        codeChanges: [],
+      },
+    ])
+    const acc = await sm.getAccount(address)
+    assert.strictEqual(acc?.balance, 0x100n)
+    assert.strictEqual(acc?.nonce, 2n)
+    assert.deepEqual(await sm.getStorage(address, slot), setLengthLeft(hexToBytes('0x77'), 32))
+  })
 })
