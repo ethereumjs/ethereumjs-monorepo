@@ -189,6 +189,8 @@ flowchart TD
 
 **Tranche 5:** `EthyCodeStorageSynchronizer.noteAccounts` + kind-0/2 scheduling; `verifyProvenStorageKind2Slab`; storage plane flip when bucket queue drains; coordinator wires background ingest + `getPeers`; `custodyPeerPick.ts`.
 
-**Tranche 6:** Background storage **kind-1** crawl after kind-2 miss (chunked `originSlotHash` advance); `custodyZeroSnapPolicy.spec.ts` (no `snap/1` profile + kind-2→kind-1 ladder). Full in-process mesh loopback deferred until vitest resolves workspace `devp2p` constructor exports reliably.
+**Tranche 6:** Background storage **kind-1** crawl after kind-2 miss (chunked `originSlotHash` advance); `custodyZeroSnapPolicy.spec.ts` (no `snap/1` profile + kind-2→kind-1 ladder).
 
-**Still open:** Live mesh loopback (same harness as `ethySwarmLoopback.spec.ts` + `custodyCount`); PEX redundancy gates (WP-16g).
+**Tranche 7:** Vitest workspace aliases (`@ethereumjs/statemanager` / `@ethereumjs/devp2p` `src`); custody fast-path onboarding anchors from dial peer `ETHY STATUS`; `custodyFastOnboard` override for legacy swarm loopback; persisted `node-key.txt` honored in `inProcess` tests; `custodyEthyLoopback.spec.ts` green (zero `snap/1`, assigned buckets only).
+
+**Still open:** Resolver 10–25 ms micro-batch; PEX redundancy gates (WP-16g); policy isolation / v0.2 interop tests (§4).

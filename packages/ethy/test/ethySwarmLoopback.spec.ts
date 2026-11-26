@@ -144,6 +144,7 @@ describe('[Ethy/Net]: ETHY/0 swarm loopback', () => {
         spine,
         stateManager: createFlatStateManager(),
         network: 'mainnet',
+        custodyFastOnboard: false,
         inProcess: true,
         fresh: true,
         snapStore,

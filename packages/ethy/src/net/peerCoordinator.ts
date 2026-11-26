@@ -262,6 +262,8 @@ export type StartPeerCoordinatorOptions = {
   custodyCount?: number
   /** WP-16d explicit `snap/1` dial (also on when `syncMode === 'snap'`). */
   snapBootstrap?: boolean
+  /** When false, use legacy full ETHY swarm base sync (loopback / tests). */
+  custodyFastOnboard?: boolean
   custodyMissDelegate?: CustodyMissDelegate
 }
 
@@ -465,10 +467,12 @@ export async function startPeerCoordinator(
   const snapBootstrap = opts.snapBootstrap === true || syncMode === 'snap'
   const custodyCount = opts.custodyCount ?? DEFAULT_CUSTODY_COUNT
   const custodyBaseComplete = savedSnapPeek?.baseSyncComplete === true
-  const custodyFastOnboard = custodyFastPathEnabled({
-    snapBootstrap,
-    baseSyncComplete: custodyBaseComplete,
-  })
+  const custodyFastOnboard =
+    opts.custodyFastOnboard ??
+    custodyFastPathEnabled({
+      snapBootstrap,
+      baseSyncComplete: custodyBaseComplete,
+    })
   let custodyLiveReached = false
   let custodyOnboardingPivotRequested = false
   const statyWriteIndex = new StatyWriteIndex(ethyKeccak256)
@@ -492,18 +496,28 @@ export async function startPeerCoordinator(
 
   const chain = chainConfigForNetwork(network)
   const hardfork = activeHardfork(chain)
+  const readPersistedNodeKey = (): Uint8Array | undefined => {
+    const keyPath = path.join(dataDir, 'node-key.txt')
+    try {
+      if (!fs.existsSync(keyPath)) return undefined
+      const raw = fs.readFileSync(keyPath, 'utf8').trim().replace(/^0x/i, '')
+      if (/^[0-9a-f]{64}$/i.test(raw)) {
+        return hexToBytes(`0x${raw}`)
+      }
+    } catch {
+      return undefined
+    }
+    return undefined
+  }
+
   const privateKey = (() => {
+    const fromFile = readPersistedNodeKey()
+    if (fromFile !== undefined) return fromFile
     if (opts.inProcess === true || snapStore === undefined || !snapStore.enabled) {
       return genPrivateKey()
     }
     const keyPath = path.join(dataDir, 'node-key.txt')
     try {
-      if (fs.existsSync(keyPath)) {
-        const raw = fs.readFileSync(keyPath, 'utf8').trim().replace(/^0x/i, '')
-        if (/^[0-9a-f]{64}$/i.test(raw)) {
-          return hexToBytes(`0x${raw}`)
-        }
-      }
       const generated = genPrivateKey()
       fs.mkdirSync(dataDir, { recursive: true })
       fs.writeFileSync(keyPath, `${bytesToUnprefixedHex(generated)}\n`, { mode: 0o600 })
@@ -1984,6 +1998,9 @@ export async function startPeerCoordinator(
   }
 
   const livePivotAllowed = (): boolean => {
+    if (custodyFastOnboard && spine.pivotBlockNumber === undefined) {
+      return true
+    }
     if (spine.syncTransport === 'unset') return false
     if (spine.syncTransport === 'ethy' && spine.pivotStateRoot === undefined) return false
     return !shouldDeferLivePivotRequest({
@@ -2264,9 +2281,22 @@ export async function startPeerCoordinator(
     if (head === undefined || head === 0n) return
     const best = pickBestPeer(peers, pivotBlockedPeers)
     if (best === undefined) return
+    const balAnchor = custodyOnboardingPivotBlock(head)
+    const seeders = ethySeederRows(peers)
+    const explicitSeeders = seeders.filter((s) =>
+      explicitConnectPeerIds.has(s.peerId.toLowerCase()),
+    )
+    const ethyPick =
+      explicitSeeders.length > 0
+        ? pickUsableEthySeeder(explicitSeeders, head, 'ethy')
+        : pickUsableEthySeeder(seeders, head, syncMode)
+    let target = balAnchor
+    if (ethyPick !== undefined && ethyPick.seeder.basePivotBlock > balAnchor) {
+      target = ethyPick.seeder.basePivotBlock
+    }
     custodyOnboardingPivotRequested = true
-    spine.pivotStatusHint = `Custody BAL anchor #${custodyOnboardingPivotBlock(head).toString()}`
-    requestPivotHeaderAt(best, custodyOnboardingPivotBlock(head))
+    spine.pivotStatusHint = `Custody BAL anchor #${target.toString()}`
+    requestPivotHeaderAt(best, target)
   }
 
   const startEthySwarmSync = (peers: WorkerPeerSnapshot[]) => {
@@ -2361,18 +2391,41 @@ export async function startPeerCoordinator(
     }
   }
 
+  const parseEthySeederPivot = (
+    peer: WorkerPeerSnapshot,
+  ): { block: bigint; root: Uint8Array } | undefined => {
+    const st = peer.ethyStatus
+    if (st === undefined) return undefined
+    const rootHex = st.basePivotStateRoot
+    if (rootHex.length === 0) return undefined
+    const root = hexToBytes((rootHex.startsWith('0x') ? rootHex : `0x${rootHex}`) as `0x${string}`)
+    return { block: BigInt(st.basePivotBlock), root }
+  }
+
+  const anchorCustodyOnboardingFromEthyStatus = (peer: WorkerPeerSnapshot): boolean => {
+    if (!custodyFastOnboard || spine.pivotBlockNumber !== undefined) return false
+    const parsed = parseEthySeederPivot(peer)
+    if (parsed === undefined) return false
+    custodyOnboardingPivotRequested = true
+    spine.pivotStatusHint = undefined
+    commitPivotAnchor(
+      { number: parsed.block, hash: new Uint8Array(32), stateRoot: parsed.root },
+      null,
+      peer.id,
+      highestEthVersion(peer.caps),
+      { skipServableBundle: true, firstAnchor: true },
+    )
+    return true
+  }
+
   const anchorEthyPivotFromStatus = (peer: WorkerPeerSnapshot) => {
     if (custodyFastOnboard) return
-    const st = peer.ethyStatus
-    if (st === undefined) return
-    const rootHex = st.basePivotStateRoot
-    if (rootHex.length === 0) return
-    const root = hexToBytes((rootHex.startsWith('0x') ? rootHex : `0x${rootHex}`) as `0x${string}`)
-    const block = BigInt(st.basePivotBlock)
-    ethyAnchorBlock = block
-    ethyAnchorRoot = root
+    const parsed = parseEthySeederPivot(peer)
+    if (parsed === undefined) return
+    ethyAnchorBlock = parsed.block
+    ethyAnchorRoot = parsed.root
     commitPivotAnchor(
-      { number: block, hash: new Uint8Array(32), stateRoot: root },
+      { number: parsed.block, hash: new Uint8Array(32), stateRoot: parsed.root },
       null,
       peer.id,
       highestEthVersion(peer.caps),
@@ -2509,8 +2562,12 @@ export async function startPeerCoordinator(
       ethySeederPeerId = pick.peerId
       ethyAnchorBlock = pick.seeder.basePivotBlock
       const row = peers.find((p) => p.id === pick.peerId)
-      if (row !== undefined && !custodyFastOnboard) {
-        anchorEthyPivotFromStatus(row)
+      if (row !== undefined) {
+        if (custodyFastOnboard) {
+          anchorCustodyOnboardingFromEthyStatus(row)
+        } else {
+          anchorEthyPivotFromStatus(row)
+        }
       }
       return
     }
@@ -2851,14 +2908,20 @@ export async function startPeerCoordinator(
       const row = ethySeederPeerId
         ? lastTelemetryPeers.find((p) => p.id === ethySeederPeerId)
         : undefined
-      if (row !== undefined) anchorEthyPivotFromStatus(row)
+      if (row !== undefined) {
+        if (custodyFastOnboard) {
+          anchorCustodyOnboardingFromEthyStatus(row)
+        } else {
+          anchorEthyPivotFromStatus(row)
+        }
+      }
     }
     if (
       inFlightPeerId === undefined &&
       spine.pivotBlockNumber === undefined &&
       !ethyAnchorPending
     ) {
-      if (spine.syncTransport === 'unset' && syncMode === 'ethy') {
+      if (spine.syncTransport === 'unset' && syncMode === 'ethy' && !custodyFastOnboard) {
         // Wait for a usable ETHY STATUS (selector locks transport).
       } else if (custodyFastOnboard && bestPeer !== undefined) {
         maybeRequestCustodyOnboardingPivot(snap.peers)
