@@ -195,4 +195,6 @@ flowchart TD
 
 **Tranche 8:** `CustodyStateResolver` witness micro-batch (10–25 ms, default 15 ms) with one `GET_STATE_WITNESS` per peer/bucket lane; `local-only` policy guards; policy + batch coverage in `custodyStateResolver.spec.ts`.
 
-**Still open:** PEX redundancy gates (WP-16g); full zero-snap cold-miss loopback (§4); v0.2 interop.
+**Tranche 9:** `custodyPolicyIsolation.spec.ts` — `FlatStateManager` + wired resolver: `swarm-only` / `local-only` → `StateMissUnavailableError`, `full` resolves binary account, default `bootNetworkProfile` omits `snap/1`. `custodyEthyV02Interop.spec.ts` — legacy accounts-only STATUS (no storage/code masks) does not emit `GET_PROVEN_STORAGE_OR_CODE`; v0.4 storage peer still serves kind-2 when mixed.
+
+**Still open:** PEX redundancy gates (WP-16g); full §4 zero-snap cold-miss loopback (RPC + BAL fold).
