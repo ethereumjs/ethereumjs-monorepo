@@ -12,19 +12,20 @@
 ### Goal
 Ship **Option B (Unified Custody `ETHY/0`)** end-to-end as Ethy's default operating mode so a fresh `ethy sepolia` (or `ethy mainnet`) node:
 1. **Goes live in 2–3 minutes** by syncing its rolling `eth/71` BAL window (`4,096..8,192` blocks) and immediately serving verified JSON-RPC (`eth_call`, ENS, ERC-20/DeFi, AI forensics) via Open-World `FlatStateManager`.
-2. **Custodies `2/16` (`1/8th`) of Ethereum by default (`--custody 2`, ~16–20 GB flat / ~20–26 GB with Option-C trie on Mainnet, ~3–4 GB on Sepolia)** — syncing all three planes (`Accounts` + `Bytecode` + `Storage`) for its deterministic nibble buckets in the background over `ETHY/0` `v0.4` (falling back to `snap/1` only on Day-1 empty swarm) and atomically flipping each finished custody bucket to **Closed-World** (`stateManager.markBucketClosed(b)`). Holding 2 buckets per node means **only 7 peers give 100% 1-hop coverage, `14–20` peers give 2× fault-tolerant redundancy, and just 8 Ethy nodes bootstrap a 100% self-sustaining swarm!**
-3. **Resolves cold misses in 1 hop directly from `ETHY/0` custody peers — with `0` `snap/1` calls whenever a custodian for that bucket is connected!**
+2. **Custodies `2/16` (`1/8th`) of Ethereum by default (`--custody 2`, ~16–20 GB flat / ~20–26 GB with Option-C trie on Mainnet, ~3–4 GB on Sepolia)** — syncing all three planes (`Accounts` + `Bytecode` + `Storage`) for its deterministic nibble buckets in the background over `ETHY/0` `v0.4` and atomically flipping each finished custody bucket to **Closed-World** (`stateManager.markBucketClosed(b)`). Holding 2 buckets per node means **only 7 peers give 100% 1-hop coverage, `14–20` peers give 2× fault-tolerant redundancy, and just 8 Ethy nodes bootstrap a 100% self-sustaining swarm!**
+3. **Zero `snap/1` by default — not even negotiated in `HELLO`!** Default Ethy clients resolve all custody syncs and cold misses 100% over `ETHY/0` + `eth/71` BALs (`0` `snap/1` slots occupied on full nodes). Only an explicit Day-0 origin seeder (`ethy --full --snap-bootstrap`) mounts `snap/1` once to seed a brand-new network; once synced, even that seeder drops `snap/1` permanently!
 4. Supports clean scaling via the **Custody Dial (`1..16`, no free-rider `0`)**: `--custody 1` (minimum, tight-disk laptops/CI), `--custody 2` (**default**, 1/8th), `--custody 3..15` (multi-bucket custodian), and `--full` (`--custody 16`, 100% Closed-World read privacy).
 
 ---
 
 ### Key Deliverables (`WP-16d`)
 
-1. **CLI Custody Dial & Deterministic Bucket Assignment (`packages/ethy/src/cli/args.ts`, `src/custody/custodyPlan.ts`):**
+1. **CLI Custody Dial, `--snap-bootstrap` Gate & Deterministic Bucket Assignment (`packages/ethy/src/cli/args.ts`, `src/custody/custodyPlan.ts`):**
    - Add first-class custody flags:
      - `--custody <1..16>` (**default `2`**; values `< 1` or `> 16` rejected with a clear CLI usage error — no `--custody 0` free-rider mode!).
      - `--full` (alias for `--custody 16`).
-     - Preserve `--sync-mode auto | ethy | snap` for explicit transport control and local 2-node tests.
+     - `--snap-bootstrap` (**default `false`**): explicit opt-in flag allowing a Day-0 `--full` seed node (or solo-island dev test) to mount `snap/1` until its initial state is synced. When `false` (all normal clients), `snap/1` is **never mounted or dialed**!
+     - Preserve `--sync-mode auto | ethy | snap` (`--sync-mode snap` implies `--snap-bootstrap`).
    - **Deterministic Custody Assignment (`selectCustodyBuckets(localNodeId, count)`):**
      - `count === 16`: `[0..15]` (`custodyMask = 0xffff`).
      - `1 <= count <= 15`: deterministically derive `start = keccak256(localNodeId)[0] >> 4` and select `count` well-spread buckets (e.g. for `count = 2`, `(start, (start + 8) & 0xf)` — opposite halves of the address space; for general `count`, deterministic stride/permutation from `keccak256(localNodeId)`), persisted in `ActiveMeta` so restarts keep the same assigned custody buckets instead of re-downloading different nibbles!
@@ -39,12 +40,12 @@ Ship **Option B (Unified Custody `ETHY/0`)** end-to-end as Ethy's default operat
    - **Stage 2 — Background 3-Plane Custody Sync (`Accounts` + `Bytecode` + `Storage` for `custodyBuckets`):**
      - Runs in a `ResourceBudget`-aware background lane while live `HEAD_FOLLOWING`, JSON-RPC, and AI storytelling remain 100% responsive.
      - For each assigned bucket `b` in `custodyBuckets`:
-       1. **Accounts:** Sync via `ETHY/0` `0x01`/`0x03` (or `snap/1` fallback if no `ETHY/0` custodian holds bucket `b`), saving `accounts/<b_hex>.bin` + `accounts/<b_hex>.proof.idx` (always self-proving for re-serving!).
-       2. **Bytecode (`kind = 0`):** Batch up to `64` missing `codeHashes` from `ETHY/0` `0x05` (`kind = 0`, skipping hashes already in `SharedCodeStore`), verifying `keccak256(code) === codeHash` (`snap/1 GetByteCodes` fallback only on global swarm miss).
+       1. **Accounts:** Sync via `ETHY/0` `0x01`/`0x03` (using `snap/1` **only** when `--snap-bootstrap` is explicitly enabled and no `ETHY/0` custodian holds bucket `b`), saving `accounts/<b_hex>.bin` + `accounts/<b_hex>.proof.idx` (always self-proving for re-serving!).
+       2. **Bytecode (`kind = 0`):** Batch up to `64` missing `codeHashes` from `ETHY/0` `0x05` (`kind = 0`, skipping hashes already in `SharedCodeStore`), verifying `keccak256(code) === codeHash` (`snap/1 GetByteCodes` only when `--snap-bootstrap` is enabled).
        3. **Storage (`kind = 2` + `kind = 1`):**
           - Small complete-trie contracts (`kind = 2`): batch up to `64` `[accountHash, storageRoot]` pairs; verify complete storage trie root in `SnapVerifyPool` (`computedRoot === storageRoot`, zero sidecar bytes); persist to `storage/<b_hex>.bin`.
           - Large multi-chunk contracts (`kind = 1`): cursor-stream `originSlotHash` → `lastSlotHash + 1`, verify `verifyMerkleRangeProof`, replay verified BALs `(chunkBlockNumber + 1 .. #Head)`, persist 64B slab + `storage/<b_hex>.proof.idx`.
-          - Seamless per-plane fallback to `snap/1` (`SnapCodeAndStorageSynchronizer`) if `ETHY/0` peers are `v0.2` accounts-only (`storageBucketsBitmask === 0`).
+          - Only when `--snap-bootstrap` is explicitly set: fall back to `snap/1` (`SnapCodeAndStorageSynchronizer`) if `ETHY/0` peers are `v0.2` accounts-only (`storageBucketsBitmask === 0`).
        4. **Atomic Closed-World Flip:** Once all 3 planes for bucket `b` are verified and BAL-replayed to `#Head`, call `stateManager.markBucketClosed(b)` and emit updated `ETHY/0 STATUS` setting `(1 << b)` across `bucketsBitmask`, `storageBucketsBitmask`, and `codeBucketsBitmask`!
    - **Laptop-Sleep / Restart Resume:**
      - On restart, reload completed custody buckets (immediately closed!) and `BalWriteIndex` checkpoint, catch up missed `eth/71` BALs (`lastVerifiedBlock + 1 .. #Head`) to stay live, and resume any incomplete custody bucket in the background.
@@ -64,12 +65,11 @@ Ship **Option B (Unified Custody `ETHY/0`)** end-to-end as Ethy's default operat
           - **Storage miss (after account's `storageRoot` is known):**
             - If `storageRoot === KECCAK256_RLP` → immediately commit Proven-Empty Tombstone (0 network calls!).
             - Otherwise query a custodian with `storageBucketsBitmask & (1 << b)` via `0x05 GET_PROVEN_STORAGE_OR_CODE` (`kind = 2` for complete small-contract trie, falling back to `kind = 1` chunk covering `slotHash`), verify Merkle root/range proof, fold local BALs `(chunkBlockNumber + 1 .. #Head)`, and commit value or proven-empty tombstone!
-     3. **Step 3 — Day-1 Empty-Swarm `snap/1` Fallback (`policy === 'full'` ONLY):**
-        - Triggered **strictly** when `policy === 'full'` AND no connected `ETHY/0` custodian can satisfy bucket `b` within `[localBalEarliestBlock .. #Head]`.
-        - Fetch single-key `snap/1` proof anchored at a recent verified block, verify, fold local BALs, commit to `FlatStateManager`, and persist into local `EthyWitnessStore` so subsequent peers get it over `ETHY/0`!
-        - If `policy === 'swarm-only'` (background AI / ENS probes) or no peer succeeds → return `undefined` so `FlatStateManager` throws `StateMissUnavailableError` (never leeching `snap/1`, never fabricating a false zero!).
+     3. **Step 3 — Explicit `--snap-bootstrap` Fallback ONLY (`snapBootstrapEnabled && policy === 'full'`):**
+        - **Disabled by default (`0` `snap/1` calls on all normal clients!).** If no `ETHY/0` custodian covers bucket `b` on a default client, return `undefined` cleanly so `FlatStateManager` throws `StateMissUnavailableError` (`-32000` honest JSON-RPC error, never fabricating a false zero!).
+        - Only when `--snap-bootstrap` was explicitly passed AND `policy === 'full'` (e.g. a solo Day-0 origin seeder before its own sync completes): fetch a single-key `snap/1` proof, verify, fold local BALs, commit to `FlatStateManager`, and persist into local `EthyWitnessStore`.
    - **Code Resolution (`resolveCodeMiss`):**
-     - Check `SharedCodeStore` → query `ETHY/0` `0x05` (`kind = 0`) from bucket-`b` / code-advertising peers → verify `keccak256(code) === codeHash` → persist to `SharedCodeStore` (`snap/1 GetByteCodes` fallback strictly for `policy === 'full'` on global swarm miss).
+     - Check `SharedCodeStore` → query `ETHY/0` `0x05` (`kind = 0`) from bucket-`b` / code-advertising peers → verify `keccak256(code) === codeHash` → persist to `SharedCodeStore` (`snap/1 GetByteCodes` only if `snapBootstrapEnabled && policy === 'full'`).
 
 4. **End-to-End Offline Loopback & Transition Tests (`packages/ethy/test/custodyEthySync.spec.ts`):**
    - **Zero-`snap/1` 1-Hop Cold-Miss Loopback:** Custodian Node A holds verified bucket `0x0` (accounts + code + small `kind = 2` contract + large multi-chunk `kind = 1` contract) over `ETHY/0` `v0.4`; Joiner Node B (`--custody 1` on bucket `0x1`, **zero `snap/1` peers**) boots from rolling BALs and executes cold `eth_getBalance`, `eth_getStorageAt` (both present and proven-empty non-existent keys!), `eth_getCode`, and `eth_call` targeting bucket `0x0` — asserting **100% success, `0` `snap/1` calls**, and verified BAL folding across post-pivot mutations!

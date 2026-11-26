@@ -18,11 +18,12 @@ Wire Unified Custody `ETHY/0` (Option B + Option C) cleanly into **`The Machine`
 
 1. **`The Machine` (`SyncNetworkOrchestrator`) Unified 5-Plane Custody Modes (`packages/ethy/src/sync/machineOrchestrator.ts`):**
    - Keep `PlaneId` clean at **5 planes (`eth`, `ethy`, `snap`, `discovery`, `cl`)** — no duplicate 6th `staty` plane!
+   - **Zero-`snap/1` Default Invariant:** On all default Ethy nodes (`snapBootstrap === false`), the `snap` plane stays **permanently `off`** (never advertised in `HELLO`, `0` `snap/1` peer slots). Only an explicit Day-0 `--full --snap-bootstrap` seeder arms `snap` until its initial state sync finishes, after which `The Machine` drops `snap1` from `HELLO` permanently!
    - Introduce Custody-native operating modes:
-     - `custody-bal-warmup`: pulling rolling `eth/71` BAL window (`snap` off/standby, `ethy` discovering bucket-diverse custodians).
-     - `custody-sync`: live `HEAD_FOLLOWING` via BALs + background 3-plane custody sync of assigned bucket(s) over `ETHY/0` (`snap` dialed **only** if an assigned custody bucket has `0` `ETHY/0` custodians).
-     - `custody-live-calm`: steady-state `HEAD_FOLLOWING` + live `1/16th` subtree trie + `ETHY/0` serving (proofs, chunks, code, BALs, `h_b` roots) — **`snap1` dropped permanently from `HELLO`!** (Only momentarily armed if a young testnet has uncovered buckets for `policy === 'full'` fallback or 530-byte root-branch bootstrap.)
-     - `full-backfill`: `--full` (`--custody 16`) mode — already live while replicating all 16 buckets in the background; permanently drops `snap1` once 16/16 buckets close.
+     - `custody-bal-warmup`: pulling rolling `eth/71` BAL window (`snap` permanently `off` unless `--snap-bootstrap`, `ethy` discovering bucket-diverse custodians).
+     - `custody-sync`: live `HEAD_FOLLOWING` via BALs + background 3-plane custody sync of assigned bucket(s) over `ETHY/0`.
+     - `custody-live-calm`: steady-state `HEAD_FOLLOWING` + live subtree tries + `ETHY/0` serving (proofs, chunks, code, BALs, `h_b` roots) — `snap` permanently `off`!
+     - `full-backfill`: `--full` (`--custody 16`) mode — already live while replicating all 16 buckets in the background (`ETHY/0` by default; `snap/1` only with `--snap-bootstrap`, dropped permanently once 16/16 buckets close).
    - **Bucket-Diversity Peer Steering:**
      - Compute `uncoveredBucketsMask = 0xffff & ~(closedBucketsMask | connectedSwarmBucketsMask)` (and low-redundancy `< 2` peers mask once `16/16` is reached) on every Machine tick.
      - Pass `desiredEthyBucketsMask` into `devp2p`'s `NetworkProfile` so `ETHY_PEX` (`0x09`/`0x0a`) and peer rotation actively fill any missing nibble buckets until the node holds **1-hop `16/16` coverage with 2× redundancy** within `14–20` peers (under default `--custody 2`, `7` peers already cover all 14 remote buckets!).
