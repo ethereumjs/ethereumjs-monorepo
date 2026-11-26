@@ -54,13 +54,19 @@ async function resolveAccountRlp(
   return binaryAccountToRLP(binary)
 }
 
-async function applyCompactRowToTrie(
+async function computeAccountMutation(
   trie: BucketSubtreeTrie,
   row: CompactBinaryBAL[number],
   snapStore: SnapPivotStore | undefined,
-): Promise<void> {
+): Promise<BinaryPathBatchEntry | undefined> {
   const accountHash = ethyKeccak256(row.address)
-  if (accountHash[0]! >> 4 !== trie.bucket) return
+  if (accountHash[0]! >> 4 !== trie.bucket) return undefined
+
+  const existingRlp = await resolveAccountRlp(trie, accountHash, snapStore)
+  const baseAcc =
+    existingRlp !== null
+      ? createAccountFromRLP(existingRlp)
+      : createAccount({ storageRoot: KECCAK256_RLP })
 
   const storageMutations: BinaryPathBatchEntry[] = []
   for (const [slotKey, slotVal] of row.storageChanges) {
@@ -68,16 +74,13 @@ async function applyCompactRowToTrie(
     const val = storageValueRlp(slotVal)
     storageMutations.push({ key: slotHash, value: val })
   }
-  let storageRoot = await trie.storageRootFor(accountHash)
+
+  // Preserve the existing contract storageRoot whenever this BAL row has no storage writes.
+  let storageRoot = baseAcc.storageRoot
   if (storageMutations.length > 0) {
     storageRoot = await trie.applyStorageBatch(accountHash, storageMutations)
   }
 
-  const existingRlp = await resolveAccountRlp(trie, accountHash, snapStore)
-  const baseAcc =
-    existingRlp !== null
-      ? createAccountFromRLP(existingRlp)
-      : createAccount({ storageRoot: KECCAK256_RLP })
   let balance = baseAcc.balance
   let nonce = baseAcc.nonce
   let codeHash = baseAcc.codeHash
@@ -92,9 +95,19 @@ async function applyCompactRowToTrie(
     codeHash = row.code.length === 0 ? KECCAK256_NULL : ethyKeccak256(row.code)
   }
 
+  // Read-only BAL touches (no state change and account doesn't exist yet) must not materialize empty accounts.
+  if (
+    existingRlp === null &&
+    storageMutations.length === 0 &&
+    row.balance === undefined &&
+    row.nonce === undefined &&
+    row.code === undefined
+  ) {
+    return undefined
+  }
+
   if (isEip161Empty(balance, nonce, codeHash, storageRoot)) {
-    await trie.applyAccountBatch([{ key: accountHash, value: null }])
-    return
+    return { key: accountHash, value: null }
   }
 
   const acc = createAccount({
@@ -103,18 +116,22 @@ async function applyCompactRowToTrie(
     storageRoot,
     codeHash,
   })
-  const serialized = acc.serialize()
-  await trie.applyAccountBatch([{ key: accountHash, value: serialized }])
+  return { key: accountHash, value: acc.serialize() }
 }
 
-/** Apply one verified BAL block onto a custody bucket trie (WP-16f). */
+/** Apply one verified BAL block onto a custody bucket trie in a single account batch (WP-16f). */
 export async function applyBalToBucketSubtree(
   trie: BucketSubtreeTrie,
   bal: BALInput,
   snapStore: SnapPivotStore | undefined,
 ): Promise<void> {
   const compact = decodeBALToBinary(bal)
+  const accountMutations: BinaryPathBatchEntry[] = []
   for (const row of compact) {
-    await applyCompactRowToTrie(trie, row, snapStore)
+    const mutation = await computeAccountMutation(trie, row, snapStore)
+    if (mutation !== undefined) accountMutations.push(mutation)
+  }
+  if (accountMutations.length > 0) {
+    await trie.applyAccountBatch(accountMutations)
   }
 }

@@ -549,12 +549,29 @@ export async function startPeerCoordinator(
   spine.custodyBalOnboarding = custodyFastOnboard
   const desiredEthyMask = desiredCustodyBucketsMask(custodyAssign.buckets)
   const localNodeId = pk2id(secp256k1.getPublicKey(privateKey, false))
+  const localPeerIdHex = bytesToUnprefixedHex(localNodeId)
   const subtreeRegistry = new SubtreeCustodyRegistry({
-    localPeerIdHex: bytesToUnprefixedHex(localNodeId),
+    localPeerIdHex,
     buckets: custodyAssign.buckets,
     dataDir,
     snapStore,
     snapBootstrap,
+    onByzantinePeers: (anchorBlock, peerIds) => {
+      for (const pid of peerIds) {
+        if (pid === localPeerIdHex) continue
+        recordDiagnostic(spine, {
+          subsystem: 'devp2p',
+          severity: 'warn',
+          peerId: pid,
+          message: `ETHY/0 Byzantine subtree root at anchor #${anchorBlock} from peer ${pid.slice(0, 12)} — disconnecting`,
+        })
+        try {
+          client?.disconnectPeer(peerIdToBytes(pid))
+        } catch {
+          /* ignore if client not yet mounted or malformed peer id */
+        }
+      }
+    },
   })
   for (const b of custodyAssign.buckets) {
     if ((spine.closedBucketsMask & (1 << b)) !== 0) {
@@ -1701,27 +1718,34 @@ export async function startPeerCoordinator(
   }
 
   const bundleBalHooks = {
-    onBalApplied: (bal: BALJSONBlockAccessList) => {
+    onBalApplied: (
+      bal: BALJSONBlockAccessList,
+      meta?: { blockNumber?: bigint; stateRoot?: Uint8Array },
+    ) => {
       if (spine.phase === 'SNAP_SYNCING') {
         codeSync?.noteBalApplied(bal)
       }
-      const appliedBlock = spine.lastVerifiedBlockNumber
+      const appliedBlock = meta?.blockNumber ?? spine.lastVerifiedBlockNumber
       if (custodyFastOnboard && appliedBlock !== undefined && appliedBlock > 0n) {
         statyWriteIndex.ingestVerifiedBal(Number(appliedBlock), bal)
-        void subtreeRegistry.applyVerifiedBal(appliedBlock, bal)
-        if (
-          appliedBlock % CANONICAL_PIVOT_GRID_BLOCKS === 0n &&
-          spine.pivotStateRoot !== undefined
-        ) {
-          void subtreeRegistry
-            .verifyAnchor(appliedBlock, spine.pivotStateRoot)
-            .then((rec) => {
-              if (rec === undefined) return
-              publishLocalSubtreeRoots(client, subtreeRegistry, appliedBlock)
-              refreshEthyWorkerAdvertisement(client, spine, subtreeRegistry)
-            })
-            .catch(() => undefined)
-        }
+        const blockStateRoot =
+          meta?.stateRoot ??
+          (spine.headBlockNumber === appliedBlock
+            ? spine.headStateRoot
+            : spine.pivotBlockNumber === appliedBlock
+              ? spine.pivotStateRoot
+              : spine.balWindow.find((r) => r.blockNumber === appliedBlock)?.stateRoot)
+        void subtreeRegistry
+          .applyVerifiedBal(appliedBlock, bal)
+          .then(async () => {
+            if (appliedBlock % CANONICAL_PIVOT_GRID_BLOCKS !== 0n) return
+            publishLocalSubtreeRoots(client, subtreeRegistry, appliedBlock)
+            if (blockStateRoot === undefined) return
+            const rec = await subtreeRegistry.verifyAnchor(appliedBlock, blockStateRoot)
+            if (rec === undefined) return
+            refreshEthyWorkerAdvertisement(client, spine, subtreeRegistry)
+          })
+          .catch(() => undefined)
       }
     },
     appendHealBal: (blockNumber: bigint, balRlp: Uint8Array) => {

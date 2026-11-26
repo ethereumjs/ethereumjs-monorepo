@@ -2,7 +2,22 @@ import * as fs from 'node:fs/promises'
 import * as path from 'node:path'
 
 import { verifyMerkleRangeProof } from '@ethereumjs/mpt'
-import { bytesToUnprefixedHex, compareBytes } from '@ethereumjs/util'
+import { RLP } from '@ethereumjs/rlp'
+import {
+  BINARY_ACCOUNT_SIZE,
+  accountToBinaryAccount,
+  bytesToUnprefixedHex,
+  compareBytes,
+  createAccountFromRLP,
+  equalsBytes,
+} from '@ethereumjs/util'
+
+import { ethyKeccak256 } from '../crypto/keccak.ts'
+import { appendProofRecordSync, proofSidecarPathForJournal } from '../persist/proofSidecar.ts'
+import type { StatyMultiProofGroup } from '../staty/multiProofVerify.ts'
+import { MACRO_GENERATION_GRID_BLOCKS } from '../sync/blockCalendar.ts'
+import type { BucketSubtreeTrie } from './bucketSubtreeTrie.ts'
+import { encodeRootBranch } from './rootBranchAssembler.ts'
 
 function compareBytes32(a: Uint8Array, b: Uint8Array): number {
   const len = Math.min(a.length, b.length)
@@ -12,17 +27,12 @@ function compareBytes32(a: Uint8Array, b: Uint8Array): number {
   }
   return a.length - b.length
 }
-import { ethyKeccak256 } from '../crypto/keccak.ts'
-import { appendProofRecordSync, proofSidecarPathForJournal } from '../persist/proofSidecar.ts'
-import type { StatyMultiProofGroup } from '../staty/multiProofVerify.ts'
-import { MACRO_GENERATION_GRID_BLOCKS } from '../sync/blockCalendar.ts'
-import { BucketSubtreeTrie } from './bucketSubtreeTrie.ts'
-import { encodeRootBranch } from './rootBranchAssembler.ts'
 
 export type WitnessBuildQuery = { accountHash: Uint8Array; slotHashes: Uint8Array[] }
 
 const MAX_PROOF_NODES = 4096
 const MAX_WITNESS_BYTES = 512 * 1024
+const ACCOUNT_SLAB_ROW_BYTES = 32 + BINARY_ACCOUNT_SIZE
 
 function dedupeProofNodes(nodes: Uint8Array[]): Uint8Array[] {
   const seen = new Set<string>()
@@ -38,6 +48,7 @@ function dedupeProofNodes(nodes: Uint8Array[]): Uint8Array[] {
 
 /**
  * Build a single-anchor `0x0c STATE_WITNESS` group from live bucket tries (WP-16f).
+ * Both proof nodes AND reported account/slot values are read consistently at `opts.anchorId`.
  */
 export async function buildLiveWitnessGroup(opts: {
   anchorBlock: bigint
@@ -46,13 +57,20 @@ export async function buildLiveWitnessGroup(opts: {
   trie: BucketSubtreeTrie
   armed: boolean
   anchorId?: string | bigint
+  maxBytes?: number
   queries: readonly WitnessBuildQuery[]
 }): Promise<StatyMultiProofGroup | undefined> {
   if (!opts.armed) return undefined
+  const byteLimit =
+    opts.maxBytes !== undefined && opts.maxBytes > 0
+      ? Math.min(opts.maxBytes, MAX_WITNESS_BYTES)
+      : MAX_WITNESS_BYTES
+
   const accounts: StatyMultiProofGroup['accounts'] = []
   const slots: StatyMultiProofGroup['slots'] = []
   const proofNodes: Uint8Array[] = [opts.rootNodeRlp]
   let bytes = opts.rootNodeRlp.length
+  if (bytes > byteLimit) return undefined
 
   for (const q of opts.queries) {
     if (q.accountHash.length !== 32) continue
@@ -60,36 +78,45 @@ export async function buildLiveWitnessGroup(opts: {
     const accountProof = await opts.trie.accountTrie().createProof(q.accountHash, opts.anchorId)
     for (const n of accountProof) {
       bytes += n.length
-      if (proofNodes.length >= MAX_PROOF_NODES || bytes > MAX_WITNESS_BYTES) {
+      if (proofNodes.length >= MAX_PROOF_NODES || bytes > byteLimit) {
         return undefined
       }
       proofNodes.push(n)
     }
-    const accountVal = await opts.trie.accountTrie().get(q.accountHash)
+    const accountVal = await opts.trie.accountTrie().get(q.accountHash, opts.anchorId)
     accounts.push({
       accountHash: q.accountHash,
       accountRlpOrEmpty: accountVal ?? new Uint8Array(0),
     })
-    const storageTrie = opts.trie.getStorageTrie(q.accountHash)
-    for (const slotHash of q.slotHashes) {
-      if (storageTrie === undefined) {
-        slots.push({ accountHash: q.accountHash, slotHash, slotValOrEmpty: new Uint8Array(0) })
-        continue
-      }
-      const slotProof = await storageTrie.createProof(slotHash, opts.anchorId)
-      for (const n of slotProof) {
-        bytes += n.length
-        if (proofNodes.length >= MAX_PROOF_NODES || bytes > MAX_WITNESS_BYTES) {
-          return undefined
+
+    if (q.slotHashes.length > 0) {
+      const storageTrie = await opts.trie.openExistingStorageTrie(q.accountHash)
+      for (const slotHash of q.slotHashes) {
+        if (storageTrie === undefined) {
+          slots.push({ accountHash: q.accountHash, slotHash, slotValOrEmpty: new Uint8Array(0) })
+          continue
         }
-        proofNodes.push(n)
+        const slotProof = await storageTrie.createProof(slotHash, opts.anchorId)
+        for (const n of slotProof) {
+          bytes += n.length
+          if (proofNodes.length >= MAX_PROOF_NODES || bytes > byteLimit) {
+            return undefined
+          }
+          proofNodes.push(n)
+        }
+        const slotLeaf = await storageTrie.get(slotHash, opts.anchorId)
+        let slotValOrEmpty: Uint8Array = new Uint8Array(0)
+        if (slotLeaf !== null && slotLeaf.length > 0) {
+          const decodedLeaf = RLP.decode(slotLeaf)
+          slotValOrEmpty =
+            decodedLeaf instanceof Uint8Array ? new Uint8Array(decodedLeaf) : new Uint8Array(0)
+        }
+        slots.push({
+          accountHash: q.accountHash,
+          slotHash,
+          slotValOrEmpty,
+        })
       }
-      const slotVal = await storageTrie.get(slotHash)
-      slots.push({
-        accountHash: q.accountHash,
-        slotHash,
-        slotValOrEmpty: slotVal ?? new Uint8Array(0),
-      })
     }
   }
 
@@ -119,10 +146,13 @@ export type PivotChunkExportResult = {
   proofPath: string
   originHash: Uint8Array
   lastHash: Uint8Array
+  hasRight: number
+  accountCount: number
 }
 
 /**
- * Macro-grid export: sorted account slab shard + boundary proof sidecar (WP-16f).
+ * Macro-grid export: sorted 136-byte `BinaryAccount` slab shard + full-root-verified
+ * boundary proof sidecar (WP-16f).
  */
 export async function exportPivotAccountChunks(opts: {
   trie: BucketSubtreeTrie
@@ -132,13 +162,15 @@ export async function exportPivotAccountChunks(opts: {
   outDir: string
   bucket: number
   macroGridBlocks?: bigint
+  maxChunkBytes?: number
   anchorId?: string | bigint
 }): Promise<PivotChunkExportResult[]> {
   if (opts.anchorBlock % (opts.macroGridBlocks ?? MACRO_GENERATION_GRID_BLOCKS) !== 0n) {
     return []
   }
-  const armed = opts.trie.branchSlotReference().length === 32
-  if (!armed) return []
+  if (!equalsBytes(ethyKeccak256(opts.rootNodeRlp), opts.anchorStateRoot)) {
+    throw new Error('Pivot chunk export: rootNodeRlp does not match anchorStateRoot')
+  }
 
   const rows: PivotChunkExportRow[] = []
   for await (const row of opts.trie.accountTrie().walkLeaves(opts.anchorId)) {
@@ -147,9 +179,11 @@ export async function exportPivotAccountChunks(opts: {
   rows.sort((a, b) => compareBytes(a.key, b.key))
   if (rows.length === 0) return []
 
+  const chunkLimit = Math.max(ACCOUNT_SLAB_ROW_BYTES, opts.maxChunkBytes ?? MAX_CHUNK_SLAB_BYTES)
   const out: PivotChunkExportResult[] = []
   let chunkStart = 0
   let slabBytes = 0
+
   const flushChunk = async (endExclusive: number) => {
     if (endExclusive <= chunkStart) return
     const slice = rows.slice(chunkStart, endExclusive)
@@ -158,51 +192,64 @@ export async function exportPivotAccountChunks(opts: {
     const boundary = await opts.trie
       .accountTrie()
       .createRangeBoundaryProof(origin, last, opts.anchorId)
-    const proofNodes = [opts.rootNodeRlp, ...boundary]
-    const subtreeRoot = opts.trie.accountTrie().root()
+    const proofNodes = dedupeProofNodes([opts.rootNodeRlp, ...boundary])
+
+    // Self-verify against the FULL world anchorStateRoot before persisting anything!
     const ok = await verifyMerkleRangeProof(
-      subtreeRoot,
+      opts.anchorStateRoot,
       origin,
       last,
       slice.map((r) => r.key),
       slice.map((r) => r.value),
-      boundary,
+      proofNodes,
       ethyKeccak256,
     )
-    if (!ok) throw new Error('Pivot chunk range proof failed before write')
+    if (!ok) throw new Error('Pivot chunk range proof failed against anchorStateRoot before write')
+
+    const slab = new Uint8Array(slice.length * ACCOUNT_SLAB_ROW_BYTES)
+    let off = 0
+    for (const r of slice) {
+      slab.set(r.key, off)
+      off += 32
+      const binaryAcc = accountToBinaryAccount(createAccountFromRLP(r.value))
+      slab.set(binaryAcc, off)
+      off += BINARY_ACCOUNT_SIZE
+    }
 
     const binName = `accounts/${opts.bucket.toString(16)}.${chunkStart}.bin`
     const binPath = path.join(opts.outDir, binName)
     const proofPath = proofSidecarPathForJournal(binPath)
     await fs.mkdir(path.dirname(binPath), { recursive: true })
-    const bodyChunks: Buffer[] = []
-    for (const r of slice) {
-      bodyChunks.push(Buffer.from(r.key))
-      bodyChunks.push(Buffer.from(r.value))
-    }
-    await fs.writeFile(binPath, Buffer.concat(bodyChunks))
-    const slabLen = bodyChunks.reduce((n, b) => n + b.length, 0)
+    await fs.writeFile(binPath, slab)
+
+    const hasRight = endExclusive < rows.length ? 1 : 0
     appendProofRecordSync(proofPath, {
       slabByteOffset: 0,
-      slabByteLength: slabLen,
+      slabByteLength: slab.length,
       originHash: origin,
       lastHash: last,
-      hasRight: 0,
+      hasRight,
       chunkStateRoot: opts.anchorStateRoot,
       chunkBlockNumber: opts.anchorBlock,
       proofNodes,
     })
-    out.push({ binPath, proofPath, originHash: origin, lastHash: last })
+    out.push({
+      binPath,
+      proofPath,
+      originHash: origin,
+      lastHash: last,
+      hasRight,
+      accountCount: slice.length,
+    })
     chunkStart = endExclusive
     slabBytes = 0
   }
 
   for (let i = 0; i < rows.length; i++) {
-    const rowBytes = rows[i]!.key.length + rows[i]!.value.length
-    if (slabBytes > 0 && slabBytes + rowBytes > MAX_CHUNK_SLAB_BYTES) {
+    if (slabBytes > 0 && slabBytes + ACCOUNT_SLAB_ROW_BYTES > chunkLimit) {
       await flushChunk(i)
     }
-    slabBytes += rowBytes
+    slabBytes += ACCOUNT_SLAB_ROW_BYTES
   }
   await flushChunk(rows.length)
   return out

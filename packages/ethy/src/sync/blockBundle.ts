@@ -69,7 +69,10 @@ export type FinalizeBlockBundleOpts = {
   hardfork: string
   bundle: InFlightBlockBundle
   putServableBlock: Devp2pWorkerClient['putServableBlock']
-  onBalApplied?: (balJson: BALJSONBlockAccessList) => void
+  onBalApplied?: (
+    balJson: BALJSONBlockAccessList,
+    meta?: { blockNumber?: bigint; stateRoot?: Uint8Array },
+  ) => void
   appendHealBal?: (blockNumber: bigint, balRlp: Uint8Array) => void
   appendHealBundle?: (entry: VerifiedBalBlock) => void
   syncBuckets?: SnapBucket[]
@@ -129,8 +132,12 @@ export async function finalizeBlockBundle(opts: FinalizeBlockBundleOpts): Promis
     )
     if (applied.balJson !== undefined) {
       economyBalJson = applied.balJson
-      pushBalWindow(opts.spine, bundle.blockNumber, applied.balJson)
-      opts.onBalApplied?.(applied.balJson)
+      const headerFields = headFieldsFromHeaderRlp(bundle.headerRlp, opts.chain, opts.hardfork)
+      pushBalWindow(opts.spine, bundle.blockNumber, applied.balJson, headerFields?.stateRoot)
+      opts.onBalApplied?.(applied.balJson, {
+        blockNumber: bundle.blockNumber,
+        stateRoot: headerFields?.stateRoot,
+      })
     }
   }
   const rpcNote: RpcBundleNote = {

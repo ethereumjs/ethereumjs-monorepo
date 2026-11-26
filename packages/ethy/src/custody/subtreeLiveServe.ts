@@ -2,12 +2,13 @@ import { type Devp2pWorkerClient, EthyMessageCodes } from '@ethereumjs/devp2p'
 import { RLP } from '@ethereumjs/rlp'
 import { bigIntToUnpaddedBytes, bytesToUnprefixedHex } from '@ethereumjs/util'
 
-import { ethyKeccak256 } from '../crypto/keccak.ts'
 import type { EthySpine } from '../spine/types.ts'
 import type { StatyMultiProofGroup } from '../staty/multiProofVerify.ts'
 import type { SubtreeCustodyRegistry } from './subtreeCustodyRegistry.ts'
 import { buildLiveWitnessGroup } from './subtreeProofServer.ts'
 import type { WitnessBuildQuery } from './subtreeProofServer.ts'
+
+const MAX_WITNESS_RESPONSE_BYTES = 512 * 1024
 
 function fieldToBigInt(field: unknown): bigint | undefined {
   if (typeof field === 'bigint') return field
@@ -24,7 +25,7 @@ function accountBucket(accountHash: Uint8Array): number {
   return accountHash[0]! >> 4
 }
 
-function parseWitnessQueries(decoded: unknown):
+export function parseWitnessQueries(decoded: unknown):
   | {
       reqId: bigint
       minAnchor: bigint
@@ -35,10 +36,18 @@ function parseWitnessQueries(decoded: unknown):
   if (!Array.isArray(decoded) || decoded.length < 4) return undefined
   const reqId = fieldToBigInt(decoded[0])
   const minAnchor = fieldToBigInt(decoded[1])
-  const maxBytes = decoded[2] instanceof Uint8Array ? Number(decoded[2][0] ?? 0) : undefined
+  const rawMaxBytes = fieldToBigInt(decoded[2])
   const rawQueries = decoded[3]
-  if (reqId === undefined || minAnchor === undefined || maxBytes === undefined) return undefined
+  if (reqId === undefined || minAnchor === undefined || rawMaxBytes === undefined) return undefined
   if (!Array.isArray(rawQueries)) return undefined
+  const maxBytes =
+    rawMaxBytes <= 0n
+      ? MAX_WITNESS_RESPONSE_BYTES
+      : Number(
+          rawMaxBytes > BigInt(MAX_WITNESS_RESPONSE_BYTES)
+            ? BigInt(MAX_WITNESS_RESPONSE_BYTES)
+            : rawMaxBytes,
+        )
   const queries: WitnessBuildQuery[] = []
   for (const row of rawQueries) {
     if (!Array.isArray(row) || row.length < 1) continue
@@ -108,24 +117,19 @@ export function publishLocalSubtreeRoots(
 /** Main-thread `0x0b` → `0x0c` for armed custody buckets (WP-16f). */
 export async function answerLiveGetStateWitness(
   registry: SubtreeCustodyRegistry,
-  spine: EthySpine,
+  _spine: EthySpine,
   decoded: unknown,
   client?: Devp2pWorkerClient,
 ): Promise<Uint8Array | undefined> {
   const parsed = parseWitnessQueries(decoded)
   if (parsed === undefined) return undefined
-  const anchor =
-    spine.pivotBlockNumber !== undefined && spine.pivotBlockNumber >= parsed.minAnchor
-      ? spine.pivotBlockNumber
-      : parsed.minAnchor
-  const anchorRec =
-    registry.verifiedAnchor(anchor) ??
-    (spine.pivotStateRoot !== undefined
-      ? await registry.verifyAnchor(anchor, spine.pivotStateRoot)
-      : undefined)
-  if (anchorRec === undefined) return undefined
+  const anchorRec = registry.latestVerifiedAnchorAtOrAbove(parsed.minAnchor)
+  if (anchorRec === undefined) {
+    return RLP.encode([bigIntToUnpaddedBytes(parsed.reqId), []] as never)
+  }
+  const anchor = anchorRec.anchorBlock
 
-  const groups: Uint8Array[] = []
+  const groups: unknown[] = []
   const byBucket = new Map<number, WitnessBuildQuery[]>()
   const mask = registry.trieBucketsBitmask()
   for (const q of parsed.queries) {
@@ -146,21 +150,20 @@ export async function answerLiveGetStateWitness(
       trie,
       armed: true,
       anchorId: anchor,
+      maxBytes: parsed.maxBytes,
       queries: qs,
     })
     if (group === undefined) continue
     cacheLiveWitnessGroup(client, anchor, anchorRec.stateRoot, group)
     const wireAccounts = group.accounts.map((a) => [a.accountHash, a.accountRlpOrEmpty])
     const wireSlots = group.slots.map((s) => [s.accountHash, s.slotHash, s.slotValOrEmpty])
-    groups.push(
-      RLP.encode([
-        bigIntToUnpaddedBytes(anchor),
-        anchorRec.stateRoot,
-        wireAccounts,
-        wireSlots,
-        group.proofNodes,
-      ] as never),
-    )
+    groups.push([
+      bigIntToUnpaddedBytes(anchor),
+      anchorRec.stateRoot,
+      wireAccounts,
+      wireSlots,
+      group.proofNodes,
+    ])
   }
 
   return RLP.encode([bigIntToUnpaddedBytes(parsed.reqId), groups] as never)
@@ -204,14 +207,17 @@ export function noteInboundSubtreeRootsGossip(
     if (!Array.isArray(row) || row.length < 2) continue
     const bField = row[0]
     const hash = row[1]
-    const bucket =
-      bField instanceof Uint8Array && bField.length > 0
-        ? bField[bField.length - 1]!
-        : typeof bField === 'number'
-          ? bField
-          : undefined
+    // Canonical DevP2P RLP encodes bucket 0 as empty Uint8Array (0x80).
+    let bucket: number | undefined
+    if (bField instanceof Uint8Array) {
+      if (bField.length === 0) bucket = 0
+      else if (bField.length === 1) bucket = bField[0]!
+    } else if (typeof bField === 'number') {
+      bucket = bField
+    }
     if (bucket === undefined || bucket < 0 || bucket > 15) continue
     if (!(hash instanceof Uint8Array)) continue
+    if (hash.length !== 32 && hash.length !== 0) continue
     registry.notePeerSubtreeRoot(anchor, bucket, peerIdHex, hash)
   }
 }

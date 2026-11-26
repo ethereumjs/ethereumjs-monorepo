@@ -1,3 +1,6 @@
+import * as fs from 'node:fs/promises'
+import * as path from 'node:path'
+
 import {
   type BinaryPathBatchEntry,
   BinaryPathMPT,
@@ -34,26 +37,34 @@ export class BucketSubtreeTrie {
   readonly bucket: number
   private readonly _account: BinaryPathMPT
   private readonly _storage = new Map<string, BinaryPathMPT>()
-  private readonly _storageOpenOrder: string[] = []
   private readonly _storageBaseDir: string | undefined
+  private readonly _maxAnchorSnapshots: number
+  private readonly _activeAnchors: Array<string | bigint> = []
 
-  private constructor(bucket: number, account: BinaryPathMPT, dataDir?: string) {
+  private constructor(
+    bucket: number,
+    account: BinaryPathMPT,
+    maxAnchorSnapshots: number,
+    dataDir?: string,
+  ) {
     this.bucket = bucket
     this._account = account
+    this._maxAnchorSnapshots = maxAnchorSnapshots
     this._storageBaseDir =
       dataDir !== undefined ? `${dataDir}/tries/${bucket.toString(16)}/storage` : undefined
   }
 
   static create(opts: BucketSubtreeTrieOpts): BucketSubtreeTrie {
+    const maxAnchors = opts.maxAnchorSnapshots ?? 4
     const store = resolveAccountStore(opts)
     const account = new BinaryPathMPT({
       prefixNibbles: [opts.bucket],
       keccak256: ethyKeccak256,
       store,
       leaves: opts.leaves,
-      maxAnchorSnapshots: opts.maxAnchorSnapshots ?? 4,
+      maxAnchorSnapshots: maxAnchors,
     })
-    return new BucketSubtreeTrie(opts.bucket, account, opts.dataDir)
+    return new BucketSubtreeTrie(opts.bucket, account, maxAnchors, opts.dataDir)
   }
 
   static async fromSortedLeaves(
@@ -63,27 +74,29 @@ export class BucketSubtreeTrie {
         | { key: Uint8Array; value: Uint8Array }[]
     },
   ): Promise<BucketSubtreeTrie> {
+    const maxAnchors = opts.maxAnchorSnapshots ?? 4
     const store = resolveAccountStore(opts)
     const account = await BinaryPathMPT.buildFromSortedStream(opts.rows, {
       prefixNibbles: [opts.bucket],
       keccak256: ethyKeccak256,
       store,
       leaves: opts.leaves,
-      maxAnchorSnapshots: opts.maxAnchorSnapshots ?? 4,
+      maxAnchorSnapshots: maxAnchors,
     })
-    return new BucketSubtreeTrie(opts.bucket, account, opts.dataDir)
+    return new BucketSubtreeTrie(opts.bucket, account, maxAnchors, opts.dataDir)
   }
 
   static async reopen(opts: BucketSubtreeTrieOpts): Promise<BucketSubtreeTrie> {
+    const maxAnchors = opts.maxAnchorSnapshots ?? 4
     const store = resolveAccountStore(opts)
     const account = await BinaryPathMPT.open({
       store,
       prefixNibbles: [opts.bucket],
       keccak256: ethyKeccak256,
       leaves: opts.leaves,
-      maxAnchorSnapshots: opts.maxAnchorSnapshots ?? 4,
+      maxAnchorSnapshots: maxAnchors,
     })
-    return new BucketSubtreeTrie(opts.bucket, account, opts.dataDir)
+    return new BucketSubtreeTrie(opts.bucket, account, maxAnchors, opts.dataDir)
   }
 
   static forTestBucket(bucket: number, leaves?: SlabOverlayLeafStore): BucketSubtreeTrie {
@@ -99,11 +112,28 @@ export class BucketSubtreeTrie {
   }
 
   captureAnchor(anchorId: string | bigint): Uint8Array {
-    return this._account.captureAnchor(anchorId)
+    const root = this._account.captureAnchor(anchorId)
+    for (const st of this._storage.values()) {
+      st.captureAnchor(anchorId)
+    }
+    const existingIdx = this._activeAnchors.findIndex((id) => id === anchorId)
+    if (existingIdx >= 0) {
+      this._activeAnchors.splice(existingIdx, 1)
+    }
+    this._activeAnchors.push(anchorId)
+    while (this._activeAnchors.length > this._maxAnchorSnapshots) {
+      this._activeAnchors.shift()
+    }
+    return root
   }
 
   releaseAnchor(anchorId: string | bigint): void {
     this._account.releaseAnchor(anchorId)
+    for (const st of this._storage.values()) {
+      st.releaseAnchor(anchorId)
+    }
+    const idx = this._activeAnchors.findIndex((id) => id === anchorId)
+    if (idx >= 0) this._activeAnchors.splice(idx, 1)
   }
 
   async applyAccountBatch(entries: ReadonlyArray<BinaryPathBatchEntry>): Promise<Uint8Array> {
@@ -116,42 +146,83 @@ export class BucketSubtreeTrie {
     return this._account.applyBatch(filtered)
   }
 
+  private _touchStorageCache(hex: string, trie: BinaryPathMPT): void {
+    this._storage.delete(hex)
+    this._storage.set(hex, trie)
+    // Only evict when disk-backed AND no live anchor snapshots are pinning reverse-diffs in RAM.
+    if (this._storageBaseDir === undefined || this._activeAnchors.length > 0) return
+    while (this._storage.size > MAX_HOT_STORAGE_TRIES) {
+      const oldest = this._storage.keys().next().value
+      if (oldest === undefined) break
+      this._storage.delete(oldest)
+    }
+  }
+
+  private _mirrorActiveAnchors(trie: BinaryPathMPT): void {
+    for (const anchorId of this._activeAnchors) {
+      trie.captureAnchor(anchorId)
+    }
+  }
+
+  private _storageNodesDir(hex: string): string | undefined {
+    return this._storageBaseDir !== undefined
+      ? path.join(this._storageBaseDir, hex, 'nodes')
+      : undefined
+  }
+
+  private async _diskStorageExists(hex: string): Promise<boolean> {
+    const dir = this._storageNodesDir(hex)
+    if (dir === undefined) return false
+    try {
+      await fs.access(path.join(dir, '00', '00.bin'))
+      return true
+    } catch {
+      return false
+    }
+  }
+
   private async _openStorageTrie(accountHash: Uint8Array): Promise<BinaryPathMPT> {
     const hex = bytesToUnprefixedHex(accountHash)
-    let trie = this._storage.get(hex)
-    if (trie !== undefined) {
-      const idx = this._storageOpenOrder.indexOf(hex)
-      if (idx >= 0) {
-        this._storageOpenOrder.splice(idx, 1)
-        this._storageOpenOrder.push(hex)
-      }
-      return trie
+    const cached = this._storage.get(hex)
+    if (cached !== undefined) {
+      this._touchStorageCache(hex, cached)
+      return cached
     }
-    if (this._storageBaseDir !== undefined) {
-      trie = await BinaryPathMPT.open({
-        store: new DiskPathNodeStore(`${this._storageBaseDir}/${hex}/nodes`),
-        keccak256: ethyKeccak256,
-        maxAnchorSnapshots: 4,
-      })
-    } else {
-      trie = new BinaryPathMPT({
-        keccak256: ethyKeccak256,
-        store: new InMemoryBinaryPathStore(),
-        maxAnchorSnapshots: 4,
-      })
-    }
-    this._storage.set(hex, trie)
-    this._storageOpenOrder.push(hex)
-    while (this._storageOpenOrder.length > MAX_HOT_STORAGE_TRIES) {
-      const evict = this._storageOpenOrder.shift()
-      if (evict !== undefined) this._storage.delete(evict)
-    }
+    const dir = this._storageNodesDir(hex)
+    const trie =
+      dir !== undefined
+        ? await BinaryPathMPT.open({
+            store: new DiskPathNodeStore(dir),
+            keccak256: ethyKeccak256,
+            maxAnchorSnapshots: this._maxAnchorSnapshots,
+          })
+        : new BinaryPathMPT({
+            keccak256: ethyKeccak256,
+            store: new InMemoryBinaryPathStore(),
+            maxAnchorSnapshots: this._maxAnchorSnapshots,
+          })
+    this._mirrorActiveAnchors(trie)
+    this._touchStorageCache(hex, trie)
     return trie
   }
 
-  async storageRootFor(accountHash: Uint8Array): Promise<Uint8Array> {
+  /**
+   * Return an existing per-contract storage trie (checking disk when evicted from RAM cache),
+   * or `undefined` if this contract has no tracked storage trie.
+   */
+  async openExistingStorageTrie(accountHash: Uint8Array): Promise<BinaryPathMPT | undefined> {
     const hex = bytesToUnprefixedHex(accountHash)
-    const trie = this._storage.get(hex)
+    const cached = this._storage.get(hex)
+    if (cached !== undefined) {
+      this._touchStorageCache(hex, cached)
+      return cached
+    }
+    if (!(await this._diskStorageExists(hex))) return undefined
+    return this._openStorageTrie(accountHash)
+  }
+
+  async storageRootFor(accountHash: Uint8Array): Promise<Uint8Array> {
+    const trie = await this.openExistingStorageTrie(accountHash)
     if (trie === undefined) return this._account.EMPTY_TRIE_ROOT
     const root = trie.root()
     return equalsBytes(root, trie.EMPTY_TRIE_ROOT) ? this._account.EMPTY_TRIE_ROOT : root
@@ -164,7 +235,7 @@ export class BucketSubtreeTrie {
     if (mutations.length === 0) return this.storageRootFor(accountHash)
     const trie = await this._openStorageTrie(accountHash)
     const root = await trie.applyBatch(mutations)
-    if (equalsBytes(root, trie.EMPTY_TRIE_ROOT)) {
+    if (equalsBytes(root, trie.EMPTY_TRIE_ROOT) && this._activeAnchors.length === 0) {
       this._storage.delete(bytesToUnprefixedHex(accountHash))
     }
     return root

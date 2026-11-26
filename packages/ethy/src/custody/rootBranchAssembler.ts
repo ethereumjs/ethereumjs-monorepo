@@ -21,14 +21,15 @@ export function verifyRootBranch(
 
 export type BucketRootCandidates = Map<number, Map<string, Uint8Array>>
 
-/** Merge gossiped or local `h_b` candidates keyed by peer id hex. */
+/** Merge gossiped or local `h_b` candidates keyed by peer id hex (32B hash or 0B empty slot). */
 export function noteSubtreeRootCandidate(
   book: BucketRootCandidates,
   bucket: number,
   peerIdHex: string,
   subtreeRootHash: Uint8Array,
 ): void {
-  if (bucket < 0 || bucket > 15 || subtreeRootHash.length !== 32) return
+  if (bucket < 0 || bucket > 15) return
+  if (subtreeRootHash.length !== 32 && subtreeRootHash.length !== 0) return
   let perBucket = book.get(bucket)
   if (perBucket === undefined) {
     perBucket = new Map()
@@ -49,9 +50,26 @@ export type RootAssemblyResult =
 function uniqueHashes(perBucket: Map<string, Uint8Array>): Uint8Array[] {
   const seen = new Map<string, Uint8Array>()
   for (const h of perBucket.values()) {
-    seen.set(bytesToUnprefixedHex(h), h)
+    const key = h.length === 0 ? '' : bytesToUnprefixedHex(h)
+    seen.set(key, h)
   }
   return [...seen.values()]
+}
+
+function collectByzantinePeers(
+  candidates: BucketRootCandidates,
+  provenSlots: Uint8Array[],
+): string[] {
+  const byzantine: string[] = []
+  for (let b = 0; b < 16; b++) {
+    const per = candidates.get(b)
+    if (per === undefined) continue
+    const proven = provenSlots[b]!
+    for (const [peer, hash] of per) {
+      if (!slotBytesEqual(hash, proven)) byzantine.push(peer)
+    }
+  }
+  return [...new Set(byzantine)]
 }
 
 function cartesian<T>(arrays: T[][]): T[][] {
@@ -87,7 +105,7 @@ export function assembleRootBranch(
         ok: true,
         slots: snapSlots,
         rootNodeRlp: new Uint8Array(snapRootBranchRlp),
-        byzantinePeerIds: [],
+        byzantinePeerIds: collectByzantinePeers(candidates, snapSlots),
       }
     } catch {
       return undefined
@@ -112,21 +130,11 @@ export function assembleRootBranch(
   for (const pick of cartesian(slotOptions)) {
     const slots = pick as Uint8Array[]
     if (!verifyRootBranch(slots, stateRoot, keccak256)) continue
-    const chosenByBucket = new Map<number, Uint8Array>()
-    for (let b = 0; b < 16; b++) chosenByBucket.set(b, slots[b]!)
-    const byzantine: string[] = []
-    for (let b = 0; b < 16; b++) {
-      const proven = slots[b]!
-      const per = candidates.get(b)!
-      for (const [peer, hash] of per) {
-        if (!slotBytesEqual(hash, proven)) byzantine.push(peer)
-      }
-    }
     return {
       ok: true,
       slots,
       rootNodeRlp: encodeRootBranch(slots),
-      byzantinePeerIds: [...new Set(byzantine)],
+      byzantinePeerIds: collectByzantinePeers(candidates, slots),
     }
   }
   return trySnapFallback() ?? { ok: false, reason: 'mismatch' }
