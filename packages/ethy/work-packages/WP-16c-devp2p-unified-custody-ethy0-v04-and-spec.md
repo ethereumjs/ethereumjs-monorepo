@@ -31,7 +31,7 @@ Every Ethy node speaks **one** state protocol (`ethy/0`), uses **one** ENR tag (
      - Wire shape:
        - `0x0b GET_STATE_WITNESS`: `[reqId, minAnchorBlock, maxResponseBytes, queries: [[accountHash, [slotHash, ...]], ...]]`
        - `0x0c STATE_WITNESS`: `[reqId, groups: [[anchorBlock, anchorStateRoot, accounts, slots, proofNodes], ...]]`
-     - Non-blocking worker server: serves from the node's local witness cache (`EthyWitnessStore`, disk + RAM) **or** invokes an optional synchronous/in-worker proof callback registered by `WP-16e`'s `BucketSubtreeTrie` (never blocks on upstream `snap/1`).
+     - Non-blocking worker server: serves from the node's local witness cache (`EthyWitnessStore`, disk + RAM) **or** invokes an optional synchronous/in-worker proof callback registered by `WP-16f`'s `BucketSubtreeTrie` (never blocks on upstream `snap/1`).
    - **Add `0x0d GET_SUBTREE_ROOTS` & `0x0e SUBTREE_ROOTS` (Option C 512-Byte Root-Branch Gossip):**
      - Lightweight messages carrying `(anchorBlock, bucketIndex, subtreeRootHash32)` entries for the 16 children `[h_0..h_f]` of Ethereum's state trie root branch (`RLP([h_0..h_f, 0x])`, verified via `keccak256(rootNodeRlp) === verifiedHeader(anchorBlock).stateRoot`):
        - `0x0d GET_SUBTREE_ROOTS`: `[reqId, anchorBlock, bucketsBitmask]` (asks a peer for its known `h_b` hashes at `anchorBlock` matching `bucketsBitmask`; `0` = all known).
@@ -45,7 +45,7 @@ Every Ethy node speaks **one** state protocol (`ethy/0`), uses **one** ENR tag (
    - **Two-Tier Custody Reciprocity in `ethyServer.ts` & Inbound Slot Eviction:**
      - **Custodians (`remoteStatus.bucketsBitmask !== 0`, serving `>= 1` bucket):** Full priority on `0x0b GET_STATE_WITNESS` and `0x03`/`0x05` reads, plus protected inbound `ETHY/0` peer slots.
      - **Bootstrap-Only Non-Custodians (`remoteStatus.bucketsBitmask === 0`):** Allowed bounded bulk sync requests (`0x01`/`0x03`/`0x05`) so fresh joiners can bootstrap cleanly from zero, **strictly rate-limited / throttled on ad-hoc `0x0b GET_STATE_WITNESS` queries**, and **evicted first** when inbound peer slots fill up — enforcing custody participation at the protocol level!
-   - Extend `NetworkProfile` (`WP-13`) with optional `desiredEthyBucketsMask?: number` so `The Machine` (`WP-16f`) can steer `ETHY_PEX` and dial priority directly toward whichever of the 16 buckets currently lack redundant custodians (`7` peers = 1× coverage under `--custody 2`, `14–20` peers = 2× fault-tolerant redundancy!).
+   - Extend `NetworkProfile` (`WP-13`) with optional `desiredEthyBucketsMask?: number` so `The Machine` (`WP-16g`) can steer `ETHY_PEX` and dial priority directly toward whichever of the 16 buckets currently lack redundant custodians (`7` peers = 1× coverage under `--custody 2`, `14–20` peers = 2× fault-tolerant redundancy!).
 
 3. **Cleanly Retire Separate `STATY/0` Subprotocol Plumbing in `@ethereumjs/devp2p` (Separate D-008 Upstream Commit):**
    - Remove the duplicate `STATY` subprotocol (`src/protocol/staty.ts`, `src/protocol/staty/*`), `"staty"` ENR tag, `worker/statyPex.ts`, `serve/statyServer.ts`, `staty0` capability, and `minStatyPeers`/`statyDiscoveryTag`/`preferStatyDiscovery` profile fields — keeping and re-homing the hardened witness store/codec/server cleanly under `src/protocol/ethy/` and `src/serve/ethyWitnessStore.ts` alongside `SharedCodeDisk`, `EthyChunkStore`, and `EthyStorageStore`.
@@ -75,7 +75,7 @@ Every Ethy node speaks **one** state protocol (`ethy/0`), uses **one** ENR tag (
 
 Wire contract source of truth: [`protocols/devp2p/ETHY-0-SPEC.md`](../../../../protocols/devp2p/ETHY-0-SPEC.md) `v0.4` (already drafted; verify-only unless implementation finds a mismatch). [`STATY-0-SPEC.md`](../../../../protocols/devp2p/STATY-0-SPEC.md) is already marked superseded.
 
-**Out of scope (later WPs):** `--custody` CLI (WP-16d), client 1-hop resolver (WP-16d), live `BucketSubtreeTrie` (WP-16e), cockpit / swarm gates (WP-16f). **Preserve WP-16b:** `verifyStatyMultiProof`, `StatyWriteIndex`, `foldWitnessToHead`, `SharedCodeStore`, and `test/statyCryptoCore.spec.ts`.
+**Out of scope (later WPs):** `--custody` CLI (WP-16d), client 1-hop resolver (WP-16d), `@ethereumjs/mpt` `BinaryPathMPT` (WP-16e), live `BucketSubtreeTrie` (WP-16f), cockpit / swarm gates (WP-16g). **Preserve WP-16b:** `verifyStatyMultiProof`, `StatyWriteIndex`, `foldWitnessToHead`, `SharedCodeStore`, and `test/statyCryptoCore.spec.ts`.
 
 ### 2.1 Design locks
 
@@ -84,7 +84,7 @@ Wire contract source of truth: [`protocols/devp2p/ETHY-0-SPEC.md`](../../../../p
 | Single subprotocol | `ETHY.ethy0` → `{ name: 'ethy', version: 0, length: 15 }`. New codes `0x0b`–`0x0e` in `ethy/codes.ts`. Remove `staty/0`, epoch wire messages, `STATY_PEX`, `"staty"` ENR — do not remap onto new codes. |
 | `STATUS` | Encode always 12-tuple; index 11 = `trieBucketsBitmask`. Parse 9 / 11 / 12 tuples; omit → `0`. Canonical zero via `intToUnpaddedBytes` / `bigIntToUnpaddedBytes`. |
 | `0x03` lookup | `EthyChunkStore.getAccountChunk(bucket, targetHash)`: exact `originHash` first (mem over disk); else covering chunk `origin <= target <= last`, else first chunk (left boundary), else last with `hasRight === 0` (right boundary). Same for `EthyStorageStore.sliceKind1` (kind 1). |
-| Witnesses | New `EthyWitnessStore` — witness RAM/disk + `resolveWitnesses` from today's `StatyStore` (drop epoch maps). Caps: 64 accounts, 256 slots, 4096 proof nodes, 524288 response bytes, 2 MiB frame. Reuse `witnesses/<hash>.rlp` on-disk format from `EthyStatyStore`. Optional `setWitnessGenerator` stub for WP-16e; never block on `snap/1`. |
+| Witnesses | New `EthyWitnessStore` — witness RAM/disk + `resolveWitnesses` from today's `StatyStore` (drop epoch maps). Caps: 64 accounts, 256 slots, 4096 proof nodes, 524288 response bytes, 2 MiB frame. Reuse `witnesses/<hash>.rlp` on-disk format from `EthyStatyStore`. Optional `setWitnessGenerator` stub for WP-16f; never block on `snap/1`. |
 | Subtree gossip | In-worker ring (last 16 anchor blocks, bucket 0..15 → 32-byte hash). `putEthySubtreeRoots` IPC + ingest `0x0e`; serve `0x0d`; forward `0x0e` to main thread. Validate ascending unique `bucketIndex`, `entries.length <= 16`. |
 | PEX | Optional `desiredBucketsMask` on `0x09` index 2. Never advertise `bucketsBitmask === 0`. Rank: mask overlap → `trieBucketsBitmask` → storage+code bits → `basePivotBlock`; 75% fresh + 25% random. `0x0a` trailing `trieBucketsBitmask` (short rows = 0). Auto `GET_ETHY_PEERS` uses `NetworkProfile.desiredEthyBucketsMask`. |
 | Reciprocity | Remote `bucketsBitmask !== 0`: full serve. `=== 0`: allow `0x01`/`0x03`/`0x05`; throttle `0x0b` (e.g. 2 / 10s → empty `STATE_WITNESS`). RLPx evicts inbound mask-0 ETHY peers before custodians. Remove `minStatyPeers`; keep `minEthyPeers`. |

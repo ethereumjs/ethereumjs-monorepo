@@ -1,7 +1,7 @@
-# WP-16g: Ethy Client-Wide Custody Leverage — Priority Concurrent EVM Sandbox, False-Zero-Safe JSON-RPC & Tx Broadcast, Live ENS & Zero-Leech AI Forensics, Mode-Aware Gating & Onboarding UX
+# WP-16h: Ethy Client-Wide Custody Leverage — Priority Concurrent EVM Sandbox, False-Zero-Safe JSON-RPC & Tx Broadcast, Live ENS & Zero-Leech AI Forensics, Mode-Aware Gating & Onboarding UX
 
 - **Status:** `READY_FOR_PLANNING`
-- **Dependencies:** `WP-16b` (`DONE`), `WP-16c`..`WP-16f` (`READY_FOR_PLANNING`), `WP-08b` (`DONE`), `WP-15` (`DONE`)
+- **Dependencies:** `WP-16b` (`DONE`), `WP-16c` (`PLANNED`), `WP-16d`..`WP-16g` (`READY_FOR_PLANNING`), `WP-08b` (`DONE`), `WP-15` (`DONE`)
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
 
@@ -14,7 +14,7 @@ Audit and upgrade every client subsystem built under the legacy *"wait for all 1
 
 ---
 
-### Concrete Architectural Gaps Addressed (`WP-16g`)
+### Concrete Architectural Gaps Addressed (`WP-16h`)
 
 Audit of the live Ethy codebase identified six concrete subsystems that would otherwise stall, silently lie, leech `snap/1`, or lock out commands under Custody `ETHY/0`:
 
@@ -34,7 +34,7 @@ Audit of the live Ethy codebase identified six concrete subsystems that would ot
 
 ---
 
-### Key Deliverables (`WP-16g`)
+### Key Deliverables (`WP-16h`)
 
 1. **Priority Concurrent EVM Sandbox Pool (`packages/ethy/src/evm/queue.ts`, `evm/sandbox.ts`):**
    - Replace the single serial FIFO `enqueueSandbox` with a bounded concurrent scheduler (`maxConcurrent = 4`) supporting **3 priority lanes**:
@@ -74,7 +74,7 @@ Audit of the live Ethy codebase identified six concrete subsystems that would ot
 
 ---
 
-### Acceptance Criteria (`WP-16g`)
+### Acceptance Criteria (`WP-16h`)
 - [ ] Bounded concurrent EVM sandbox (`rpc > identity > ai_probe`) eliminates head-of-line blocking and locks autonomous AI probes to `'swarm-only'` (`0` `snap/1` leeching).
 - [ ] JSON-RPC and tx validation never fabricate `0x0` on unresolved Open-World misses (`-32000` honest error); `ethy_custodyStatus` exposes accurate custody/privacy/1-hop telemetry.
 - [ ] ENS bootstrap warms in 1 hop over `ETHY/0`, `/account` + `/contract` display honest provenance badges, and Start Page / Plaza / command gating reflect Unified Custody `ETHY/0` cleanly.

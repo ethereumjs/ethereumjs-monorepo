@@ -1,7 +1,7 @@
-# WP-16e: 1/16th Live Subtree MPT, 512-Byte `[h_0..h_f]` Root-Branch Assembly & True Zero-`snap/1` Proof and Chunk Generation (Option C)
+# WP-16f: 1/16th Live Subtree MPT (`BucketSubtreeTrie`), 512-Byte `[h_0..h_f]` Root-Branch Assembly & True Zero-`snap/1` Proof and Chunk Generation (Option C)
 
 - **Status:** `READY_FOR_PLANNING`
-- **Dependencies:** `WP-16b` (`DONE`), `WP-16c` (`READY_FOR_PLANNING`), `WP-16d` (`READY_FOR_PLANNING`), `WP-04i` (`DONE`), `WP-04j` (`DONE`), `WP-14` (`DONE`)
+- **Dependencies:** `WP-16b` (`DONE`), `WP-16c` (`PLANNED`), `WP-16d` (`READY_FOR_PLANNING`), `WP-16e` (`READY_FOR_PLANNING` — `@ethereumjs/mpt` `BinaryPathMPT`), `WP-04i` (`DONE`), `WP-04j` (`DONE`), `WP-14` (`DONE`)
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
 
@@ -12,7 +12,7 @@
 ### Goal
 Deliver **Option C — permanently cutting Ethy's dependency on `snap/1` full nodes** once a custody swarm is running!
 
-By exploiting Ethereum's 16-way MPT root geometry — the state trie root is always a 16-way branch node `RootNode = RLP([h_0, h_1, ..., h_f, 0x])` where `h_b` depends **exclusively** on the accounts and storage inside nibble bucket `b` — each `--custody 1` node maintains a compact **`1/16th` live subtree trie (~3–4 GB on Mainnet, < 300 MB on Sepolia)** updated solely from verified `eth/71` BALs (`< 2–5 ms` per 12s block via WASM `ethyKeccak256`).
+Built directly on **`WP-16e`'s path-keyed `@ethereumjs/mpt` `BinaryPathMPT`** (zero pruning bloat, `O(depth)` streaming slab builder, lock-free reverse-diff anchor snapshots, and WASM `ethyKeccak256` injection), each `--custody 2` node maintains compact **`1/16th` live subtree tries (~1.5–2 GB per Mainnet bucket, < 200 MB per Sepolia bucket)** updated solely from verified `eth/71` BALs (`< 2–5 ms` per 12s block).
 
 When custodians gossip their 32-byte `h_b` hashes at canonical anchor blocks (`0x0d`/`0x0e SUBTREE_ROOTS`) and assemble `RootNode(#A) = RLP([h_0..h_f, 0x])` verified against `keccak256(RootNode(#A)) === verifiedHeader(#A).stateRoot`:
 1. Every custodian generates **live ~2 KB single-key / batch MPT proofs at `#A`** (`0x0b`/`0x0c STATE_WITNESS`) in `< 1 ms` — replacing ~64 KB chunk transfers for cold reads with fast 2 KB proofs!
@@ -21,21 +21,22 @@ When custodians gossip their 32-byte `h_b` hashes at canonical anchor blocks (`0
 
 ---
 
-### Key Deliverables (`WP-16e`)
+### Key Deliverables (`WP-16f`)
 
-1. **`BucketSubtreeTrie` — Compact 1/16th Account & Storage MPT (`packages/ethy/src/custody/bucketSubtreeTrie.ts`):**
+1. **`BucketSubtreeTrie` — Disk-Backed `BinaryPathMPT` per Custody Bucket (`packages/ethy/src/custody/bucketSubtreeTrie.ts`, `diskPathNodeStore.ts`):**
+   - **Disk-Backed `BinaryPathNodeStore`:** Persists `WP-16e`'s compact path-keyed binary branch nodes under `<networkDir>/tries/<b_hex>/` with a bounded LRU hot cache (zero duplicate leaf storage where flat slabs already hold leaves, in-place overwrites = zero pruning!).
    - **Trie Geometry & Keying:**
      - For each assigned custody nibble bucket `b` (`0x0..0xf`):
-       - **Account Subtree Trie (`h_b`):** Keyed by the remaining **63 nibbles** (`accountHash` after stripping high nibble `b`, or full 32-byte `accountHash` inside a `@ethereumjs/mpt` trie whose root branch child `[b]` is `h_b` — planner picks cleanest path-keyed or hash-keyed disk layout using `@ethereumjs/mpt` with `useKeyHashing: false` and Ethy's WASM `ethyKeccak256`!).
-       - **Per-Contract Storage Subtree Tries:** For contracts inside bucket `b` with non-empty storage, maintains their storage MPT (`key = slotHash`, `val = RLP(minimalBE(slotValue))`, `useKeyHashing: false`) to compute exact post-BAL `storageRoot`.
-     - **Build from Verified Flat Slabs (Zero Extra Network Traffic):**
-       - When bucket `b` finishes `WP-16d` custody sync (all 3 planes verified at `basePivotBlock` + BAL-replayed to `#Head`), build bucket `b`'s account and storage subtree tries directly from `accounts/<b_hex>.bin` + `storage/<b_hex>.bin` in a bounded background worker / time-sliced lane (respecting presentation-vs-protocol clock **D-069**), then advance through any BALs that arrived during build.
+       - **Account Subtree Trie (`h_b`):** `BinaryPathMPT` with `prefixNibbles = [b]` and Ethy's WASM `ethyKeccak256` — `root()` yields the exact 32-byte `h_b` directly!
+       - **Per-Contract Storage Subtree Tries:** For contracts inside bucket `b` with non-empty storage, maintains a `BinaryPathMPT` (`key = slotHash`, `val = RLP(minimalBE(slotValue))`) to compute exact post-BAL `storageRoot`.
+     - **Zero-RAM-Spike Streaming Build from Verified Flat Slabs (Zero Extra Network Traffic):**
+       - When bucket `b` finishes `WP-16d` custody sync (all 3 planes verified at `basePivotBlock` + BAL-replayed to `#Head`), stream `accounts/<b_hex>.bin` + `storage/<b_hex>.bin` directly through `BinaryPathMPT.buildFromSortedStream` in a worker / time-sliced background lane (respecting presentation-vs-protocol clock **D-069**), then advance through any BALs that arrived during build.
      - **Incremental Live BAL Updates (`applyVerifiedBal(blockNumber, bal)`):**
        - Filter BAL entries to **only** addresses with `keccak256(address)[0] >> 4 === b` (~1/16th of block writes!).
-       - For each touched contract in bucket `b` with `storageChanges`: update its storage trie (putting `RLP(postVal)` for non-zero, deleting for `0`) → obtain exact new `storageRoot`.
-       - Update bucket `b`'s account subtree with canonical 4-tuple RLP `[nonce, balance, storageRoot, codeHash]` (or delete on EIP-161 empty / selfdestruct removal) → obtain exact new `h_b(blockNumber)`!
+       - For each touched contract in bucket `b` with `storageChanges`: call `storageTrie.applyBatch(...)` → obtain exact new `storageRoot`.
+       - Call `accountTrie.applyBatch(...)` with canonical 4-tuple RLP `[nonce, balance, storageRoot, codeHash]` (or `null` on EIP-161 deletion) → obtain exact new `h_b(blockNumber)` in `< 2–5 ms`!
      - **Anchor Snapshot Ring (`ANCHOR_SNAPSHOT_RING = 4`):**
-       - Retain lightweight immutable proof-read snapshots (e.g. copy-on-write diff or recent-root node retention) for the last 4 canonical anchor blocks (`K = 32` or `E = 256` grid) so concurrent `GET_STATE_WITNESS` and fresh chunk export never race with live head updates.
+       - Uses `BinaryPathMPT.captureAnchor(anchorBlock)` reverse-diff snapshots (`< 100 KB/block`) for the last 4 canonical anchor blocks (`K = 32` or `E = 256` grid) so concurrent `GET_STATE_WITNESS` and fresh chunk export never race with live head updates.
 
 2. **512-Byte Root-Branch Assembly & Byzantine Fault Detection (`packages/ethy/src/custody/rootBranchAssembler.ts`):**
    - At every canonical anchor block `#A` (default every `32` or `256` blocks, configurable for fast tests):
@@ -73,7 +74,7 @@ When custodians gossip their 32-byte `h_b` hashes at canonical anchor blocks (`0
 
 ---
 
-### Acceptance Criteria (`WP-16e`)
+### Acceptance Criteria (`WP-16f`)
 - [ ] `BucketSubtreeTrie` matches a full reference `@ethereumjs/mpt` state trie bit-for-bit across 50+ blocks of EIP-7928 BAL mutations (`keccak256(RLP([h_0..h_f, 0x])) === fullRoot`).
 - [ ] `RootBranchAssembler` assembles `RootNode(#A)` from 16 custodians via `0x0d`/`0x0e SUBTREE_ROOTS`, detects & flags Byzantine `h_b` peers, and supports the 530-byte `GetTrieNodes` bootstrap fallback when `< 16` buckets are online.
 - [ ] Custodians advertise `trieBucketsBitmask`, serve `< 1 ms` ~2 KB live `0x0c STATE_WITNESS` proofs verified by `verifyStatyMultiProof`, and export fresh verified `ETHY/0` pivot chunks at new anchor blocks with **zero `snap/1`**.

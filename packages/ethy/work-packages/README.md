@@ -383,21 +383,28 @@ Every Work Package delivers a **runnable, observable, and live-testable incremen
                                                               │
                                                               ▼
                                           ┌─────────────────────────────────────────┐
-                                          │ WP-16e: 1/16th Live Subtree MPT, 512B   │
+                                          │ WP-16e: @ethereumjs/mpt BinaryPathMPT — │
+                                          │         Path-Keyed Binary Nodes, Stream │
+                                          │         Builder, Reverse-Diff & Proofs  │
+                                          └───────────────────┬─────────────────────┘
+                                                              │
+                                                              ▼
+                                          ┌─────────────────────────────────────────┐
+                                          │ WP-16f: 1/16th Live Subtree MPT, 512B   │
                                           │         [h_0..h_f] Root Assembly &      │
                                           │         Zero-SNAP Proofs/Chunks (Opt C) │
                                           └───────────────────┬─────────────────────┘
                                                               │
                                                               ▼
                                           ┌─────────────────────────────────────────┐
-                                          │ WP-16f: The Machine Custody Planes,     │
+                                          │ WP-16g: The Machine Custody Planes,     │
                                           │         16-Bucket /ethy Cockpit UI &    │
                                           │         ethy-sim Custody Swarm Gates    │
                                           └───────────────────┬─────────────────────┘
                                                               │
                                                               ▼
                                           ┌─────────────────────────────────────────┐
-                                          │ WP-16g: Client-Wide Custody Leverage —  │
+                                          │ WP-16h: Client-Wide Custody Leverage —  │
                                           │         Priority EVM Pool, False-Zero-  │
                                           │         Safe RPC/Tx, Live ENS & UX      │
                                           └─────────────────────────────────────────┘

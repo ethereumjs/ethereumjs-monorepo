@@ -1,7 +1,7 @@
-# WP-16f: `The Machine` Custody Orchestration, Honest Custody Cockpit UI, 16-Bucket `/ethy` Microscope & `ethy-sim` Custody Swarm Gates
+# WP-16g: `The Machine` Custody Orchestration, Honest Custody Cockpit UI, 16-Bucket `/ethy` Microscope & `ethy-sim` Custody Swarm Gates
 
 - **Status:** `READY_FOR_PLANNING`
-- **Dependencies:** `WP-16c` (`READY_FOR_PLANNING`), `WP-16d` (`READY_FOR_PLANNING`), `WP-16e` (`READY_FOR_PLANNING`), `WP-11a` (`DONE`), `WP-13` (`DONE`)
+- **Dependencies:** `WP-16c` (`PLANNED`), `WP-16d`..`WP-16f` (`READY_FOR_PLANNING`), `WP-11a` (`DONE`), `WP-13` (`DONE`)
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
 
@@ -14,7 +14,7 @@ Wire Unified Custody `ETHY/0` (Option B + Option C) cleanly into **`The Machine`
 
 ---
 
-### Key Deliverables (`WP-16f`)
+### Key Deliverables (`WP-16g`)
 
 1. **`The Machine` (`SyncNetworkOrchestrator`) Unified 5-Plane Custody Modes (`packages/ethy/src/sync/machineOrchestrator.ts`):**
    - Keep `PlaneId` clean at **5 planes (`eth`, `ethy`, `snap`, `discovery`, `cl`)** — no duplicate 6th `staty` plane!
@@ -59,7 +59,7 @@ Wire Unified Custody `ETHY/0` (Option B + Option C) cleanly into **`The Machine`
 
 ---
 
-### Acceptance Criteria (`WP-16f`)
+### Acceptance Criteria (`WP-16g`)
 - [ ] `The Machine` cleanly orchestrates 5 planes (`eth`, `ethy`, `snap`, `discovery`, `cl`), steers bucket-diverse `ETHY_PEX` toward `16/16` 1-hop coverage, and drops `snap1` from `HELLO` in `custody-live-calm` and `Full 16/16`.
 - [ ] 3-Box Cockpit and `/ethy` + `/machine` microscopes surface honest custody mode, 16-bucket local/swarm coverage, `RootNode` assembly, and zero-`snap` serving telemetry.
 - [ ] All 3 `ethy-sim` custody swarm gates pass deterministically in CI alongside existing `WP-11a`/`WP-11b` gates.

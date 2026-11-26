@@ -1,6 +1,6 @@
 # WP-09 (Optional): Dedicated `ETHY/0` Discovery Infrastructure — Stateless Rendezvous Daemon & Signed EIP-1459 DNS Tree
 
-- **Status:** `OPTIONAL_POST_MVP` *(Scheduled after `WP-16` — everything in `WP-06a..WP-16g` works without this infrastructure)*
+- **Status:** `OPTIONAL_POST_MVP` *(Scheduled after `WP-16` — everything in `WP-06a..WP-16h` works without this infrastructure)*
 - **Dependencies:** `WP-06b`, `WP-06c`, `WP-16c`, `WP-16d`
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
@@ -12,7 +12,7 @@
 ### Goal
 Provide an **optional, ultra-lightweight (~30 MB RAM, zero-state) `ETHY/0` Custody Rendezvous & EIP-1459 DNS Tree Publisher** (`ethy --rendezvous`) that can be deployed on a minimal VPS later if/when we want global zero-config discovery for the first 500–1,000 public Ethy nodes across the internet.
 
-> **Important Design Principle:** All features in `WP-06a` through `WP-16g` (Unified Custody `ETHY/0`, bucket-aware `ETHY_PEX` peer exchange, ENR `"ethy"` tag, `--connect`, and `peers.json` mesh persistence) work **100% without this infrastructure**. This optional package simply adds a public "meeting point" when you are ready to turn one on.
+> **Important Design Principle:** All features in `WP-06a` through `WP-16h` (Unified Custody `ETHY/0`, bucket-aware `ETHY_PEX` peer exchange, ENR `"ethy"` tag, `--connect`, and `peers.json` mesh persistence) work **100% without this infrastructure**. This optional package simply adds a public "meeting point" when you are ready to turn one on.
 
 ### Key Deliverables (`WP-09`)
 
