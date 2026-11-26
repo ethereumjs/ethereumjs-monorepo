@@ -1,7 +1,7 @@
 # WP-16f: 1/16th Live Subtree MPT (`BucketSubtreeTrie`), 512-Byte `[h_0..h_f]` Root-Branch Assembly & True Zero-`snap/1` Proof and Chunk Generation (Option C)
 
 - **Status:** `READY_FOR_PLANNING`
-- **Dependencies:** `WP-16b` (`DONE`), `WP-16c` (`PLANNED`), `WP-16d` (`READY_FOR_PLANNING`), `WP-16e` (`READY_FOR_PLANNING` — `@ethereumjs/mpt` `BinaryPathMPT`), `WP-04i` (`DONE`), `WP-04j` (`DONE`), `WP-14` (`DONE`)
+- **Dependencies:** `WP-16b` (`DONE`), `WP-16c` (`DONE`), `WP-16d` (`READY_FOR_PLANNING`), `WP-16e` (`READY_FOR_PLANNING` — `@ethereumjs/mpt` `BinaryPathMPT`), `WP-04i` (`DONE`), `WP-04j` (`DONE`), `WP-14` (`DONE`)
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
 

@@ -1,6 +1,6 @@
 # WP-16c: Unified Custody `ETHY/0` `v0.4` Consolidation (`@ethereumjs/devp2p` & `ETHY-0-SPEC.md`)
 
-- **Status:** `PLANNED`
+- **Status:** `DONE`
 - **Dependencies:** `WP-16a` (`DONE`), `WP-16b` (`DONE`), `WP-06b` (`DONE`), `WP-11b` (`DONE`), `WP-13` (`DONE`)
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
@@ -64,10 +64,10 @@ Every Ethy node speaks **one** state protocol (`ethy/0`), uses **one** ENR tag (
 ---
 
 ### Acceptance Criteria (`WP-16c`)
-- [ ] `ETHY/0` (`["ethy", 0]`, `length = 15`, `0x00`–`0x0e`) is the single unified state subprotocol in `@ethereumjs/devp2p`; duplicate `staty/0` wire plumbing is cleanly removed.
-- [ ] Targeted `0x03` chunk lookup (`originHash <= targetHash <= lastHash`), `0x0b`/`0x0c` state witness serving, `0x0d`/`0x0e` subtree root gossip, and bucket-aware `ETHY_PEX` work end-to-end in worker-thread tests.
-- [ ] `devp2p` public API snapshot (`config/public-api-snapshots/devp2p.json`) is updated and `scripts/public-api-snapshot.spec.mjs` passes (`17/17`).
-- [ ] `npm run tsc`, `npm test`, and `npm run spellcheck` pass in `packages/devp2p` and `packages/ethy`; no new runtime dependencies added.
+- [x] `ETHY/0` (`["ethy", 0]`, `length = 15`, `0x00`–`0x0e`) is the single unified state subprotocol in `@ethereumjs/devp2p`; duplicate `staty/0` wire plumbing is cleanly removed.
+- [x] Targeted `0x03` chunk lookup (`originHash <= targetHash <= lastHash`), `0x0b`/`0x0c` state witness serving, `0x0d`/`0x0e` subtree root gossip, and bucket-aware `ETHY_PEX` work end-to-end in worker-thread tests.
+- [x] `devp2p` public API snapshot (`config/public-api-snapshots/devp2p.json`) is updated and `scripts/public-api-snapshot.spec.mjs` passes (`17/17`).
+- [x] `npm run tsc`, `npm test`, and `npm run spellcheck` pass in `packages/devp2p` and `packages/ethy`; no new runtime dependencies added.
 
 ---
 
@@ -158,6 +158,15 @@ No `STATY` imports today. Fix `WorkerServingSnapshot` / `NetworkProfile` literal
 
 ---
 
-## 3. Implementation Notes & Deviations (Implementer — Composer 2.5)
+## 3. Implementation Notes & Deviations (Implementer — Composer 2.5 & Coordinator Review — Gemini 4 Neon)
 
-*(To be filled out by Composer 2.5 upon completion.)*
+- **Shipped (`b95ddf588`, `de58c53f8`, plus Coordinator review hardening D-147):**
+  - Unified `ETHY/0` `v0.4` (`["ethy", 0]`, `length = 15`, `0x00`–`0x0e`) in `@ethereumjs/devp2p` and cleanly retired duplicate `staty/0` wire plumbing (`src/protocol/staty*`, `src/serve/staty*`, `src/worker/statyPex.ts`, `"staty"` ENR tag, `staty0` capability, `minStatyPeers`).
+  - Refreshed `config/public-api-snapshots/devp2p.json` (`scripts/public-api-snapshot.spec.mjs` `17/17` green).
+  - **Coordinator Review Hardening (D-147):**
+    1. **`EthySubtreeRootBook`:** Preserved 0-byte empty nibble hashes (`0x80` = `new Uint8Array(0)`) instead of converting to 32 zero bytes; accepted valid empty `0x0e` responses (`[]`) separately from malformed entries.
+    2. **`EthyWitnessStore`:** Enforced strictly ascending `accounts[]` and `(accountHash, slotHash)` `slots[]` sorting + deduplication per `ETHY-0-SPEC.md` `v0.4`, bounded per-account anchor retention (`MAX_RECORDS_PER_ACCOUNT = 8`), and wired the optional synchronous `setWitnessGenerator` seam for `WP-16f`.
+    3. **`ethyPex.ts`:** Replaced fragile weighted sum (`basePivotBlock * 1e6 + lastSeenSec`, which let epoch timestamps/1-block gaps override bucket overlap) with an exact lexicographic comparator (`desiredBucketsMask` overlap → `trieBucketsBitmask` overlap → 3-plane coverage → exact `bigint` `basePivotBlock` → `lastSeenSec`).
+    4. **`EthyStorageStore.sliceKind1`:** Fixed inverted `complete` right-boundary exclusion (`complete === true` returns right boundary with `hasRight = 0`; `complete === false` returns `undefined`) and included `slot[i - 1]` on gap misses so returned `[originSlotHash .. lastSlotHash]` covers `target` for Merkle range exclusion proofs.
+    5. **RLPx Reciprocity & DoS Hardening:** Ensured `_trimSurplusPeers` and `_enforceEthyPeerReserve` protect only custodian ETHY peers (`bucketsBitmask !== 0`) under `minEthyPeers` and evict mask-0 peers first; enforced outbound `MAX_ETHY_PROOF_NODES` and inbound unknown-code disconnect in `ETHY`; hardened `tryServeEthyGet` against malformed non-`Uint8Array` fields; cleaned `_ethyWitnessThrottles` and `_ethyPexSent` on `peer:removed`.
+    6. **End-to-End 3-Node Custody Swarm Test:** Expanded `test/worker/ethy-custody-swarm.spec.ts` to cover 3-node loopback bucket-aware `ETHY_PEX`, targeted `0x03` single-key chunk lookup, `0x0b`/`0x0c` witness serving, and `0x0d`/`0x0e` subtree root serving.

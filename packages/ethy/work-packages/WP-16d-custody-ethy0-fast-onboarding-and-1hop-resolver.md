@@ -1,7 +1,7 @@
 # WP-16d: Unified Custody `ETHY/0` — Default Fast Onboarding (`--custody 2`), Background 3-Plane Custody Sync & 1-Hop Cold-Miss Resolver (Option B)
 
 - **Status:** `READY_FOR_PLANNING`
-- **Dependencies:** `WP-16b` (`DONE`), `WP-16c` (`READY_FOR_PLANNING`), `WP-06f` (`DONE`), `WP-08b` (`DONE`), `WP-11b` (`DONE`), `WP-14` (`DONE`)
+- **Dependencies:** `WP-16b` (`DONE`), `WP-16c` (`DONE`), `WP-06f` (`DONE`), `WP-08b` (`DONE`), `WP-11b` (`DONE`), `WP-14` (`DONE`)
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
 

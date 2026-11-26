@@ -1,7 +1,7 @@
 # WP-16h: Ethy Client-Wide Custody Leverage — Priority Concurrent EVM Sandbox, False-Zero-Safe JSON-RPC & Tx Broadcast, Live ENS & Zero-Leech AI Forensics, Mode-Aware Gating & Onboarding UX
 
 - **Status:** `READY_FOR_PLANNING`
-- **Dependencies:** `WP-16b` (`DONE`), `WP-16c` (`PLANNED`), `WP-16d`..`WP-16g` (`READY_FOR_PLANNING`), `WP-08b` (`DONE`), `WP-15` (`DONE`)
+- **Dependencies:** `WP-16b` (`DONE`), `WP-16c` (`DONE`), `WP-16d`..`WP-16g` (`READY_FOR_PLANNING`), `WP-08b` (`DONE`), `WP-15` (`DONE`)
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
 

@@ -1,7 +1,7 @@
 # WP-16g: `The Machine` Custody Orchestration, Honest Custody Cockpit UI, 16-Bucket `/ethy` Microscope & `ethy-sim` Custody Swarm Gates
 
 - **Status:** `READY_FOR_PLANNING`
-- **Dependencies:** `WP-16c` (`PLANNED`), `WP-16d`..`WP-16f` (`READY_FOR_PLANNING`), `WP-11a` (`DONE`), `WP-13` (`DONE`)
+- **Dependencies:** `WP-16c` (`DONE`), `WP-16d`..`WP-16f` (`READY_FOR_PLANNING`), `WP-11a` (`DONE`), `WP-13` (`DONE`)
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
 
