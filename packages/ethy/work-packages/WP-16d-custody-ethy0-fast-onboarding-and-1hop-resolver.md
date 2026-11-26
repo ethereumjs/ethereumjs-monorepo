@@ -179,6 +179,8 @@ flowchart TD
 
 ## 3. Implementation Notes & Deviations (Implementer — Composer 2.5)
 
-**Tranche 1 (local commit):** CLI `--custody` / `--full` / `--snap-bootstrap`; `custodyPlan` + `snapStore` persistence; coordinator custody bucket assign + filtered `EthySwarmSynchronizer`; default `HELLO` without `snap/1` (`bootNetworkProfile` + machine reconciler `snapBootstrap` gate); `closedBucketsMask` from disk in `createEthyNode`; scaffold `custodyStateResolver`, `ethyCodeStorageSync`, `blockCalendar`; tests `custodyPlan` + machine/args updates.
+**Tranche 1:** CLI `--custody` / `--full` / `--snap-bootstrap`; `custodyPlan` + `snapStore` persistence; coordinator custody bucket assign + filtered `EthySwarmSynchronizer`; default `HELLO` without `snap/1`; `closedBucketsMask` from disk; resolver/code-sync scaffolds; `custodyPlan` tests.
 
-**Still open:** BAL-first `custodyOnboarding` → immediate `HEAD_FOLLOWING`; wire `custodyStateResolver` into `FlatStateManager` miss hooks + coordinator `handleEthyResponse`; background 3-plane sync + atomic STATUS flip; full resolver storage path + witness fold-to-head; `custodyEthySync` integration tests.
+**Tranche 2:** `custodyOnboarding.ts` BAL-window pivot + `beginCustodyBalOnboarding`; fast path skips default snap sync and full ethy swarm anchor; `HEAD_FOLLOWING` triggers background `EthySwarmSynchronizer` (`custodyBuckets`, `backgroundMode`); `StatyWriteIndex` on applied BALs; `CustodyStateResolver` wired via `custodyMissDelegate` + ETHY `0x03`/`0x05`/`0x0c` routing; `desiredEthyBucketsMask` on network profile; tests `custodyOnboarding` + `custodyStateResolver`.
+
+**Still open:** `foldWitnessToHead` + commit path in resolver; storage plane + atomic three-mask flip on bucket close; full `ethyCodeStorageSync` verify; `custodyEthySync` loopback integration; honest closed-only `bucketsBitmask` until flip (partially wired).

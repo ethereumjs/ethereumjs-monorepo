@@ -176,6 +176,8 @@ export interface EthySpine {
   custodyBuckets?: number[]
   closedBucketsMask?: number
   custodyBackgroundActive?: boolean
+  /** BAL-window onboarding before background custody sync (WP-16d). */
+  custodyBalOnboarding?: boolean
   currentSlot: number
   pivotBlockNumber?: bigint
   pivotStateRoot?: Uint8Array

@@ -57,4 +57,11 @@ export class EthyCodeStorageSynchronizer {
       RLP.encode([bigIntToUnpaddedBytes(reqId), intToUnpaddedBytes(0), [codeHash]] as never),
     )
   }
+
+  /** Inbound ETHY responses for background code/storage fetch (stub until full verify). */
+  handleEthyResponse(_peerId: string, _code: number, _payload: Uint8Array): void {
+    void _peerId
+    void _code
+    void _payload
+  }
 }

@@ -297,6 +297,9 @@ Track every modification or planned modification to sibling monorepo packages he
 
 *Agents: Append a new dated subsection at the top of this list after each Planning (Grok 4.7) or Implementation (Composer 2.5) pass.*
 
+### 2026-11-26 — `WP-16d` tranche 2: BAL-first onboarding, miss hooks, background sync (Implementer — Composer 2.5)
+- `custodyOnboarding` fast path: onboarding pivot, BAL catch-up to head, skip default `snap/1` base sync; background custody swarm after `HEAD_FOLLOWING`; resolver + `StatyWriteIndex` wiring. WP-16d §3 updated.
+
 ### 2026-11-26 — `WP-16d` tranche 1: custody CLI, snap-bootstrap gate, coordinator scaffold (Implementer — Composer 2.5)
 - Landed first client slice on branch `ethy-a-new-protocol-hope`: `--custody` / `--full` / `--snap-bootstrap`, `custodyPlan`, store persistence, machine + coordinator default without `snap/1`, filtered swarm buckets, `custodyStateResolver` / `ethyCodeStorageSync` scaffolds. **WP-16d** → **`IN_PROGRESS`** (§3 notes remaining work).
 

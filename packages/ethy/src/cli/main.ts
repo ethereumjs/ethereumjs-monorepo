@@ -164,6 +164,7 @@ async function main(): Promise<void> {
       custodyCount: cli.custodyCount,
       snapBootstrap: cli.snapBootstrap,
       shadowRefreshEnabled: cli.shadowRefreshEnabled,
+      custodyMissDelegate: node.custodyMissDelegate,
       witnessExecutionHeader,
       setConsensusPollInterval: consensus.setPollIntervalMs,
       economy: node.economy,
