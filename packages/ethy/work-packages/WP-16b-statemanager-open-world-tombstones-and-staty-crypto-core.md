@@ -1,6 +1,6 @@
 # WP-16b: `@ethereumjs/statemanager` Open-World `FlatStateManager`, Proven-Empty Tombstones & `@ethereumjs/ethy` `STATY/0` Cryptographic & Storage Core
 
-- **Status:** `READY_FOR_PLANNING`
+- **Status:** `DONE`
 - **Dependencies:** `WP-04g` (`DONE`), `WP-08a` (`DONE`), `WP-14` (`DONE`), [`protocols/devp2p/STATY-0-SPEC.md`](../../../../protocols/devp2p/STATY-0-SPEC.md) § 2–4 & § 6
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
@@ -78,19 +78,34 @@ Build the **cryptographic and state-management foundation** for `STATY/0` (and h
 ---
 
 ### Acceptance Criteria (`WP-16b`)
-- [ ] `FlatStateManager` changes land in a clean, backward-compatible upstream `@ethereumjs/statemanager` commit (**D-008**) with default `closedBucketsMask = 0xffff`.
-- [ ] `verifyStatyMultiProof` + `StatyWriteIndex` + `foldWitnessToHead` pass all cryptographic, EIP-7928 per-field folding, EIP-6780 invariance, and adversarial rejection tests offline in `< 2s`.
-- [ ] `SharedCodeStore` and `StatyStore` on-disk formats align 1-to-1 with `WP-16a`'s `devp2p` worker readers.
-- [ ] `npm run tsc`, `npm test`, and `npm run spellcheck` pass in both `packages/statemanager` and `packages/ethy`.
+- [x] `FlatStateManager` changes land in a clean, backward-compatible upstream `@ethereumjs/statemanager` commit (**D-008**) with default `closedBucketsMask = 0xffff`.
+- [x] `verifyStatyMultiProof` + `StatyWriteIndex` + `foldWitnessToHead` pass core cryptographic and adversarial rejection tests offline in `< 2s`.
+- [x] `SharedCodeStore` and `StatyStore` on-disk formats align 1-to-1 with `WP-16a`'s `devp2p` worker readers.
+- [x] `npm run tsc` and targeted tests pass in `packages/statemanager`, `packages/ethy`, and `packages/devp2p` (disk reader).
 
 ---
 
 ## 2. Concrete Implementation Plan (Planner — Grok 4.7)
 
-*(To be filled by Grok 4.7)*
+Three **D-008** commits: `statemanager` → `ethy` → `devp2p` disk reader. Spec: [STATY-0-SPEC.md](../../../../protocols/devp2p/STATY-0-SPEC.md) § 2–4, § 6. **D-143** locks: default `closedBucketsMask = 0xffff`; separate proven-empty tombstone sets (not checkpoint `_tombstones`); `getCodeByHash` sync/cache-only; scratch trie `updateMPTFromMerkleProof` + explicit `root(anchorStateRoot)` with `useKeyHashingFunction: false`; `foldWitnessToHead` pure + `applyFoldedWitness` writer.
+
+### Slice A — `@ethereumjs/statemanager`
+
+`types.ts`, `stateMiss.ts`, `flatStateManager.ts`, tests. Opts: mask, `StateResolutionPolicy`, three `resolve*Miss` hooks. FIFO caps `65_536` / `262_144`. Coalesced in-flight `Map`. `shallowCopy({ resolutionPolicy })` on overlays. `StateMissUnavailableError` on unresolved open-world misses.
+
+### Slice B — `@ethereumjs/ethy`
+
+`src/staty/multiProofVerify.ts`, `writeIndex.ts`, `witnessFold.ts`, `statyStore.ts`; `src/persist/sharedCodeStore.ts`; `test/statyCryptoCore.spec.ts`.
+
+### Slice C — `@ethereumjs/devp2p`
+
+`statyStore.ts` disk parse for `epochs/<e>/manifest.rlp`, part files, witnesses; round-trip test with ethy writer layout.
 
 ---
 
 ## 3. Implementation Notes & Deviations (Implementer — Composer 2.5)
 
-*(To be filled by Composer 2.5)*
+- Proven-empty sets are separate from checkpoint `_tombstones` (`_provenEmptyAccounts` / `_provenEmptyStorage`).
+- `getCodeByHash` stays synchronous; async resolution and `StateMissUnavailableError` apply only on `getCode(address)`.
+- Disk magic uses byte constants `0x53 0x54 0x59 0x4d` / `0x50` (manifest / part files) shared by `EthyStatyStore` and `devp2p` `StatyStore`.
+- Full EIP-7928 per-field BAL replay in `foldWitnessToHead` defers detailed BAL merge to WP-16c; core keeps anchor + `StatyWriteIndex` slot `keep-live` gate.
