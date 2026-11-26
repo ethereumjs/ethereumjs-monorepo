@@ -1,6 +1,6 @@
 import { createBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { createLegacyTx } from '@ethereumjs/tx'
+import { createEOACode7702Tx, createLegacyTx } from '@ethereumjs/tx'
 import {
   Account,
   bigIntToBytes,
@@ -9,6 +9,7 @@ import {
   createAddressFromPrivateKey,
   createAddressFromString,
   createZeroAddress,
+  eoaCode7702SignAuthorization,
   equalsBytes,
   generateAddress,
   hexToBytes,
@@ -242,6 +243,67 @@ describe('[VM/EIP-7928]: block Level Access Lists', () => {
     const addresses = result.blockLevelAccessList!.toJSON().map((entry) => entry.address)
     assert.isTrue(addresses.includes(target.toString()))
     assert.isFalse(addresses.includes(delegatedTo.toString()))
+  })
+
+  it('7702 authorization rolled back on prep OOG keeps the authority but drops its changes', async () => {
+    const vm = await createVM({ common, preinstallSystemContracts: true })
+    await fundSender(vm)
+
+    // First authority clears an existing delegation and succeeds (nonce bump + code write).
+    const authKey = hexToBytes(`0x${'30'.repeat(32)}`)
+    const authority = createAddressFromPrivateKey(authKey)
+    const delegation = concatBytes(hexToBytes('0xef0100'), recipient.bytes)
+    await vm.stateManager.putAccount(authority, new Account(0n, 1n))
+    await vm.stateManager.putCode(authority, delegation)
+    // Second authority runs out of gas on its ACCOUNT_WRITE, rolling back the whole auth layer.
+    const authKey2 = hexToBytes(`0x${'31'.repeat(32)}`)
+    await vm.stateManager.putAccount(createAddressFromPrivateKey(authKey2), new Account(0n, 1n))
+
+    const intrinsic =
+      common.param('txGas') +
+      common.param('txRecipientAccessGas') +
+      2n * common.param('perAuthBaseGas')
+    const zero = `0x${'00'.repeat(20)}` as const
+    const tx = createEOACode7702Tx(
+      {
+        to: recipient,
+        gasLimit: intrinsic + common.param('accountWriteGas'),
+        maxFeePerGas: 10n,
+        maxPriorityFeePerGas: 10n,
+        authorizationList: [
+          eoaCode7702SignAuthorization({ chainId: '0x00', address: zero, nonce: '0x00' }, authKey),
+          eoaCode7702SignAuthorization({ chainId: '0x00', address: zero, nonce: '0x00' }, authKey2),
+        ],
+      },
+      { common },
+    ).sign(senderKey)
+
+    const parentBlock = createBlock(
+      { header: { number: 1n } },
+      { common, skipConsensusFormatValidation: true },
+    )
+    const block = createBlock(
+      {
+        header: { number: 2n, gasLimit: 30_000_000n, baseFeePerGas: 1n },
+        transactions: [tx],
+      },
+      {
+        common,
+        skipConsensusFormatValidation: true,
+        calcDifficultyFromHeader: parentBlock.header,
+      },
+    )
+
+    const result = await runBlock(vm, { block, generate: true, skipBlockValidation: true })
+    assert.isDefined(result.results[0].execResult.exceptionError)
+    const entry = result
+      .blockLevelAccessList!.toJSON()
+      .find((e) => e.address === authority.toString())
+    assert.isDefined(entry, 'authority stays in the BAL')
+    assert.deepEqual(entry!.nonceChanges, [])
+    assert.deepEqual(entry!.codeChanges, [])
+    assert.equal((await vm.stateManager.getAccount(authority))!.nonce, 0n)
+    assert.isTrue(equalsBytes(await vm.stateManager.getCode(authority), delegation))
   })
 
   it('buildBlock() writes blockAccessListHash and slotNumber', async () => {
