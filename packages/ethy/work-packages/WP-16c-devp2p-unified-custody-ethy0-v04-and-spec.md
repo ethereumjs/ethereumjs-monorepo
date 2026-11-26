@@ -1,6 +1,6 @@
 # WP-16c: Unified Custody `ETHY/0` `v0.4` Consolidation (`@ethereumjs/devp2p` & `ETHY-0-SPEC.md`)
 
-- **Status:** `READY_FOR_PLANNING`
+- **Status:** `PLANNED`
 - **Dependencies:** `WP-16a` (`DONE`), `WP-16b` (`DONE`), `WP-06b` (`DONE`), `WP-11b` (`DONE`), `WP-13` (`DONE`)
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
@@ -73,7 +73,88 @@ Every Ethy node speaks **one** state protocol (`ethy/0`), uses **one** ENR tag (
 
 ## 2. Concrete Implementation Plan (Planner — Grok 4.7)
 
-*(To be filled out by Grok 4.7 before implementation begins.)*
+Wire contract source of truth: [`protocols/devp2p/ETHY-0-SPEC.md`](../../../../protocols/devp2p/ETHY-0-SPEC.md) `v0.4` (already drafted; verify-only unless implementation finds a mismatch). [`STATY-0-SPEC.md`](../../../../protocols/devp2p/STATY-0-SPEC.md) is already marked superseded.
+
+**Out of scope (later WPs):** `--custody` CLI (WP-16d), client 1-hop resolver (WP-16d), live `BucketSubtreeTrie` (WP-16e), cockpit / swarm gates (WP-16f). **Preserve WP-16b:** `verifyStatyMultiProof`, `StatyWriteIndex`, `foldWitnessToHead`, `SharedCodeStore`, and `test/statyCryptoCore.spec.ts`.
+
+### 2.1 Design locks
+
+| Topic | Rule |
+| --- | --- |
+| Single subprotocol | `ETHY.ethy0` → `{ name: 'ethy', version: 0, length: 15 }`. New codes `0x0b`–`0x0e` in `ethy/codes.ts`. Remove `staty/0`, epoch wire messages, `STATY_PEX`, `"staty"` ENR — do not remap onto new codes. |
+| `STATUS` | Encode always 12-tuple; index 11 = `trieBucketsBitmask`. Parse 9 / 11 / 12 tuples; omit → `0`. Canonical zero via `intToUnpaddedBytes` / `bigIntToUnpaddedBytes`. |
+| `0x03` lookup | `EthyChunkStore.getAccountChunk(bucket, targetHash)`: exact `originHash` first (mem over disk); else covering chunk `origin <= target <= last`, else first chunk (left boundary), else last with `hasRight === 0` (right boundary). Same for `EthyStorageStore.sliceKind1` (kind 1). |
+| Witnesses | New `EthyWitnessStore` — witness RAM/disk + `resolveWitnesses` from today's `StatyStore` (drop epoch maps). Caps: 64 accounts, 256 slots, 4096 proof nodes, 524288 response bytes, 2 MiB frame. Reuse `witnesses/<hash>.rlp` on-disk format from `EthyStatyStore`. Optional `setWitnessGenerator` stub for WP-16e; never block on `snap/1`. |
+| Subtree gossip | In-worker ring (last 16 anchor blocks, bucket 0..15 → 32-byte hash). `putEthySubtreeRoots` IPC + ingest `0x0e`; serve `0x0d`; forward `0x0e` to main thread. Validate ascending unique `bucketIndex`, `entries.length <= 16`. |
+| PEX | Optional `desiredBucketsMask` on `0x09` index 2. Never advertise `bucketsBitmask === 0`. Rank: mask overlap → `trieBucketsBitmask` → storage+code bits → `basePivotBlock`; 75% fresh + 25% random. `0x0a` trailing `trieBucketsBitmask` (short rows = 0). Auto `GET_ETHY_PEERS` uses `NetworkProfile.desiredEthyBucketsMask`. |
+| Reciprocity | Remote `bucketsBitmask !== 0`: full serve. `=== 0`: allow `0x01`/`0x03`/`0x05`; throttle `0x0b` (e.g. 2 / 10s → empty `STATE_WITNESS`). RLPx evicts inbound mask-0 ETHY peers before custodians. Remove `minStatyPeers`; keep `minEthyPeers`. |
+| DoS | `ETHY` applies 2 MiB frame + proof-node cap on send/receive for `0x04`, `0x06`, `0x0c` (mirror current `STATY` behavior). |
+
+### 2.2 `@ethereumjs/devp2p` file tree (single D-008 commit)
+
+**Protocol & codec**
+
+- `src/protocol/ethy/codes.ts` — `GET_STATE_WITNESS` … `SUBTREE_ROOTS` (`0x0b`–`0x0e`).
+- `src/protocol/ethy.ts` — `length: 15`, allow new codes in `sendMessage`, size/proof guards.
+- `src/protocol/ethy/codec.ts` — `trieBucketsBitmask`; witness cap exports (rename from staty constants); `countProofNodesInEthyMessage`.
+
+**Stores & serve**
+
+- `src/serve/ethyChunkStore.ts` — `getAccountChunk`; sorted disk `ordered` for binary search.
+- `src/serve/ethyStorageStore.ts` — kind-1 covering range.
+- **New** `src/serve/ethyWitnessStore.ts` — witness put/resolve/disk (from `statyStore.ts` witness paths only).
+- **New** `src/serve/ethySubtreeRootBook.ts` (or `worker/ethySubtreeRoots.ts`) — ring + validation.
+- `src/serve/ethyServer.ts` — `0x0b`/`0x0c`/`0x0d`/`0x0e`, targeted `0x03`, PEX mask, reciprocity throttle, witness metric.
+
+**Worker & PEX**
+
+- `src/worker/ethyPex.ts` — store `storageBucketsBitmask`, `codeBucketsBitmask`, `trieBucketsBitmask`; `selectEthyPexPeers(rows, max, mask, rng)`.
+- `src/worker/protocol.ts` / `client.ts` — `trieBucketsBitmask` on ETHY status; `putEthyWitness`, `putEthySubtreeRoots`; remove all `Staty*` / `putStaty*` / `sendStatyMessage`; `ethyWitnessesServed` on `WorkerServingSnapshot`; drop `staty*` serve counters; optional `ethyWitnessDir` (replaces `statyDataDir`).
+- `src/worker/host.ts` — rip STATY handshake/serve/PEX; wire witness store, subtree book, mask on auto-PEX.
+
+**Discovery & profile**
+
+- `src/types.ts` — `desiredEthyBucketsMask` on `NetworkProfile`; remove `minStatyPeers`, `statyDiscoveryTag`, `preferStatyDiscovery`, `ProtocolType.STATY`.
+- `src/rlpx/rlpx.ts` — mask-0 ETHY eviction; remove staty peer reserve.
+- `src/dpt/*`, `src/dns/enrPeerFields.ts`, `src/discovery/metrics.ts`, `src/lab/capabilities.ts` — drop `staty0`, staty ENR helpers.
+
+**Public API**
+
+- `src/index.ts`, `src/protocol/index.ts` — export `EthyWitnessStore`; remove `STATY`, `StatyStore`, `tryServeStatyGet`.
+
+**Delete**
+
+- `src/protocol/staty.ts`, `src/protocol/staty/*`, `src/serve/statyServer.ts`, `src/serve/statyStore.ts`, `src/worker/statyPex.ts`.
+- Tests: `test/protocol/staty.spec.ts`, `test/serve/staty*`, `test/worker/staty-swarm.spec.ts`.
+
+**Snapshot**
+
+- `config/public-api-snapshots/devp2p.json` — refresh; `node --test scripts/public-api-snapshot.spec.mjs` (`17/17`).
+
+### 2.3 Tests (same devp2p commit)
+
+| File | Coverage |
+| --- | --- |
+| `test/protocol/ethy.spec.ts` | All 15 codes; STATUS 9/11/12-tuple; canonical `0x80`; proof cap; subtree validation |
+| `test/serve/ethyServer.spec.ts` | Targeted `0x03` (exact, interior, boundaries, miss); kind-1 cover; witness budget, proof deduplication, throttle; subtree; storage/code kinds |
+| `test/serve/ethyPex.spec.ts` | `desiredBucketsMask`, trie rank, no mask-0 rows |
+| **New** `test/worker/ethy-custody-swarm.spec.ts` | 3-node loopback: PEX mask, targeted chunk, witness, subtree gossip |
+| `test/rlpx/ethyPeerReserve.spec.ts` | Mask-0 eviction (drop staty reserve cases) |
+
+### 2.4 `packages/ethy` (follow-up commit only if types break)
+
+No `STATY` imports today. Fix `WorkerServingSnapshot` / `NetworkProfile` literals if devp2p removes `staty*` fields. Keep `src/staty/*` crypto and tests. Optional one-line comment on `EthyStatyStore` that epoch bundles are local-only until later cleanup.
+
+### 2.5 Finish gates
+
+`packages/devp2p`: `npm run tsc`, `npm test`, spellcheck. `packages/ethy`: `npm run tsc`, `test/statyCryptoCore.spec.ts` if touched. No new runtime dependencies.
+
+### 2.6 Commit split
+
+1. This WP / PROGRESS planning doc (ethy repo path only).
+2. One `@ethereumjs/devp2p` commit (implementation + tests + snapshot).
+3. `packages/ethy` only if worker types force it.
+4. `ethereumjs/protocols` only if spec text must change.
 
 ---
 
