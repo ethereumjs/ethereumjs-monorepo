@@ -1459,6 +1459,21 @@ export class SnapPivotStore {
     return rows.slice(0, opts.limit)
   }
 
+  /** On-disk account journal paths for one nibble bucket at the active pivot (WP-16f). */
+  accountJournalPathsForBucket(bucketIndex: number): string[] {
+    if (!this.enabled) return []
+    if (this.activeStateRoot === undefined) {
+      const active = this.readActive()
+      if (active === undefined) return []
+      this.activeStateRoot = active.stateRoot
+      this.seedInitializedAccountFiles(active.stateRoot)
+    }
+    return [
+      this.accountFile(bucketIndex, this.activeStateRoot),
+      ...this.listSegmentJournalFiles(bucketIndex, this.activeStateRoot),
+    ]
+  }
+
   /** Cold account lookup for {@link FlatStateManager} (sorted binary journals). */
   lookupBinaryAccountByHash(accountHash: Uint8Array): Uint8Array | undefined {
     if (!this.enabled) return undefined

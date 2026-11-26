@@ -76,21 +76,39 @@ export function assembleRootBranch(
   candidates: BucketRootCandidates,
   stateRoot: Uint8Array,
   keccak256: RootBranchKeccak,
+  snapRootBranchRlp?: Uint8Array,
 ): RootAssemblyResult {
+  const trySnapFallback = (): RootAssemblyResult | undefined => {
+    if (snapRootBranchRlp === undefined) return undefined
+    try {
+      const snapSlots = decodeRootBranchSlots(snapRootBranchRlp)
+      if (!verifyRootBranch(snapSlots, stateRoot, keccak256)) return undefined
+      return {
+        ok: true,
+        slots: snapSlots,
+        rootNodeRlp: new Uint8Array(snapRootBranchRlp),
+        byzantinePeerIds: [],
+      }
+    } catch {
+      return undefined
+    }
+  }
+
   const slotOptions: Uint8Array[][] = []
   let conflictBuckets = 0
   for (let b = 0; b < 16; b++) {
     const per = candidates.get(b)
     if (per === undefined || per.size === 0) {
-      return { ok: false, reason: 'incomplete' }
+      return trySnapFallback() ?? { ok: false, reason: 'incomplete' }
     }
     const uniq = uniqueHashes(per)
     if (uniq.length > 1) conflictBuckets++
     if (conflictBuckets > 2) {
-      return { ok: false, reason: 'conflict' }
+      return trySnapFallback() ?? { ok: false, reason: 'conflict' }
     }
     slotOptions.push(uniq.length > 0 ? uniq : [new Uint8Array(0)])
   }
+
   for (const pick of cartesian(slotOptions)) {
     const slots = pick as Uint8Array[]
     if (!verifyRootBranch(slots, stateRoot, keccak256)) continue
@@ -111,7 +129,7 @@ export function assembleRootBranch(
       byzantinePeerIds: [...new Set(byzantine)],
     }
   }
-  return { ok: false, reason: 'mismatch' }
+  return trySnapFallback() ?? { ok: false, reason: 'mismatch' }
 }
 
 function slotBytesEqual(a: Uint8Array, b: Uint8Array): boolean {

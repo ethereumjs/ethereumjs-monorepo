@@ -46,6 +46,7 @@ import { SubtreeCustodyRegistry } from '../custody/subtreeCustodyRegistry.ts'
 import {
   handleInboundLiveGetStateWitness,
   noteInboundSubtreeRootsGossip,
+  publishLocalSubtreeRoots,
 } from '../custody/subtreeLiveServe.ts'
 import type { ETHEconomyDataManager } from '../economy/economyDataManager.ts'
 import type { NoticeBoard } from '../notify/board.ts'
@@ -90,6 +91,7 @@ import {
   finalizeBlockBundle,
   startBlockBundleByNumber,
 } from '../sync/blockBundle.ts'
+import { CANONICAL_PIVOT_GRID_BLOCKS } from '../sync/blockCalendar.ts'
 import { selectCanonicalSnapPivotTarget } from '../sync/canonicalPivotGrid.ts'
 import { SnapCodeAndStorageSynchronizer } from '../sync/codeAndStorageSync.ts'
 import { pickEthyAnchorForStaleResume } from '../sync/ethyAnchorResume.ts'
@@ -547,10 +549,18 @@ export async function startPeerCoordinator(
   spine.custodyBalOnboarding = custodyFastOnboard
   const desiredEthyMask = desiredCustodyBucketsMask(custodyAssign.buckets)
   const localNodeId = pk2id(secp256k1.getPublicKey(privateKey, false))
-  const subtreeRegistry = new SubtreeCustodyRegistry(
-    bytesToUnprefixedHex(localNodeId),
-    custodyAssign.buckets,
-  )
+  const subtreeRegistry = new SubtreeCustodyRegistry({
+    localPeerIdHex: bytesToUnprefixedHex(localNodeId),
+    buckets: custodyAssign.buckets,
+    dataDir,
+    snapStore,
+    snapBootstrap,
+  })
+  for (const b of custodyAssign.buckets) {
+    if ((spine.closedBucketsMask & (1 << b)) !== 0) {
+      subtreeRegistry.scheduleBuildFromSlabs(b)
+    }
+  }
   const shadowRefreshEnabled = opts.shadowRefreshEnabled !== false
   const processStartedAtMs = Date.now()
   let generationElection: GenerationElectionHandle | undefined
@@ -1695,12 +1705,23 @@ export async function startPeerCoordinator(
       if (spine.phase === 'SNAP_SYNCING') {
         codeSync?.noteBalApplied(bal)
       }
-      if (
-        custodyFastOnboard &&
-        spine.lastVerifiedBlockNumber !== undefined &&
-        spine.lastVerifiedBlockNumber > 0n
-      ) {
-        statyWriteIndex.ingestVerifiedBal(Number(spine.lastVerifiedBlockNumber), bal)
+      const appliedBlock = spine.lastVerifiedBlockNumber
+      if (custodyFastOnboard && appliedBlock !== undefined && appliedBlock > 0n) {
+        statyWriteIndex.ingestVerifiedBal(Number(appliedBlock), bal)
+        void subtreeRegistry.applyVerifiedBal(appliedBlock, bal)
+        if (
+          appliedBlock % CANONICAL_PIVOT_GRID_BLOCKS === 0n &&
+          spine.pivotStateRoot !== undefined
+        ) {
+          void subtreeRegistry
+            .verifyAnchor(appliedBlock, spine.pivotStateRoot)
+            .then((rec) => {
+              if (rec === undefined) return
+              publishLocalSubtreeRoots(client, subtreeRegistry, appliedBlock)
+              refreshEthyWorkerAdvertisement(client, spine, subtreeRegistry)
+            })
+            .catch(() => undefined)
+        }
       }
     },
     appendHealBal: (blockNumber: bigint, balRlp: Uint8Array) => {
@@ -2229,6 +2250,7 @@ export async function startPeerCoordinator(
       },
       onBucketDone: (idx) => {
         noteBucketAdvertised(client, idx)
+        subtreeRegistry.scheduleBuildFromSlabs(idx)
         const head =
           spine.bestPeerHead ?? spine.lastVerifiedBlockNumber ?? spine.pivotBlockNumber ?? 0n
         noteCustodyPlaneComplete({
@@ -2239,6 +2261,7 @@ export async function startPeerCoordinator(
           bucketIndex: idx,
           plane: 'accounts',
           headBlock: head,
+          subtreeRegistry,
         })
         custodyCodeSync?.markAccountsFinished(idx)
       },
@@ -2264,6 +2287,7 @@ export async function startPeerCoordinator(
           bucketIndex: idx,
           plane: 'code',
           headBlock: head,
+          subtreeRegistry,
         })
       },
       onStorageBatchForBucket: (idx) => {
@@ -2277,6 +2301,7 @@ export async function startPeerCoordinator(
           bucketIndex: idx,
           plane: 'storage',
           headBlock: head,
+          subtreeRegistry,
         })
       },
     })

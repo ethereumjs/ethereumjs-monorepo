@@ -77,7 +77,7 @@ When custodians gossip their 32-byte `h_b` hashes at canonical anchor blocks (`0
 ### Acceptance Criteria (`WP-16f`)
 - [x] `BucketSubtreeTrie` matches a full reference `@ethereumjs/mpt` state trie bit-for-bit across 50+ blocks of mutations (`keccak256(RLP([h_0..h_f, 0x])) === fullRoot`) in `subtreeTrieAndRootAssembly.spec.ts`.
 - [x] `RootBranchAssembler` detects Byzantine `h_b` gossip in oracle tests; `snap-bootstrap` `GetTrieNodes` fallback wiring deferred until `--snap-bootstrap` day-zero path is exercised in CI.
-- [x] `trieBucketsBitmask` on `ETHY/0` STATUS, live `0x0b` on main via `setEthyLiveProofMode`, `verifyStatyMultiProof` witness path, macro `exportPivotAccountChunks`; full `applyVerifiedBal` from `balSync` + slab streaming build hook with closed buckets is next wiring pass.
+- [x] `trieBucketsBitmask` on `ETHY/0` STATUS, live `0x0b` on main via `setEthyLiveProofMode`, `verifyStatyMultiProof` witness path, macro `exportPivotAccountChunks`; `applyVerifiedBal` from `balSync` `onBalApplied`, slab `buildFromSlabs` on bucket close / accounts done, live `putEthyWitness` cache-back, `putEthySubtreeRoots` at pivot grid; snap `GetTrieNodes` assembler fallback gated on `--snap-bootstrap` + `setSnapRootBranchRlp`.
 - [x] `npm run tsc`, `subtreeTrieAndRootAssembly.spec.ts`, and spellcheck on touched paths green (no new runtime deps).
 
 ---
@@ -140,4 +140,4 @@ Wire: `peerCoordinator` + `ethyAdvertise` + `spine/types` for `ethyTrieBucketsBi
 - **D-008 upstream:** `BinaryPathMPT.walkLeaves` + devp2p `setEthyLiveProofMode` / `deferEthyWitnessToMain` (separate commits). `config/public-api-snapshots/mpt.json` regenerated for `walkLeaves`.
 - **Custody stack (`packages/ethy/src/custody/`):** `diskPathNodeStore`, `slabLeafStore`, `bucketSubtreeTrie`, `rootBranchAssembler`, `subtreeCustodyRegistry`, `subtreeProofServer` (`buildLiveWitnessGroup`, `exportPivotAccountChunks`), `subtreeLiveServe` (main-thread `0x0b`), wired from `peerCoordinator` + `ethyAdvertise` `trieBucketsBitmask`.
 - **Tests:** `test/subtreeTrieAndRootAssembly.spec.ts` (16-way oracle + 50 rounds, Byzantine assembly, `verifyStatyMultiProof`, disk reopen, anchor `walkLeaves`, range export). Anchor single-key proofs use overlay walk (prefixed trie + classic `verifyMerkleProof` gap documented in test).
-- **Follow-ups:** stream `buildFromSlabs` when `markBucketClosed`; full EIP-7928 `applyVerifiedBal` from `balSync`; optional `GetTrieNodes` assembler fallback; per-account `putEthyWitness` cache after live serve.
+- **Integration (2026-11-26 close):** `balSubtreeApply` + `subtreeSlabBuild`; `SubtreeCustodyRegistry` slab queue, `applyVerifiedBal`, snap assembler fallback; `peerCoordinator` `onBalApplied`, pivot `verifyAnchor` + `publishLocalSubtreeRoots`; `custodyBucketFlip` → `scheduleBuildFromSlabs`; `subtreeLiveServe` `putEthyWitness` cache-back. Unsolicited `0x0e` wire broadcast to all peers remains worker PEX/pull driven (`putEthySubtreeRoots` + `0x0d`).

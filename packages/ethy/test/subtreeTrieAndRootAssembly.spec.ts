@@ -230,7 +230,7 @@ describe('WP-16f subtree trie and root assembly', () => {
 
   it('SubtreeCustodyRegistry self-audit flips trie bitmask on full assembly', async () => {
     const classic = classicTrie()
-    const reg = new SubtreeCustodyRegistry(
+    const reg = SubtreeCustodyRegistry.forTests(
       'local',
       Array.from({ length: 16 }, (_, n) => n),
     )

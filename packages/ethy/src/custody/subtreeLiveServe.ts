@@ -4,6 +4,7 @@ import { bigIntToUnpaddedBytes, bytesToUnprefixedHex } from '@ethereumjs/util'
 
 import { ethyKeccak256 } from '../crypto/keccak.ts'
 import type { EthySpine } from '../spine/types.ts'
+import type { StatyMultiProofGroup } from '../staty/multiProofVerify.ts'
 import type { SubtreeCustodyRegistry } from './subtreeCustodyRegistry.ts'
 import { buildLiveWitnessGroup } from './subtreeProofServer.ts'
 import type { WitnessBuildQuery } from './subtreeProofServer.ts'
@@ -54,11 +55,62 @@ function parseWitnessQueries(decoded: unknown):
   return { reqId, minAnchor, maxBytes, queries }
 }
 
+function cacheLiveWitnessGroup(
+  client: Devp2pWorkerClient | undefined,
+  anchorBlock: bigint,
+  anchorStateRoot: Uint8Array,
+  group: StatyMultiProofGroup,
+): void {
+  if (client === undefined || typeof client.putEthyWitness !== 'function') return
+  const slotsByAccount = new Map<
+    string,
+    Array<{ slotHash: Uint8Array; slotValOrEmpty: Uint8Array }>
+  >()
+  for (const s of group.slots) {
+    const key = bytesToUnprefixedHex(s.accountHash)
+    let list = slotsByAccount.get(key)
+    if (list === undefined) {
+      list = []
+      slotsByAccount.set(key, list)
+    }
+    list.push({ slotHash: s.slotHash, slotValOrEmpty: s.slotValOrEmpty })
+  }
+  for (const a of group.accounts) {
+    const slots = slotsByAccount.get(bytesToUnprefixedHex(a.accountHash)) ?? []
+    try {
+      client.putEthyWitness({
+        accountHash: a.accountHash,
+        anchorBlock,
+        anchorStateRoot,
+        accountRlpOrEmpty: a.accountRlpOrEmpty,
+        slots,
+        proofNodes: group.proofNodes,
+      })
+    } catch {
+      // Best-effort witness cache for worker re-serve.
+    }
+  }
+}
+
+/** Publish local `h_b` into the worker subtree book (`0x0d` / `0x0e` serve path). */
+export function publishLocalSubtreeRoots(
+  client: Devp2pWorkerClient,
+  registry: SubtreeCustodyRegistry,
+  anchorBlock: bigint,
+): void {
+  const entries = registry.localSubtreeGossipEntries(anchorBlock)
+  if (entries.length === 0) return
+  if (typeof client.putEthySubtreeRoots === 'function') {
+    client.putEthySubtreeRoots(anchorBlock, entries)
+  }
+}
+
 /** Main-thread `0x0b` → `0x0c` for armed custody buckets (WP-16f). */
 export async function answerLiveGetStateWitness(
   registry: SubtreeCustodyRegistry,
   spine: EthySpine,
   decoded: unknown,
+  client?: Devp2pWorkerClient,
 ): Promise<Uint8Array | undefined> {
   const parsed = parseWitnessQueries(decoded)
   if (parsed === undefined) return undefined
@@ -97,6 +149,7 @@ export async function answerLiveGetStateWitness(
       queries: qs,
     })
     if (group === undefined) continue
+    cacheLiveWitnessGroup(client, anchor, anchorRec.stateRoot, group)
     const wireAccounts = group.accounts.map((a) => [a.accountHash, a.accountRlpOrEmpty])
     const wireSlots = group.slots.map((s) => [s.accountHash, s.slotHash, s.slotValOrEmpty])
     groups.push(
@@ -127,7 +180,7 @@ export async function handleInboundLiveGetStateWitness(
   } catch {
     return
   }
-  const reply = await answerLiveGetStateWitness(registry, spine, decoded)
+  const reply = await answerLiveGetStateWitness(registry, spine, decoded, client)
   if (reply === undefined) return
   client.sendEthyMessage(peerIdToBytes(peerIdHex), EthyMessageCodes.STATE_WITNESS, reply)
 }
