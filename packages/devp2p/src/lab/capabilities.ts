@@ -1,4 +1,4 @@
-import { ETH, ETHY, SNAP } from '../protocol/index.ts'
+import { ETH, ETHY, SNAP, STATY } from '../protocol/index.ts'
 
 import type { Capabilities, NetworkProfile } from '../types.ts'
 
@@ -17,6 +17,7 @@ const CAP_MAP: Record<string, Capabilities> = {
   snap1: SNAP.snap,
   snap: SNAP.snap,
   ethy0: ETHY.ethy0,
+  staty0: STATY.staty0,
 }
 
 export function resolveCapabilities(names: string[]): Capabilities[] {
@@ -38,6 +39,7 @@ export function capabilityWireNames(caps: Capabilities[]): string[] {
     if (cap.name === 'eth') names.push(`eth${cap.version}`)
     else if (cap.name === 'snap') names.push('snap1')
     else if (cap.name === 'ethy') names.push('ethy0')
+    else if (cap.name === 'staty') names.push('staty0')
     else names.push(`${cap.name}${cap.version}`)
   }
   return names
@@ -50,6 +52,9 @@ export function networkProfilesEqual(a: NetworkProfile, b: NetworkProfile): bool
     a.ethyDiscoveryTag !== b.ethyDiscoveryTag ||
     a.preferEthyDiscovery !== b.preferEthyDiscovery ||
     a.minEthyPeers !== b.minEthyPeers ||
+    a.minStatyPeers !== b.minStatyPeers ||
+    a.statyDiscoveryTag !== b.statyDiscoveryTag ||
+    a.preferStatyDiscovery !== b.preferStatyDiscovery ||
     a.maxInboundPeers !== b.maxInboundPeers ||
     a.discoveryLowWaterMark !== b.discoveryLowWaterMark ||
     a.capabilities.length !== b.capabilities.length

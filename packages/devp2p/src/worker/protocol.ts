@@ -48,6 +48,11 @@ export interface ThreadedNetworkInitOptions {
   ethyPivotDir?: string
   /** ETHY/0 RLPx slot reserve when the Ethy worker is serving (default `0`). */
   minEthyPeers?: number
+  /** STATY/0 RLPx slot reserve (default `0`). */
+  minStatyPeers?: number
+  statyDataDir?: string
+  sharedCodeDir?: string
+  ethyStorageDir?: string
 }
 
 /** Remote ETHY/0 STATUS fields exposed on worker telemetry. */
@@ -58,6 +63,8 @@ export interface WorkerEthyPeerStatus {
   balEarliestBlock: string
   balLatestBlock: string
   latestBlockHash: string
+  storageBucketsBitmask?: string
+  codeBucketsBitmask?: string
 }
 
 /** Local ETHY/0 advertisement pushed via {@link setEthyStatus}. */
@@ -68,6 +75,30 @@ export interface WorkerEthyLocalStatus {
   balEarliestBlock?: string
   balLatestBlock?: string
   latestBlockHash?: string
+  storageBucketsBitmask?: string
+  codeBucketsBitmask?: string
+}
+
+/** Remote STATY/0 STATUS fields exposed on worker telemetry. */
+export interface WorkerStatyPeerStatus {
+  earliestEpoch: string
+  latestEpoch: string
+  epochMask: string
+  mintingEpoch: string
+  witnessMinAnchorBlock: string
+  witnessCountHint: string
+  codeCountHint: string
+}
+
+/** Local STATY/0 advertisement pushed via {@link setStatyStatus}. */
+export interface WorkerStatyLocalStatus {
+  earliestEpoch?: string
+  latestEpoch?: string
+  epochMask?: string
+  mintingEpoch?: string
+  witnessMinAnchorBlock?: string
+  witnessCountHint?: string
+  codeCountHint?: string
 }
 
 export type WorkerCommand =
@@ -80,7 +111,12 @@ export type WorkerCommand =
   | { type: 'sendEthMessage'; peerId: Uint8Array; code: number; payload: Uint8Array }
   | { type: 'sendSnapMessage'; peerId: Uint8Array; code: number; payload: Uint8Array }
   | { type: 'sendEthyMessage'; peerId: Uint8Array; code: number; payload: Uint8Array }
+  | { type: 'sendStatyMessage'; peerId: Uint8Array; code: number; payload: Uint8Array }
   | { type: 'setEthyStatus'; status: WorkerEthyLocalStatus }
+  | { type: 'setStatyStatus'; status: WorkerStatyLocalStatus }
+  | { type: 'setStatyDataDir'; dir?: string }
+  | { type: 'setSharedCodeDir'; dir?: string }
+  | { type: 'setEthyStorageDir'; dir?: string }
   | { type: 'setEthyPivotAccountsDir'; dir?: string }
   | {
       type: 'putEthyAccountChunk'
@@ -116,6 +152,58 @@ export type WorkerCommand =
   | { type: 'setAdvertiseBlockRange'; enabled: boolean }
   | { type: 'notePooledTx'; hashHex: string; raw: Uint8Array }
   | { type: 'dropPooledTx'; hashHex: string }
+  | {
+      type: 'putStatyEpochPart'
+      part: {
+        epochNumber: string
+        shardIndex: number
+        partIndex: number
+        anchorBlock: string
+        anchorStateRoot: Uint8Array
+        accounts: Array<{ accountHash: Uint8Array; accountRlpOrEmpty: Uint8Array }>
+        slots: Array<{ accountHash: Uint8Array; slotHash: Uint8Array; slotValOrEmpty: Uint8Array }>
+        proofNodes: Uint8Array[]
+      }
+    }
+  | {
+      type: 'putStatyWitness'
+      witness: {
+        accountHash: Uint8Array
+        anchorBlock: string
+        anchorStateRoot: Uint8Array
+        accountRlpOrEmpty: Uint8Array
+        slots: Array<{ slotHash: Uint8Array; slotValOrEmpty: Uint8Array }>
+        proofNodes: Uint8Array[]
+      }
+    }
+  | { type: 'putSharedCode'; codeHash: Uint8Array; code: Uint8Array }
+  | {
+      type: 'putEthyStorageEntry'
+      entry: {
+        accountHash: Uint8Array
+        storageRoot: Uint8Array
+        chunkBlockNumber: string
+        slotsSlab64B: Uint8Array
+        complete: boolean
+        proofNodes: Uint8Array[]
+      }
+    }
+  | {
+      type: 'putStatyEpochManifest'
+      manifest: {
+        epochNumber: string
+        anchorBlock: string
+        anchorStateRoot: Uint8Array
+        dedupBaseEpoch: string
+        shards: Array<{
+          shardIndex: number
+          partCount: number
+          accountCount: number
+          slotCount: number
+          totalBytes: number
+        }>
+      }
+    }
 
 export interface WorkerServingSnapshot {
   earliestBlock?: string
@@ -130,6 +218,12 @@ export interface WorkerServingSnapshot {
   ethyChunksServed: number
   ethyBalBlocksServed: number
   ethyBytesServed: number
+  ethyStorageServed: number
+  ethyCodesServed: number
+  statyPartsServed: number
+  statyWitnessesServed: number
+  statyCodesServed: number
+  statyBytesServed: number
 }
 
 export interface WorkerPeerSnapshot {
@@ -149,6 +243,8 @@ export interface WorkerPeerSnapshot {
   tcpPort?: number
   ethySession?: boolean
   ethyStatus?: WorkerEthyPeerStatus
+  statySession?: boolean
+  statyStatus?: WorkerStatyPeerStatus
 }
 
 export interface WorkerDiagnosticEntry {
@@ -235,7 +331,7 @@ export type WorkerEvent =
   | { type: 'ready'; udpPort: number; tcpPort: number }
   | {
       type: 'protocol'
-      protocol: 'eth' | 'snap' | 'ethy'
+      protocol: 'eth' | 'snap' | 'ethy' | 'staty'
       peerId: string
       code: number
       payload: Uint8Array

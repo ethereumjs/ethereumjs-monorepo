@@ -20,6 +20,8 @@ export type EthyPeerStatus = {
   balEarliestBlock: bigint
   balLatestBlock: bigint
   latestBlockHash: Uint8Array
+  storageBucketsBitmask: number
+  codeBucketsBitmask: number
 }
 
 export type EthyLocalStatusFields = {
@@ -30,6 +32,8 @@ export type EthyLocalStatusFields = {
   balEarliestBlock?: bigint
   balLatestBlock?: bigint
   latestBlockHash?: Uint8Array
+  storageBucketsBitmask?: number
+  codeBucketsBitmask?: number
 }
 
 const ZERO32 = new Uint8Array(32)
@@ -71,6 +75,8 @@ export function parseEthyStatus(payload: unknown): EthyPeerStatus {
     balEarliestBlock: scalarBigInt(payload[6]),
     balLatestBlock: scalarBigInt(payload[7]),
     latestBlockHash: latestBlockHash.length === 32 ? latestBlockHash : ZERO32,
+    storageBucketsBitmask: payload.length > 9 ? scalarInt(payload[9]) : 0,
+    codeBucketsBitmask: payload.length > 10 ? scalarInt(payload[10]) : 0,
   }
 }
 
@@ -88,6 +94,8 @@ export function encodeEthyStatus(chainId: bigint, fields: EthyLocalStatusFields)
     fields.latestBlockHash !== undefined && fields.latestBlockHash.length === 32
       ? fields.latestBlockHash
       : ZERO32
+  const storageMask = fields.storageBucketsBitmask ?? 0
+  const codeMask = fields.codeBucketsBitmask ?? 0
   return [
     intToUnpaddedBytes(0),
     bigIntToUnpaddedBytes(chainId),
@@ -98,6 +106,8 @@ export function encodeEthyStatus(chainId: bigint, fields: EthyLocalStatusFields)
     bigIntToUnpaddedBytes(balEarliest),
     bigIntToUnpaddedBytes(balLatest),
     latestHash,
+    intToUnpaddedBytes(storageMask),
+    intToUnpaddedBytes(codeMask),
   ]
 }
 

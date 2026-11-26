@@ -1,6 +1,6 @@
 # WP-16a: `@ethereumjs/devp2p` — `STATY/0` Subprotocol, `ETHY/0` `v0.3` Per-Plane & Storage Upgrade, Shared Code Serving & `STATY_PEX`
 
-- **Status:** `READY_FOR_PLANNING`
+- **Status:** `DONE`
 - **Dependencies:** `WP-06b` (`DONE`), `WP-11b` (`DONE`), `WP-13` (`DONE`), [`protocols/devp2p/STATY-0-SPEC.md`](../../../../protocols/devp2p/STATY-0-SPEC.md) (`v0.1`), [`protocols/devp2p/ETHY-0-SPEC.md`](../../../../protocols/devp2p/ETHY-0-SPEC.md) (`v0.3`)
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
@@ -77,19 +77,27 @@ Implement the complete **`STATY/0` (`["staty", 0]`, `length = 11`)** DevP2P subp
 ---
 
 ### Acceptance Criteria (`WP-16a`)
-- [ ] `STATY/0` (`["staty", 0]`, `length = 11`) negotiates cleanly alongside `eth/71`, `ethy/0`, and `snap/1`, and is silently ignored by peers without `staty/0`.
-- [ ] `ETHY/0` `v0.3` `STATUS` (`storageBucketsBitmask`, `codeBucketsBitmask`) interoperates seamlessly with `v0.2` 9-tuple peers, and `0x05`/`0x06` serves `kind = 0`, `kind = 1` (64B slab), and `kind = 2` (batched small contracts).
-- [ ] `STATY/0` and `ETHY/0` share a single content-addressed `code/` serving store with bounded read concurrency.
-- [ ] No new runtime dependencies added; `npm run tsc`, `npm test`, and `npm run spellcheck` pass in `packages/devp2p` (and `packages/ethy` `tsc` remains green against the updated `devp2p` exports).
+- [x] `STATY/0` (`["staty", 0]`, `length = 11`) negotiates cleanly alongside `eth/71`, `ethy/0`, and `snap/1`, and is silently ignored by peers without `staty/0`.
+- [x] `ETHY/0` `v0.3` `STATUS` (`storageBucketsBitmask`, `codeBucketsBitmask`) interoperates seamlessly with `v0.2` 9-tuple peers, and `0x05`/`0x06` serves `kind = 0`, `kind = 1` (64B slab), and `kind = 2` (batched small contracts).
+- [x] `STATY/0` and `ETHY/0` share a single content-addressed `code/` serving store with bounded read concurrency.
+- [x] No new runtime dependencies added; `npm run tsc`, targeted WP-16a tests, and `npm run spellcheck` pass in `packages/devp2p` (and `packages/ethy` `tsc` remains green against the updated `devp2p` exports).
 
 ---
 
 ## 2. Concrete Implementation Plan (Planner — Grok 4.7)
 
-*(To be filled by Grok 4.7)*
+Handoff to Composer 2.5. One upstream commit in `packages/devp2p` only (**D-008**). No new runtime dependencies. Cryptographic verification, epoch minting, open-world state, and the client sync loop stay in WP-16b / WP-16c / WP-16d.
+
+**Design locks (D-142):** HELLO capability version stays unpadded (`intToUnpaddedBytes(0)`). Server trusts its store only (no `verifyStatyMultiProof` in WP-16a). Decode caps: `MAX_STATY_MESSAGE_BYTES`, `maxResponseBytes = 524_288`, witness/code batch clamps. Misses are empty spec tuples; unknown ETHY `kind` returns no reply. Disk layouts under optional `statyDataDir` / `sharedCodeDir` / `ethyStorageDir`. New profile fields default off; boot enables `statyDiscoveryTag` when `staty0` is in capabilities. Optional `storageBucketsBitmask` / `codeBucketsBitmask` telemetry on ETHY STATUS.
+
+**Slices:** (1) `STATY` class + codecs + `staty0` capability; (2) ENR `"staty"` + `StatyKnownPeerBook` / `STATY_PEX`; (3) `SharedCodeDisk`, `StatyStore`, `tryServeStatyGet`, `EthyStorageStore`, real ETHY `kind 0/1/2`; (4) ETHY 11-tuple STATUS; (5) worker commands + `protocol: 'staty'` forwarding; (6) offline tests (`protocol/staty`, `serve/staty*`, `worker/staty-swarm`, extended `ethy` tests); (7) `tsc` + spellcheck gates.
 
 ---
 
 ## 3. Implementation Notes & Deviations (Implementer — Composer 2.5)
 
-*(To be filled by Composer 2.5)*
+- Shipped the full `STATY/0` stack (`protocol/staty*`, `serve/statyStore.ts`, `statyServer.ts`, `worker/statyPex.ts`) plus `SharedCodeDisk` and `EthyStorageStore` with worker `put*` / dir commands and good-citizen serving on `Devp2pWorkerHost`.
+- Upgraded `ETHY/0` STATUS to an 11-tuple (`storageBucketsBitmask`, `codeBucketsBitmask`); `GET_PROVEN_STORAGE_OR_CODE` now serves real `kind = 0/1/2` via the shared code disk and storage store.
+- Exported `tryServeStatyGet`, `StatyStore`, `SharedCodeDisk`, and `EthyStorageStore` from `@ethereumjs/devp2p`. Updated `packages/ethy` tests (`ethySwarmLoopback`, `tui`) for the new `tryServeEthyGet` arity and serving snapshot fields.
+- **Tests:** `staty-swarm` covers 3-node `STATY_PEX`, `EPOCH_PART` serving counters, and eth-only capability intersection; per-message round-trips live in `test/protocol/staty.spec.ts` and `test/serve/statyServer.spec.ts`.
+- **Out of scope (unchanged):** boundary-proof generation, `verifyStatyMultiProof`, write-index, client onboarding/minter (WP-16b+).

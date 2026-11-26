@@ -9,7 +9,9 @@ import {
   EthyChunkStore,
   EthyMessageCodeNames,
   EthyMessageCodes,
+  EthyStorageStore,
   RollingBlockStore,
+  SharedCodeDisk,
   createThreadedNetwork,
   genPrivateKey,
   pk2id,
@@ -113,6 +115,8 @@ describe('[Ethy/Net]: ETHY/0 swarm loopback', () => {
         peer,
         name,
         RLP.decode(msg.payload),
+        new SharedCodeDisk(),
+        new EthyStorageStore(),
       )
       if (served === undefined) return
       seeder.sendEthyMessage(peer, served.code, RLP.encode(served.rlp as never))

@@ -12,12 +12,33 @@ import { EthyMessageCodes } from '../../src/protocol/ethy/codes.ts'
 describe('[Devp2p/ETHY]: codecs', () => {
   const genesis = new Uint8Array(32).fill(0xab)
 
-  it('encodeEthyStatus() uses canonical zero (0x80) for protocol version and bucket 0', () => {
+  it('encodeEthyStatus() emits 11 fields with zero masks as 0x80', () => {
     const tuple = encodeEthyStatus(11155111n, { genesisHash: genesis, bucketsBitmask: 0 })
-    assert.equal(tuple.length, 9)
+    assert.equal(tuple.length, 11)
     const decoded = RLP.decode(RLP.encode(tuple)) as unknown[]
     assert.equal((decoded[0] as Uint8Array).length, 0)
     assert.equal((decoded[5] as Uint8Array).length, 0)
+  })
+
+  it('parseEthyStatus() defaults storage and code masks from a 9-tuple peer', () => {
+    const nine = encodeEthyStatus(11155111n, { genesisHash: genesis, bucketsBitmask: 0 }).slice(
+      0,
+      9,
+    )
+    const remote = parseEthyStatus(nine)
+    assert.equal(remote.storageBucketsBitmask, 0)
+    assert.equal(remote.codeBucketsBitmask, 0)
+  })
+
+  it('parseEthyStatus() ignores fields past index 10', () => {
+    const encoded = encodeEthyStatus(1n, {
+      genesisHash: genesis,
+      storageBucketsBitmask: 3,
+      codeBucketsBitmask: 5,
+    })
+    const withExtra = [...encoded, intToUnpaddedBytes(99)]
+    const remote = parseEthyStatus(withExtra)
+    assert.equal(remote.codeBucketsBitmask, 5)
   })
 
   it('parseEthyStatus() round-trips STATUS fields', () => {

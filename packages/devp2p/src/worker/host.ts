@@ -15,6 +15,7 @@ import {
   bytesToInt,
   bytesToUnprefixedHex,
   hexToBytes,
+  intToUnpaddedBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
 import { secp256k1 } from '@noble/curves/secp256k1.js'
@@ -39,15 +40,23 @@ import {
   type EthyLocalStatusFields,
   type EthyPeerStatus,
   SNAP,
+  STATY,
+  type StatyLocalStatusFields,
+  type StatyPeerStatus,
 } from '../protocol/index.ts'
 import { SnapMessageCodeNames, SnapMessageCodes } from '../protocol/snap.ts'
+import { StatyMessageCodeNames, StatyMessageCodes } from '../protocol/staty/codes.ts'
 import { Peer } from '../rlpx/peer.ts'
 import { RLPx } from '../rlpx/rlpx.ts'
 import { tryServeEthGet } from '../serve/ethServer.ts'
 import { EthyChunkStore } from '../serve/ethyChunkStore.ts'
 import { tryServeEthyGet } from '../serve/ethyServer.ts'
+import { EthyStorageStore } from '../serve/ethyStorageStore.ts'
 import { RollingBlockStore } from '../serve/rollingBlockStore.ts'
 import { ServeGovernor } from '../serve/serveGovernor.ts'
+import { SharedCodeDisk } from '../serve/sharedCodeDisk.ts'
+import { tryServeStatyGet } from '../serve/statyServer.ts'
+import { StatyStore } from '../serve/statyStore.ts'
 import { DISCONNECT_REASON, DisconnectReasonNames, type NetworkProfile } from '../types.ts'
 import type { PeerInfo } from '../types.ts'
 import { pk2id } from '../util.ts'
@@ -61,8 +70,11 @@ import type {
   WorkerEthyPeerStatus,
   WorkerEvent,
   WorkerServingSnapshot,
+  WorkerStatyLocalStatus,
+  WorkerStatyPeerStatus,
   WorkerTelemetrySnapshot,
 } from './protocol.ts'
+import { StatyKnownPeerBook } from './statyPex.ts'
 
 function emptyServingSnapshot(): WorkerServingSnapshot {
   return {
@@ -76,6 +88,12 @@ function emptyServingSnapshot(): WorkerServingSnapshot {
     ethyChunksServed: 0,
     ethyBalBlocksServed: 0,
     ethyBytesServed: 0,
+    ethyStorageServed: 0,
+    ethyCodesServed: 0,
+    statyPartsServed: 0,
+    statyWitnessesServed: 0,
+    statyCodesServed: 0,
+    statyBytesServed: 0,
   }
 }
 
@@ -162,6 +180,12 @@ export class Devp2pWorkerHost {
   private _ethyKnown = new EthyKnownPeerBook()
   private _ethyLocal: WorkerEthyLocalStatus = {}
   private _ethyPexSent = new Set<string>()
+  private _statyStore = new StatyStore()
+  private _sharedCode = new SharedCodeDisk()
+  private _ethyStorage = new EthyStorageStore()
+  private _statyKnown = new StatyKnownPeerBook()
+  private _statyLocal: WorkerStatyLocalStatus = {}
+  private _statyPexSent = new Set<string>()
   private _privateKey: Uint8Array | null = null
   private _localNodeId: Uint8Array | null = null
   private _networkProfile: NetworkProfile | null = null
@@ -268,6 +292,73 @@ export class Devp2pWorkerHost {
           this._ethyLocal = cmd.status
           this._broadcastEthyStatus()
           break
+        case 'sendStatyMessage':
+          this._sendStaty(cmd.peerId, cmd.code, cmd.payload)
+          break
+        case 'setStatyStatus':
+          this._statyLocal = cmd.status
+          this._broadcastStatyStatus()
+          break
+        case 'setStatyDataDir':
+          this._statyStore.setDataDir(cmd.dir)
+          break
+        case 'setSharedCodeDir':
+          this._sharedCode.setCodeDir(cmd.dir)
+          break
+        case 'setEthyStorageDir':
+          break
+        case 'putStatyEpochManifest': {
+          const m = cmd.manifest
+          this._statyStore.putManifest({
+            epochNumber: BigInt(m.epochNumber),
+            anchorBlock: BigInt(m.anchorBlock),
+            anchorStateRoot: m.anchorStateRoot,
+            dedupBaseEpoch: BigInt(m.dedupBaseEpoch),
+            shards: m.shards,
+          })
+          break
+        }
+        case 'putStatyEpochPart': {
+          const p = cmd.part
+          this._statyStore.putEpochPart({
+            epochNumber: BigInt(p.epochNumber),
+            shardIndex: p.shardIndex,
+            partIndex: p.partIndex,
+            anchorBlock: BigInt(p.anchorBlock),
+            anchorStateRoot: p.anchorStateRoot,
+            accounts: p.accounts,
+            slots: p.slots,
+            proofNodes: p.proofNodes,
+          })
+          break
+        }
+        case 'putStatyWitness': {
+          const w = cmd.witness
+          this._statyStore.putWitness({
+            accountHash: w.accountHash,
+            anchorBlock: BigInt(w.anchorBlock),
+            anchorStateRoot: w.anchorStateRoot,
+            accountRlpOrEmpty: w.accountRlpOrEmpty,
+            slots: w.slots,
+            proofNodes: w.proofNodes,
+          })
+          break
+        }
+        case 'putSharedCode':
+          this._sharedCode.put(cmd.codeHash, cmd.code)
+          break
+        case 'putEthyStorageEntry': {
+          const e = cmd.entry
+          this._ethyStorage.put({
+            accountHash: e.accountHash,
+            storageRoot: e.storageRoot,
+            chunkBlockNumber: BigInt(e.chunkBlockNumber),
+            slotsSlab64B: e.slotsSlab64B,
+            complete: e.complete,
+            proofNodes: e.proofNodes,
+          })
+          break
+        }
         case 'setEthyPivotAccountsDir':
           this._ethyChunks.setPivotAccountsDir(cmd.dir)
           break
@@ -336,8 +427,15 @@ export class Devp2pWorkerHost {
     )
     const caps = resolveCapabilities(opts.capabilities ?? ['eth68'])
     const ethyEnabled = caps.some((c) => c.name === 'ethy')
+    const statyEnabled = caps.some((c) => c.name === 'staty')
     if (opts.ethyPivotDir !== undefined) {
       this._ethyChunks.setPivotAccountsDir(opts.ethyPivotDir)
+    }
+    if (opts.statyDataDir !== undefined) {
+      this._statyStore.setDataDir(opts.statyDataDir)
+    }
+    if (opts.sharedCodeDir !== undefined) {
+      this._sharedCode.setCodeDir(opts.sharedCodeDir)
     }
     this._privateKey = opts.privateKey
     this._localNodeId = pk2id(secp256k1.getPublicKey(opts.privateKey, false))
@@ -358,6 +456,7 @@ export class Devp2pWorkerHost {
       discoveryMetrics: this._discoveryMetrics,
       nodeStorePath: opts.nodeStorePath,
       ethyDiscoveryTag: ethyEnabled,
+      statyDiscoveryTag: statyEnabled,
     })
     this._dpt.events.on('error', (err) => {
       const message = err instanceof Error ? err.message : String(err)
@@ -375,6 +474,7 @@ export class Devp2pWorkerHost {
       maxPeers: opts.maxPeers ?? 10,
       maxInboundPeers: opts.maxInboundPeers,
       minEthyPeers: ethyEnabled ? (opts.minEthyPeers ?? 4) : 0,
+      minStatyPeers: statyEnabled ? (opts.minStatyPeers ?? 4) : 0,
       listenPort,
       clientId: opts.clientId ?? utf8ToBytes('ethereumjs-devp2p/threaded'),
       throttleDiscovery: opts.throttleDiscovery ?? true,
@@ -389,8 +489,10 @@ export class Devp2pWorkerHost {
       maxInboundPeers: opts.maxInboundPeers,
       discoveryLowWaterMark: opts.discoveryLowWaterMark,
       minEthyPeers: ethyEnabled ? (opts.minEthyPeers ?? 4) : 0,
+      minStatyPeers: statyEnabled ? (opts.minStatyPeers ?? 4) : 0,
       discoveryMode: 'active',
       ethyDiscoveryTag: ethyEnabled,
+      statyDiscoveryTag: statyEnabled,
     }
     if (this._networkProfile !== null) {
       // A `setNetworkProfile` command arrived before `_start()` constructed `_rlpx`.
@@ -574,6 +676,32 @@ export class Devp2pWorkerHost {
       })
     }
 
+    for (const protocol of peer.getProtocols()) {
+      if (protocol.constructor.name !== 'STATY') continue
+      const staty = protocol as STATY
+      const fields = this._statyStatusFieldsForSend()
+      staty.setLocalStatusFields(fields)
+      try {
+        staty.sendStatus(fields)
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err)
+        this._pushDiagnostic('warn', `STATY STATUS send failed: ${message}`)
+      }
+      staty.events.on('status', (remote: unknown) => {
+        this._onRemoteStatyStatus(peer, remote as StatyPeerStatus)
+        this._emitTelemetry()
+      })
+      staty.events.on('statusUpdated', (remote: unknown) => {
+        this._onRemoteStatyStatus(peer, remote as StatyPeerStatus)
+        this._emitTelemetry()
+      })
+      staty.events.on('message', (code: number, payload: unknown) => {
+        if (code === StatyMessageCodes.STATY_PEERS) {
+          this._consumeStatyPeers(payload)
+        }
+      })
+    }
+
     peer.subprotocolDispatch = (protocolName, msgCode, payload) => {
       if (
         protocolName === 'ETH' &&
@@ -602,6 +730,9 @@ export class Devp2pWorkerHost {
       if (protocolName === 'ETHY' && msgCode === EthyMessageCodes.STATUS) {
         return 'default'
       }
+      if (protocolName === 'STATY' && msgCode === StatyMessageCodes.STATUS) {
+        return 'default'
+      }
       const goodCitizen = this._options?.goodCitizen ?? true
       if (goodCitizen) {
         const handled = this._tryGoodCitizen(peer, protocolName, msgCode, payload)
@@ -614,8 +745,17 @@ export class Devp2pWorkerHost {
             ? 'snap'
             : protocolName === 'ETHY'
               ? 'ethy'
-              : null
+              : protocolName === 'STATY'
+                ? 'staty'
+                : null
       if (layer === null) return 'default'
+      if (protocolName === 'STATY' && msgCode === StatyMessageCodes.STATY_PEERS) {
+        try {
+          this._consumeStatyPeers(RLP.decode(payload))
+        } catch {
+          /* ignore malformed PEX */
+        }
+      }
       if (protocolName === 'ETHY' && msgCode === EthyMessageCodes.ETHY_PEERS) {
         try {
           this._consumeEthyPeers(RLP.decode(payload))
@@ -648,6 +788,9 @@ export class Devp2pWorkerHost {
   ): boolean {
     if (protocolName === 'ETHY') {
       return this._tryServeEthyGet(peer, msgCode, payload)
+    }
+    if (protocolName === 'STATY') {
+      return this._tryServeStatyGet(peer, msgCode, payload)
     }
     const layer = protocolName === 'ETH' ? 'eth' : protocolName === 'SNAP' ? 'snap' : null
     if (layer === null) return false
@@ -872,6 +1015,8 @@ export class Devp2pWorkerHost {
                 : `0x${this._ethyLocal.latestBlockHash}`) as `0x${string}`,
             )
           : undefined,
+      storageBucketsBitmask: parseMask(this._ethyLocal.storageBucketsBitmask),
+      codeBucketsBitmask: parseMask(this._ethyLocal.codeBucketsBitmask),
     }
   }
 
@@ -883,6 +1028,52 @@ export class Devp2pWorkerHost {
       balEarliestBlock: remote.balEarliestBlock.toString(),
       balLatestBlock: remote.balLatestBlock.toString(),
       latestBlockHash: bytesToHex(remote.latestBlockHash),
+      storageBucketsBitmask: remote.storageBucketsBitmask.toString(),
+      codeBucketsBitmask: remote.codeBucketsBitmask.toString(),
+    }
+  }
+
+  private _statyStatusFieldsForSend(): StatyLocalStatusFields {
+    const genesisHex = this._options?.status?.genesisHash
+    const genesisHash =
+      genesisHex !== undefined
+        ? hexToBytes(
+            (genesisHex.startsWith('0x') ? genesisHex : `0x${genesisHex}`) as `0x${string}`,
+          )
+        : new Uint8Array(32)
+    const parseNum = (s: string | undefined): bigint | undefined =>
+      s !== undefined && s.length > 0 ? BigInt(s) : undefined
+    const parseMaskBig = (s: string | undefined): bigint | undefined => {
+      if (s === undefined || s.length === 0) return undefined
+      if (s.startsWith('0x')) return BigInt(s)
+      return BigInt(s)
+    }
+    const parseIntHint = (s: string | undefined): number | undefined => {
+      if (s === undefined || s.length === 0) return undefined
+      if (s.startsWith('0x')) return Number.parseInt(s, 16)
+      return Number.parseInt(s, 10)
+    }
+    return {
+      genesisHash,
+      earliestEpoch: parseNum(this._statyLocal.earliestEpoch),
+      latestEpoch: parseNum(this._statyLocal.latestEpoch),
+      epochMask: parseMaskBig(this._statyLocal.epochMask),
+      mintingEpoch: parseNum(this._statyLocal.mintingEpoch),
+      witnessMinAnchorBlock: parseNum(this._statyLocal.witnessMinAnchorBlock),
+      witnessCountHint: parseIntHint(this._statyLocal.witnessCountHint),
+      codeCountHint: parseIntHint(this._statyLocal.codeCountHint),
+    }
+  }
+
+  private _workerStatyStatusFromRemote(remote: StatyPeerStatus): WorkerStatyPeerStatus {
+    return {
+      earliestEpoch: remote.earliestEpoch.toString(),
+      latestEpoch: remote.latestEpoch.toString(),
+      epochMask: remote.epochMask.toString(),
+      mintingEpoch: remote.mintingEpoch.toString(),
+      witnessMinAnchorBlock: remote.witnessMinAnchorBlock.toString(),
+      witnessCountHint: remote.witnessCountHint.toString(),
+      codeCountHint: remote.codeCountHint.toString(),
     }
   }
 
@@ -942,6 +1133,62 @@ export class Devp2pWorkerHost {
     }
   }
 
+  private _broadcastStatyStatus(): void {
+    const fields = this._statyStatusFieldsForSend()
+    for (const peer of this._rlpx?.getPeers() ?? []) {
+      for (const protocol of peer.getProtocols()) {
+        if (protocol.constructor.name !== 'STATY') continue
+        const staty = protocol as STATY
+        staty.setLocalStatusFields(fields)
+        try {
+          staty.sendStatus(fields)
+        } catch {
+          /* ignore */
+        }
+      }
+    }
+  }
+
+  private _onRemoteStatyStatus(peer: Peer, remote: StatyPeerStatus): void {
+    const peerId = peer.getId()
+    if (peerId === null || this._localNodeId === null) return
+    const tcp = peer.advertisedTcpEndpoint()
+    const address = tcp?.address ?? '127.0.0.1'
+    const tcpPort = tcp?.tcpPort ?? 0
+    const udpPort = tcpPort
+    this._statyKnown.upsertFromStatus(peerId, address, tcpPort, udpPort, remote)
+    const peerKey = bytesToUnprefixedHex(peerId)
+    if (!this._statyPexSent.has(peerKey)) {
+      this._statyPexSent.add(peerKey)
+      const staty = this._findStaty(peerId)
+      if (staty !== undefined) {
+        staty.sendMessage(StatyMessageCodes.GET_STATY_PEERS, [
+          bigIntToUnpaddedBytes(1n),
+          intToUnpaddedBytes(16),
+        ])
+      }
+    }
+  }
+
+  private _consumeStatyPeers(payload: unknown): void {
+    if (!Array.isArray(payload) || payload.length < 2) return
+    const peers = payload[1]
+    if (!Array.isArray(peers) || this._localNodeId === null || this._rlpx === null) return
+    for (const row of peers) {
+      if (!Array.isArray(row) || row.length < 4) continue
+      const peerId = row[0]
+      const addressBytes = row[1]
+      if (!(peerId instanceof Uint8Array) || !(addressBytes instanceof Uint8Array)) continue
+      const address = new TextDecoder().decode(addressBytes)
+      const tcpPort = bytesToInt(row[2] as Uint8Array)
+      const udpPort = bytesToInt(row[3] as Uint8Array)
+      if (tcpPort < 1) continue
+      if (bytesToUnprefixedHex(peerId) === bytesToUnprefixedHex(this._localNodeId)) continue
+      this._statyKnown.noteDialFromPex(peerId, address, tcpPort, udpPort)
+      void this._rlpx.connect({ id: peerId, address, tcpPort, udpPort }).catch(() => {})
+    }
+  }
+
   private _tryServeEthyGet(peer: Peer, msgCode: number, payload: Uint8Array): boolean {
     const name = EthyMessageCodeNames[msgCode as EthyMessageCodes]
     if (name === undefined || !name.startsWith('GET_')) return false
@@ -957,6 +1204,8 @@ export class Devp2pWorkerHost {
       excludeId,
       name,
       decoded,
+      this._sharedCode,
+      this._ethyStorage,
     )
     if (served === undefined) return false
     try {
@@ -966,6 +1215,39 @@ export class Devp2pWorkerHost {
       this._serving.ethyBytesServed += served.bytesEstimate
       if (served.metric === 'chunk') this._serving.ethyChunksServed++
       if (served.metric === 'bal') this._serving.ethyBalBlocksServed++
+      if (served.metric === 'storage') this._serving.ethyStorageServed++
+      if (served.metric === 'code') this._serving.ethyCodesServed++
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  private _tryServeStatyGet(peer: Peer, msgCode: number, payload: Uint8Array): boolean {
+    const name = StatyMessageCodeNames[msgCode as StatyMessageCodes]
+    if (name === undefined || !name.startsWith('GET_')) return false
+    const staty = this._findStatyOnPeer(peer)
+    if (staty === undefined || this._localNodeId === null) return false
+    const decoded = RLP.decode(payload)
+    const excludeId = peer.getId() ?? undefined
+    const served = tryServeStatyGet(
+      this._statyStore,
+      this._sharedCode,
+      this._statyKnown.list(),
+      this._localNodeId,
+      excludeId,
+      name,
+      decoded,
+    )
+    if (served === undefined) return false
+    try {
+      staty.sendMessage(served.code, served.rlp as import('@ethereumjs/rlp').Input)
+      this._serving.totalRequestsServed++
+      this._serving.totalBytesServed += served.bytesEstimate
+      this._serving.statyBytesServed += served.bytesEstimate
+      if (served.metric === 'part') this._serving.statyPartsServed++
+      if (served.metric === 'witness') this._serving.statyWitnessesServed++
+      if (served.metric === 'code') this._serving.statyCodesServed++
       return true
     } catch {
       return false
@@ -989,10 +1271,33 @@ export class Devp2pWorkerHost {
     return undefined
   }
 
+  private _findStatyOnPeer(peer: Peer): STATY | undefined {
+    for (const protocol of peer.getProtocols()) {
+      if (protocol.constructor.name === 'STATY') return protocol as STATY
+    }
+    return undefined
+  }
+
+  private _findStaty(peerId: Uint8Array): STATY | undefined {
+    const key = bytesToUnprefixedHex(peerId)
+    for (const p of this._rlpx?.getPeers() ?? []) {
+      const rawId = p.getId()
+      if (!(rawId instanceof Uint8Array) || bytesToUnprefixedHex(rawId) !== key) continue
+      return this._findStatyOnPeer(p)
+    }
+    return undefined
+  }
+
   private _sendEthy(peerId: Uint8Array, code: number, payload: Uint8Array): void {
     const ethy = this._findEthy(peerId)
     if (!ethy) throw new Error('No ETHY session for peer')
     ethy.sendMessage(code as EthyMessageCodes, RLP.decode(payload))
+  }
+
+  private _sendStaty(peerId: Uint8Array, code: number, payload: Uint8Array): void {
+    const staty = this._findStaty(peerId)
+    if (!staty) throw new Error('No STATY session for peer')
+    staty.sendMessage(code as StatyMessageCodes, RLP.decode(payload))
   }
 
   private _findSnap(peerId: Uint8Array): SNAP | undefined {
@@ -1092,23 +1397,31 @@ export class Devp2pWorkerHost {
       const tcpPort = tcpEnd?.tcpPort ?? dptPeer?.tcpPort ?? undefined
       const udpPort = dptPeer?.udpPort ?? tcpPort
       let ethyStatus: WorkerEthyPeerStatus | undefined
+      let statyStatus: WorkerStatyPeerStatus | undefined
       for (const protocol of protocols) {
-        if (protocol.constructor.name !== 'ETHY') continue
-        const remote = (protocol as ETHY).peerStatus()
-        if (remote !== null) ethyStatus = this._workerEthyStatusFromRemote(remote)
-        break
+        if (protocol.constructor.name === 'ETHY') {
+          const remote = (protocol as ETHY).peerStatus()
+          if (remote !== null) ethyStatus = this._workerEthyStatusFromRemote(remote)
+        }
+        if (protocol.constructor.name === 'STATY') {
+          const remote = (protocol as STATY).peerStatus()
+          if (remote !== null) statyStatus = this._workerStatyStatusFromRemote(remote)
+        }
       }
       peers.push({
         id,
         clientId: hello?.clientId ?? '',
         snapSession: protocols.some((p) => p.constructor.name === 'SNAP'),
         ethySession: protocols.some((p) => p.constructor.name === 'ETHY'),
+        statySession: protocols.some((p) => p.constructor.name === 'STATY'),
         ...(ethyStatus !== undefined ? { ethyStatus } : {}),
+        ...(statyStatus !== undefined ? { statyStatus } : {}),
         caps:
           protocols.length > 0
             ? protocols.map((p) => {
                 if (p.constructor.name === 'ETH') return `eth/${(p as ETH).getVersion()}`
                 if (p.constructor.name === 'ETHY') return `ethy/${(p as ETHY).getVersion()}`
+                if (p.constructor.name === 'STATY') return `staty/${(p as STATY).getVersion()}`
                 return `snap/${(p as SNAP).getVersion()}`
               })
             : (hello?.capabilities.map((c) => `${c.name}/${c.version}`) ?? []),

@@ -9,13 +9,19 @@ import type {
   WorkerCommand,
   WorkerEthyLocalStatus,
   WorkerEvent,
+  WorkerStatyLocalStatus,
   WorkerTelemetrySnapshot,
 } from './protocol.ts'
 
 export interface Devp2pWorkerClientEvents {
   ready: [{ udpPort: number; tcpPort: number }]
   protocol: [
-    { protocol: 'eth' | 'snap' | 'ethy'; peerId: string; code: number; payload: Uint8Array },
+    {
+      protocol: 'eth' | 'snap' | 'ethy' | 'staty'
+      peerId: string
+      code: number
+      payload: Uint8Array
+    },
   ]
   telemetry: [WorkerTelemetrySnapshot]
   error: [Error]
@@ -152,8 +158,185 @@ export class Devp2pWorkerClient {
     this._send({ type: 'sendEthyMessage', peerId, code, payload }, [payload.buffer as ArrayBuffer])
   }
 
+  sendStatyMessage(peerId: Uint8Array, code: number, rlpPayload: Uint8Array): void {
+    const payload = copyForSend(rlpPayload)
+    this._send({ type: 'sendStatyMessage', peerId, code, payload }, [payload.buffer as ArrayBuffer])
+  }
+
   setEthyStatus(status: WorkerEthyLocalStatus): void {
     this._send({ type: 'setEthyStatus', status })
+  }
+
+  setStatyStatus(status: WorkerStatyLocalStatus): void {
+    this._send({ type: 'setStatyStatus', status })
+  }
+
+  setStatyDataDir(dir: string | undefined): void {
+    this._send({ type: 'setStatyDataDir', dir })
+  }
+
+  setSharedCodeDir(dir: string | undefined): void {
+    this._send({ type: 'setSharedCodeDir', dir })
+  }
+
+  setEthyStorageDir(dir: string | undefined): void {
+    this._send({ type: 'setEthyStorageDir', dir })
+  }
+
+  putStatyEpochManifest(manifest: {
+    epochNumber: bigint
+    anchorBlock: bigint
+    anchorStateRoot: Uint8Array
+    dedupBaseEpoch: bigint
+    shards: Array<{
+      shardIndex: number
+      partCount: number
+      accountCount: number
+      slotCount: number
+      totalBytes: number
+    }>
+  }): void {
+    const anchorStateRoot = copyForSend(manifest.anchorStateRoot)
+    this._send(
+      {
+        type: 'putStatyEpochManifest',
+        manifest: {
+          epochNumber: manifest.epochNumber.toString(),
+          anchorBlock: manifest.anchorBlock.toString(),
+          anchorStateRoot,
+          dedupBaseEpoch: manifest.dedupBaseEpoch.toString(),
+          shards: manifest.shards,
+        },
+      },
+      [anchorStateRoot.buffer as ArrayBuffer],
+    )
+  }
+
+  putStatyEpochPart(part: {
+    epochNumber: bigint
+    shardIndex: number
+    partIndex: number
+    anchorBlock: bigint
+    anchorStateRoot: Uint8Array
+    accounts: Array<{ accountHash: Uint8Array; accountRlpOrEmpty: Uint8Array }>
+    slots: Array<{ accountHash: Uint8Array; slotHash: Uint8Array; slotValOrEmpty: Uint8Array }>
+    proofNodes: Uint8Array[]
+  }): void {
+    const anchorStateRoot = copyForSend(part.anchorStateRoot)
+    const accounts = part.accounts.map((a) => ({
+      accountHash: copyForSend(a.accountHash),
+      accountRlpOrEmpty: copyForSend(a.accountRlpOrEmpty),
+    }))
+    const slots = part.slots.map((s) => ({
+      accountHash: copyForSend(s.accountHash),
+      slotHash: copyForSend(s.slotHash),
+      slotValOrEmpty: copyForSend(s.slotValOrEmpty),
+    }))
+    const proofNodes = part.proofNodes.map((p) => copyForSend(p))
+    const transfer = [
+      anchorStateRoot.buffer,
+      ...accounts.flatMap((a) => [a.accountHash.buffer, a.accountRlpOrEmpty.buffer]),
+      ...slots.flatMap((s) => [s.accountHash.buffer, s.slotHash.buffer, s.slotValOrEmpty.buffer]),
+      ...proofNodes.map((p) => p.buffer),
+    ] as ArrayBuffer[]
+    this._send(
+      {
+        type: 'putStatyEpochPart',
+        part: {
+          epochNumber: part.epochNumber.toString(),
+          shardIndex: part.shardIndex,
+          partIndex: part.partIndex,
+          anchorBlock: part.anchorBlock.toString(),
+          anchorStateRoot,
+          accounts,
+          slots,
+          proofNodes,
+        },
+      },
+      transfer,
+    )
+  }
+
+  putStatyWitness(witness: {
+    accountHash: Uint8Array
+    anchorBlock: bigint
+    anchorStateRoot: Uint8Array
+    accountRlpOrEmpty: Uint8Array
+    slots: Array<{ slotHash: Uint8Array; slotValOrEmpty: Uint8Array }>
+    proofNodes: Uint8Array[]
+  }): void {
+    const accountHash = copyForSend(witness.accountHash)
+    const anchorStateRoot = copyForSend(witness.anchorStateRoot)
+    const accountRlpOrEmpty = copyForSend(witness.accountRlpOrEmpty)
+    const slots = witness.slots.map((s) => ({
+      slotHash: copyForSend(s.slotHash),
+      slotValOrEmpty: copyForSend(s.slotValOrEmpty),
+    }))
+    const proofNodes = witness.proofNodes.map((p) => copyForSend(p))
+    const transfer = [
+      accountHash.buffer,
+      anchorStateRoot.buffer,
+      accountRlpOrEmpty.buffer,
+      ...slots.flatMap((s) => [s.slotHash.buffer, s.slotValOrEmpty.buffer]),
+      ...proofNodes.map((p) => p.buffer),
+    ] as ArrayBuffer[]
+    this._send(
+      {
+        type: 'putStatyWitness',
+        witness: {
+          accountHash,
+          anchorBlock: witness.anchorBlock.toString(),
+          anchorStateRoot,
+          accountRlpOrEmpty,
+          slots,
+          proofNodes,
+        },
+      },
+      transfer,
+    )
+  }
+
+  putSharedCode(codeHash: Uint8Array, code: Uint8Array): void {
+    const hash = copyForSend(codeHash)
+    const bytecode = copyForSend(code)
+    this._send({ type: 'putSharedCode', codeHash: hash, code: bytecode }, [
+      hash.buffer as ArrayBuffer,
+      bytecode.buffer as ArrayBuffer,
+    ])
+  }
+
+  putEthyStorageEntry(entry: {
+    accountHash: Uint8Array
+    storageRoot: Uint8Array
+    chunkBlockNumber: bigint
+    slotsSlab64B: Uint8Array
+    complete: boolean
+    proofNodes?: Uint8Array[]
+  }): void {
+    const accountHash = copyForSend(entry.accountHash)
+    const storageRoot = copyForSend(entry.storageRoot)
+    const slotsSlab64B = copyForSend(entry.slotsSlab64B)
+    const proofNodes = entry.proofNodes?.map((p) => copyForSend(p)) ?? []
+    const transfer = [
+      accountHash.buffer,
+      storageRoot.buffer,
+      slotsSlab64B.buffer,
+      ...proofNodes.map((p) => p.buffer),
+    ] as ArrayBuffer[]
+    this._send(
+      {
+        type: 'putEthyStorageEntry',
+        entry: {
+          accountHash,
+          storageRoot,
+          chunkBlockNumber: entry.chunkBlockNumber.toString(),
+          slotsSlab64B,
+          complete: entry.complete,
+          proofNodes,
+        },
+      },
+      transfer,
+    )
   }
 
   setEthyPivotAccountsDir(dir: string | undefined): void {

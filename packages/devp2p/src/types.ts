@@ -218,6 +218,8 @@ export interface DPTOptions {
 
   /** Include EIP-778 `"ethy"` key in discv4 ENR responses. */
   ethyDiscoveryTag?: boolean
+  /** Include EIP-778 `"staty"` key in discv4 ENR responses. */
+  statyDiscoveryTag?: boolean
 }
 
 export interface DPTServerOptions {
@@ -251,6 +253,8 @@ export interface DPTServerOptions {
 
   /** Include EIP-778 `"ethy"` key in discv4 ENR responses. */
   ethyDiscoveryTag?: boolean
+  /** Include EIP-778 `"staty"` key in discv4 ENR responses. */
+  statyDiscoveryTag?: boolean
 }
 
 export type DiscoveryMode = 'active' | 'quiet' | 'off'
@@ -271,6 +275,12 @@ export interface NetworkProfile {
   ethyDiscoveryTag: boolean
   /** Prioritize ENR `ethy` peers in the dial queue. */
   preferEthyDiscovery?: boolean
+  /** Reserved RLPx slots for connected STATY/0 peers (default `0`). */
+  minStatyPeers?: number
+  /** Whether the local ENR advertises the `staty` discovery tag. */
+  statyDiscoveryTag?: boolean
+  /** Prioritize ENR `staty` peers in the dial queue. */
+  preferStatyDiscovery?: boolean
 }
 
 export type ProtocolType = (typeof ProtocolType)[keyof typeof ProtocolType]
@@ -279,6 +289,7 @@ export const ProtocolType = {
   ETH: 'eth',
   SNAP: 'snap',
   ETHY: 'ethy',
+  STATY: 'staty',
 } as const
 
 export interface KBucketOptions {
@@ -329,6 +340,8 @@ export interface PeerInfo {
   ethForkId?: { forkHash: string; nextFork: bigint }
   /** ENR contains EIP-778 `ethy` key (ETHY/0 capable). */
   ethyCapable?: boolean
+  /** ENR contains EIP-778 `staty` key (STATY/0 capable). */
+  statyCapable?: boolean
 }
 
 export interface Contact extends PeerInfo {
@@ -389,6 +402,8 @@ export interface RLPxOptions {
   discoveryLowWaterMark?: number
   /** Reserve ETHY/0 sessions when at {@link maxPeers} (default `0`; Ethy worker passes `4`). */
   minEthyPeers?: number
+  /** Reserve STATY/0 sessions when at {@link maxPeers} (default `0`). */
+  minStatyPeers?: number
 
   discoveryMetrics?: import('./discovery/metrics.ts').DiscoveryMetrics
 }
