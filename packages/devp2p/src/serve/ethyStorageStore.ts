@@ -24,8 +24,21 @@ const compareHash = (a: Uint8Array, b: Uint8Array): number => {
 
 export class EthyStorageStore {
   private readonly _entries = new Map<string, EthyStorageEntry>()
+  private _storageDir: string | undefined
+
+  setStorageDir(dir: string | undefined): void {
+    this._storageDir = dir
+  }
+
+  storageDir(): string | undefined {
+    return this._storageDir
+  }
 
   put(entry: EthyStorageEntry): void {
+    if (entry.accountHash.length !== 32 || entry.storageRoot.length !== 32) return
+    if (entry.slotsSlab64B.byteLength % 64 !== 0) {
+      throw new Error('EthyStorageStore.put: slotsSlab64B length must be a multiple of 64 bytes')
+    }
     const key = bytesToUnprefixedHex(entry.accountHash)
     const ownedSlab = new Uint8Array(entry.slotsSlab64B.byteLength)
     ownedSlab.set(entry.slotsSlab64B)
@@ -41,6 +54,7 @@ export class EthyStorageStore {
   }
 
   get(accountHash: Uint8Array): EthyStorageEntry | undefined {
+    if (accountHash.length !== 32) return undefined
     return this._entries.get(bytesToUnprefixedHex(accountHash))
   }
 
@@ -60,10 +74,13 @@ export class EthyStorageStore {
         proofNodes: Uint8Array[]
       }
     | undefined {
+    if (accountHash.length !== 32 || storageRoot.length !== 32 || originSlotHash.length !== 32) {
+      return undefined
+    }
     const rec = this.get(accountHash)
     if (rec === undefined) return undefined
     if (!equalsBytes(rec.storageRoot, storageRoot)) return undefined
-    const rowCount = rec.slotsSlab64B.length / 64
+    const rowCount = Math.floor(rec.slotsSlab64B.length / 64)
     if (rowCount === 0) return undefined
 
     let startIdx = 0
@@ -93,7 +110,8 @@ export class EthyStorageStore {
     const slice = rec.slotsSlab64B.subarray(startIdx * 64, endIdx * 64)
     const lastSlotHash = slotHashAt(slice, Math.floor(slice.length / 64) - 1)
     const hasRight = !rec.complete || endIdx < rowCount ? 1 : 0
-    const proofNodes = hasRight === 1 ? rec.proofNodes : []
+    const isCompleteWholeTrie = rec.complete && startIdx === 0 && endIdx === rowCount
+    const proofNodes = isCompleteWholeTrie ? [] : rec.proofNodes
 
     return {
       storageRoot: rec.storageRoot,

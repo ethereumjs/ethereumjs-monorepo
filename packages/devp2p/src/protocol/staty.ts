@@ -12,12 +12,13 @@ import {
   MAX_STATY_PROOF_NODES,
   type StatyLocalStatusFields,
   type StatyPeerStatus,
+  countProofNodesInStatyMessage,
   encodeStatyStatus,
   parseStatyStatus,
 } from './staty/codec.ts'
 import { StatyMessageCodeNames, StatyMessageCodes } from './staty/codes.ts'
 
-import type { Input } from '@ethereumjs/rlp'
+import type { Input, NestedUint8Array } from '@ethereumjs/rlp'
 import type { Peer } from '../rlpx/peer.ts'
 import type { SendMethod } from '../types.ts'
 
@@ -89,8 +90,17 @@ export class STATY extends Protocol {
       this._peer.disconnect(DISCONNECT_REASON.SUBPROTOCOL_ERROR)
       return
     }
-    const payload = RLP.decode(data)
-    this._guardProofNodeCount(payload)
+    let payload: NestedUint8Array | Uint8Array
+    try {
+      payload = RLP.decode(data)
+    } catch {
+      this._peer.disconnect(DISCONNECT_REASON.SUBPROTOCOL_ERROR)
+      return
+    }
+    if (countProofNodesInStatyMessage(code as StatyMessageCodes, payload) > MAX_STATY_PROOF_NODES) {
+      this._peer.disconnect(DISCONNECT_REASON.SUBPROTOCOL_ERROR)
+      return
+    }
 
     if (this.DEBUG && code !== StatyMessageCodes.STATUS) {
       this.debug(
@@ -107,21 +117,6 @@ export class STATY extends Protocol {
         break
       default:
         this.events.emit('message', code as StatyMessageCodes, payload)
-    }
-  }
-
-  private _guardProofNodeCount(payload: unknown): void {
-    if (!Array.isArray(payload)) return
-    for (const row of payload) {
-      if (!Array.isArray(row)) continue
-      for (const inner of row) {
-        if (!Array.isArray(inner)) continue
-        const last = inner[inner.length - 1]
-        if (Array.isArray(last) && last.length > MAX_STATY_PROOF_NODES) {
-          this._peer.disconnect(DISCONNECT_REASON.SUBPROTOCOL_ERROR)
-          return
-        }
-      }
     }
   }
 

@@ -28,18 +28,27 @@ function reqIdFromPayload(decoded: unknown): bigint {
   return bytesToBigInt(id)
 }
 
+function safeInt(raw: unknown): number | undefined {
+  if (!(raw instanceof Uint8Array)) return undefined
+  if (raw.length === 0) return 0
+  if (raw.length > 6) {
+    const big = bytesToBigInt(raw)
+    return big > BigInt(Number.MAX_SAFE_INTEGER) ? Number.MAX_SAFE_INTEGER : Number(big)
+  }
+  return bytesToInt(raw)
+}
+
 function clampCount(raw: unknown, min: number, max: number): number {
-  if (!(raw instanceof Uint8Array) || raw.length === 0) return min
-  const n = bytesToInt(raw)
+  const n = safeInt(raw)
+  if (n === undefined) return min
   if (n < min) return min
   if (n > max) return max
   return n
 }
 
 function clampBudget(raw: unknown): number {
-  if (!(raw instanceof Uint8Array) || raw.length === 0) return SERVE_SOFT_RESPONSE_BYTES
-  const n = bytesToInt(raw)
-  if (n <= 0) return SERVE_SOFT_RESPONSE_BYTES
+  const n = safeInt(raw)
+  if (n === undefined || n <= 0) return SERVE_SOFT_RESPONSE_BYTES
   return Math.min(n, SERVE_SOFT_RESPONSE_BYTES)
 }
 
@@ -118,12 +127,15 @@ export function tryServeEthyGet(
 
   if (msgName === 'GET_PROVEN_STORAGE_OR_CODE') {
     if (!Array.isArray(decoded) || decoded.length < 2) return undefined
-    const kind = bytesToInt(decoded[1] as Uint8Array)
+    const kind = safeInt(decoded[1])
+    if (kind === undefined) return undefined
     if (kind === 0) {
       const hashesRaw = decoded[2]
       const budget = decoded.length > 3 ? clampBudget(decoded[3]) : SERVE_SOFT_RESPONSE_BYTES
       const hashes = Array.isArray(hashesRaw)
-        ? hashesRaw.filter((h): h is Uint8Array => h instanceof Uint8Array).slice(0, 64)
+        ? hashesRaw
+            .filter((h): h is Uint8Array => h instanceof Uint8Array && h.length === 32)
+            .slice(0, 64)
         : []
       const { codes, bytes } = codeDisk.getMany(hashes, budget)
       return {
@@ -134,10 +146,20 @@ export function tryServeEthyGet(
       }
     }
     if (kind === 1) {
-      if (decoded.length < 6) return undefined
-      const accountHash = decoded[2] as Uint8Array
-      const storageRoot = decoded[3] as Uint8Array
-      const originSlotHash = decoded[4] as Uint8Array
+      if (decoded.length < 5) return undefined
+      const accountHash = decoded[2]
+      const storageRoot = decoded[3]
+      const originSlotHash = decoded[4]
+      if (
+        !(accountHash instanceof Uint8Array) ||
+        accountHash.length !== 32 ||
+        !(storageRoot instanceof Uint8Array) ||
+        storageRoot.length !== 32 ||
+        !(originSlotHash instanceof Uint8Array) ||
+        originSlotHash.length !== 32
+      ) {
+        return undefined
+      }
       const budget = decoded.length > 5 ? clampBudget(decoded[5]) : SERVE_SOFT_RESPONSE_BYTES
       const slice = storageStore.sliceKind1(accountHash, storageRoot, originSlotHash, budget)
       if (slice === undefined) {
@@ -183,8 +205,16 @@ export function tryServeEthyGet(
       const pairsRaw = decoded[2]
       if (!Array.isArray(pairsRaw)) return undefined
       const pairs = pairsRaw
-        .filter((p): p is unknown[] => Array.isArray(p) && p.length >= 2)
-        .map((p) => ({ accountHash: p[0] as Uint8Array, storageRoot: p[1] as Uint8Array }))
+        .filter(
+          (p): p is [Uint8Array, Uint8Array] =>
+            Array.isArray(p) &&
+            p.length >= 2 &&
+            p[0] instanceof Uint8Array &&
+            p[0].length === 32 &&
+            p[1] instanceof Uint8Array &&
+            p[1].length === 32,
+        )
+        .map((p) => ({ accountHash: p[0], storageRoot: p[1] }))
       const entries = storageStore
         .entriesKind2(pairs, budget)
         .map((e) => [e.accountHash, e.storageRoot, e.slotsSlab64B])

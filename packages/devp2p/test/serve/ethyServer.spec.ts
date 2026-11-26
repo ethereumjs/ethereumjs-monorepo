@@ -233,6 +233,47 @@ describe('[Devp2p/ETHY]: worker serving', () => {
     const replySlab = served!.rlp[8] as Uint8Array
     assert.equal(replySlab.length % 64, 0)
     assert.isTrue(equalsBytes(served!.rlp[7] as Uint8Array, intToUnpaddedBytes(1)))
+
+    // Final sub-range of a complete contract (startIdx > 0, hasRight = 0) MUST keep boundary proofNodes
+    const completeHash = new Uint8Array(32).fill(0xbc)
+    const completeSlab = new Uint8Array(128)
+    const s1 = new Uint8Array(32)
+    s1[31] = 1
+    const s2 = new Uint8Array(32)
+    s2[31] = 2
+    completeSlab.set(s1, 0)
+    completeSlab.set(s2, 64)
+    storage.put({
+      accountHash: completeHash,
+      storageRoot,
+      chunkBlockNumber: 11n,
+      slotsSlab64B: completeSlab,
+      complete: true,
+      proofNodes: [new Uint8Array([0xab])],
+    })
+    const tailReq = RLP.decode(
+      RLP.encode([
+        bigIntToUnpaddedBytes(2n),
+        intToUnpaddedBytes(1),
+        completeHash,
+        storageRoot,
+        s2,
+        intToUnpaddedBytes(524288),
+      ]),
+    )
+    const tailServed = tryServeEthyGet(
+      new EthyChunkStore(),
+      new RollingBlockStore(),
+      [],
+      new Uint8Array(64),
+      undefined,
+      'GET_PROVEN_STORAGE_OR_CODE',
+      tailReq,
+      new SharedCodeDisk(),
+      storage,
+    )
+    assert.equal((tailServed!.rlp[9] as Uint8Array[]).length, 1)
+    assert.isTrue(equalsBytes(tailServed!.rlp[7] as Uint8Array, intToUnpaddedBytes(0)))
   })
 
   it('kind 2 omits incomplete contracts and unknown kind is not served', () => {

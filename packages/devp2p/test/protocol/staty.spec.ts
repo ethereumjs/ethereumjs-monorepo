@@ -1,3 +1,4 @@
+import { Common, Mainnet } from '@ethereumjs/common'
 import { type Input, RLP } from '@ethereumjs/rlp'
 import { bigIntToUnpaddedBytes, intToUnpaddedBytes, utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
@@ -5,12 +6,16 @@ import { assert, describe, it } from 'vitest'
 import { statyCapableFromDiscv4Record } from '../../src/dns/enrPeerFields.ts'
 import { discv4ENRList } from '../../src/dpt/discv4Enr.ts'
 import {
+  MAX_STATY_PROOF_NODES,
+  STATY,
   encodeStatyStatus,
   parseStatyStatus,
   statyMessageNameToCode,
-  validateStatyStatusAgainstLocal,
-} from '../../src/protocol/staty/codec.ts'
+} from '../../src/protocol/staty.ts'
+import { validateStatyStatusAgainstLocal } from '../../src/protocol/staty/codec.ts'
 import { StatyMessageCodes } from '../../src/protocol/staty/codes.ts'
+import type { Peer } from '../../src/rlpx/peer.ts'
+import { DISCONNECT_REASON } from '../../src/types.ts'
 import { genPrivateKey } from '../../src/util.ts'
 
 describe('[Devp2p/STATY]: codecs', () => {
@@ -99,9 +104,9 @@ describe('[Devp2p/STATY]: codecs', () => {
         [],
       ],
       [reqId, bigIntToUnpaddedBytes(5n), intToUnpaddedBytes(524288), [[hash, []]]],
-      [reqId, [], []],
+      [reqId, []],
       [reqId, [hash], intToUnpaddedBytes(524288)],
-      [reqId, [[hash, code]]],
+      [reqId, [code]],
       [reqId, intToUnpaddedBytes(16)],
       [reqId, []],
     ]
@@ -120,5 +125,51 @@ describe('[Devp2p/STATY]: codecs', () => {
       },
     )
     assert.isTrue(statyCapableFromDiscv4Record(record))
+  })
+
+  it('STATY._handleMessage() disconnects and suppresses emit when EPOCH_PART exceeds proof cap or RLP is invalid', () => {
+    const disconnects: number[] = []
+    const fakePeer = {
+      common: new Common({ chain: Mainnet }),
+      _hello: null,
+      _socket: { remoteAddress: '127.0.0.1', remotePort: 30303 },
+      disconnect: (reason: number) => disconnects.push(reason),
+    } as unknown as Peer
+    const staty = new STATY(0, fakePeer, () => {})
+    staty.setLocalStatusFields({ genesisHash: genesis })
+
+    const emitted: number[] = []
+    staty.events.on('message', (code: number) => emitted.push(code))
+
+    const tooManyProofs = Array.from({ length: MAX_STATY_PROOF_NODES + 1 }, () => new Uint8Array(1))
+    const oversizedPart = RLP.encode([
+      bigIntToUnpaddedBytes(1n),
+      bigIntToUnpaddedBytes(1n),
+      intToUnpaddedBytes(0),
+      intToUnpaddedBytes(0),
+      bigIntToUnpaddedBytes(256n),
+      new Uint8Array(32),
+      [],
+      [],
+      tooManyProofs,
+    ])
+    staty._handleMessage(StatyMessageCodes.EPOCH_PART, oversizedPart)
+    assert.deepEqual(disconnects, [DISCONNECT_REASON.SUBPROTOCOL_ERROR])
+    assert.equal(emitted.length, 0)
+
+    // Malformed RLP disconnects cleanly without throwing
+    staty._handleMessage(StatyMessageCodes.EPOCH_PART, new Uint8Array([0xff, 0xff]))
+    assert.equal(disconnects.length, 2)
+    assert.equal(emitted.length, 0)
+
+    // Repeat STATUS emits 'status' then 'statusUpdated'
+    const events: string[] = []
+    staty.events.on('status', () => events.push('status'))
+    staty.events.on('statusUpdated', () => events.push('statusUpdated'))
+    const s1 = RLP.encode(encodeStatyStatus(1n, { genesisHash: genesis, latestEpoch: 1n }))
+    const s2 = RLP.encode(encodeStatyStatus(1n, { genesisHash: genesis, latestEpoch: 2n }))
+    staty._handleMessage(StatyMessageCodes.STATUS, s1)
+    staty._handleMessage(StatyMessageCodes.STATUS, s2)
+    assert.deepEqual(events, ['status', 'statusUpdated'])
   })
 })

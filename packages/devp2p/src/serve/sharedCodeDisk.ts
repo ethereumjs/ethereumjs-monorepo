@@ -18,6 +18,7 @@ export class SharedCodeDisk {
   }
 
   put(codeHash: Uint8Array, code: Uint8Array): void {
+    if (codeHash.length !== 32) return
     const key = bytesToUnprefixedHex(codeHash)
     const owned = new Uint8Array(code.byteLength)
     owned.set(code)
@@ -43,6 +44,7 @@ export class SharedCodeDisk {
   }
 
   get(hash: Uint8Array): Uint8Array | undefined {
+    if (hash.length !== 32) return undefined
     const key = bytesToUnprefixedHex(hash)
     const hit = this._mem.get(key)
     if (hit !== undefined) {
@@ -60,6 +62,7 @@ export class SharedCodeDisk {
     const codes: Uint8Array[] = []
     let bytes = 0
     for (const h of hashes) {
+      if (h.length !== 32) continue
       const code = this.get(h)
       if (code === undefined) continue
       if (bytes + code.length > cap) break

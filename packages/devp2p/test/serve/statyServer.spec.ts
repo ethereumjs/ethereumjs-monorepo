@@ -150,6 +150,60 @@ describe('[Devp2p/STATY]: serving', () => {
     assert.equal((miss?.rlp[1] as unknown[]).length, 0)
   })
 
+  it('witnesses merge and deduplicate proofNodes for multiple accounts sharing an anchor group', () => {
+    const store = new StatyStore()
+    const root = new Uint8Array(32).fill(0x66)
+    const acctA = new Uint8Array(32).fill(0x11)
+    const acctB = new Uint8Array(32).fill(0x22)
+    const sharedNode = new Uint8Array([0xaa, 0xbb])
+    const nodeA = new Uint8Array([0x01, 0x02])
+    const nodeB = new Uint8Array([0x03, 0x04])
+    store.putWitness({
+      accountHash: acctA,
+      anchorBlock: 100n,
+      anchorStateRoot: root,
+      accountRlpOrEmpty: new Uint8Array(0),
+      slots: [],
+      proofNodes: [sharedNode, nodeA],
+    })
+    store.putWitness({
+      accountHash: acctB,
+      anchorBlock: 100n,
+      anchorStateRoot: root,
+      accountRlpOrEmpty: new Uint8Array(0),
+      slots: [],
+      proofNodes: [sharedNode, nodeB],
+    })
+    const req = RLP.decode(
+      RLP.encode([
+        bigIntToUnpaddedBytes(3n),
+        bigIntToUnpaddedBytes(50n),
+        intToUnpaddedBytes(524288),
+        [
+          [acctA, []],
+          [acctB, []],
+        ],
+      ]),
+    )
+    const res = tryServeStatyGet(
+      store,
+      new SharedCodeDisk(),
+      [],
+      localId,
+      undefined,
+      'GET_WITNESSES',
+      req,
+    )
+    assert.equal(res?.metric, 'witness')
+    const groups = res?.rlp[1] as unknown[][]
+    assert.equal(groups.length, 1)
+    const accounts = groups[0]![2] as unknown[]
+    const proofs = groups[0]![4] as Uint8Array[]
+    assert.equal(accounts.length, 2)
+    assert.equal(proofs.length, 3)
+    assert.isBelow(res!.bytesEstimate, 1024)
+  })
+
   it('bytecodes omit misses and respect budget', () => {
     const disk = new SharedCodeDisk()
     const h1 = new Uint8Array(32).fill(0x88)

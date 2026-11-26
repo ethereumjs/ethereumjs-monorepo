@@ -37,8 +37,6 @@ export type StatyLocalStatusFields = {
 export const MAX_STATY_MESSAGE_BYTES = 2 * 1024 * 1024
 export const MAX_STATY_PROOF_NODES = 4096
 
-const ZERO32 = new Uint8Array(32)
-
 function asBytes(v: unknown): Uint8Array {
   if (!(v instanceof Uint8Array)) return new Uint8Array(0)
   return v
@@ -53,6 +51,10 @@ function scalarBigInt(v: unknown): bigint {
 function scalarInt(v: unknown): number {
   if (!(v instanceof Uint8Array)) return 0
   if (v.length === 0) return 0
+  if (v.length > 6) {
+    const big = bytesToBigInt(v)
+    return big > BigInt(Number.MAX_SAFE_INTEGER) ? Number.MAX_SAFE_INTEGER : Number(big)
+  }
   return bytesToInt(v)
 }
 
@@ -120,14 +122,22 @@ export function validateStatyStatusAgainstLocal(
   }
 }
 
-export function countProofNodesInDecoded(decoded: unknown): number {
+export function countProofNodesInStatyMessage(code: StatyMessageCodes, decoded: unknown): number {
   if (!Array.isArray(decoded)) return 0
-  let n = 0
-  for (const item of decoded) {
-    if (Array.isArray(item) && item.length > 0 && item[0] instanceof Uint8Array) {
-      const last = item[item.length - 1]
-      if (Array.isArray(last)) n += last.length
-    }
+  if (code === StatyMessageCodes.EPOCH_PART) {
+    const proofNodes = decoded[8]
+    return Array.isArray(proofNodes) ? proofNodes.length : 0
   }
-  return n
+  if (code === StatyMessageCodes.WITNESSES) {
+    const groups = decoded[1]
+    if (!Array.isArray(groups)) return 0
+    let total = 0
+    for (const group of groups) {
+      if (Array.isArray(group) && Array.isArray(group[4])) {
+        total += group[4].length
+      }
+    }
+    return total
+  }
+  return 0
 }

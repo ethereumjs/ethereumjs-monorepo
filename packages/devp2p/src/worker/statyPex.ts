@@ -15,7 +15,7 @@ export type StatyKnownPeerRow = {
 
 const MAX_KNOWN = 64
 
-function popcount64(mask: bigint): number {
+function countBits64(mask: bigint): number {
   let n = mask
   let c = 0
   while (n > 0n) {
@@ -28,7 +28,7 @@ function popcount64(mask: bigint): number {
 function pexRowScore(row: StatyKnownPeerRow): number {
   return (
     Number(row.latestEpoch) * 1_000_000 +
-    popcount64(row.epochMask) * 1_000 +
+    countBits64(row.epochMask) * 1_000 +
     row.witnessCountHint +
     row.lastSeenSec
   )

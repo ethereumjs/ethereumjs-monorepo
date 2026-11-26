@@ -3,6 +3,8 @@ import * as path from 'node:path'
 
 import { bytesToUnprefixedHex } from '@ethereumjs/util'
 
+import { MAX_STATY_PROOF_NODES } from '../protocol/staty/codec.ts'
+
 export type StatyEpochShardRow = {
   shardIndex: number
   partCount: number
@@ -108,51 +110,79 @@ export class StatyStore {
         accounts: Array<{ accountHash: Uint8Array; accountRlpOrEmpty: Uint8Array }>
         slots: Array<{ accountHash: Uint8Array; slotHash: Uint8Array; slotValOrEmpty: Uint8Array }>
         proofNodes: Uint8Array[]
+        proofKeys: Set<string>
       }
     >()
     let budget = maxBytes
     let totalSlots = 0
+    let totalProofNodes = 0
     const accountQueries = queries.slice(0, 64)
 
     for (const q of accountQueries) {
+      if (q.accountHash.length !== 32) continue
       const records = this._witnesses.get(bytesToUnprefixedHex(q.accountHash)) ?? []
       const best = records
         .filter((r) => r.anchorBlock >= minAnchorBlock)
-        .sort((a, b) => Number(b.anchorBlock - a.anchorBlock))[0]
+        .sort((a, b) =>
+          b.anchorBlock > a.anchorBlock ? 1 : b.anchorBlock < a.anchorBlock ? -1 : 0,
+        )[0]
       if (best === undefined) continue
 
       const gKey = `${best.anchorBlock}:${bytesToUnprefixedHex(best.anchorStateRoot)}`
       let group = groups.get(gKey)
+      const existingKeys = group?.proofKeys
+      const newProofs: Uint8Array[] = []
+      let newProofBytes = 0
+      for (const node of best.proofNodes) {
+        const nk = bytesToUnprefixedHex(node)
+        if (existingKeys?.has(nk) === true) continue
+        if (newProofs.some((p) => bytesToUnprefixedHex(p) === nk)) continue
+        newProofs.push(node)
+        newProofBytes += node.length
+      }
+
+      const acctHex = bytesToUnprefixedHex(q.accountHash)
+      const needAccount =
+        group === undefined ||
+        !group.accounts.some((a) => bytesToUnprefixedHex(a.accountHash) === acctHex)
+      const accountCost = needAccount ? best.accountRlpOrEmpty.length + 64 : 0
+      if (budget < accountCost + newProofBytes) continue
+      if (totalProofNodes + newProofs.length > MAX_STATY_PROOF_NODES) continue
+
       if (group === undefined) {
         group = {
           anchorBlock: best.anchorBlock,
           anchorStateRoot: best.anchorStateRoot,
           accounts: [],
           slots: [],
-          proofNodes: [...best.proofNodes],
+          proofNodes: [],
+          proofKeys: new Set<string>(),
         }
         groups.set(gKey, group)
       }
-      if (
-        !group.accounts.some(
-          (a) => bytesToUnprefixedHex(a.accountHash) === bytesToUnprefixedHex(q.accountHash),
-        )
-      ) {
-        const est = best.accountRlpOrEmpty.length + 64
-        if (budget < est) continue
+      for (const node of newProofs) {
+        const nk = bytesToUnprefixedHex(node)
+        group.proofKeys.add(nk)
+        group.proofNodes.push(node)
+      }
+      totalProofNodes += newProofs.length
+      budget -= newProofBytes
+
+      if (needAccount) {
         group.accounts.push({
           accountHash: q.accountHash,
           accountRlpOrEmpty: best.accountRlpOrEmpty,
         })
-        budget -= est
+        budget -= accountCost
       }
       for (const slotHash of q.slotHashes) {
         if (totalSlots >= 256) break
+        if (slotHash.length !== 32) continue
         const slot = best.slots.find(
           (s) => bytesToUnprefixedHex(s.slotHash) === bytesToUnprefixedHex(slotHash),
         )
         if (slot === undefined) continue
-        const est = 64
+        const est = 64 + slot.slotValOrEmpty.length
         if (budget < est) continue
         group.slots.push({
           accountHash: q.accountHash,
@@ -164,6 +194,6 @@ export class StatyStore {
       }
     }
 
-    return [...groups.values()]
+    return [...groups.values()].map(({ proofKeys: _ignored, ...rest }) => rest)
   }
 }

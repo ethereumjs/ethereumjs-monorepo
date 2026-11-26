@@ -30,6 +30,8 @@ export interface WorkerDiscoverySnapshot {
   maxPeers?: number
   minEthyPeers?: number
   ethyDiscoveryTag?: boolean
+  minStatyPeers?: number
+  statyDiscoveryTag?: boolean
   /** Hardfork, EIP-2124 hash, and next fork this node puts in ETH STATUS. */
   advertisedFork?: { hardfork: string; hash: string; next?: string }
   bootstrap: {
@@ -87,6 +89,8 @@ export class DiscoveryMetrics {
   maxPeers = 0
   minEthyPeers = 0
   ethyDiscoveryTag = false
+  minStatyPeers = 0
+  statyDiscoveryTag = false
   advertisedHardfork?: string
   advertisedForkHash?: string
   advertisedForkNext?: string
@@ -236,6 +240,8 @@ export class DiscoveryMetrics {
     this.maxPeers = profile.maxPeers
     this.minEthyPeers = profile.minEthyPeers ?? 0
     this.ethyDiscoveryTag = profile.ethyDiscoveryTag
+    this.minStatyPeers = profile.minStatyPeers ?? 0
+    this.statyDiscoveryTag = profile.statyDiscoveryTag === true
   }
 
   setLocalEnode(url: string): void {
@@ -266,6 +272,8 @@ export class DiscoveryMetrics {
       maxPeers: this.maxPeers,
       minEthyPeers: this.minEthyPeers,
       ethyDiscoveryTag: this.ethyDiscoveryTag,
+      minStatyPeers: this.minStatyPeers,
+      statyDiscoveryTag: this.statyDiscoveryTag,
       ...(this.advertisedHardfork !== undefined && this.advertisedForkHash !== undefined
         ? {
             advertisedFork: {

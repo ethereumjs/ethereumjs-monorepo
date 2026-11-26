@@ -39,6 +39,7 @@ import {
   ETHY,
   type EthyLocalStatusFields,
   type EthyPeerStatus,
+  MAX_STATY_MESSAGE_BYTES,
   SNAP,
   STATY,
   type StatyLocalStatusFields,
@@ -306,6 +307,7 @@ export class Devp2pWorkerHost {
           this._sharedCode.setCodeDir(cmd.dir)
           break
         case 'setEthyStorageDir':
+          this._ethyStorage.setStorageDir(cmd.dir)
           break
         case 'putStatyEpochManifest': {
           const m = cmd.manifest
@@ -436,6 +438,9 @@ export class Devp2pWorkerHost {
     }
     if (opts.sharedCodeDir !== undefined) {
       this._sharedCode.setCodeDir(opts.sharedCodeDir)
+    }
+    if (opts.ethyStorageDir !== undefined) {
+      this._ethyStorage.setStorageDir(opts.ethyStorageDir)
     }
     this._privateKey = opts.privateKey
     this._localNodeId = pk2id(secp256k1.getPublicKey(opts.privateKey, false))
@@ -729,6 +734,10 @@ export class Devp2pWorkerHost {
       }
       if (protocolName === 'ETHY' && msgCode === EthyMessageCodes.STATUS) {
         return 'default'
+      }
+      if (protocolName === 'STATY' && payload.byteLength > MAX_STATY_MESSAGE_BYTES) {
+        peer.disconnect(DISCONNECT_REASON.SUBPROTOCOL_ERROR)
+        return 'handled'
       }
       if (protocolName === 'STATY' && msgCode === StatyMessageCodes.STATUS) {
         return 'default'
@@ -1194,7 +1203,12 @@ export class Devp2pWorkerHost {
     if (name === undefined || !name.startsWith('GET_')) return false
     const ethy = this._findEthyOnPeer(peer)
     if (ethy === undefined || this._localNodeId === null) return false
-    const decoded = RLP.decode(payload)
+    let decoded: unknown
+    try {
+      decoded = RLP.decode(payload)
+    } catch {
+      return false
+    }
     const excludeId = peer.getId() ?? undefined
     const served = tryServeEthyGet(
       this._ethyChunks,
@@ -1228,7 +1242,12 @@ export class Devp2pWorkerHost {
     if (name === undefined || !name.startsWith('GET_')) return false
     const staty = this._findStatyOnPeer(peer)
     if (staty === undefined || this._localNodeId === null) return false
-    const decoded = RLP.decode(payload)
+    let decoded: unknown
+    try {
+      decoded = RLP.decode(payload)
+    } catch {
+      return false
+    }
     const excludeId = peer.getId() ?? undefined
     const served = tryServeStatyGet(
       this._statyStore,

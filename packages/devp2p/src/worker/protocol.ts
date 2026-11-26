@@ -312,6 +312,8 @@ export interface WorkerDiscoverySnapshot {
   maxPeers?: number
   minEthyPeers?: number
   ethyDiscoveryTag?: boolean
+  minStatyPeers?: number
+  statyDiscoveryTag?: boolean
   /** Hardfork, EIP-2124 hash, and next fork this node puts in ETH STATUS. */
   advertisedFork?: { hardfork: string; hash: string; next?: string }
   bootstrap: WorkerDiscoveryBootstrapSnapshot

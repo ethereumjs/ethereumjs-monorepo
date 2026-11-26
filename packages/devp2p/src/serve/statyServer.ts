@@ -28,18 +28,33 @@ function reqIdFromPayload(decoded: unknown): bigint {
   return bytesToBigInt(id)
 }
 
+function safeBigInt(raw: unknown): bigint | undefined {
+  if (!(raw instanceof Uint8Array)) return undefined
+  if (raw.length === 0) return 0n
+  return bytesToBigInt(raw)
+}
+
+function safeInt(raw: unknown): number | undefined {
+  if (!(raw instanceof Uint8Array)) return undefined
+  if (raw.length === 0) return 0
+  if (raw.length > 6) {
+    const big = bytesToBigInt(raw)
+    return big > BigInt(Number.MAX_SAFE_INTEGER) ? Number.MAX_SAFE_INTEGER : Number(big)
+  }
+  return bytesToInt(raw)
+}
+
 function clampCount(raw: unknown, min: number, max: number): number {
-  if (!(raw instanceof Uint8Array) || raw.length === 0) return min
-  const n = bytesToInt(raw)
+  const n = safeInt(raw)
+  if (n === undefined) return min
   if (n < min) return min
   if (n > max) return max
   return n
 }
 
 function clampBudget(raw: unknown): number {
-  if (!(raw instanceof Uint8Array) || raw.length === 0) return SERVE_SOFT_RESPONSE_BYTES
-  const n = bytesToInt(raw)
-  if (n <= 0) return SERVE_SOFT_RESPONSE_BYTES
+  const n = safeInt(raw)
+  if (n === undefined || n <= 0) return SERVE_SOFT_RESPONSE_BYTES
   return Math.min(n, SERVE_SOFT_RESPONSE_BYTES)
 }
 
@@ -57,7 +72,8 @@ export function tryServeStatyGet(
 
   if (msgName === 'GET_EPOCH_MANIFEST') {
     if (!Array.isArray(decoded) || decoded.length < 2) return undefined
-    const epochNumber = bytesToBigInt(decoded[1] as Uint8Array)
+    const epochNumber = safeBigInt(decoded[1])
+    if (epochNumber === undefined) return undefined
     const manifest = store.manifestForEpoch(epochNumber)
     if (manifest === undefined) {
       return {
@@ -98,9 +114,12 @@ export function tryServeStatyGet(
 
   if (msgName === 'GET_EPOCH_PART') {
     if (!Array.isArray(decoded) || decoded.length < 4) return undefined
-    const epochNumber = bytesToBigInt(decoded[1] as Uint8Array)
-    const shardIndex = bytesToInt(decoded[2] as Uint8Array)
-    const partIndex = bytesToInt(decoded[3] as Uint8Array)
+    const epochNumber = safeBigInt(decoded[1])
+    const shardIndex = safeInt(decoded[2])
+    const partIndex = safeInt(decoded[3])
+    if (epochNumber === undefined || shardIndex === undefined || partIndex === undefined) {
+      return undefined
+    }
     const part = store.partFor(epochNumber, shardIndex, partIndex)
     if (part === undefined) {
       return {
@@ -143,26 +162,37 @@ export function tryServeStatyGet(
 
   if (msgName === 'GET_WITNESSES') {
     if (!Array.isArray(decoded) || decoded.length < 4) return undefined
-    const minAnchor = bytesToBigInt(decoded[1] as Uint8Array)
+    const minAnchor = safeBigInt(decoded[1])
+    if (minAnchor === undefined) return undefined
     const budget = clampBudget(decoded[2])
     const rawQueries = decoded[3]
     if (!Array.isArray(rawQueries)) return undefined
     const queries: StatyWitnessQuery[] = []
     for (const q of rawQueries.slice(0, 64)) {
       if (!Array.isArray(q) || q.length < 2) continue
-      const accountHash = q[0] as Uint8Array
-      const slotHashes = Array.isArray(q[1]) ? (q[1] as Uint8Array[]) : []
+      if (!(q[0] instanceof Uint8Array) || q[0].length !== 32) continue
+      const accountHash = q[0]
+      const slotHashes = Array.isArray(q[1])
+        ? q[1].filter((h): h is Uint8Array => h instanceof Uint8Array && h.length === 32)
+        : []
       queries.push({ accountHash, slotHashes })
     }
     const groups = store.resolveWitnesses(minAnchor, budget, queries)
-    const wireGroups = groups.map((g) => [
-      bigIntToUnpaddedBytes(g.anchorBlock),
-      g.anchorStateRoot,
-      g.accounts.map((a) => [a.accountHash, a.accountRlpOrEmpty]),
-      g.slots.map((s) => [s.accountHash, s.slotHash, s.slotValOrEmpty]),
-      g.proofNodes,
-    ])
-    const bytes = wireGroups.length > 0 ? budget : 32
+    let actualBytes = 0
+    const wireGroups = groups.map((g) => {
+      actualBytes += 40
+      for (const a of g.accounts) actualBytes += 32 + a.accountRlpOrEmpty.length
+      for (const s of g.slots) actualBytes += 64 + s.slotValOrEmpty.length
+      for (const p of g.proofNodes) actualBytes += p.length
+      return [
+        bigIntToUnpaddedBytes(g.anchorBlock),
+        g.anchorStateRoot,
+        g.accounts.map((a) => [a.accountHash, a.accountRlpOrEmpty]),
+        g.slots.map((s) => [s.accountHash, s.slotHash, s.slotValOrEmpty]),
+        g.proofNodes,
+      ]
+    })
+    const bytes = wireGroups.length > 0 ? actualBytes : 32
     return {
       code: StatyMessageCodes.WITNESSES,
       rlp: [reqIdB, wireGroups],
@@ -176,7 +206,9 @@ export function tryServeStatyGet(
     const hashesRaw = decoded[1]
     const budget = clampBudget(decoded[2])
     if (!Array.isArray(hashesRaw)) return undefined
-    const hashes = hashesRaw.filter((h): h is Uint8Array => h instanceof Uint8Array).slice(0, 64)
+    const hashes = hashesRaw
+      .filter((h): h is Uint8Array => h instanceof Uint8Array && h.length === 32)
+      .slice(0, 64)
     const { codes, bytes } = codeDisk.getMany(hashes, budget)
     return {
       code: StatyMessageCodes.BYTECODES,
