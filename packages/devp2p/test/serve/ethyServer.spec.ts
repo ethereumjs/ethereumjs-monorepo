@@ -57,11 +57,19 @@ import { EthyMessageCodes } from '../../src/protocol/ethy/codes.ts'
 import { EthyChunkStore } from '../../src/serve/ethyChunkStore.ts'
 import { tryServeEthyGet } from '../../src/serve/ethyServer.ts'
 import { EthyStorageStore } from '../../src/serve/ethyStorageStore.ts'
+import { EthySubtreeRootBook } from '../../src/serve/ethySubtreeRootBook.ts'
+import { EthyWitnessStore } from '../../src/serve/ethyWitnessStore.ts'
 import { RollingBlockStore } from '../../src/serve/rollingBlockStore.ts'
 import { SharedCodeDisk } from '../../src/serve/sharedCodeDisk.ts'
 
 const emptyCode = new SharedCodeDisk()
 const emptyStorage = new EthyStorageStore()
+const defaultEthyServeOpts = {
+  witnessStore: new EthyWitnessStore(),
+  subtreeBook: new EthySubtreeRootBook(),
+  remoteBucketsBitmask: 0xffff,
+  witnessThrottle: { windowStartMs: 0, count: 0 },
+}
 
 describe('[Devp2p/ETHY]: worker serving', () => {
   it('tryServeEthyGet() serves PROVEN_ACCOUNT_CHUNK for verifyMerkleRangeProof', async () => {
@@ -100,6 +108,7 @@ describe('[Devp2p/ETHY]: worker serving', () => {
       RLP.decode(req),
       emptyCode,
       emptyStorage,
+      defaultEthyServeOpts,
     )
     assert.notEqual(served, undefined)
     assert.equal(served!.code, EthyMessageCodes.PROVEN_ACCOUNT_CHUNK)
@@ -161,6 +170,7 @@ describe('[Devp2p/ETHY]: worker serving', () => {
       RLP.decode(req),
       emptyCode,
       emptyStorage,
+      defaultEthyServeOpts,
     )
     assert.notEqual(served, undefined)
     assert.equal(served!.code, EthyMessageCodes.PROVEN_ACCOUNT_CHUNK)
@@ -168,7 +178,7 @@ describe('[Devp2p/ETHY]: worker serving', () => {
     assert.isTrue(equalsBytes(replySlab, slab))
   })
 
-  it('kind 0 code is shared with STATY bytecodes', () => {
+  it('kind 0 code is served from SharedCodeDisk', () => {
     const codeDisk = new SharedCodeDisk()
     const hash = new Uint8Array(32).fill(0xaa)
     const code = new Uint8Array([0x60, 0x00, 0x60, 0x00, 0xfd])
@@ -186,6 +196,7 @@ describe('[Devp2p/ETHY]: worker serving', () => {
       decoded,
       codeDisk,
       new EthyStorageStore(),
+      defaultEthyServeOpts,
     )
     const rows = served!.rlp[2] as Uint8Array[]
     assert.isTrue(equalsBytes(rows[0]!, code))
@@ -228,6 +239,7 @@ describe('[Devp2p/ETHY]: worker serving', () => {
       decoded,
       new SharedCodeDisk(),
       storage,
+      defaultEthyServeOpts,
     )
     assert.equal(served!.metric, 'storage')
     const replySlab = served!.rlp[8] as Uint8Array
@@ -271,6 +283,7 @@ describe('[Devp2p/ETHY]: worker serving', () => {
       tailReq,
       new SharedCodeDisk(),
       storage,
+      defaultEthyServeOpts,
     )
     assert.equal((tailServed!.rlp[9] as Uint8Array[]).length, 1)
     assert.isTrue(equalsBytes(tailServed!.rlp[7] as Uint8Array, intToUnpaddedBytes(0)))
@@ -317,6 +330,7 @@ describe('[Devp2p/ETHY]: worker serving', () => {
       decoded,
       new SharedCodeDisk(),
       storage,
+      defaultEthyServeOpts,
     )
     const entries = served!.rlp[2] as unknown[]
     assert.equal(entries.length, 1)
@@ -332,7 +346,67 @@ describe('[Devp2p/ETHY]: worker serving', () => {
       badKind,
       new SharedCodeDisk(),
       storage,
+      defaultEthyServeOpts,
     )
     assert.equal(none, undefined)
+  })
+
+  it('GET_SUBTREE_ROOTS serves entries from EthySubtreeRootBook', () => {
+    const book = new EthySubtreeRootBook()
+    const root = new Uint8Array(32).fill(0x11)
+    book.ingest(100n, [[intToUnpaddedBytes(3), root]])
+    const opts = { ...defaultEthyServeOpts, subtreeBook: book }
+    const decoded = RLP.decode(
+      RLP.encode([bigIntToUnpaddedBytes(1n), bigIntToUnpaddedBytes(100n), intToUnpaddedBytes(8)]),
+    )
+    const served = tryServeEthyGet(
+      new EthyChunkStore(),
+      new RollingBlockStore(),
+      [],
+      new Uint8Array(64),
+      undefined,
+      'GET_SUBTREE_ROOTS',
+      decoded,
+      emptyCode,
+      emptyStorage,
+      opts,
+    )
+    assert.equal(served!.code, EthyMessageCodes.SUBTREE_ROOTS)
+    const wire = served!.rlp[2] as unknown[]
+    assert.equal(wire.length, 1)
+  })
+
+  it('GET_STATE_WITNESS throttles mask-0 remotes', () => {
+    const witnessStore = new EthyWitnessStore()
+    const throttle = { windowStartMs: Date.now(), count: 2 }
+    const opts = {
+      ...defaultEthyServeOpts,
+      witnessStore,
+      remoteBucketsBitmask: 0,
+      witnessThrottle: throttle,
+    }
+    const decoded = RLP.decode(
+      RLP.encode([
+        bigIntToUnpaddedBytes(1n),
+        bigIntToUnpaddedBytes(1n),
+        intToUnpaddedBytes(524288),
+        [[new Uint8Array(32).fill(0x01), []]],
+      ]),
+    )
+    const served = tryServeEthyGet(
+      new EthyChunkStore(),
+      new RollingBlockStore(),
+      [],
+      new Uint8Array(64),
+      undefined,
+      'GET_STATE_WITNESS',
+      decoded,
+      emptyCode,
+      emptyStorage,
+      opts,
+    )
+    assert.equal(served!.metric, 'none')
+    const groups = served!.rlp[1] as unknown[]
+    assert.equal(groups.length, 0)
   })
 })

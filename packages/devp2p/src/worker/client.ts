@@ -9,7 +9,6 @@ import type {
   WorkerCommand,
   WorkerEthyLocalStatus,
   WorkerEvent,
-  WorkerStatyLocalStatus,
   WorkerTelemetrySnapshot,
 } from './protocol.ts'
 
@@ -17,7 +16,7 @@ export interface Devp2pWorkerClientEvents {
   ready: [{ udpPort: number; tcpPort: number }]
   protocol: [
     {
-      protocol: 'eth' | 'snap' | 'ethy' | 'staty'
+      protocol: 'eth' | 'snap' | 'ethy'
       peerId: string
       code: number
       payload: Uint8Array
@@ -158,21 +157,12 @@ export class Devp2pWorkerClient {
     this._send({ type: 'sendEthyMessage', peerId, code, payload }, [payload.buffer as ArrayBuffer])
   }
 
-  sendStatyMessage(peerId: Uint8Array, code: number, rlpPayload: Uint8Array): void {
-    const payload = copyForSend(rlpPayload)
-    this._send({ type: 'sendStatyMessage', peerId, code, payload }, [payload.buffer as ArrayBuffer])
-  }
-
   setEthyStatus(status: WorkerEthyLocalStatus): void {
     this._send({ type: 'setEthyStatus', status })
   }
 
-  setStatyStatus(status: WorkerStatyLocalStatus): void {
-    this._send({ type: 'setStatyStatus', status })
-  }
-
-  setStatyDataDir(dir: string | undefined): void {
-    this._send({ type: 'setStatyDataDir', dir })
+  setEthyWitnessDir(dir: string | undefined): void {
+    this._send({ type: 'setEthyWitnessDir', dir })
   }
 
   setSharedCodeDir(dir: string | undefined): void {
@@ -183,81 +173,7 @@ export class Devp2pWorkerClient {
     this._send({ type: 'setEthyStorageDir', dir })
   }
 
-  putStatyEpochManifest(manifest: {
-    epochNumber: bigint
-    anchorBlock: bigint
-    anchorStateRoot: Uint8Array
-    dedupBaseEpoch: bigint
-    shards: Array<{
-      shardIndex: number
-      partCount: number
-      accountCount: number
-      slotCount: number
-      totalBytes: number
-    }>
-  }): void {
-    const anchorStateRoot = copyForSend(manifest.anchorStateRoot)
-    this._send(
-      {
-        type: 'putStatyEpochManifest',
-        manifest: {
-          epochNumber: manifest.epochNumber.toString(),
-          anchorBlock: manifest.anchorBlock.toString(),
-          anchorStateRoot,
-          dedupBaseEpoch: manifest.dedupBaseEpoch.toString(),
-          shards: manifest.shards,
-        },
-      },
-      [anchorStateRoot.buffer as ArrayBuffer],
-    )
-  }
-
-  putStatyEpochPart(part: {
-    epochNumber: bigint
-    shardIndex: number
-    partIndex: number
-    anchorBlock: bigint
-    anchorStateRoot: Uint8Array
-    accounts: Array<{ accountHash: Uint8Array; accountRlpOrEmpty: Uint8Array }>
-    slots: Array<{ accountHash: Uint8Array; slotHash: Uint8Array; slotValOrEmpty: Uint8Array }>
-    proofNodes: Uint8Array[]
-  }): void {
-    const anchorStateRoot = copyForSend(part.anchorStateRoot)
-    const accounts = part.accounts.map((a) => ({
-      accountHash: copyForSend(a.accountHash),
-      accountRlpOrEmpty: copyForSend(a.accountRlpOrEmpty),
-    }))
-    const slots = part.slots.map((s) => ({
-      accountHash: copyForSend(s.accountHash),
-      slotHash: copyForSend(s.slotHash),
-      slotValOrEmpty: copyForSend(s.slotValOrEmpty),
-    }))
-    const proofNodes = part.proofNodes.map((p) => copyForSend(p))
-    const transfer = [
-      anchorStateRoot.buffer,
-      ...accounts.flatMap((a) => [a.accountHash.buffer, a.accountRlpOrEmpty.buffer]),
-      ...slots.flatMap((s) => [s.accountHash.buffer, s.slotHash.buffer, s.slotValOrEmpty.buffer]),
-      ...proofNodes.map((p) => p.buffer),
-    ] as ArrayBuffer[]
-    this._send(
-      {
-        type: 'putStatyEpochPart',
-        part: {
-          epochNumber: part.epochNumber.toString(),
-          shardIndex: part.shardIndex,
-          partIndex: part.partIndex,
-          anchorBlock: part.anchorBlock.toString(),
-          anchorStateRoot,
-          accounts,
-          slots,
-          proofNodes,
-        },
-      },
-      transfer,
-    )
-  }
-
-  putStatyWitness(witness: {
+  putEthyWitness(witness: {
     accountHash: Uint8Array
     anchorBlock: bigint
     anchorStateRoot: Uint8Array
@@ -282,7 +198,7 @@ export class Devp2pWorkerClient {
     ] as ArrayBuffer[]
     this._send(
       {
-        type: 'putStatyWitness',
+        type: 'putEthyWitness',
         witness: {
           accountHash,
           anchorBlock: witness.anchorBlock.toString(),
@@ -291,6 +207,25 @@ export class Devp2pWorkerClient {
           slots,
           proofNodes,
         },
+      },
+      transfer,
+    )
+  }
+
+  putEthySubtreeRoots(
+    anchorBlock: bigint,
+    entries: Array<{ bucketIndex: number; subtreeRootHash: Uint8Array }>,
+  ): void {
+    const wire = entries.map((e) => ({
+      bucketIndex: e.bucketIndex,
+      subtreeRootHash: copyForSend(e.subtreeRootHash),
+    }))
+    const transfer = wire.map((e) => e.subtreeRootHash.buffer) as ArrayBuffer[]
+    this._send(
+      {
+        type: 'putEthySubtreeRoots',
+        anchorBlock: anchorBlock.toString(),
+        entries: wire,
       },
       transfer,
     )

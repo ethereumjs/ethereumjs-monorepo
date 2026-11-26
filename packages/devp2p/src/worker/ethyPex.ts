@@ -9,6 +9,9 @@ export type EthyKnownPeerRow = {
   udpPort: number
   basePivotBlock: bigint
   bucketsBitmask: number
+  storageBucketsBitmask: number
+  codeBucketsBitmask: number
+  trieBucketsBitmask: number
   /** Unix seconds when last seen. */
   lastSeenSec: number
 }
@@ -25,30 +28,45 @@ function countSetBits(mask: number): number {
   return c
 }
 
-/**
- * 75% freshest ETHY/0 seeders by pivot, bitmask, and recency; 25% random remainder (WP-11b).
- */
-function pexRowScore(row: EthyKnownPeerRow): number {
-  return (
-    Number(row.basePivotBlock) * 1_000_000 +
-    countSetBits(row.bucketsBitmask) * 1_000 +
-    row.lastSeenSec
-  )
+function pexRankScore(row: EthyKnownPeerRow, desiredBucketsMask: number): number {
+  let score = Number(row.basePivotBlock) * 1_000_000 + row.lastSeenSec
+  if (desiredBucketsMask !== 0) {
+    const overlap = row.bucketsBitmask & desiredBucketsMask
+    if (overlap !== 0) score += 500_000
+    const trieOverlap = row.trieBucketsBitmask & desiredBucketsMask
+    if (trieOverlap !== 0) score += 200_000
+    const planes =
+      countSetBits(row.bucketsBitmask & desiredBucketsMask) +
+      countSetBits(row.storageBucketsBitmask & desiredBucketsMask) +
+      countSetBits(row.codeBucketsBitmask & desiredBucketsMask)
+    score += planes * 10_000
+  } else {
+    score += countSetBits(row.bucketsBitmask) * 1_000
+    score += countSetBits(row.trieBucketsBitmask) * 500
+  }
+  return score
 }
 
+/**
+ * 75% ranked custodians; 25% random remainder. Never returns `bucketsBitmask === 0`.
+ */
 export function selectEthyPexPeers(
   rows: readonly EthyKnownPeerRow[],
   maxPeers: number,
+  desiredBucketsMask = 0,
   rng: () => number = Math.random,
 ): EthyKnownPeerRow[] {
-  if (maxPeers <= 0 || rows.length === 0) return []
-  if (rows.length <= maxPeers) {
-    return [...rows].sort((a, b) => pexRowScore(b) - pexRowScore(a))
+  const custodians = rows.filter((r) => r.bucketsBitmask !== 0)
+  if (maxPeers <= 0 || custodians.length === 0) return []
+  if (custodians.length <= maxPeers) {
+    return [...custodians].sort(
+      (a, b) => pexRankScore(b, desiredBucketsMask) - pexRankScore(a, desiredBucketsMask),
+    )
   }
-  const indexed = rows.map((r, i) => ({
+  const indexed = custodians.map((r, i) => ({
     row: r,
     i,
-    score: pexRowScore(r),
+    score: pexRankScore(r, desiredBucketsMask),
   }))
   indexed.sort((a, b) => b.score - a.score)
   const freshN = Math.min(maxPeers, Math.ceil(maxPeers * 0.75))
@@ -88,6 +106,9 @@ export class EthyKnownPeerBook {
       udpPort,
       basePivotBlock: status.basePivotBlock,
       bucketsBitmask: status.bucketsBitmask,
+      storageBucketsBitmask: status.storageBucketsBitmask,
+      codeBucketsBitmask: status.codeBucketsBitmask,
+      trieBucketsBitmask: status.trieBucketsBitmask,
       lastSeenSec: now,
     }
     if (existing >= 0) {
@@ -114,6 +135,9 @@ export class EthyKnownPeerBook {
       udpPort,
       basePivotBlock: 0n,
       bucketsBitmask: 0,
+      storageBucketsBitmask: 0,
+      codeBucketsBitmask: 0,
+      trieBucketsBitmask: 0,
       lastSeenSec: Math.floor(Date.now() / 1000),
     })
     while (this._rows.length > MAX_KNOWN) {

@@ -24,6 +24,7 @@ import type { Common } from '@ethereumjs/common'
 import type { Debugger } from 'debug'
 import type { DPT } from '../dpt/index.ts'
 import { capabilityWireNames, resolveCapabilities } from '../lab/capabilities.ts'
+import { ETHY } from '../protocol/ethy.ts'
 
 import type {
   Capabilities,
@@ -66,7 +67,6 @@ export class RLPx {
   protected _throttleDiscovery: boolean
   protected _discoveryLowWaterMark: number
   protected _minEthyPeers: number
-  protected _minStatyPeers: number
   public readonly clientId: Uint8Array
   protected _remoteClientIdFilter?: string[]
   protected _capabilities: Capabilities[]
@@ -89,7 +89,6 @@ export class RLPx {
   protected _refillIntervalSelectionCounter: number = 0
   protected _profileDiscoveryMode: DiscoveryMode = 'active'
   protected _preferEthyDiscovery = false
-  protected _preferStatyDiscovery = false
   protected _wireCapabilityNames: string[] = []
   protected _peerRtt = new Map<string, number>()
 
@@ -116,7 +115,6 @@ export class RLPx {
     }
     this._discoveryLowWaterMark = lowWater
     this._minEthyPeers = options.minEthyPeers ?? 0
-    this._minStatyPeers = options.minStatyPeers ?? 0
 
     this.clientId =
       options.clientId ?? utf8ToBytes(`ethereumjs-devp2p/${os.platform()}-${os.arch()}/nodejs`)
@@ -432,8 +430,15 @@ export class RLPx {
     return peer.getProtocols().some((p) => p.constructor.name === 'ETHY')
   }
 
-  private _peerSpeaksStaty(peer: Peer): boolean {
-    return peer.getProtocols().some((p) => p.constructor.name === 'STATY')
+  private _ethyPeerBucketsMask(peer: Peer): number {
+    for (const protocol of peer.getProtocols()) {
+      if (protocol.constructor.name !== 'ETHY') continue
+      const ethy = protocol as ETHY
+      if (typeof ethy.peerStatus !== 'function') return 0
+      const remote = ethy.peerStatus()
+      if (remote !== null) return remote.bucketsBitmask
+    }
+    return 0
   }
 
   private _enforceEthyPeerReserve(incoming: Peer): void {
@@ -458,34 +463,6 @@ export class RLPx {
       }
     }
     if (existingEthyCount >= this._minEthyPeers) return
-    const victim =
-      nonHeadSnapCandidates[0] ??
-      (headSnapCandidates.length > 1 ? headSnapCandidates[0] : undefined)
-    victim?.disconnect(DISCONNECT_REASON.TOO_MANY_PEERS)
-  }
-
-  private _enforceStatyPeerReserve(incoming: Peer): void {
-    if (this._minStatyPeers <= 0) return
-    if (!this._peerSpeaksStaty(incoming)) return
-    if (this._connectedPeerCount() < this._maxPeers) return
-    let existingStatyCount = 0
-    const nonHeadSnapCandidates: Peer[] = []
-    const headSnapCandidates: Peer[] = []
-    for (const item of this._peers.values()) {
-      if (!(item instanceof Peer) || item === incoming) continue
-      if (this._peerSpeaksStaty(item)) {
-        existingStatyCount++
-      } else if (
-        item
-          .getProtocols()
-          .some((p) => p.constructor.name === 'ETH' || p.constructor.name === 'SNAP')
-      ) {
-        headSnapCandidates.push(item)
-      } else {
-        nonHeadSnapCandidates.push(item)
-      }
-    }
-    if (existingStatyCount >= this._minStatyPeers) return
     const victim =
       nonHeadSnapCandidates[0] ??
       (headSnapCandidates.length > 1 ? headSnapCandidates[0] : undefined)
@@ -570,7 +547,6 @@ export class RLPx {
         if (rttMs !== undefined) this._peerRtt.set(peerKey, rttMs)
       })
       this._enforceEthyPeerReserve(peer)
-      this._enforceStatyPeerReserve(peer)
       this.events.emit('peer:added', peer)
       this._syncDiscoveryThrottle()
       this._trimSurplusPeers()
@@ -671,12 +647,8 @@ export class RLPx {
     if (profile.minEthyPeers !== undefined) {
       this._minEthyPeers = profile.minEthyPeers
     }
-    if (profile.minStatyPeers !== undefined) {
-      this._minStatyPeers = profile.minStatyPeers
-    }
     this._profileDiscoveryMode = profile.discoveryMode
     this._preferEthyDiscovery = profile.preferEthyDiscovery === true
-    this._preferStatyDiscovery = profile.preferStatyDiscovery === true
     if (this._dpt !== null) {
       if (profile.discoveryMode === 'off' || profile.discoveryMode === 'quiet') {
         this._dpt.setDiscoveryMode(profile.discoveryMode)
@@ -686,7 +658,6 @@ export class RLPx {
         this._dpt.setDiscoveryMode('active')
       }
       this._dpt.setEthyDiscoveryTag(profile.ethyDiscoveryTag)
-      this._dpt.setStatyDiscoveryTag(profile.statyDiscoveryTag === true)
     }
     this._discoveryMetrics?.setNetworkProfile(profile)
     this._trimSurplusPeers()
@@ -713,7 +684,6 @@ export class RLPx {
     if (surplus <= 0) return
 
     let ethyCount = connected.filter((p) => this._peerSpeaksEthy(p)).length
-    let statyCount = connected.filter((p) => this._peerSpeaksStaty(p)).length
     let ethHeadCount = connected.filter(
       (p) => this._peerSpeaksEth(p) || this._peerSpeaksSnap(p),
     ).length
@@ -725,6 +695,7 @@ export class RLPx {
       let s = rtt
       if (!snapWanted && this._peerSpeaksSnap(p)) s += 10_000
       if (!this._peerSpeaksEthy(p)) s += 1000
+      if (this._peerSpeaksEthy(p) && this._ethyPeerBucketsMask(p) === 0) s += 5000
       return s
     }
 
@@ -732,15 +703,12 @@ export class RLPx {
     for (const peer of victims) {
       if (surplus <= 0) break
       const isEthy = this._peerSpeaksEthy(peer)
-      const isStaty = this._peerSpeaksStaty(peer)
       const isEthHead = this._peerSpeaksEth(peer) || this._peerSpeaksSnap(peer)
       if (isEthy && ethyCount <= this._minEthyPeers) continue
-      if (isStaty && statyCount <= this._minStatyPeers) continue
       if (isEthHead && ethHeadCount <= 1) continue
       peer.disconnect(DISCONNECT_REASON.TOO_MANY_PEERS)
       surplus--
       if (isEthy) ethyCount--
-      if (isStaty) statyCount--
       if (isEthHead) ethHeadCount--
     }
   }
@@ -761,13 +729,10 @@ export class RLPx {
 
   _refillConnections() {
     if (!this._isAlive()) return
-    if ((this._preferStatyDiscovery || this._preferEthyDiscovery) && this._peersQueue.length > 1) {
+    if (this._preferEthyDiscovery && this._peersQueue.length > 1) {
       this._peersQueue.sort((a, b) => {
-        const ast = this._preferStatyDiscovery && a.peer.statyCapable === true ? 0 : 1
-        const bst = this._preferStatyDiscovery && b.peer.statyCapable === true ? 0 : 1
-        if (ast !== bst) return ast - bst
-        const ae = this._preferEthyDiscovery && a.peer.ethyCapable === true ? 0 : 1
-        const be = this._preferEthyDiscovery && b.peer.ethyCapable === true ? 0 : 1
+        const ae = a.peer.ethyCapable === true ? 0 : 1
+        const be = b.peer.ethyCapable === true ? 0 : 1
         return ae - be
       })
     }

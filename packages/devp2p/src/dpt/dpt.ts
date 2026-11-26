@@ -161,7 +161,6 @@ export class DPT {
       common: options.common,
       discoveryMetrics: options.discoveryMetrics,
       ethyDiscoveryTag: options.ethyDiscoveryTag,
-      statyDiscoveryTag: options.statyDiscoveryTag,
     })
     this._server.events.once('listening', () => {
       this._server.syncEndpointFromSocket(options.endpoint?.tcpPort ?? 0)
@@ -225,10 +224,6 @@ export class DPT {
 
   setEthyDiscoveryTag(enabled: boolean): void {
     this._server.setEthyDiscoveryTag(enabled)
-  }
-
-  setStatyDiscoveryTag(enabled: boolean): void {
-    this._server.setStatyDiscoveryTag(enabled)
   }
 
   _onKBucketPing(oldPeers: PeerInfo[], newPeer: PeerInfo): void {

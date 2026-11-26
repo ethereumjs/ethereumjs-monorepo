@@ -94,10 +94,6 @@ export function peerFieldsFromEnrPairs(obj: Record<string, unknown>): PeerInfo {
     peerInfo.ethyCapable = true
   }
 
-  if (obj.staty !== undefined) {
-    peerInfo.statyCapable = true
-  }
-
   return peerInfo
 }
 
@@ -117,15 +113,6 @@ export function ethyCapableFromDiscv4Record(record: Uint8Array[]): boolean {
   for (let i = 2; i + 1 < record.length; i += 2) {
     const key = new TextDecoder().decode(record[i]!)
     if (key === 'ethy') return true
-  }
-  return false
-}
-
-/** True when discv4 ENR record lists a `staty` key. */
-export function statyCapableFromDiscv4Record(record: Uint8Array[]): boolean {
-  for (let i = 2; i + 1 < record.length; i += 2) {
-    const key = new TextDecoder().decode(record[i]!)
-    if (key === 'staty') return true
   }
   return false
 }

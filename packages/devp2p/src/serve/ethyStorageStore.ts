@@ -83,19 +83,30 @@ export class EthyStorageStore {
     const rowCount = Math.floor(rec.slotsSlab64B.length / 64)
     if (rowCount === 0) return undefined
 
+    const firstSlot = slotHashAt(rec.slotsSlab64B, 0)
+    const lastSlot = slotHashAt(rec.slotsSlab64B, rowCount - 1)
+    const target = originSlotHash
+    const zeroTarget = target.every((b) => b === 0)
+
     let startIdx = 0
-    const zeroOrigin = originSlotHash.every((b) => b === 0)
-    if (!zeroOrigin) {
-      let found = false
-      for (let i = 0; i < rowCount; i++) {
-        const h = slotHashAt(rec.slotsSlab64B, i)
-        if (compareHash(h, originSlotHash) >= 0) {
-          startIdx = i
-          found = true
-          break
+    if (!zeroTarget) {
+      if (compareHash(target, firstSlot) < 0) {
+        startIdx = 0
+      } else if (compareHash(target, lastSlot) > 0) {
+        if (rec.complete) return undefined
+        startIdx = rowCount - 1
+      } else {
+        let found = false
+        for (let i = 0; i < rowCount; i++) {
+          const h = slotHashAt(rec.slotsSlab64B, i)
+          if (compareHash(h, target) >= 0) {
+            startIdx = i
+            found = true
+            break
+          }
         }
+        if (!found) return undefined
       }
-      if (!found) return undefined
     }
 
     let endIdx = startIdx

@@ -4,11 +4,7 @@ import debugDefault from 'debug'
 import { EventEmitter } from 'eventemitter3'
 import { LRUCache } from 'lru-cache'
 
-import {
-  ethForkIdFromDiscv4Record,
-  ethyCapableFromDiscv4Record,
-  statyCapableFromDiscv4Record,
-} from '../dns/enrPeerFields.ts'
+import { ethForkIdFromDiscv4Record, ethyCapableFromDiscv4Record } from '../dns/enrPeerFields.ts'
 import { createDeferred, devp2pDebug, formatLogId, pickAdvertisedIPv4, pk2id } from '../util.ts'
 import { discv4ENRList, tcpPortFromDiscv4Enr } from './discv4Enr.ts'
 import { discv4ExpirationValid } from './packetExpiry.ts'
@@ -40,7 +36,6 @@ export class Server {
   protected _common?: Common
   protected _discoveryMetrics: import('../discovery/metrics.ts').DiscoveryMetrics | undefined
   protected _ethyDiscoveryTag: boolean
-  protected _statyDiscoveryTag: boolean
 
   private DEBUG: boolean
 
@@ -73,17 +68,12 @@ export class Server {
     this._common = options.common
     this._discoveryMetrics = options.discoveryMetrics
     this._ethyDiscoveryTag = options.ethyDiscoveryTag === true
-    this._statyDiscoveryTag = options.statyDiscoveryTag === true
 
     this.DEBUG = globalThis.process?.env?.DEBUG?.includes('ethjs') ?? false
   }
 
   setEthyDiscoveryTag(enabled: boolean): void {
     this._ethyDiscoveryTag = enabled
-  }
-
-  setStatyDiscoveryTag(enabled: boolean): void {
-    this._statyDiscoveryTag = enabled
   }
 
   syncEndpointFromSocket(tcpListenPort: number): PeerInfo {
@@ -323,10 +313,7 @@ export class Server {
               udpPort,
               tcpPort: this._endpoint.tcpPort ?? udpPort,
             },
-            {
-              includeEthyTag: this._ethyDiscoveryTag,
-              includeStatyTag: this._statyDiscoveryTag,
-            },
+            { includeEthyTag: this._ethyDiscoveryTag },
           ),
         })
         break
@@ -347,7 +334,6 @@ export class Server {
         }
         const tcp = tcpPortFromDiscv4Enr(record)
         const ethyCapable = ethyCapableFromDiscv4Record(record)
-        const statyCapable = statyCapableFromDiscv4Record(record)
         if (tcp !== undefined) {
           const verifiedPeer: PeerInfo = {
             id: peerId,
@@ -356,7 +342,6 @@ export class Server {
             tcpPort: tcp,
             ethForkId,
             ...(ethyCapable ? { ethyCapable: true } : {}),
-            ...(statyCapable ? { statyCapable: true } : {}),
           }
           this._dpt.updatePeerEndpoint(peerId, verifiedPeer)
           if (this._common !== undefined) {

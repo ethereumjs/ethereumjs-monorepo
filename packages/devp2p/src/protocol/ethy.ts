@@ -9,27 +9,36 @@ import { assertSameGenesis, assertSameNetworkId } from './statusAssert.ts'
 import {
   type EthyLocalStatusFields,
   type EthyPeerStatus,
+  MAX_ETHY_MESSAGE_BYTES,
+  MAX_ETHY_PROOF_NODES,
+  countProofNodesInEthyMessage,
   encodeEthyStatus,
   parseEthyStatus,
 } from './ethy/codec.ts'
 import { EthyMessageCodeNames, EthyMessageCodes } from './ethy/codes.ts'
 import { Protocol } from './protocol.ts'
 
-import type { Input } from '@ethereumjs/rlp'
+import type { Input, NestedUint8Array } from '@ethereumjs/rlp'
 import type { Peer } from '../rlpx/peer.ts'
 import type { SendMethod } from '../types.ts'
 
 export { EthyMessageCodeNames, EthyMessageCodes } from './ethy/codes.ts'
 export {
+  MAX_ETHY_MESSAGE_BYTES,
+  MAX_ETHY_PROOF_NODES,
+  MAX_ETHY_RESPONSE_BYTES,
+  MAX_WITNESS_ACCOUNTS,
+  MAX_WITNESS_SLOTS,
   encodeEthyStatus,
   parseEthyStatus,
   type EthyLocalStatusFields,
   type EthyPeerStatus,
+  countProofNodesInEthyMessage,
   ethyMessageNameToCode,
   ethyStatusFromGenesisHex,
 } from './ethy/codec.ts'
 
-/** ETHY/0 self-proving flat-state swarm subprotocol over RLPx. */
+/** ETHY/0 unified custody state subprotocol over RLPx. */
 export class ETHY extends Protocol {
   private DEBUG: boolean
   private _localFields: EthyLocalStatusFields | null = null
@@ -41,7 +50,7 @@ export class ETHY extends Protocol {
     this.DEBUG = globalThis.process?.env?.DEBUG?.includes('ethjs') ?? false
   }
 
-  static ethy0 = { name: 'ethy', version: 0, length: 11, constructor: ETHY }
+  static ethy0 = { name: 'ethy', version: 0, length: 15, constructor: ETHY }
 
   peerStatus(): EthyPeerStatus | null {
     return this._peerStatus
@@ -70,6 +79,10 @@ export class ETHY extends Protocol {
       )
     }
     let encoded = RLP.encode(payload)
+    if (encoded.byteLength > MAX_ETHY_MESSAGE_BYTES) {
+      this._peer.disconnect(DISCONNECT_REASON.SUBPROTOCOL_ERROR)
+      throw EthereumJSErrorWithoutCode('ETHY STATUS: payload exceeds max size')
+    }
     if (this._peer['_hello'] !== null && this._peer['_hello'].protocolVersion >= 5) {
       encoded = snappy.compress(encoded)
     }
@@ -77,7 +90,21 @@ export class ETHY extends Protocol {
   }
 
   _handleMessage(code: number, data: Uint8Array) {
-    const payload = RLP.decode(data)
+    if (data.byteLength > MAX_ETHY_MESSAGE_BYTES) {
+      this._peer.disconnect(DISCONNECT_REASON.SUBPROTOCOL_ERROR)
+      return
+    }
+    let payload: NestedUint8Array | Uint8Array
+    try {
+      payload = RLP.decode(data)
+    } catch {
+      this._peer.disconnect(DISCONNECT_REASON.SUBPROTOCOL_ERROR)
+      return
+    }
+    if (countProofNodesInEthyMessage(code as EthyMessageCodes, payload) > MAX_ETHY_PROOF_NODES) {
+      this._peer.disconnect(DISCONNECT_REASON.SUBPROTOCOL_ERROR)
+      return
+    }
 
     if (this.DEBUG && code !== EthyMessageCodes.STATUS) {
       this.debug(
@@ -160,11 +187,18 @@ export class ETHY extends Protocol {
       case EthyMessageCodes.BAL_RANGE:
       case EthyMessageCodes.GET_ETHY_PEERS:
       case EthyMessageCodes.ETHY_PEERS:
+      case EthyMessageCodes.GET_STATE_WITNESS:
+      case EthyMessageCodes.STATE_WITNESS:
+      case EthyMessageCodes.GET_SUBTREE_ROOTS:
+      case EthyMessageCodes.SUBTREE_ROOTS:
         break
       default:
         throw EthereumJSErrorWithoutCode(`Unknown ETHY code ${code}`)
     }
     let encoded = RLP.encode(payload)
+    if (encoded.byteLength > MAX_ETHY_MESSAGE_BYTES) {
+      throw EthereumJSErrorWithoutCode('ETHY message exceeds max size')
+    }
     if (this._peer['_hello'] !== null && this._peer['_hello'].protocolVersion >= 5) {
       encoded = snappy.compress(encoded)
     }

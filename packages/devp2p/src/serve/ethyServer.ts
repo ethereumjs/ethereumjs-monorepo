@@ -6,10 +6,13 @@ import {
   intToUnpaddedBytes,
 } from '@ethereumjs/util'
 
+import { MAX_ETHY_RESPONSE_BYTES } from '../protocol/ethy/codec.ts'
 import { EthyMessageCodes } from '../protocol/ethy/codes.ts'
 import { type EthyKnownPeerRow, selectEthyPexPeers } from '../worker/ethyPex.ts'
 import type { EthyChunkStore } from './ethyChunkStore.ts'
 import type { EthyStorageStore } from './ethyStorageStore.ts'
+import type { EthySubtreeRootBook } from './ethySubtreeRootBook.ts'
+import type { EthyWitnessQuery, EthyWitnessStore } from './ethyWitnessStore.ts'
 import type { RollingBlockStore } from './rollingBlockStore.ts'
 import { SERVE_SOFT_RESPONSE_BYTES } from './serveGovernor.ts'
 import type { SharedCodeDisk } from './sharedCodeDisk.ts'
@@ -18,7 +21,36 @@ export type EthyServedReply = {
   code: EthyMessageCodes
   rlp: unknown[]
   bytesEstimate: number
-  metric: 'chunk' | 'bal' | 'pex' | 'storage' | 'code' | 'none'
+  metric: 'chunk' | 'bal' | 'pex' | 'storage' | 'code' | 'witness' | 'none'
+}
+
+export type EthyWitnessServeThrottle = {
+  windowStartMs: number
+  count: number
+}
+
+const NON_CUSTODIAN_WITNESS_LIMIT = 2
+const NON_CUSTODIAN_WITNESS_WINDOW_MS = 10_000
+
+function allowWitnessServe(
+  remoteBucketsBitmask: number,
+  throttle: EthyWitnessServeThrottle,
+): boolean {
+  if (remoteBucketsBitmask !== 0) return true
+  const now = Date.now()
+  if (now - throttle.windowStartMs > NON_CUSTODIAN_WITNESS_WINDOW_MS) {
+    throttle.windowStartMs = now
+    throttle.count = 0
+  }
+  if (throttle.count >= NON_CUSTODIAN_WITNESS_LIMIT) return false
+  throttle.count++
+  return true
+}
+
+function safeBigInt(raw: unknown): bigint | undefined {
+  if (!(raw instanceof Uint8Array)) return undefined
+  if (raw.length === 0) return 0n
+  return bytesToBigInt(raw)
 }
 
 function reqIdFromPayload(decoded: unknown): bigint {
@@ -52,6 +84,13 @@ function clampBudget(raw: unknown): number {
   return Math.min(n, SERVE_SOFT_RESPONSE_BYTES)
 }
 
+export type TryServeEthyGetOptions = {
+  witnessStore: EthyWitnessStore
+  subtreeBook: EthySubtreeRootBook
+  remoteBucketsBitmask: number
+  witnessThrottle: EthyWitnessServeThrottle
+}
+
 export function tryServeEthyGet(
   chunks: EthyChunkStore,
   blocks: RollingBlockStore,
@@ -62,6 +101,7 @@ export function tryServeEthyGet(
   decoded: unknown,
   codeDisk: SharedCodeDisk,
   storageStore: EthyStorageStore,
+  opts: TryServeEthyGetOptions,
 ): EthyServedReply | undefined {
   const reqId = reqIdFromPayload(decoded)
   const reqIdB = bigIntToUnpaddedBytes(reqId)
@@ -87,7 +127,7 @@ export function tryServeEthyGet(
     if (!Array.isArray(decoded) || decoded.length < 3) return undefined
     const bucketIndex = bytesToInt(decoded[1] as Uint8Array)
     const originHash = decoded[2] as Uint8Array
-    const rec = chunks.get(bucketIndex, originHash)
+    const rec = chunks.getAccountChunk(bucketIndex, originHash)
     if (rec === undefined) {
       return {
         code: EthyMessageCodes.PROVEN_ACCOUNT_CHUNK,
@@ -260,6 +300,7 @@ export function tryServeEthyGet(
   if (msgName === 'GET_ETHY_PEERS') {
     const req = decoded as unknown[]
     const maxPeers = clampCount(req[1], 1, 32)
+    const desiredBucketsMask = req.length > 2 ? (safeInt(req[2]) ?? 0) : 0
     const now = Math.floor(Date.now() / 1000)
     const excludeHex = excludePeerId !== undefined ? bytesToUnprefixedHex(excludePeerId) : undefined
     const localHex = bytesToUnprefixedHex(localNodeId)
@@ -269,7 +310,7 @@ export function tryServeEthyGet(
       if (excludeHex !== undefined && idHex === excludeHex) return false
       return true
     })
-    const selected = selectEthyPexPeers(candidates, maxPeers)
+    const selected = selectEthyPexPeers(candidates, maxPeers, desiredBucketsMask)
     const rows: unknown[] = []
     for (const p of selected) {
       rows.push([
@@ -280,6 +321,7 @@ export function tryServeEthyGet(
         bigIntToUnpaddedBytes(p.basePivotBlock),
         intToUnpaddedBytes(p.bucketsBitmask),
         intToUnpaddedBytes(Math.max(0, now - p.lastSeenSec)),
+        intToUnpaddedBytes(p.trieBucketsBitmask),
       ])
     }
     return {
@@ -287,6 +329,71 @@ export function tryServeEthyGet(
       rlp: [reqIdB, rows],
       bytesEstimate: rows.length * 128,
       metric: 'pex',
+    }
+  }
+
+  if (msgName === 'GET_STATE_WITNESS') {
+    if (!Array.isArray(decoded) || decoded.length < 4) return undefined
+    if (!allowWitnessServe(opts.remoteBucketsBitmask, opts.witnessThrottle)) {
+      return {
+        code: EthyMessageCodes.STATE_WITNESS,
+        rlp: [reqIdB, []],
+        bytesEstimate: 32,
+        metric: 'none',
+      }
+    }
+    const minAnchor = safeBigInt(decoded[1])
+    if (minAnchor === undefined) return undefined
+    const budget = Math.min(clampBudget(decoded[2]), MAX_ETHY_RESPONSE_BYTES)
+    const rawQueries = decoded[3]
+    if (!Array.isArray(rawQueries)) return undefined
+    const queries: EthyWitnessQuery[] = []
+    for (const q of rawQueries.slice(0, 64)) {
+      if (!Array.isArray(q) || q.length < 2) continue
+      if (!(q[0] instanceof Uint8Array) || q[0].length !== 32) continue
+      const slotHashes = Array.isArray(q[1])
+        ? q[1].filter((h): h is Uint8Array => h instanceof Uint8Array && h.length === 32)
+        : []
+      queries.push({ accountHash: q[0], slotHashes })
+    }
+    const groups = opts.witnessStore.resolveWitnesses(minAnchor, budget, queries)
+    let actualBytes = 0
+    const wireGroups = groups.map((g) => {
+      actualBytes += 40
+      for (const a of g.accounts) actualBytes += 32 + a.accountRlpOrEmpty.length
+      for (const s of g.slots) actualBytes += 64 + s.slotValOrEmpty.length
+      for (const p of g.proofNodes) actualBytes += p.length
+      return [
+        bigIntToUnpaddedBytes(g.anchorBlock),
+        g.anchorStateRoot,
+        g.accounts.map((a) => [a.accountHash, a.accountRlpOrEmpty]),
+        g.slots.map((s) => [s.accountHash, s.slotHash, s.slotValOrEmpty]),
+        g.proofNodes,
+      ]
+    })
+    return {
+      code: EthyMessageCodes.STATE_WITNESS,
+      rlp: [reqIdB, wireGroups],
+      bytesEstimate: wireGroups.length > 0 ? actualBytes : 32,
+      metric: wireGroups.length > 0 ? 'witness' : 'none',
+    }
+  }
+
+  if (msgName === 'GET_SUBTREE_ROOTS') {
+    if (!Array.isArray(decoded) || decoded.length < 3) return undefined
+    const anchorBlock = safeBigInt(decoded[1])
+    if (anchorBlock === undefined) return undefined
+    const mask = safeInt(decoded[2]) ?? 0
+    const entries = opts.subtreeBook.lookup(anchorBlock, mask)
+    const wire = entries.map((e) => [
+      intToUnpaddedBytes(e.bucketIndex),
+      e.subtreeRootHash.length === 32 ? e.subtreeRootHash : new Uint8Array(0),
+    ])
+    return {
+      code: EthyMessageCodes.SUBTREE_ROOTS,
+      rlp: [reqIdB, bigIntToUnpaddedBytes(anchorBlock), wire],
+      bytesEstimate: wire.length * 40,
+      metric: 'none',
     }
   }
 

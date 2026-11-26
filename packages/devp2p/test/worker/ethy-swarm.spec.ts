@@ -242,6 +242,7 @@ describe('[DevP2P/Worker]: ETHY/0 swarm', () => {
       },
       workerModuleUrl,
     )
+    nodeA.setEthyStatus({ bucketsBitmask: '0xffff', trieBucketsBitmask: '0xff' })
 
     const nodeB = await createThreadedNetwork(
       {
@@ -259,6 +260,7 @@ describe('[DevP2P/Worker]: ETHY/0 swarm', () => {
       },
       workerModuleUrl,
     )
+    nodeB.setEthyStatus({ bucketsBitmask: '0xffff', trieBucketsBitmask: '0xff' })
 
     nodeA.connectPeer({ id: idB, address: '127.0.0.1', tcpPort: BASE + 1, udpPort: BASE + 1 })
     await waitTelemetry(nodeA, (s) => s.peers.some((p) => p.ethySession === true))

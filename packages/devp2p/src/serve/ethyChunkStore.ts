@@ -52,6 +52,14 @@ function chunkKey(bucketIndex: number, originHash: Uint8Array): string {
   return `${bucketIndex}:${bytesToUnprefixedHex(originHash)}`
 }
 
+const compareHash32 = (a: Uint8Array, b: Uint8Array): number => {
+  for (let i = 0; i < 32; i++) {
+    if (a[i]! < b[i]!) return -1
+    if (a[i]! > b[i]!) return 1
+  }
+  return 0
+}
+
 function bucketSidecarSignature(accountsDir: string, bucketIndex: number): string {
   const paths = listProofSidecarsForBucket(accountsDir, bucketIndex)
   if (paths.length === 0) return ''
@@ -318,6 +326,32 @@ export class EthyChunkStore {
     const mem = this._byKey.get(chunkKey(bucketIndex, originHash))
     if (mem !== undefined) return mem
     return this.getFromDisk(bucketIndex, originHash)
+  }
+
+  /** Targeted single-key lookup (exact origin or covering range). */
+  getAccountChunk(bucketIndex: number, targetHash: Uint8Array): EthyAccountChunkRecord | undefined {
+    if (targetHash.length !== 32 || bucketIndex < 0 || bucketIndex > 15) return undefined
+    const exact = this.get(bucketIndex, targetHash)
+    if (exact !== undefined) return exact
+    const manifest = this.manifestForBucket(bucketIndex)
+    if (manifest.length === 0) return undefined
+    const first = manifest[0]!
+    if (compareHash32(targetHash, first.originHash) < 0) {
+      return this.get(bucketIndex, first.originHash)
+    }
+    const last = manifest[manifest.length - 1]!
+    if (compareHash32(targetHash, last.lastHash) > 0 && last.hasRight === 0) {
+      return this.get(bucketIndex, last.originHash)
+    }
+    for (const entry of manifest) {
+      if (
+        compareHash32(entry.originHash, targetHash) <= 0 &&
+        compareHash32(targetHash, entry.lastHash) <= 0
+      ) {
+        return this.get(bucketIndex, entry.originHash)
+      }
+    }
+    return undefined
   }
 
   manifestForBucket(bucketIndex: number): EthyChunkManifestEntry[] {
