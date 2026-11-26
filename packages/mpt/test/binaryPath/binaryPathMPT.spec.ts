@@ -399,7 +399,16 @@ describe('BinaryPathMPT', () => {
     }
 
     trie.captureAnchor('wl-1')
-    await trie.put(rows[10]!.key, randomBytes(20))
+    const overwritten = randomBytes(20)
+    await trie.put(rows[10]!.key, overwritten)
+    await trie.del(rows[20]!.key)
+
+    // Historical get(key, anchorId) recovers pre-mutation & pre-delete values
+    expect(await trie.get(rows[10]!.key)).toEqual(overwritten)
+    expect(await trie.get(rows[10]!.key, 'wl-1')).toEqual(rows[10]!.value)
+    expect(await trie.get(rows[20]!.key)).toBeNull()
+    expect(await trie.get(rows[20]!.key, 'wl-1')).toEqual(rows[20]!.value)
+
     const anchorWalk: { key: Uint8Array; value: Uint8Array }[] = []
     for await (const row of trie.walkLeaves('wl-1')) {
       anchorWalk.push(row)

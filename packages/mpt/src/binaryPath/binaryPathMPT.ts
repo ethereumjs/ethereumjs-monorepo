@@ -357,9 +357,9 @@ export class BinaryPathMPT {
     return new Uint8Array(this._root)
   }
 
-  async get(key: Uint8Array): Promise<Uint8Array | null> {
+  async get(key: Uint8Array, anchorId?: string | bigint): Promise<Uint8Array | null> {
     this._assertKeyMatchesPrefix(key)
-    const rootBytes = await this._store.getNode(ROOT_PATH_KEY)
+    const rootBytes = await this._readRecordAt(ROOT_PATH_KEY, anchorId)
     if (rootBytes === null) return null
 
     let path: Uint8Array = new Uint8Array(0)
@@ -384,7 +384,7 @@ export class BinaryPathMPT {
         if (current.child.inline) {
           current = decodeRlpToBinaryNode(current.child.rlp)
         } else {
-          const nextBytes = await this._store.getNode(packPath(path))
+          const nextBytes = await this._readRecordAt(packPath(path), anchorId)
           if (nextBytes === null) return null
           current = await this._materializeRecord(path, nextBytes)
         }
@@ -402,7 +402,7 @@ export class BinaryPathMPT {
       if (childRef.inline) {
         current = decodeRlpToBinaryNode(childRef.rlp)
       } else {
-        const nextBytes = await this._store.getNode(packPath(path))
+        const nextBytes = await this._readRecordAt(packPath(path), anchorId)
         if (nextBytes === null) return null
         current = await this._materializeRecord(path, nextBytes)
       }
@@ -980,50 +980,8 @@ export class BinaryPathMPT {
   ): AsyncGenerator<{ key: Uint8Array; value: Uint8Array }> {
     const rootBytes = await this._readRecordAt(ROOT_PATH_KEY, anchorId)
     if (rootBytes === null) return
-    yield* this._walkLeavesDfs(new Uint8Array(0), rootBytes, anchorId)
-  }
-
-  private async *_walkLeavesDfs(
-    pathNibbles: Uint8Array,
-    recordBytes: Uint8Array,
-    anchorId?: string | bigint,
-  ): AsyncGenerator<{ key: Uint8Array; value: Uint8Array }> {
-    const node = await this._materializeRecord(pathNibbles, recordBytes)
-    if (node.kind === 'leaf') {
-      const fullNibbles = concatNibbles(concatNibbles(this._prefix, pathNibbles), node.path)
-      const key = nibblesToKeyBytes(fullNibbles)
-      this._assertKeyMatchesPrefix(key)
-      yield { key, value: new Uint8Array(node.value) }
-      return
-    }
-    if (node.kind === 'extension') {
-      const nextPath = concatNibbles(pathNibbles, node.path)
-      if (node.child.inline) {
-        const childNode = decodeRlpToBinaryNode(node.child.rlp)
-        yield* this._walkLeavesFromNode(nextPath, childNode, anchorId)
-      } else {
-        const childBytes = await this._readRecordAt(packPath(nextPath), anchorId)
-        if (childBytes !== null) {
-          yield* this._walkLeavesDfs(nextPath, childBytes, anchorId)
-        }
-      }
-      return
-    }
-    // Branch
-    for (let nibble = 0; nibble < 16; nibble++) {
-      const childRef = node.children[nibble]
-      if (childRef === null || childRef === undefined) continue
-      const childPath = appendNibble(pathNibbles, nibble)
-      if (childRef.inline) {
-        const childNode = decodeRlpToBinaryNode(childRef.rlp)
-        yield* this._walkLeavesFromNode(childPath, childNode, anchorId)
-      } else {
-        const childBytes = await this._readRecordAt(packPath(childPath), anchorId)
-        if (childBytes !== null) {
-          yield* this._walkLeavesDfs(childPath, childBytes, anchorId)
-        }
-      }
-    }
+    const rootNode = await this._materializeRecord(new Uint8Array(0), rootBytes)
+    yield* this._walkLeavesFromNode(new Uint8Array(0), rootNode, anchorId)
   }
 
   private async *_walkLeavesFromNode(
@@ -1045,10 +1003,17 @@ export class BinaryPathMPT {
       } else {
         const childBytes = await this._readRecordAt(packPath(nextPath), anchorId)
         if (childBytes !== null) {
-          yield* this._walkLeavesDfs(nextPath, childBytes, anchorId)
+          const childNode = await this._materializeRecord(nextPath, childBytes)
+          yield* this._walkLeavesFromNode(nextPath, childNode, anchorId)
         }
       }
       return
+    }
+    if (node.value.length > 0) {
+      const fullNibbles = concatNibbles(this._prefix, pathNibbles)
+      const key = nibblesToKeyBytes(fullNibbles)
+      this._assertKeyMatchesPrefix(key)
+      yield { key, value: new Uint8Array(node.value) }
     }
     for (let nibble = 0; nibble < 16; nibble++) {
       const childRef = node.children[nibble]
@@ -1059,7 +1024,8 @@ export class BinaryPathMPT {
       } else {
         const childBytes = await this._readRecordAt(packPath(childPath), anchorId)
         if (childBytes !== null) {
-          yield* this._walkLeavesDfs(childPath, childBytes, anchorId)
+          const childNode = await this._materializeRecord(childPath, childBytes)
+          yield* this._walkLeavesFromNode(childPath, childNode, anchorId)
         }
       }
     }
