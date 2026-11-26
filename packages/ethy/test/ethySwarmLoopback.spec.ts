@@ -9,7 +9,11 @@ import {
   EthyChunkStore,
   EthyMessageCodeNames,
   EthyMessageCodes,
+  EthyStorageStore,
+  EthySubtreeRootBook,
+  EthyWitnessStore,
   RollingBlockStore,
+  SharedCodeDisk,
   createThreadedNetwork,
   genPrivateKey,
   pk2id,
@@ -113,6 +117,14 @@ describe('[Ethy/Net]: ETHY/0 swarm loopback', () => {
         peer,
         name,
         RLP.decode(msg.payload),
+        new SharedCodeDisk(),
+        new EthyStorageStore(),
+        {
+          witnessStore: new EthyWitnessStore(),
+          subtreeBook: new EthySubtreeRootBook(),
+          remoteBucketsBitmask: 0xffff,
+          witnessThrottle: { windowStartMs: 0, count: 0 },
+        },
       )
       if (served === undefined) return
       seeder.sendEthyMessage(peer, served.code, RLP.encode(served.rlp as never))
@@ -132,6 +144,7 @@ describe('[Ethy/Net]: ETHY/0 swarm loopback', () => {
         spine,
         stateManager: createFlatStateManager(),
         network: 'mainnet',
+        custodyFastOnboard: false,
         inProcess: true,
         fresh: true,
         snapStore,

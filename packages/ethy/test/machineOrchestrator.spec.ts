@@ -1,5 +1,6 @@
 import { assert, describe, it } from 'vitest'
 
+import { custodyBitmask } from '../src/custody/custodyCoverage.ts'
 import { createSpine, setPhase } from '../src/spine/createSpine.ts'
 import {
   DISCOVERY_PREWARM_BURST_MS,
@@ -9,6 +10,7 @@ import {
   createMachineState,
   evaluateMachinePlan,
   machinePlanesOff,
+  snapDormancyReason,
   stepMachineOrchestrator,
 } from '../src/sync/machineOrchestrator.ts'
 import type { MachineObservation } from '../src/sync/machineOrchestrator.ts'
@@ -38,19 +40,23 @@ function calmHeadFollowingObs(nowMs: number): MachineObservation {
 }
 
 describe('machineOrchestrator', () => {
-  it('cold boot-warmup with 0 peers stays in boot-warmup and keeps snap1 on (off for ethy mode)', () => {
+  it('cold boot-warmup omits snap1 unless --snap-bootstrap (ethy mode keeps snap off)', () => {
     const now = Date.now()
     const base: MachineObservation = {
       ...calmHeadFollowingObs(now),
       phase: 'P2P_WARMUP',
       healthyEthPeers: 0,
       bucketsMask: 0,
+      snapBootstrap: false,
     }
     const autoPlan = evaluateMachinePlan(base)
     assert.equal(autoPlan.mode, 'boot-warmup')
-    assert.equal(autoPlan.planes.snap, 'prewarming')
-    assert.include(autoPlan.profile.capabilities, 'snap1')
+    assert.equal(autoPlan.planes.snap, 'off')
+    assert.notInclude(autoPlan.profile.capabilities, 'snap1')
     assert.equal(autoPlan.servingEthy, 'off')
+
+    const bootstrapped = evaluateMachinePlan({ ...base, snapBootstrap: true })
+    assert.include(bootstrapped.profile.capabilities, 'snap1')
 
     const ethyOnlyPlan = evaluateMachinePlan({ ...base, syncMode: 'ethy' })
     assert.equal(ethyOnlyPlan.mode, 'boot-warmup')
@@ -117,6 +123,7 @@ describe('machineOrchestrator', () => {
     const obs: MachineObservation = {
       ...calmHeadFollowingObs(now),
       healthyEthPeers: 4,
+      snapBootstrap: true,
       shadowMode: 'waiting-election',
       electionDeadlineMs: now + SNAP_PREWARM_LEAD_MS - 5_000,
       electionSuppressed: false,
@@ -155,6 +162,89 @@ describe('machineOrchestrator', () => {
     const plan = evaluateMachinePlan(obs)
     assert.equal(plan.mode, 'live-calm')
     assert.equal(plan.nextEventSummary, 'BAL gap — low disk (15/24 GB)')
+  })
+
+  it('custody-live-calm omits snap1 and steers desiredEthyBucketsMask', () => {
+    const now = Date.now()
+    const spine = createSpine('sepolia', 11155111n)
+    setPhase(spine, 'HEAD_FOLLOWING')
+    spine.custodyBuckets = [0, 8]
+    spine.closedBucketsMask = custodyBitmask([0, 8])
+    spine.ethyBucketsBitmask = spine.closedBucketsMask
+    const obs = buildMachineObservation({
+      spine,
+      peerSnapshots: [
+        { id: 'a', clientId: 't', caps: ['eth71'], bestHash: '0x01', ethySession: false },
+      ],
+      syncMode: 'auto',
+      shadowRefreshEnabled: true,
+      nowMs: now,
+      snapDiscoveryHold: false,
+      ethySwarmActive: false,
+      degradedStall: false,
+      hasUsableEthyGNew: false,
+    })
+    const plan = evaluateMachinePlan(obs)
+    assert.equal(plan.mode, 'custody-live-calm')
+    assert.equal(plan.servingEthy, 'serving')
+    assert.equal(plan.planes.ethy, 'active')
+    assert.equal(plan.planes.snap, 'off')
+    assert.equal(plan.planes.cl, 'active')
+    assert.notInclude(plan.profile.capabilities, 'snap1')
+    assert.equal(plan.profile.desiredEthyBucketsMask, obs.desiredEthyBucketsMask)
+    assert.equal(snapDormancyReason(plan, obs), 'default-off')
+  })
+
+  it('full-backfill with snapBootstrap arms snap1 until 16/16 closed then drops snap1 permanently', () => {
+    const now = Date.now()
+    const spine = createSpine('sepolia', 11155111n)
+    setPhase(spine, 'HEAD_FOLLOWING')
+    spine.custodyBuckets = Array.from({ length: 16 }, (_, i) => i)
+    spine.closedBucketsMask = 0x00ff
+    spine.ethyBucketsBitmask = 0x00ff
+
+    const obsBackfill = buildMachineObservation({
+      spine,
+      peerSnapshots: [
+        { id: 'a', clientId: 't', caps: ['eth71'], bestHash: '0x01', ethySession: true },
+      ],
+      syncMode: 'auto',
+      snapBootstrap: true,
+      shadowRefreshEnabled: true,
+      nowMs: now,
+      snapDiscoveryHold: false,
+      ethySwarmActive: true,
+      degradedStall: false,
+      hasUsableEthyGNew: false,
+    })
+    const planBackfill = evaluateMachinePlan(obsBackfill)
+    assert.equal(planBackfill.mode, 'full-backfill')
+    assert.include(planBackfill.profile.capabilities, 'snap1')
+    assert.equal(planBackfill.planes.snap, 'active')
+    assert.equal(planBackfill.planes.cl, 'active')
+    assert.equal(snapDormancyReason(planBackfill, obsBackfill), 'bootstrap-active')
+
+    spine.closedBucketsMask = 0xffff
+    spine.ethyBucketsBitmask = 0xffff
+    const obsClosed = buildMachineObservation({
+      spine,
+      peerSnapshots: [
+        { id: 'a', clientId: 't', caps: ['eth71'], bestHash: '0x01', ethySession: true },
+      ],
+      syncMode: 'auto',
+      snapBootstrap: true,
+      shadowRefreshEnabled: true,
+      nowMs: now + 1000,
+      snapDiscoveryHold: false,
+      ethySwarmActive: false,
+      degradedStall: false,
+      hasUsableEthyGNew: false,
+    })
+    const planClosed = evaluateMachinePlan(obsClosed)
+    assert.equal(planClosed.mode, 'custody-live-calm')
+    assert.notInclude(planClosed.profile.capabilities, 'snap1')
+    assert.equal(planClosed.planes.snap, 'off')
+    assert.equal(snapDormancyReason(planClosed, obsClosed), 'dropped-after-close')
   })
 
   it('shows SNAP Mint (starting) before bucket 0 initializes', () => {

@@ -1,9 +1,21 @@
+import * as path from 'node:path'
+
 import type { Devp2pWorkerClient } from '@ethereumjs/devp2p'
 import { bytesToUnprefixedHex } from '@ethereumjs/util'
 
+import type { SubtreeCustodyRegistry } from '../custody/subtreeCustodyRegistry.ts'
+import { armLiveProofTransport } from '../custody/subtreeLiveServe.ts'
 import type { EthySpine } from '../spine/types.ts'
 
-export function refreshEthyWorkerAdvertisement(client: Devp2pWorkerClient, spine: EthySpine): void {
+export function refreshEthyWorkerAdvertisement(
+  client: Devp2pWorkerClient,
+  spine: EthySpine,
+  subtreeRegistry?: SubtreeCustodyRegistry,
+): void {
+  if (subtreeRegistry !== undefined) {
+    spine.ethyTrieBucketsBitmask = subtreeRegistry.trieBucketsBitmask()
+    armLiveProofTransport(client, subtreeRegistry)
+  }
   if (spine.pivotBlockNumber === undefined || spine.pivotStateRoot === undefined) return
   const mask = spine.ethyBucketsBitmask ?? 0
   const pivotStr = spine.pivotBlockNumber.toString()
@@ -27,8 +39,26 @@ export function refreshEthyWorkerAdvertisement(client: Devp2pWorkerClient, spine
     basePivotBlock: pivotStr,
     basePivotStateRoot: bytesToUnprefixedHex(spine.pivotStateRoot),
     bucketsBitmask: mask === 0 ? '0' : `0x${mask.toString(16)}`,
+    storageBucketsBitmask:
+      spine.ethyStorageBucketsBitmask !== undefined
+        ? spine.ethyStorageBucketsBitmask === 0
+          ? '0'
+          : `0x${spine.ethyStorageBucketsBitmask.toString(16)}`
+        : undefined,
+    codeBucketsBitmask:
+      spine.ethyCodeBucketsBitmask !== undefined
+        ? spine.ethyCodeBucketsBitmask === 0
+          ? '0'
+          : `0x${spine.ethyCodeBucketsBitmask.toString(16)}`
+        : undefined,
     balEarliestBlock: earliest,
     balLatestBlock: latest,
+    trieBucketsBitmask:
+      spine.ethyTrieBucketsBitmask !== undefined
+        ? spine.ethyTrieBucketsBitmask === 0
+          ? '0'
+          : `0x${spine.ethyTrieBucketsBitmask.toString(16)}`
+        : undefined,
   })
 }
 
@@ -57,4 +87,11 @@ export function syncEthyPivotServeDir(
   accountsDir: string | undefined,
 ): void {
   client.setEthyPivotAccountsDir(accountsDir)
+  if (typeof client.setEthyStorageDir === 'function') {
+    client.setEthyStorageDir(
+      accountsDir !== undefined
+        ? path.join(path.dirname(accountsDir), 'storage-chunks')
+        : undefined,
+    )
+  }
 }

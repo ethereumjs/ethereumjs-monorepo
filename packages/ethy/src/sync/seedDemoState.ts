@@ -19,6 +19,7 @@ export async function seedDemoEthyPivot(opts: {
   dataDir: string
   network: string
   chainId: bigint
+  pivotBlock?: bigint
 }): Promise<SeedDemoStateResult> {
   const peer = await SyntheticSnapPeer.create(1)
   const store = SnapPivotStore.open({
@@ -28,9 +29,9 @@ export async function seedDemoEthyPivot(opts: {
     genesisHash: networkGenesisHash(opts.network),
     enabled: true,
   })
-  const pivotBlock = 100n
+  const pivotBlock = opts.pivotBlock ?? 100n
   const pivotHash = new Uint8Array(32)
-  pivotHash[31] = 0x64
+  pivotHash[31] = Number(pivotBlock & 0xffn)
   store.activatePivot({
     blockNumber: pivotBlock,
     blockHash: pivotHash,

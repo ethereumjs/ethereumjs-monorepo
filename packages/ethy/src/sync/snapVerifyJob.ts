@@ -2,7 +2,7 @@ import { type HashKeysFunction, verifyMerkleRangeProof } from '@ethereumjs/mpt'
 
 import { RLP } from '@ethereumjs/rlp'
 import { SNAP_BINARY_ACCOUNT_SLAB_RECORD_SIZE } from '@ethereumjs/statemanager'
-import { binaryAccountToRLP, bytesToBigInt, equalsBytes } from '@ethereumjs/util'
+import { KECCAK256_RLP, binaryAccountToRLP, bytesToBigInt, equalsBytes } from '@ethereumjs/util'
 import { ethyKeccak256, initEthyKeccak } from '../crypto/keccak.ts'
 
 import {
@@ -149,6 +149,105 @@ export async function verifyAccountRangeJob(
       slab,
       rangeOrigin: originCopy,
       proofNodes: proofCopy,
+    }
+  } catch (err: unknown) {
+    return { ok: false, hasRight: false, count: 0, reason: errorText(err) }
+  }
+}
+
+const STORAGE_KIND1_SLAB_STRIDE = 64
+
+/** Verify a complete small-contract `kind=2` storage slab against `storageRoot`. */
+export async function verifyProvenStorageKind2Slab(
+  storageRoot: Uint8Array,
+  slotsSlab64B: Uint8Array,
+  useKeyHashingFunction: HashKeysFunction = ethyKeccak256,
+): Promise<{ ok: true } | { ok: false; reason: string }> {
+  await initEthyKeccak()
+  if (slotsSlab64B.length === 0) {
+    return equalsBytes(storageRoot, KECCAK256_RLP)
+      ? { ok: true }
+      : { ok: false, reason: 'non-empty root with empty slab' }
+  }
+  if (slotsSlab64B.length % STORAGE_KIND1_SLAB_STRIDE !== 0) {
+    return { ok: false, reason: 'invalid storage kind-2 slab length' }
+  }
+  const { MerklePatriciaTrie } = await import('@ethereumjs/mpt')
+  const trie = new MerklePatriciaTrie({ useKeyHashingFunction: useKeyHashingFunction })
+  const count = slotsSlab64B.length / STORAGE_KIND1_SLAB_STRIDE
+  try {
+    for (let i = 0; i < count; i++) {
+      const off = i * STORAGE_KIND1_SLAB_STRIDE
+      const slotHash = slotsSlab64B.subarray(off, off + 32)
+      const slotValue = slotsSlab64B.subarray(off + 32, off + STORAGE_KIND1_SLAB_STRIDE)
+      await trie.put(slotHash, RLP.encode(bytesToBigInt(slotValue)))
+    }
+    const rebuilt = trie.root()
+    return equalsBytes(rebuilt, storageRoot)
+      ? { ok: true }
+      : { ok: false, reason: 'storage kind-2 slab root mismatch' }
+  } catch (err: unknown) {
+    return { ok: false, reason: errorText(err) }
+  }
+}
+
+/** CPU-heavy ETHY/0 `GET_PROVEN_STORAGE_OR_CODE` kind=1 verify (safe off the main thread). */
+export async function verifyProvenStorageKind1Job(
+  opts: {
+    storageRoot: Uint8Array
+    originSlotHash: Uint8Array
+    slotsSlab64B: Uint8Array
+    proofNodes: Uint8Array[]
+    hasRightHint: boolean
+  },
+  useKeyHashingFunction: HashKeysFunction = ethyKeccak256,
+): Promise<ProvenChunkVerifyResult> {
+  await initEthyKeccak()
+  const slab = opts.slotsSlab64B
+  if (slab.length % STORAGE_KIND1_SLAB_STRIDE !== 0) {
+    return { ok: false, hasRight: false, count: 0, reason: 'invalid storage kind-1 slab length' }
+  }
+  const count = slab.length / STORAGE_KIND1_SLAB_STRIDE
+  if (count === 0) {
+    return {
+      ok: true,
+      hasRight: opts.hasRightHint,
+      count: 0,
+      lastKey: new Uint8Array(32),
+      slab: new Uint8Array(0),
+      rangeOrigin: new Uint8Array(opts.originSlotHash),
+    }
+  }
+  const keys: Uint8Array[] = []
+  const values: Uint8Array[] = []
+  for (let i = 0; i < count; i++) {
+    const off = i * STORAGE_KIND1_SLAB_STRIDE
+    const slotHash = slab.subarray(off, off + 32)
+    const slotValue = slab.subarray(off + 32, off + STORAGE_KIND1_SLAB_STRIDE)
+    keys.push(new Uint8Array(slotHash))
+    values.push(RLP.encode(bytesToBigInt(slotValue)))
+  }
+  if (compareBytes32(opts.originSlotHash, keys[0]!) > 0) {
+    return { ok: false, hasRight: false, count: 0, reason: 'storage chunk origin mismatch' }
+  }
+  const lastKey = keys[keys.length - 1]!
+  try {
+    const hasRight = await verifyMerkleRangeProof(
+      opts.storageRoot,
+      opts.originSlotHash,
+      lastKey,
+      keys,
+      values,
+      opts.proofNodes,
+      useKeyHashingFunction,
+    )
+    return {
+      ok: true,
+      hasRight: opts.hasRightHint || hasRight,
+      count,
+      lastKey: new Uint8Array(lastKey),
+      slab: new Uint8Array(slab),
+      rangeOrigin: new Uint8Array(opts.originSlotHash),
     }
   } catch (err: unknown) {
     return { ok: false, hasRight: false, count: 0, reason: errorText(err) }

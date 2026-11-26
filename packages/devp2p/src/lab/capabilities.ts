@@ -50,6 +50,7 @@ export function networkProfilesEqual(a: NetworkProfile, b: NetworkProfile): bool
     a.ethyDiscoveryTag !== b.ethyDiscoveryTag ||
     a.preferEthyDiscovery !== b.preferEthyDiscovery ||
     a.minEthyPeers !== b.minEthyPeers ||
+    a.desiredEthyBucketsMask !== b.desiredEthyBucketsMask ||
     a.maxInboundPeers !== b.maxInboundPeers ||
     a.discoveryLowWaterMark !== b.discoveryLowWaterMark ||
     a.capabilities.length !== b.capabilities.length

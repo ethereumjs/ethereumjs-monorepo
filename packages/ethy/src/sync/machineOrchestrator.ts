@@ -1,10 +1,17 @@
 import type { DiscoveryMode, NetworkProfile, WorkerPeerSnapshot } from '@ethereumjs/devp2p'
 
+import {
+  assignedBucketsClosed,
+  custodyBitmask,
+  custodyPeersFromSpine,
+  evaluateCustodyCoverage,
+} from '../custody/custodyCoverage.ts'
 import type {
   EthyPhase,
   EthySpine,
   MachinePlaneStatus,
   MachineSpineSnapshot,
+  SnapDormancyReason,
 } from '../spine/types.ts'
 import { HARD_PREFER_SNAP_AGE_BLOCKS, SOFT_REFRESH_AGE_BLOCKS } from './swarmGenerationPolicy.ts'
 import type { SyncMode } from './syncSourceSelector.ts'
@@ -20,6 +27,10 @@ export type MachineOperatingMode =
   | 'prewarm-snap-mint'
   | 'shadow-snap-mint'
   | 'degraded-recovery'
+  | 'custody-bal-warmup'
+  | 'custody-sync'
+  | 'custody-live-calm'
+  | 'full-backfill'
 
 export type PlaneId = 'eth' | 'ethy' | 'snap' | 'discovery' | 'cl'
 export type PlaneStatus = MachinePlaneStatus
@@ -44,6 +55,8 @@ export type MachineObservation = {
   phase: EthyPhase
   syncTransport: 'unset' | 'snap' | 'ethy'
   syncMode: SyncMode
+  /** Mount dial `snap/1` when the reconciler would prewarm snap (WP-16d). */
+  snapBootstrap: boolean
   shadowRefreshEnabled: boolean
   clDisabled: boolean
   healthyEthPeers: number
@@ -65,6 +78,17 @@ export type MachineObservation = {
   degradedStall: boolean
   dwell: Partial<Record<PlaneId, PlaneDwell>>
   discoveryBurstStartedMs?: number
+  custodyActive?: boolean
+  custodyCount?: number
+  assignedBucketsMask?: number
+  closedBucketsMask?: number
+  connectedSwarmBucketsMask?: number
+  desiredEthyBucketsMask?: number
+  uncoveredBucketsMask?: number
+  hopBuckets?: number
+  minRedundancy?: number
+  custodyBalOnboarding?: boolean
+  subtreeApplyMs?: number
 }
 
 export type MachinePlan = {
@@ -99,6 +123,21 @@ const BUDGETS: Record<
   'shadow-snap-mint': { maxPeers: 10, vipTarget: 5, minEthy: 2, maxInbound: 4 },
   'prewarm-ethy': { maxPeers: 12, vipTarget: 6, minEthy: 2, maxInbound: 4 },
   'degraded-recovery': { maxPeers: 12, vipTarget: 6, minEthy: 2, maxInbound: 4 },
+  'custody-bal-warmup': { maxPeers: 20, vipTarget: 8, minEthy: 6, maxInbound: 4 },
+  'custody-sync': { maxPeers: 20, vipTarget: 8, minEthy: 6, maxInbound: 4 },
+  'custody-live-calm': { maxPeers: 20, vipTarget: 6, minEthy: 6, maxInbound: 4 },
+  'full-backfill': { maxPeers: 20, vipTarget: 10, minEthy: 6, maxInbound: 4 },
+}
+
+const CUSTODY_MODES = new Set<MachineOperatingMode>([
+  'custody-bal-warmup',
+  'custody-sync',
+  'custody-live-calm',
+  'full-backfill',
+])
+
+function isCustodyMode(mode: MachineOperatingMode): boolean {
+  return CUSTODY_MODES.has(mode)
 }
 
 function deriveMode(obs: MachineObservation): { mode: MachineOperatingMode; reason: string } {
@@ -116,10 +155,28 @@ function deriveMode(obs: MachineObservation): { mode: MachineOperatingMode; reas
       ? { mode: 'cold-ethy-sync', reason: 'ETHY/0 base sync' }
       : { mode: 'cold-snap-sync', reason: 'SNAP/1 base sync' }
   }
+  if (obs.custodyActive === true) {
+    if (obs.phase === 'BAL_CATCHUP' || obs.custodyBalOnboarding === true) {
+      return { mode: 'custody-bal-warmup', reason: 'custody BAL window' }
+    }
+    if (obs.phase === 'HEAD_FOLLOWING') {
+      const closed = obs.closedBucketsMask ?? 0
+      const assigned = obs.assignedBucketsMask ?? 0
+      if (obs.custodyCount === 16 && closed !== 0xffff) {
+        return { mode: 'full-backfill', reason: 'full custody backfill' }
+      }
+      if (!assignedBucketsClosed(assigned, closed)) {
+        return { mode: 'custody-sync', reason: 'background custody sync' }
+      }
+      return { mode: 'custody-live-calm', reason: 'custody live steady' }
+    }
+  }
   if (obs.phase === 'BAL_CATCHUP') {
     return { mode: 'bal-catchup', reason: 'historical BAL catch-up' }
   }
-  if (obs.phase === 'HEAD_FOLLOWING' && obs.shadowRefreshEnabled) {
+  const allowSnapShadow =
+    obs.shadowRefreshEnabled && (obs.custodyActive !== true || obs.snapBootstrap === true)
+  if (obs.phase === 'HEAD_FOLLOWING' && allowSnapShadow) {
     if (obs.shadowMode === 'ethy-shadow') {
       return { mode: 'shadow-ethy-refresh', reason: 'background ETHY shadow refresh' }
     }
@@ -149,16 +206,25 @@ function deriveMode(obs: MachineObservation): { mode: MachineOperatingMode; reas
 
 function ethyServing(obs: MachineObservation, mode: MachineOperatingMode): EthyServingState {
   if (obs.bucketsMask === 0) return 'off'
-  if (mode === 'bal-catchup' || obs.phase === 'BAL_CATCHUP') return 'paused-catching-up'
+  if (mode === 'bal-catchup' || mode === 'custody-bal-warmup' || obs.phase === 'BAL_CATCHUP') {
+    return 'paused-catching-up'
+  }
   if (!obs.balTailContiguous) return 'paused-bal-gap'
   if (obs.generationAgeBlocks > HARD_PREFER_SNAP_AGE_BLOCKS && obs.shadowMode !== 'snap-mint') {
     return 'paused-stale'
+  }
+  if (
+    obs.custodyActive === true &&
+    assignedBucketsClosed(obs.assignedBucketsMask ?? 0, obs.bucketsMask)
+  ) {
+    return 'serving'
   }
   if (obs.bucketsMask < 0xffff) return 'partial-minting'
   return 'serving'
 }
 
 function snapPlaneStatus(mode: MachineOperatingMode, obs: MachineObservation): PlaneStatus {
+  if (mode === 'full-backfill' && (obs.snapBootstrap || obs.syncMode === 'snap')) return 'active'
   if (mode === 'cold-snap-sync' || mode === 'shadow-snap-mint') return 'active'
   if (mode === 'prewarm-snap-mint') return 'prewarming'
   if (mode === 'boot-warmup') return obs.syncMode === 'ethy' ? 'off' : 'prewarming'
@@ -177,6 +243,12 @@ function discoveryPlane(
   obs: MachineObservation,
   vipTarget: number,
 ): PlaneStatus {
+  if (isCustodyMode(mode)) {
+    const hop = obs.hopBuckets ?? 0
+    const minRed = obs.minRedundancy ?? 0
+    if (hop < 16 || minRed < 2) return 'active'
+    return 'standby'
+  }
   if (mode === 'degraded-recovery' || mode === 'boot-warmup') return 'active'
   if (mode === 'prewarm-ethy' || mode === 'prewarm-snap-mint') {
     const burstExpired =
@@ -245,11 +317,11 @@ function scheduleSummary(
       : `Refresh paused — low disk${detail}`
   }
   const softMs = Number(SOFT_REFRESH_AGE_BLOCKS - obs.generationAgeBlocks) * BLOCK_MS
-  if (softMs > 0 && mode === 'live-calm') {
+  if (softMs > 0 && (mode === 'live-calm' || mode === 'custody-live-calm')) {
     return `Gen ${obs.generationAgeBlocks}/${SOFT_REFRESH_AGE_BLOCKS} blk · ~${(softMs / 3_600_000).toFixed(1)}h`
   }
   if (ethyServe === 'paused-bal-gap') return 'BAL gap — refresh queued'
-  return mode === 'bal-catchup' ? 'Catching up' : 'Live'
+  return mode === 'bal-catchup' || mode === 'custody-bal-warmup' ? 'Catching up' : 'Live'
 }
 
 export function evaluateMachinePlan(obs: MachineObservation): MachinePlan {
@@ -273,7 +345,14 @@ export function evaluateMachinePlan(obs: MachineObservation): MachinePlan {
     emergency,
   )
 
-  const includeSnap = snapStatus === 'active' || snapStatus === 'prewarming'
+  const snapWanted = snapStatus === 'active' || snapStatus === 'prewarming'
+  let includeSnap = snapWanted && (obs.snapBootstrap || obs.syncMode === 'snap')
+  if (mode === 'custody-live-calm' || mode === 'custody-sync' || mode === 'custody-bal-warmup') {
+    includeSnap = false
+  }
+  if (mode === 'full-backfill' && (obs.closedBucketsMask ?? 0) === 0xffff) {
+    includeSnap = false
+  }
   const includeEthy = !(obs.syncMode === 'snap' && obs.bucketsMask === 0)
   const capabilities = ['eth69', 'eth70', 'eth71', 'eth72']
   if (includeEthy) capabilities.push('ethy0')
@@ -289,16 +368,27 @@ export function evaluateMachinePlan(obs: MachineObservation): MachinePlan {
       ? 'standby'
       : mode === 'prewarm-ethy'
         ? 'prewarming'
-        : mode === 'cold-ethy-sync' || mode === 'shadow-ethy-refresh' || servingEthy === 'serving'
+        : mode === 'cold-ethy-sync' ||
+            mode === 'shadow-ethy-refresh' ||
+            isCustodyMode(mode) ||
+            servingEthy === 'serving'
           ? 'active'
           : 'standby'
 
   const clStatus: PlaneStatus =
     obs.clDisabled || obs.phase === 'BOOTING'
       ? 'off'
-      : mode === 'live-calm' || mode === 'boot-warmup'
+      : mode === 'live-calm' ||
+          mode === 'custody-live-calm' ||
+          mode === 'custody-sync' ||
+          mode === 'full-backfill' ||
+          mode === 'boot-warmup'
         ? 'active'
         : 'standby'
+
+  const resolvedSnap: PlaneStatus = includeSnap ? snapStatus : 'off'
+  const desiredMask =
+    obs.custodyActive === true && includeEthy ? (obs.desiredEthyBucketsMask ?? 0) : undefined
 
   return {
     mode,
@@ -309,7 +399,7 @@ export function evaluateMachinePlan(obs: MachineObservation): MachinePlan {
     planes: {
       eth: 'active',
       ethy: ethyStatus,
-      snap: snapStatus,
+      snap: resolvedSnap,
       discovery: discStatus,
       cl: clStatus,
     },
@@ -321,9 +411,21 @@ export function evaluateMachinePlan(obs: MachineObservation): MachinePlan {
       minEthyPeers: includeEthy ? budget.minEthy : 0,
       discoveryMode,
       ethyDiscoveryTag,
-      preferEthyDiscovery: mode === 'prewarm-ethy',
+      preferEthyDiscovery: mode === 'prewarm-ethy' || isCustodyMode(mode),
+      desiredEthyBucketsMask: desiredMask,
     },
   }
+}
+
+export function snapDormancyReason(
+  plan: MachinePlan,
+  obs: Pick<MachineObservation, 'snapBootstrap' | 'closedBucketsMask' | 'custodyCount'>,
+): SnapDormancyReason {
+  if (plan.profile.capabilities.includes('snap1')) return 'bootstrap-active'
+  if (obs.snapBootstrap && obs.custodyCount === 16 && (obs.closedBucketsMask ?? 0) === 0xffff) {
+    return 'dropped-after-close'
+  }
+  return 'default-off'
 }
 
 export function createMachineState(): MachineState {
@@ -363,6 +465,12 @@ export function stepMachineOrchestrator(
         ? prev.discoveryBurstStartedMs
         : undefined
 
+  const dormancy = snapDormancyReason(plan, {
+    snapBootstrap: obs.snapBootstrap,
+    closedBucketsMask: obs.closedBucketsMask,
+    custodyCount: obs.custodyCount,
+  })
+
   return {
     plan,
     nextState: { dwell, discoveryBurstStartedMs, transitions },
@@ -376,14 +484,22 @@ export function stepMachineOrchestrator(
       transitions,
       vipTarget: plan.vipTarget,
       discoveryMode: plan.profile.discoveryMode,
+      desiredEthyBucketsMask: plan.profile.desiredEthyBucketsMask,
+      uncoveredBucketsMask: obs.uncoveredBucketsMask,
+      hopBuckets: obs.hopBuckets,
+      snapDormancyReason: dormancy,
+      subtreeApplyMs: obs.subtreeApplyMs,
     },
   }
 }
 
-export function bootNetworkProfile(syncMode: SyncMode = 'auto'): NetworkProfile {
+export function bootNetworkProfile(
+  syncMode: SyncMode = 'auto',
+  snapBootstrap = false,
+): NetworkProfile {
   const capabilities = ['eth69', 'eth70', 'eth71', 'eth72']
   if (syncMode !== 'snap') capabilities.push('ethy0')
-  if (syncMode !== 'ethy') capabilities.push('snap1')
+  if (syncMode !== 'ethy' && snapBootstrap) capabilities.push('snap1')
   const budget = BUDGETS['boot-warmup']
   return {
     capabilities,
@@ -401,6 +517,7 @@ export function buildMachineObservation(opts: {
   spine: EthySpine
   peerSnapshots: WorkerPeerSnapshot[]
   syncMode: SyncMode
+  snapBootstrap?: boolean
   shadowRefreshEnabled: boolean
   clDisabled?: boolean
   nowMs: number
@@ -412,11 +529,23 @@ export function buildMachineObservation(opts: {
   discoveryBurstStartedMs?: number
 }): MachineObservation {
   const shadow = opts.spine.swarm?.shadowRefresh
+  const buckets = opts.spine.custodyBuckets
+  const custodyActive = buckets !== undefined && buckets.length > 0 && opts.syncMode !== 'snap'
+  const closedBucketsMask = opts.spine.closedBucketsMask ?? 0
+  const assignedBucketsMask = buckets !== undefined ? custodyBitmask(buckets) : 0
+  const coverage =
+    custodyActive === true
+      ? evaluateCustodyCoverage({
+          closedBucketsMask,
+          peers: custodyPeersFromSpine(opts.spine.peers.values()),
+        })
+      : undefined
   return {
     nowMs: opts.nowMs,
     phase: opts.spine.phase,
     syncTransport: opts.spine.syncTransport ?? 'unset',
     syncMode: opts.syncMode,
+    snapBootstrap: opts.snapBootstrap === true,
     shadowRefreshEnabled: opts.shadowRefreshEnabled,
     clDisabled: opts.clDisabled ?? false,
     healthyEthPeers: opts.peerSnapshots.filter((p) => p.bestHash !== undefined).length,
@@ -439,6 +568,17 @@ export function buildMachineObservation(opts: {
     degradedStall: opts.degradedStall,
     dwell: opts.dwell ?? {},
     discoveryBurstStartedMs: opts.discoveryBurstStartedMs,
+    custodyActive,
+    custodyCount: buckets?.length ?? opts.spine.custodyBuckets?.length,
+    assignedBucketsMask,
+    closedBucketsMask,
+    connectedSwarmBucketsMask: coverage?.connectedSwarmBucketsMask,
+    desiredEthyBucketsMask: coverage?.desiredEthyBucketsMask,
+    uncoveredBucketsMask: coverage?.uncoveredBucketsMask,
+    hopBuckets: coverage?.hopBuckets,
+    minRedundancy: coverage?.minRedundancy,
+    custodyBalOnboarding: opts.spine.custodyBalOnboarding,
+    subtreeApplyMs: opts.spine.subtreeApplyMs,
   }
 }
 

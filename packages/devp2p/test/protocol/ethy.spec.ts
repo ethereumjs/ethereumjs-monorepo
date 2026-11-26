@@ -12,15 +12,36 @@ import { EthyMessageCodes } from '../../src/protocol/ethy/codes.ts'
 describe('[Devp2p/ETHY]: codecs', () => {
   const genesis = new Uint8Array(32).fill(0xab)
 
-  it('encodeEthyStatus() uses canonical zero (0x80) for protocol version and bucket 0', () => {
+  it('encodeEthyStatus() emits 12 fields with zero masks as 0x80', () => {
     const tuple = encodeEthyStatus(11155111n, { genesisHash: genesis, bucketsBitmask: 0 })
-    assert.equal(tuple.length, 9)
+    assert.equal(tuple.length, 12)
     const decoded = RLP.decode(RLP.encode(tuple)) as unknown[]
     assert.equal((decoded[0] as Uint8Array).length, 0)
     assert.equal((decoded[5] as Uint8Array).length, 0)
   })
 
-  it('parseEthyStatus() round-trips STATUS fields', () => {
+  it('parseEthyStatus() defaults storage and code masks from a 9-tuple peer', () => {
+    const nine = encodeEthyStatus(11155111n, { genesisHash: genesis, bucketsBitmask: 0 }).slice(
+      0,
+      9,
+    )
+    const remote = parseEthyStatus(nine)
+    assert.equal(remote.storageBucketsBitmask, 0)
+    assert.equal(remote.codeBucketsBitmask, 0)
+  })
+
+  it('parseEthyStatus() ignores fields past index 10', () => {
+    const encoded = encodeEthyStatus(1n, {
+      genesisHash: genesis,
+      storageBucketsBitmask: 3,
+      codeBucketsBitmask: 5,
+    })
+    const withExtra = [...encoded, intToUnpaddedBytes(99)]
+    const remote = parseEthyStatus(withExtra)
+    assert.equal(remote.codeBucketsBitmask, 5)
+  })
+
+  it('parseEthyStatus() round-trips STATUS fields including trieBucketsBitmask', () => {
     const encoded = encodeEthyStatus(11155111n, {
       genesisHash: genesis,
       basePivotBlock: 100n,
@@ -28,6 +49,7 @@ describe('[Devp2p/ETHY]: codecs', () => {
       balEarliestBlock: 100n,
       balLatestBlock: 116n,
       latestBlockHash: new Uint8Array(32).fill(0x01),
+      trieBucketsBitmask: 0x00f0,
     })
     const remote = parseEthyStatus(encoded)
     assert.equal(remote.protocolVersion, 0)
@@ -35,6 +57,7 @@ describe('[Devp2p/ETHY]: codecs', () => {
     assert.equal(remote.basePivotBlock, 100n)
     assert.equal(remote.bucketsBitmask, 0x00ff)
     assert.equal(remote.balLatestBlock, 116n)
+    assert.equal(remote.trieBucketsBitmask, 0x00f0)
   })
 
   it('validateEthyStatusAgainstLocal() rejects chain mismatch', () => {
@@ -59,8 +82,10 @@ describe('[Devp2p/ETHY]: codecs', () => {
     assert.equal(ver.length, 0)
   })
 
-  it('EthyMessageCodes span 0x00..0x0a', () => {
+  it('EthyMessageCodes span 0x00..0x0e', () => {
     assert.equal(EthyMessageCodes.STATUS, 0x00)
     assert.equal(EthyMessageCodes.ETHY_PEERS, 0x0a)
+    assert.equal(EthyMessageCodes.GET_STATE_WITNESS, 0x0b)
+    assert.equal(EthyMessageCodes.SUBTREE_ROOTS, 0x0e)
   })
 })

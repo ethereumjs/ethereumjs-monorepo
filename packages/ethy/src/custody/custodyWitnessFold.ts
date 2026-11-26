@@ -1,0 +1,52 @@
+import type { BALInput } from '@ethereumjs/util'
+import { bytesToUnprefixedHex } from '@ethereumjs/util'
+
+import { ethyKeccak256 } from '../crypto/keccak.ts'
+import type { EthySpine } from '../spine/types.ts'
+import type { WitnessFoldContext } from '../staty/witnessFold.ts'
+import type { StatyWriteIndex } from '../staty/writeIndex.ts'
+import { onboardingBalStartBlock } from '../sync/blockCalendar.ts'
+
+export function buildWitnessFoldContext(
+  spine: EthySpine,
+  writeIndex: StatyWriteIndex,
+): WitnessFoldContext {
+  const latest = Number(spine.lastVerifiedBlockNumber ?? spine.pivotBlockNumber ?? 0n)
+  const pivot = Number(spine.pivotBlockNumber ?? 0n)
+  const balFromWindow =
+    spine.balWindow.length > 0
+      ? Number(spine.balWindow[0]!.blockNumber)
+      : Number(onboardingBalStartBlock(BigInt(latest)))
+  const earliest = Math.min(pivot, balFromWindow)
+  const balByBlock = new Map<number, BALInput>()
+  for (const row of spine.balWindow) {
+    if (row.balJson !== undefined) {
+      balByBlock.set(Number(row.blockNumber), row.balJson)
+    }
+  }
+  return {
+    localBalEarliestBlock: earliest,
+    latestVerifiedBlock: latest,
+    stateRootAt: (block) => {
+      if (spine.pivotBlockNumber !== undefined && block === Number(spine.pivotBlockNumber)) {
+        return spine.pivotStateRoot
+      }
+      if (
+        spine.headBlockNumber !== undefined &&
+        block === Number(spine.headBlockNumber) &&
+        spine.headStateRoot !== undefined
+      ) {
+        return spine.headStateRoot
+      }
+      const hit = spine.balWindow.find((r) => r.blockNumber === BigInt(block))
+      return hit?.stateRoot
+    },
+    readVerifiedBal: (block) => balByBlock.get(block),
+    writeIndex,
+    keccak256: ethyKeccak256,
+  }
+}
+
+export function accountHashHex(accountHash: Uint8Array): string {
+  return bytesToUnprefixedHex(accountHash)
+}

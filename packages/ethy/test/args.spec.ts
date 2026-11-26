@@ -9,6 +9,17 @@ describe('[Ethy/CLI]: args', () => {
     assert.isFalse(a.demo)
     assert.isFalse(a.headless)
     assert.isFalse(a.fresh)
+    assert.equal(a.custodyCount, 2)
+    assert.isFalse(a.snapBootstrap)
+  })
+
+  it('parseEthyArgs() reads custody and snap-bootstrap', () => {
+    const a = parseEthyArgs(['node', 'ethy', '--custody', '4', '--snap-bootstrap'])
+    assert.equal(a.custodyCount, 4)
+    assert.isTrue(a.snapBootstrap)
+    const full = parseEthyArgs(['node', 'ethy', '--full'])
+    assert.equal(full.custodyCount, 16)
+    assert.isTrue(full.fullCustody)
   })
 
   it('parseEthyArgs() reads --demo and --headless', () => {
@@ -76,5 +87,11 @@ describe('[Ethy/CLI]: args', () => {
     ])
     assert.equal(a.llmUrl, 'http://127.0.0.1:8080')
     assert.equal(a.aiMemory, 'off')
+  })
+
+  it('parseEthyArgs() rejects non-integer --custody values', () => {
+    assert.throws(() => parseEthyArgs(['node', 'ethy', '--custody', '2.5']), /integer/)
+    assert.throws(() => parseEthyArgs(['node', 'ethy', '--custody', '2abc']), /integer/)
+    assert.throws(() => parseEthyArgs(['node', 'ethy', '--custody', '-1']), /integer/)
   })
 })

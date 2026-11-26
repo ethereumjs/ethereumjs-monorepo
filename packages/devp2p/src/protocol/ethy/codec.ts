@@ -20,6 +20,9 @@ export type EthyPeerStatus = {
   balEarliestBlock: bigint
   balLatestBlock: bigint
   latestBlockHash: Uint8Array
+  storageBucketsBitmask: number
+  codeBucketsBitmask: number
+  trieBucketsBitmask: number
 }
 
 export type EthyLocalStatusFields = {
@@ -30,7 +33,16 @@ export type EthyLocalStatusFields = {
   balEarliestBlock?: bigint
   balLatestBlock?: bigint
   latestBlockHash?: Uint8Array
+  storageBucketsBitmask?: number
+  codeBucketsBitmask?: number
+  trieBucketsBitmask?: number
 }
+
+export const MAX_ETHY_MESSAGE_BYTES = 2 * 1024 * 1024
+export const MAX_ETHY_PROOF_NODES = 4096
+export const MAX_WITNESS_ACCOUNTS = 64
+export const MAX_WITNESS_SLOTS = 256
+export const MAX_ETHY_RESPONSE_BYTES = 524_288
 
 const ZERO32 = new Uint8Array(32)
 
@@ -71,6 +83,9 @@ export function parseEthyStatus(payload: unknown): EthyPeerStatus {
     balEarliestBlock: scalarBigInt(payload[6]),
     balLatestBlock: scalarBigInt(payload[7]),
     latestBlockHash: latestBlockHash.length === 32 ? latestBlockHash : ZERO32,
+    storageBucketsBitmask: payload.length > 9 ? scalarInt(payload[9]) : 0,
+    codeBucketsBitmask: payload.length > 10 ? scalarInt(payload[10]) : 0,
+    trieBucketsBitmask: payload.length > 11 ? scalarInt(payload[11]) : 0,
   }
 }
 
@@ -88,6 +103,9 @@ export function encodeEthyStatus(chainId: bigint, fields: EthyLocalStatusFields)
     fields.latestBlockHash !== undefined && fields.latestBlockHash.length === 32
       ? fields.latestBlockHash
       : ZERO32
+  const storageMask = fields.storageBucketsBitmask ?? 0
+  const codeMask = fields.codeBucketsBitmask ?? 0
+  const trieMask = fields.trieBucketsBitmask ?? 0
   return [
     intToUnpaddedBytes(0),
     bigIntToUnpaddedBytes(chainId),
@@ -98,6 +116,9 @@ export function encodeEthyStatus(chainId: bigint, fields: EthyLocalStatusFields)
     bigIntToUnpaddedBytes(balEarliest),
     bigIntToUnpaddedBytes(balLatest),
     latestHash,
+    intToUnpaddedBytes(storageMask),
+    intToUnpaddedBytes(codeMask),
+    intToUnpaddedBytes(trieMask),
   ]
 }
 
@@ -112,6 +133,34 @@ export function ethyMessageNameToCode(name: string): EthyMessageCodes {
   const code = (EthyMessageCodes as Record<string, number>)[name]
   if (code === undefined) throw new Error(`Unknown ETHY message name: ${name}`)
   return code as EthyMessageCodes
+}
+
+export function countProofNodesInEthyMessage(code: EthyMessageCodes, decoded: unknown): number {
+  if (!Array.isArray(decoded)) return 0
+  if (code === EthyMessageCodes.PROVEN_ACCOUNT_CHUNK) {
+    const proofNodes = decoded[8]
+    return Array.isArray(proofNodes) ? proofNodes.length : 0
+  }
+  if (code === EthyMessageCodes.PROVEN_STORAGE_OR_CODE) {
+    const kind = scalarInt(decoded[1])
+    if (kind === 1 && decoded.length > 9) {
+      const proofNodes = decoded[9]
+      return Array.isArray(proofNodes) ? proofNodes.length : 0
+    }
+    return 0
+  }
+  if (code === EthyMessageCodes.STATE_WITNESS) {
+    const groups = decoded[1]
+    if (!Array.isArray(groups)) return 0
+    let total = 0
+    for (const group of groups) {
+      if (Array.isArray(group) && Array.isArray(group[4])) {
+        total += group[4].length
+      }
+    }
+    return total
+  }
+  return 0
 }
 
 export function validateEthyStatusAgainstLocal(

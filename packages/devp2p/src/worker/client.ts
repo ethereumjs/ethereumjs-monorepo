@@ -15,7 +15,12 @@ import type {
 export interface Devp2pWorkerClientEvents {
   ready: [{ udpPort: number; tcpPort: number }]
   protocol: [
-    { protocol: 'eth' | 'snap' | 'ethy'; peerId: string; code: number; payload: Uint8Array },
+    {
+      protocol: 'eth' | 'snap' | 'ethy'
+      peerId: string
+      code: number
+      payload: Uint8Array
+    },
   ]
   telemetry: [WorkerTelemetrySnapshot]
   error: [Error]
@@ -154,6 +159,124 @@ export class Devp2pWorkerClient {
 
   setEthyStatus(status: WorkerEthyLocalStatus): void {
     this._send({ type: 'setEthyStatus', status })
+  }
+
+  setEthyWitnessDir(dir: string | undefined): void {
+    this._send({ type: 'setEthyWitnessDir', dir })
+  }
+
+  /** Forward inbound `0x0b` to main instead of answering from worker witness cache. */
+  setEthyLiveProofMode(enabled: boolean): void {
+    this._send({ type: 'setEthyLiveProofMode', enabled })
+  }
+
+  setSharedCodeDir(dir: string | undefined): void {
+    this._send({ type: 'setSharedCodeDir', dir })
+  }
+
+  setEthyStorageDir(dir: string | undefined): void {
+    this._send({ type: 'setEthyStorageDir', dir })
+  }
+
+  putEthyWitness(witness: {
+    accountHash: Uint8Array
+    anchorBlock: bigint
+    anchorStateRoot: Uint8Array
+    accountRlpOrEmpty: Uint8Array
+    slots: Array<{ slotHash: Uint8Array; slotValOrEmpty: Uint8Array }>
+    proofNodes: Uint8Array[]
+  }): void {
+    const accountHash = copyForSend(witness.accountHash)
+    const anchorStateRoot = copyForSend(witness.anchorStateRoot)
+    const accountRlpOrEmpty = copyForSend(witness.accountRlpOrEmpty)
+    const slots = witness.slots.map((s) => ({
+      slotHash: copyForSend(s.slotHash),
+      slotValOrEmpty: copyForSend(s.slotValOrEmpty),
+    }))
+    const proofNodes = witness.proofNodes.map((p) => copyForSend(p))
+    const transfer = [
+      accountHash.buffer,
+      anchorStateRoot.buffer,
+      accountRlpOrEmpty.buffer,
+      ...slots.flatMap((s) => [s.slotHash.buffer, s.slotValOrEmpty.buffer]),
+      ...proofNodes.map((p) => p.buffer),
+    ] as ArrayBuffer[]
+    this._send(
+      {
+        type: 'putEthyWitness',
+        witness: {
+          accountHash,
+          anchorBlock: witness.anchorBlock.toString(),
+          anchorStateRoot,
+          accountRlpOrEmpty,
+          slots,
+          proofNodes,
+        },
+      },
+      transfer,
+    )
+  }
+
+  putEthySubtreeRoots(
+    anchorBlock: bigint,
+    entries: Array<{ bucketIndex: number; subtreeRootHash: Uint8Array }>,
+  ): void {
+    const wire = entries.map((e) => ({
+      bucketIndex: e.bucketIndex,
+      subtreeRootHash: copyForSend(e.subtreeRootHash),
+    }))
+    const transfer = wire.map((e) => e.subtreeRootHash.buffer) as ArrayBuffer[]
+    this._send(
+      {
+        type: 'putEthySubtreeRoots',
+        anchorBlock: anchorBlock.toString(),
+        entries: wire,
+      },
+      transfer,
+    )
+  }
+
+  putSharedCode(codeHash: Uint8Array, code: Uint8Array): void {
+    const hash = copyForSend(codeHash)
+    const bytecode = copyForSend(code)
+    this._send({ type: 'putSharedCode', codeHash: hash, code: bytecode }, [
+      hash.buffer as ArrayBuffer,
+      bytecode.buffer as ArrayBuffer,
+    ])
+  }
+
+  putEthyStorageEntry(entry: {
+    accountHash: Uint8Array
+    storageRoot: Uint8Array
+    chunkBlockNumber: bigint
+    slotsSlab64B: Uint8Array
+    complete: boolean
+    proofNodes?: Uint8Array[]
+  }): void {
+    const accountHash = copyForSend(entry.accountHash)
+    const storageRoot = copyForSend(entry.storageRoot)
+    const slotsSlab64B = copyForSend(entry.slotsSlab64B)
+    const proofNodes = entry.proofNodes?.map((p) => copyForSend(p)) ?? []
+    const transfer = [
+      accountHash.buffer,
+      storageRoot.buffer,
+      slotsSlab64B.buffer,
+      ...proofNodes.map((p) => p.buffer),
+    ] as ArrayBuffer[]
+    this._send(
+      {
+        type: 'putEthyStorageEntry',
+        entry: {
+          accountHash,
+          storageRoot,
+          chunkBlockNumber: entry.chunkBlockNumber.toString(),
+          slotsSlab64B,
+          complete: entry.complete,
+          proofNodes,
+        },
+      },
+      transfer,
+    )
   }
 
   setEthyPivotAccountsDir(dir: string | undefined): void {

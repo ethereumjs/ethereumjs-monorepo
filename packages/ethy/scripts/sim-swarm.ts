@@ -1,5 +1,10 @@
 import process from 'node:process'
 
+import {
+  assertCustodySwarmGates,
+  custodyMetricsCanonicalJSON,
+  runAllCustodySwarmScenarios,
+} from '../src/sim/custodySwarm.ts'
 import { formatMetricsAscii, formatMetricsTable } from '../src/sim/formatReport.ts'
 import { metricsToCanonicalJSON, runAllScenarios, runScenario, comparePresets, ALL_SCENARIO_IDS } from '../src/sim/runSim.ts'
 import type { PolicyPreset, ScenarioId, SimScale } from '../src/sim/types.ts'
@@ -68,6 +73,20 @@ function main(): void {
         if (policy === 'legacy') assertLegacyScenarioGates(r)
         else assertV2ScenarioGates(r)
       }
+    }
+    const custodyRows = runAllCustodySwarmScenarios(seed)
+    if (hasFlag('json')) {
+      process.stdout.write(`${custodyRows.map((r) => custodyMetricsCanonicalJSON(r)).join('\n')}\n`)
+    } else {
+      process.stdout.write('\n=== WP-16g Unified Custody Swarm Gates ===\n')
+      for (const r of custodyRows) {
+        process.stdout.write(
+          `${r.scenarioId}: nodes=${r.nodeCount} maxPeers=${r.maxConnectedPeers} snapDials=${r.snapDials} hop16=${r.allHopSixteen} minRed2=${r.minRedundancyOk} coldEthy=${r.coldEthyResolutions} fail=${r.coldFailures} rootOk=${r.rootAssemblyOk} byz=${r.byzantineQuarantined} gens=${r.generationsRefreshed}\n`,
+        )
+      }
+    }
+    if (resolvedScale === 'ci') {
+      for (const r of custodyRows) assertCustodySwarmGates(r)
     }
     return
   }

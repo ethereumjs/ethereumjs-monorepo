@@ -15,7 +15,7 @@ import { keccak_256 } from '@noble/hashes/sha3.js'
 import { assert, describe, it } from 'vitest'
 
 import { consumeBAL } from '../src/consumeBAL.ts'
-import { FlatStateManager } from '../src/index.ts'
+import { FlatStateManager, StateMissUnavailableError } from '../src/index.ts'
 
 describe('[StateManager/FlatStateManager]', () => {
   it('putSnapAccountsBatch() resolves getAccount() via address preimage', async () => {
@@ -395,5 +395,175 @@ describe('[StateManager/FlatStateManager]', () => {
     await sm.putStorage(address, slot, new Uint8Array(0))
     assert.deepEqual(await sm.getStorage(address, slot), new Uint8Array(0))
     assert.strictEqual(coldLookups, 1)
+  })
+
+  it('open-world bucket coalesces concurrent account miss resolvers', async () => {
+    let inFlight = 0
+    let maxInFlight = 0
+    let calls = 0
+    const sm = new FlatStateManager({
+      closedBucketsMask: 0x0000,
+      resolveAccountMiss: async (hash) => {
+        calls++
+        inFlight++
+        maxInFlight = Math.max(maxInFlight, inFlight)
+        await new Promise((r) => setTimeout(r, 20))
+        inFlight--
+        return accountToBinaryAccount(createAccount({ nonce: 1n }))
+      },
+    })
+    const address = new Address(hexToBytes(`0x${'aa'.repeat(20)}`))
+    const p1 = sm.getAccount(address)
+    const p2 = sm.getAccount(address)
+    const [a1, a2] = await Promise.all([p1, p2])
+    assert.strictEqual(calls, 1)
+    assert.strictEqual(maxInFlight, 1)
+    assert.strictEqual(a1?.nonce, 1n)
+    assert.strictEqual(a2?.nonce, 1n)
+  })
+
+  it('closed-world bucket skips resolver on account miss', async () => {
+    let calls = 0
+    const sm = new FlatStateManager({
+      closedBucketsMask: 0xffff,
+      resolveAccountMiss: async () => {
+        calls++
+        return undefined
+      },
+    })
+    const address = new Address(hexToBytes(`0x${'bb'.repeat(20)}`))
+    assert.isUndefined(await sm.getAccount(address))
+    assert.strictEqual(calls, 0)
+  })
+
+  it('proven-empty account tombstone skips resolver until write', async () => {
+    let calls = 0
+    const sm = new FlatStateManager({
+      closedBucketsMask: 0x0000,
+      resolveAccountMiss: async () => {
+        calls++
+        return undefined
+      },
+    })
+    const address = new Address(hexToBytes(`0x${'cc'.repeat(20)}`))
+    const hash = keccak_256(address.bytes)
+    sm.markAccountEmpty(hash)
+    assert.isUndefined(await sm.getAccount(address))
+    assert.strictEqual(calls, 0)
+    await sm.putAccount(address, createAccount({ nonce: 2n }))
+    assert.strictEqual((await sm.getAccount(address))?.nonce, 2n)
+  })
+
+  it('local-only overlay throws without calling resolver', async () => {
+    let calls = 0
+    const base = new FlatStateManager({
+      closedBucketsMask: 0x0000,
+      resolveAccountMiss: async () => {
+        calls++
+        return undefined
+      },
+    })
+    const overlay = base.shallowCopy({ resolutionPolicy: 'local-only' }) as FlatStateManager
+    const address = new Address(hexToBytes(`0x${'dd'.repeat(20)}`))
+    try {
+      await overlay.getAccount(address)
+      assert.fail('expected StateMissUnavailableError')
+    } catch (e: unknown) {
+      assert.isTrue(e instanceof StateMissUnavailableError)
+    }
+    assert.strictEqual(calls, 0)
+  })
+
+  it('unresolved open-world miss throws StateMissUnavailableError', async () => {
+    const sm = new FlatStateManager({
+      closedBucketsMask: 0x0000,
+      resolveAccountMiss: async () => undefined,
+    })
+    const address = new Address(hexToBytes(`0x${'ee'.repeat(20)}`))
+    try {
+      await sm.getAccount(address)
+      assert.fail('expected StateMissUnavailableError')
+    } catch (e: unknown) {
+      assert.isTrue(e instanceof StateMissUnavailableError)
+    }
+  })
+
+  it('overlay SSTORE(0) -> SLOAD returns 0 without network miss or polluting root tombstones', async () => {
+    let storageCalls = 0
+    const address = new Address(hexToBytes(`0x${'22'.repeat(20)}`))
+    const slot = setLengthLeft(hexToBytes('0x01'), 32)
+    const rootVal = setLengthLeft(hexToBytes('0x42'), 32)
+    const base = new FlatStateManager({
+      closedBucketsMask: 0x0000,
+      resolveStorageMiss: async () => {
+        storageCalls++
+        return rootVal
+      },
+    })
+    const acct = createAccount({ nonce: 1n })
+    acct.storageRoot = new Uint8Array(32).fill(0x99)
+    await base.putAccount(address, acct)
+
+    const overlay = base.shallowCopy() as FlatStateManager
+    await overlay.putStorage(address, slot, new Uint8Array(0))
+    const inOverlay = await overlay.getStorage(address, slot)
+    assert.deepEqual(inOverlay, new Uint8Array(0))
+    assert.strictEqual(storageCalls, 0)
+
+    // Root was NOT polluted with a proven-empty tombstone — root read still resolves the real slot
+    const fromRoot = await base.getStorage(address, slot)
+    assert.deepEqual(fromRoot, rootVal)
+    assert.strictEqual(storageCalls, 1)
+  })
+
+  it('full-policy read does not fail behind concurrent swarm-only miss', async () => {
+    const address = new Address(hexToBytes(`0x${'33'.repeat(20)}`))
+    const base = new FlatStateManager({
+      closedBucketsMask: 0x0000,
+      resolveAccountMiss: async (_hash, policy) => {
+        await new Promise((r) => setTimeout(r, 15))
+        if (policy === 'swarm-only') return undefined
+        return accountToBinaryAccount(createAccount({ nonce: 9n }))
+      },
+    })
+    const swarmOverlay = base.shallowCopy({ resolutionPolicy: 'swarm-only' }) as FlatStateManager
+    const fullOverlay = base.shallowCopy({ resolutionPolicy: 'full' }) as FlatStateManager
+    const [swarmRes, fullRes] = await Promise.allSettled([
+      swarmOverlay.getAccount(address),
+      fullOverlay.getAccount(address),
+    ])
+    assert.strictEqual(swarmRes.status, 'rejected')
+    assert.strictEqual(fullRes.status, 'fulfilled')
+    if (fullRes.status === 'fulfilled') {
+      assert.strictEqual(fullRes.value?.nonce, 9n)
+    }
+  })
+
+  it('consumeBAL clears proven-empty account and storage tombstones', async () => {
+    const address = new Address(hexToBytes(`0x${'44'.repeat(20)}`))
+    const accountHash = keccak_256(address.bytes)
+    const slot = setLengthLeft(hexToBytes('0x05'), 32)
+    const slotHash = keccak_256(slot)
+    const sm = new FlatStateManager({ closedBucketsMask: 0x0000 })
+    sm.markAccountEmpty(accountHash)
+    sm.markStorageEmpty(accountHash, slotHash)
+    assert.isUndefined(await sm.getAccount(address))
+
+    await sm.consumeBAL([
+      {
+        address: bytesToHex(address.bytes),
+        balanceChanges: [{ blockAccessIndex: '0x1', postBalance: '0x100' }],
+        nonceChanges: [{ blockAccessIndex: '0x1', postNonce: '0x02' }],
+        storageChanges: [
+          { slot: bytesToHex(slot), slotChanges: [{ blockAccessIndex: '0x1', postValue: '0x77' }] },
+        ],
+        storageReads: [],
+        codeChanges: [],
+      },
+    ])
+    const acc = await sm.getAccount(address)
+    assert.strictEqual(acc?.balance, 0x100n)
+    assert.strictEqual(acc?.nonce, 2n)
+    assert.deepEqual(await sm.getStorage(address, slot), setLengthLeft(hexToBytes('0x77'), 32))
   })
 })

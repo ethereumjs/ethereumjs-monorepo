@@ -1,9 +1,11 @@
 {
   "package": "mpt",
   "exports": [
+    "BinaryPathMPT",
     "BranchMPTNode",
     "CheckpointDB",
     "ExtensionMPTNode",
+    "InMemoryBinaryPathStore",
     "LeafMPTNode",
     "MerklePatriciaTrie",
     "ROOT_DB_KEY",
@@ -11,6 +13,7 @@
     "byteTypeToNibbleType",
     "bytesToNibbles",
     "compactBytesToNibbles",
+    "createBinaryPathMPT",
     "createMPT",
     "createMPTFromProof",
     "createMerkleProof",

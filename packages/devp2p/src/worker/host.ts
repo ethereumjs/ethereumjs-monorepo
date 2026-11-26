@@ -15,6 +15,7 @@ import {
   bytesToInt,
   bytesToUnprefixedHex,
   hexToBytes,
+  intToUnpaddedBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
 import { secp256k1 } from '@noble/curves/secp256k1.js'
@@ -32,6 +33,7 @@ import { ethMessageNameToCode, ethStatusFromFields } from '../lab/messages/eth.t
 import type { EthStatusFields } from '../lab/messages/eth.ts'
 import { snapMessageNameToCode } from '../lab/messages/snap.ts'
 import { EthMessageCodes } from '../protocol/eth/codes.ts'
+import { MAX_ETHY_MESSAGE_BYTES } from '../protocol/ethy/codec.ts'
 import { EthyMessageCodeNames, EthyMessageCodes } from '../protocol/ethy/codes.ts'
 import {
   ETH,
@@ -45,14 +47,19 @@ import { Peer } from '../rlpx/peer.ts'
 import { RLPx } from '../rlpx/rlpx.ts'
 import { tryServeEthGet } from '../serve/ethServer.ts'
 import { EthyChunkStore } from '../serve/ethyChunkStore.ts'
-import { tryServeEthyGet } from '../serve/ethyServer.ts'
+import { type EthyWitnessServeThrottle, tryServeEthyGet } from '../serve/ethyServer.ts'
+import { EthyStorageStore } from '../serve/ethyStorageStore.ts'
+import { EthySubtreeRootBook } from '../serve/ethySubtreeRootBook.ts'
+import { EthyWitnessStore } from '../serve/ethyWitnessStore.ts'
 import { RollingBlockStore } from '../serve/rollingBlockStore.ts'
 import { ServeGovernor } from '../serve/serveGovernor.ts'
+import { SharedCodeDisk } from '../serve/sharedCodeDisk.ts'
 import { DISCONNECT_REASON, DisconnectReasonNames, type NetworkProfile } from '../types.ts'
 import type { PeerInfo } from '../types.ts'
 import { pk2id } from '../util.ts'
 import { dptDnsOptionsFromCommon, resolveWorkerBootnodes } from './bootNodes.ts'
 import { EthyKnownPeerBook } from './ethyPex.ts'
+import { deferEthyWitnessToMain } from './ethyServePolicy.ts'
 import type {
   ThreadedNetworkInitOptions,
   WorkerCommand,
@@ -76,6 +83,9 @@ function emptyServingSnapshot(): WorkerServingSnapshot {
     ethyChunksServed: 0,
     ethyBalBlocksServed: 0,
     ethyBytesServed: 0,
+    ethyStorageServed: 0,
+    ethyCodesServed: 0,
+    ethyWitnessesServed: 0,
   }
 }
 
@@ -162,6 +172,14 @@ export class Devp2pWorkerHost {
   private _ethyKnown = new EthyKnownPeerBook()
   private _ethyLocal: WorkerEthyLocalStatus = {}
   private _ethyPexSent = new Set<string>()
+  private _ethyPexReqId = 1n
+  private _ethyWitnessStore = new EthyWitnessStore()
+  private _ethySubtreeBook = new EthySubtreeRootBook()
+  /** When true, inbound `0x0b` is forwarded to main for live subtree proof serving (WP-16f). */
+  private _ethyLiveProofMode = false
+  private readonly _ethyWitnessThrottles = new Map<string, EthyWitnessServeThrottle>()
+  private _sharedCode = new SharedCodeDisk()
+  private _ethyStorage = new EthyStorageStore()
   private _privateKey: Uint8Array | null = null
   private _localNodeId: Uint8Array | null = null
   private _networkProfile: NetworkProfile | null = null
@@ -268,6 +286,53 @@ export class Devp2pWorkerHost {
           this._ethyLocal = cmd.status
           this._broadcastEthyStatus()
           break
+        case 'setEthyWitnessDir':
+          this._ethyWitnessStore.setDataDir(cmd.dir)
+          break
+        case 'setEthyLiveProofMode':
+          this._ethyLiveProofMode = cmd.enabled
+          break
+        case 'putEthyWitness': {
+          const w = cmd.witness
+          this._ethyWitnessStore.putWitness({
+            accountHash: w.accountHash,
+            anchorBlock: BigInt(w.anchorBlock),
+            anchorStateRoot: w.anchorStateRoot,
+            accountRlpOrEmpty: w.accountRlpOrEmpty,
+            slots: w.slots,
+            proofNodes: w.proofNodes,
+          })
+          break
+        }
+        case 'putEthySubtreeRoots': {
+          const wire = cmd.entries.map((e) => [
+            intToUnpaddedBytes(e.bucketIndex),
+            e.subtreeRootHash,
+          ])
+          this._ethySubtreeBook.ingest(BigInt(cmd.anchorBlock), wire)
+          break
+        }
+        case 'setSharedCodeDir':
+          this._sharedCode.setCodeDir(cmd.dir)
+          break
+        case 'setEthyStorageDir':
+          this._ethyStorage.setStorageDir(cmd.dir)
+          break
+        case 'putSharedCode':
+          this._sharedCode.put(cmd.codeHash, cmd.code)
+          break
+        case 'putEthyStorageEntry': {
+          const e = cmd.entry
+          this._ethyStorage.put({
+            accountHash: e.accountHash,
+            storageRoot: e.storageRoot,
+            chunkBlockNumber: BigInt(e.chunkBlockNumber),
+            slotsSlab64B: e.slotsSlab64B,
+            complete: e.complete,
+            proofNodes: e.proofNodes,
+          })
+          break
+        }
         case 'setEthyPivotAccountsDir':
           this._ethyChunks.setPivotAccountsDir(cmd.dir)
           break
@@ -307,7 +372,8 @@ export class Devp2pWorkerHost {
           this._syncBlockRangeFromStore(true)
           break
         }
-        case 'setNetworkProfile':
+        case 'setNetworkProfile': {
+          const prevDesired = this._networkProfile?.desiredEthyBucketsMask ?? 0
           if (
             this._networkProfile !== null &&
             networkProfilesEqual(this._networkProfile, cmd.profile)
@@ -316,7 +382,12 @@ export class Devp2pWorkerHost {
           }
           this._networkProfile = cmd.profile
           this._rlpx?.applyNetworkProfile(cmd.profile)
+          const nextDesired = cmd.profile.desiredEthyBucketsMask ?? 0
+          if (nextDesired !== 0 && prevDesired !== nextDesired) {
+            this._broadcastEthyPexQueries()
+          }
           break
+        }
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err)
@@ -338,6 +409,15 @@ export class Devp2pWorkerHost {
     const ethyEnabled = caps.some((c) => c.name === 'ethy')
     if (opts.ethyPivotDir !== undefined) {
       this._ethyChunks.setPivotAccountsDir(opts.ethyPivotDir)
+    }
+    if (opts.ethyWitnessDir !== undefined) {
+      this._ethyWitnessStore.setDataDir(opts.ethyWitnessDir)
+    }
+    if (opts.sharedCodeDir !== undefined) {
+      this._sharedCode.setCodeDir(opts.sharedCodeDir)
+    }
+    if (opts.ethyStorageDir !== undefined) {
+      this._ethyStorage.setStorageDir(opts.ethyStorageDir)
     }
     this._privateKey = opts.privateKey
     this._localNodeId = pk2id(secp256k1.getPublicKey(opts.privateKey, false))
@@ -447,9 +527,13 @@ export class Devp2pWorkerHost {
 
     this._rlpx.events.on('peer:added', (peer) => this._wirePeer(peer))
     this._rlpx.events.on('peer:removed', (peer, reason, disconnectWe) => {
-      if (typeof reason !== 'number') return
       const rawId = peer.getId()
       const peerId = rawId instanceof Uint8Array ? bytesToUnprefixedHex(rawId) : undefined
+      if (peerId !== undefined) {
+        this._ethyWitnessThrottles.delete(peerId)
+        this._ethyPexSent.delete(peerId)
+      }
+      if (typeof reason !== 'number') return
       if (reason === DISCONNECT_REASON.TOO_MANY_PEERS) {
         const who = disconnectWe === true ? 'we dropped remote' : 'remote dropped us'
         this._pushDiagnostic('warn', `TOO_MANY_PEERS (${who})`, peerId)
@@ -571,6 +655,9 @@ export class Devp2pWorkerHost {
         if (code === EthyMessageCodes.ETHY_PEERS) {
           this._consumeEthyPeers(payload)
         }
+        if (code === EthyMessageCodes.SUBTREE_ROOTS) {
+          this._ingestSubtreeRootsMessage(payload)
+        }
       })
     }
 
@@ -602,6 +689,10 @@ export class Devp2pWorkerHost {
       if (protocolName === 'ETHY' && msgCode === EthyMessageCodes.STATUS) {
         return 'default'
       }
+      if (protocolName === 'ETHY' && payload.byteLength > MAX_ETHY_MESSAGE_BYTES) {
+        peer.disconnect(DISCONNECT_REASON.SUBPROTOCOL_ERROR)
+        return 'handled'
+      }
       const goodCitizen = this._options?.goodCitizen ?? true
       if (goodCitizen) {
         const handled = this._tryGoodCitizen(peer, protocolName, msgCode, payload)
@@ -616,6 +707,13 @@ export class Devp2pWorkerHost {
               ? 'ethy'
               : null
       if (layer === null) return 'default'
+      if (protocolName === 'ETHY' && msgCode === EthyMessageCodes.SUBTREE_ROOTS) {
+        try {
+          this._ingestSubtreeRootsMessage(RLP.decode(payload))
+        } catch {
+          /* ignore malformed subtree gossip */
+        }
+      }
       if (protocolName === 'ETHY' && msgCode === EthyMessageCodes.ETHY_PEERS) {
         try {
           this._consumeEthyPeers(RLP.decode(payload))
@@ -872,6 +970,9 @@ export class Devp2pWorkerHost {
                 : `0x${this._ethyLocal.latestBlockHash}`) as `0x${string}`,
             )
           : undefined,
+      storageBucketsBitmask: parseMask(this._ethyLocal.storageBucketsBitmask),
+      codeBucketsBitmask: parseMask(this._ethyLocal.codeBucketsBitmask),
+      trieBucketsBitmask: parseMask(this._ethyLocal.trieBucketsBitmask),
     }
   }
 
@@ -883,6 +984,44 @@ export class Devp2pWorkerHost {
       balEarliestBlock: remote.balEarliestBlock.toString(),
       balLatestBlock: remote.balLatestBlock.toString(),
       latestBlockHash: bytesToHex(remote.latestBlockHash),
+      storageBucketsBitmask: remote.storageBucketsBitmask.toString(),
+      codeBucketsBitmask: remote.codeBucketsBitmask.toString(),
+      trieBucketsBitmask: remote.trieBucketsBitmask.toString(),
+    }
+  }
+
+  private _witnessThrottleForPeer(peerKey: string): EthyWitnessServeThrottle {
+    let row = this._ethyWitnessThrottles.get(peerKey)
+    if (row === undefined) {
+      row = { windowStartMs: 0, count: 0 }
+      this._ethyWitnessThrottles.set(peerKey, row)
+    }
+    return row
+  }
+
+  private _ingestSubtreeRootsMessage(payload: unknown): void {
+    if (!Array.isArray(payload) || payload.length < 3) return
+    const anchor = payload[1]
+    if (!(anchor instanceof Uint8Array)) return
+    const anchorBlock = bytesToBigInt(anchor)
+    this._ethySubtreeBook.ingest(anchorBlock, payload[2])
+  }
+
+  private _broadcastEthyPexQueries(): void {
+    const desired = this._networkProfile?.desiredEthyBucketsMask ?? 0
+    if (desired === 0) return
+    for (const peer of this._rlpx?.getPeers() ?? []) {
+      const peerId = peer.getId()
+      if (peerId === null) continue
+      const ethy = this._findEthy(peerId)
+      if (ethy === undefined) continue
+      const reqId = this._ethyPexReqId++
+      const req: Input[] = [
+        bigIntToUnpaddedBytes(reqId),
+        bigIntToUnpaddedBytes(16n),
+        intToUnpaddedBytes(desired),
+      ]
+      ethy.sendMessage(EthyMessageCodes.GET_ETHY_PEERS, req)
     }
   }
 
@@ -899,10 +1038,13 @@ export class Devp2pWorkerHost {
       this._ethyPexSent.add(peerKey)
       const ethy = this._findEthy(peerId)
       if (ethy !== undefined) {
-        ethy.sendMessage(EthyMessageCodes.GET_ETHY_PEERS, [
-          bigIntToUnpaddedBytes(1n),
-          bigIntToUnpaddedBytes(16n),
-        ])
+        const desired = this._networkProfile?.desiredEthyBucketsMask ?? 0
+        const reqId = this._ethyPexReqId++
+        const req: Input[] = [bigIntToUnpaddedBytes(reqId), bigIntToUnpaddedBytes(16n)]
+        if (desired !== 0) {
+          req.push(intToUnpaddedBytes(desired))
+        }
+        ethy.sendMessage(EthyMessageCodes.GET_ETHY_PEERS, req)
       }
     }
   }
@@ -945,10 +1087,18 @@ export class Devp2pWorkerHost {
   private _tryServeEthyGet(peer: Peer, msgCode: number, payload: Uint8Array): boolean {
     const name = EthyMessageCodeNames[msgCode as EthyMessageCodes]
     if (name === undefined || !name.startsWith('GET_')) return false
+    if (deferEthyWitnessToMain(this._ethyLiveProofMode, name)) return false
     const ethy = this._findEthyOnPeer(peer)
     if (ethy === undefined || this._localNodeId === null) return false
-    const decoded = RLP.decode(payload)
+    let decoded: unknown
+    try {
+      decoded = RLP.decode(payload)
+    } catch {
+      return false
+    }
     const excludeId = peer.getId() ?? undefined
+    const peerKey = excludeId !== undefined ? bytesToUnprefixedHex(excludeId) : ''
+    const remote = ethy.peerStatus()
     const served = tryServeEthyGet(
       this._ethyChunks,
       this._rollingStore,
@@ -957,6 +1107,14 @@ export class Devp2pWorkerHost {
       excludeId,
       name,
       decoded,
+      this._sharedCode,
+      this._ethyStorage,
+      {
+        witnessStore: this._ethyWitnessStore,
+        subtreeBook: this._ethySubtreeBook,
+        remoteBucketsBitmask: remote?.bucketsBitmask ?? 0,
+        witnessThrottle: this._witnessThrottleForPeer(peerKey),
+      },
     )
     if (served === undefined) return false
     try {
@@ -966,6 +1124,9 @@ export class Devp2pWorkerHost {
       this._serving.ethyBytesServed += served.bytesEstimate
       if (served.metric === 'chunk') this._serving.ethyChunksServed++
       if (served.metric === 'bal') this._serving.ethyBalBlocksServed++
+      if (served.metric === 'storage') this._serving.ethyStorageServed++
+      if (served.metric === 'code') this._serving.ethyCodesServed++
+      if (served.metric === 'witness') this._serving.ethyWitnessesServed++
       return true
     } catch {
       return false
@@ -1093,10 +1254,10 @@ export class Devp2pWorkerHost {
       const udpPort = dptPeer?.udpPort ?? tcpPort
       let ethyStatus: WorkerEthyPeerStatus | undefined
       for (const protocol of protocols) {
-        if (protocol.constructor.name !== 'ETHY') continue
-        const remote = (protocol as ETHY).peerStatus()
-        if (remote !== null) ethyStatus = this._workerEthyStatusFromRemote(remote)
-        break
+        if (protocol.constructor.name === 'ETHY') {
+          const remote = (protocol as ETHY).peerStatus()
+          if (remote !== null) ethyStatus = this._workerEthyStatusFromRemote(remote)
+        }
       }
       peers.push({
         id,

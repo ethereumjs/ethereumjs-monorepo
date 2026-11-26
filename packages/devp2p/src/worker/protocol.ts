@@ -48,6 +48,10 @@ export interface ThreadedNetworkInitOptions {
   ethyPivotDir?: string
   /** ETHY/0 RLPx slot reserve when the Ethy worker is serving (default `0`). */
   minEthyPeers?: number
+  /** Optional dir for `witnesses/` cache (`EthyWitnessStore`). */
+  ethyWitnessDir?: string
+  sharedCodeDir?: string
+  ethyStorageDir?: string
 }
 
 /** Remote ETHY/0 STATUS fields exposed on worker telemetry. */
@@ -58,6 +62,9 @@ export interface WorkerEthyPeerStatus {
   balEarliestBlock: string
   balLatestBlock: string
   latestBlockHash: string
+  storageBucketsBitmask?: string
+  codeBucketsBitmask?: string
+  trieBucketsBitmask?: string
 }
 
 /** Local ETHY/0 advertisement pushed via {@link setEthyStatus}. */
@@ -68,6 +75,9 @@ export interface WorkerEthyLocalStatus {
   balEarliestBlock?: string
   balLatestBlock?: string
   latestBlockHash?: string
+  storageBucketsBitmask?: string
+  codeBucketsBitmask?: string
+  trieBucketsBitmask?: string
 }
 
 export type WorkerCommand =
@@ -81,6 +91,10 @@ export type WorkerCommand =
   | { type: 'sendSnapMessage'; peerId: Uint8Array; code: number; payload: Uint8Array }
   | { type: 'sendEthyMessage'; peerId: Uint8Array; code: number; payload: Uint8Array }
   | { type: 'setEthyStatus'; status: WorkerEthyLocalStatus }
+  | { type: 'setEthyWitnessDir'; dir?: string }
+  | { type: 'setEthyLiveProofMode'; enabled: boolean }
+  | { type: 'setSharedCodeDir'; dir?: string }
+  | { type: 'setEthyStorageDir'; dir?: string }
   | { type: 'setEthyPivotAccountsDir'; dir?: string }
   | {
       type: 'putEthyAccountChunk'
@@ -116,6 +130,34 @@ export type WorkerCommand =
   | { type: 'setAdvertiseBlockRange'; enabled: boolean }
   | { type: 'notePooledTx'; hashHex: string; raw: Uint8Array }
   | { type: 'dropPooledTx'; hashHex: string }
+  | {
+      type: 'putEthyWitness'
+      witness: {
+        accountHash: Uint8Array
+        anchorBlock: string
+        anchorStateRoot: Uint8Array
+        accountRlpOrEmpty: Uint8Array
+        slots: Array<{ slotHash: Uint8Array; slotValOrEmpty: Uint8Array }>
+        proofNodes: Uint8Array[]
+      }
+    }
+  | {
+      type: 'putEthySubtreeRoots'
+      anchorBlock: string
+      entries: Array<{ bucketIndex: number; subtreeRootHash: Uint8Array }>
+    }
+  | { type: 'putSharedCode'; codeHash: Uint8Array; code: Uint8Array }
+  | {
+      type: 'putEthyStorageEntry'
+      entry: {
+        accountHash: Uint8Array
+        storageRoot: Uint8Array
+        chunkBlockNumber: string
+        slotsSlab64B: Uint8Array
+        complete: boolean
+        proofNodes: Uint8Array[]
+      }
+    }
 
 export interface WorkerServingSnapshot {
   earliestBlock?: string
@@ -130,6 +172,9 @@ export interface WorkerServingSnapshot {
   ethyChunksServed: number
   ethyBalBlocksServed: number
   ethyBytesServed: number
+  ethyStorageServed: number
+  ethyCodesServed: number
+  ethyWitnessesServed: number
 }
 
 export interface WorkerPeerSnapshot {

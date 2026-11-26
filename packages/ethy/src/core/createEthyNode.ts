@@ -14,6 +14,11 @@ import { InvestigationJournal, UserInterestRing } from '../ai/investigationJourn
 import { assertLlmBaseUrl, normalizeLlmBase } from '../ai/llmClient.ts'
 import { DEFAULT_OLLAMA_BASE } from '../ai/localProviders.ts'
 import { ContractDossierStore } from '../contracts/contractDossierStore.ts'
+import {
+  type CustodyMissDelegate,
+  createCustodyMissDelegate,
+  missHookOpts,
+} from '../custody/custodyMissDelegate.ts'
 import { ETHEconomyDataManager } from '../economy/economyDataManager.ts'
 import { type EthySandbox, createEthySandbox } from '../evm/sandbox.ts'
 import { activeHardfork, advertisedForkHash, chainConfigForNetwork } from '../net/chainHardfork.ts'
@@ -84,6 +89,8 @@ export interface EthyNode {
   investigationJournal: InvestigationJournal
   userInterest: UserInterestRing
   sandbox: EthySandbox
+  /** Late-bound WP-16d open-world miss hooks (filled by peer coordinator). */
+  custodyMissDelegate?: CustodyMissDelegate
 }
 
 export function createEthyNode(opts: CreateEthyNodeOptions): EthyNode {
@@ -105,17 +112,20 @@ export function createEthyNode(opts: CreateEthyNodeOptions): EthyNode {
     hardfork,
     customCrypto: { keccak256: ethyKeccak256 },
   })
+  const custodyMiss = demo ? undefined : createCustodyMissDelegate()
   const stateManager = createFlatStateManager(
     demo
       ? { common }
       : {
           common,
           maxResidentAccounts: 500_000,
+          closedBucketsMask: snapStore.closedBucketsMaskFromPlanes(),
           coldAccountLookup: (accountHash) => snapStore.lookupBinaryAccountByHash(accountHash),
           coldAccountBatchLookup: (hashes) => snapStore.lookupBinaryAccountsBatchAsync(hashes),
           coldCodeLookup: (codeHash) => snapStore.lookupCodeByHash(codeHash),
           coldStorageLookup: (accountHash, slotHash) =>
             snapStore.lookupStorageByHash(accountHash, slotHash),
+          ...missHookOpts(custodyMiss?.delegate ?? {}),
         },
   )
   const peerBook = PeerBookStore.open({
@@ -295,6 +305,7 @@ export function createEthyNode(opts: CreateEthyNodeOptions): EthyNode {
           params,
         ),
     },
+    custodyMissDelegate: custodyMiss?.delegate,
   }
   return node
 }

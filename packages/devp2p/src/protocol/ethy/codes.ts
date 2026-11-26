@@ -10,6 +10,10 @@ export const EthyMessageCodes = {
   BAL_RANGE: 0x08,
   GET_ETHY_PEERS: 0x09,
   ETHY_PEERS: 0x0a,
+  GET_STATE_WITNESS: 0x0b,
+  STATE_WITNESS: 0x0c,
+  GET_SUBTREE_ROOTS: 0x0d,
+  SUBTREE_ROOTS: 0x0e,
 } as const
 
 export type EthyMessageCodes = (typeof EthyMessageCodes)[keyof typeof EthyMessageCodes]

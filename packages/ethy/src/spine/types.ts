@@ -62,6 +62,9 @@ export interface PeerTelemetry {
     balEarliestBlock: string
     balLatestBlock: string
     latestBlockHash: string
+    storageBucketsBitmask?: string
+    codeBucketsBitmask?: string
+    trieBucketsBitmask?: string
   }
   /** ETH STATUS completed with a usable head hash. */
   hasHead?: boolean
@@ -126,6 +129,8 @@ export interface CapabilityState {
 export type BalWindowEntry = {
   blockNumber: bigint
   accountCount: number
+  /** Verified block header stateRoot when available. */
+  stateRoot?: Uint8Array
   /** Full JSON for the latest head block only. */
   balJson?: BALJSONBlockAccessList
 }
@@ -170,6 +175,36 @@ export interface EthySpine {
   diskHydrated?: boolean
   /** Local servable ETHY/0 account buckets (`1 << nibble`). */
   ethyBucketsBitmask?: number
+  /** Live subtree tries verified at recent anchor (`trieBucketsBitmask`, WP-16f). */
+  ethyTrieBucketsBitmask?: number
+  ethyStorageBucketsBitmask?: number
+  ethyCodeBucketsBitmask?: number
+  /** Effective `--custody` / config dial (1..16). */
+  custodyDialCount?: number
+  /** Assigned custody buckets for this node (WP-16d). */
+  custodyBuckets?: number[]
+  closedBucketsMask?: number
+  /** Per-bucket background sync percent (`0..100`) when manifest is known (WP-16g). */
+  custodyBucketSyncPct?: Record<number, number>
+  custodyBackgroundActive?: boolean
+  /** BAL-window onboarding before background custody sync (WP-16d). */
+  custodyBalOnboarding?: boolean
+  /** Rolling resolve-path tallies for cockpit /ethy (WP-16g). */
+  custodyResolve?: {
+    local: number
+    tombstone: number
+    ethyProof: number
+    ethyChunk: number
+    snap: number
+  }
+  /** Last verified root-branch assembly note for /ethy (WP-16g). */
+  custodyLastAssembly?: {
+    anchorBlock: string
+    assembled: boolean
+    viaBootstrap: boolean
+  }
+  custodyAssemblyLog?: string[]
+  subtreeApplyMs?: number
   currentSlot: number
   pivotBlockNumber?: bigint
   pivotStateRoot?: Uint8Array
@@ -282,6 +317,8 @@ export interface EthySpine {
 
 export type MachinePlaneStatus = 'active' | 'prewarming' | 'standby' | 'off'
 
+export type SnapDormancyReason = 'default-off' | 'bootstrap-active' | 'dropped-after-close'
+
 export type MachineSpineSnapshot = {
   mode: string
   modeReason: string
@@ -298,6 +335,11 @@ export type MachineSpineSnapshot = {
   transitions: string[]
   vipTarget: number
   discoveryMode: string
+  desiredEthyBucketsMask?: number
+  uncoveredBucketsMask?: number
+  hopBuckets?: number
+  snapDormancyReason?: SnapDormancyReason
+  subtreeApplyMs?: number
 }
 
 export type SpineSwarmSnapshot = {

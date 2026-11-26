@@ -490,6 +490,7 @@ export async function probeContractViewLive(
   const outcome = await ctx.sandbox.runEthCall(
     { to: addr, data: entry.selector, gas: quantityHex(PROBE_GAS) },
     undefined,
+    { lane: 'ai_probe', resolutionPolicy: 'swarm-only' },
   )
   if ('error' in outcome) return { error: outcome.error }
   const hex = String(outcome.result ?? '')

@@ -127,6 +127,7 @@ export function pushBalWindow(
   spine: EthySpine,
   blockNumber: bigint,
   balJson?: BALJSONBlockAccessList,
+  stateRoot?: Uint8Array,
 ): void {
   for (const entry of spine.balWindow) {
     delete entry.balJson
@@ -135,6 +136,7 @@ export function pushBalWindow(
     blockNumber,
     accountCount: balJson?.length ?? 0,
     balJson,
+    stateRoot: stateRoot !== undefined ? new Uint8Array(stateRoot) : undefined,
   })
   if (spine.balWindow.length > 64) {
     spine.balWindow.length = 64
@@ -277,7 +279,10 @@ export type HeadFollowerOpts = {
     receiptsEth69Rlp: Uint8Array
     balRlp?: Uint8Array
   }) => void
-  onBalApplied?: (balJson: BALJSONBlockAccessList) => void
+  onBalApplied?: (
+    balJson: BALJSONBlockAccessList,
+    meta?: { blockNumber?: bigint; stateRoot?: Uint8Array },
+  ) => void
   appendHealBal?: (blockNumber: bigint, balRlp: Uint8Array) => void
   appendHealBundle?: (entry: VerifiedBalBlock) => void
   appendBalTailBatch?: (entries: BalTailBatchEntry[]) => void
@@ -828,9 +833,15 @@ export class BalChainStreamer {
       } else {
         const nearHeadForWindow = seq.targetHead <= row.header.number + 64n
         if (nearHeadForWindow) {
-          pushBalWindow(spine, row.header.number, row.balJson)
+          pushBalWindow(spine, row.header.number, row.balJson, row.header.stateRoot)
         }
         spine.appliedBalCount = (spine.appliedBalCount ?? 0) + 1
+        if (row.balJson !== undefined) {
+          this.opts.onBalApplied?.(row.balJson, {
+            blockNumber: row.header.number,
+            stateRoot: row.header.stateRoot,
+          })
+        }
       }
       if (spine.pivotBridging !== undefined) {
         spine.pivotBridging = {
@@ -1028,13 +1039,18 @@ export class BalChainStreamer {
             ? (address) => shouldApplySyncedAccount(address, syncBuckets)
             : undefined,
       })
-      for (const balJson of balLists) {
-        this.opts.onBalApplied?.(balJson)
+      for (const block of window) {
+        if (block.balJson !== undefined) {
+          this.opts.onBalApplied?.(block.balJson, {
+            blockNumber: block.blockNumber,
+            stateRoot: block.stateRoot,
+          })
+        }
       }
     }
     for (const block of window) {
       const balJson = block.balJson
-      pushBalWindow(spine, block.blockNumber, balJson ?? [])
+      pushBalWindow(spine, block.blockNumber, balJson ?? [], block.stateRoot)
       spine.appliedBalCount = (spine.appliedBalCount ?? 0) + 1
       this.appliedBalLog.push({ ...block })
       if (this.appliedBalLog.length > 64) {

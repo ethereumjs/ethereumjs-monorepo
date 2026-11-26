@@ -271,6 +271,8 @@ export interface NetworkProfile {
   ethyDiscoveryTag: boolean
   /** Prioritize ENR `ethy` peers in the dial queue. */
   preferEthyDiscovery?: boolean
+  /** Bucket mask for outbound `GET_ETHY_PEERS` (custody dial hint). */
+  desiredEthyBucketsMask?: number
 }
 
 export type ProtocolType = (typeof ProtocolType)[keyof typeof ProtocolType]

@@ -29,9 +29,17 @@ export function machineMicroscopeWidget(spine: EthySpine): WidgetSpec {
       [
         'Planes',
         planes !== undefined
-          ? `eth ${planeGlyph(planes.eth)} · ethy ${planeGlyph(planes.ethy)} · snap ${planeGlyph(planes.snap)} · disc ${planeGlyph(planes.discovery)}`
+          ? `eth ${planeGlyph(planes.eth)} · ethy ${planeGlyph(planes.ethy)} · snap ${planeGlyph(planes.snap)} · disc ${planeGlyph(planes.discovery)} · cl ${planeGlyph(planes.cl)}`
           : '—',
       ],
+      [
+        'Coverage',
+        m?.uncoveredBucketsMask !== undefined
+          ? `desired 0x${(m.desiredEthyBucketsMask ?? 0).toString(16)} · uncovered 0x${m.uncoveredBucketsMask.toString(16)} · hop ${m.hopBuckets ?? 0}/16`
+          : '—',
+      ],
+      ['Snap dormancy', m?.snapDormancyReason ?? '—'],
+      ['Subtree apply', m?.subtreeApplyMs !== undefined ? `${m.subtreeApplyMs} ms/block` : '—'],
       ['CL beacon', clCadence(spine)],
       ['ETHY serving', m?.servingEthy ?? '—'],
       ['ENR ethy tag', m?.ethyDiscoveryTag === true ? 'on' : 'off'],

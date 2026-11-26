@@ -1,7 +1,7 @@
 import type { ChainConfig } from '@ethereumjs/common'
 import { Common } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import type { FlatStateManager } from '@ethereumjs/statemanager'
+import { type FlatStateManager, StateMissUnavailableError } from '@ethereumjs/statemanager'
 import { createTxFromBlockBodyData } from '@ethereumjs/tx'
 import { KECCAK256_NULL, createAddressFromString, hexToBytes } from '@ethereumjs/util'
 
@@ -12,6 +12,7 @@ import type { EthySandbox } from '../evm/sandbox.ts'
 import { isNodeAtChainHead, localVerifiedBlock, resolveChainHeadClock } from '../spine/chainHead.ts'
 import type { EthySpine } from '../spine/types.ts'
 import type { RpcBlockWindowStore } from './blockWindowStore.ts'
+import { custodyStatusPayload } from './custodyStatus.ts'
 import { headBlockNumber } from './executionContext.ts'
 import { decodeRpcHeader, formatRpcBlock, formatRpcTransaction } from './formatBlock.ts'
 import { type RpcLog, collectLogsFromBlock, formatRpcReceipt } from './formatReceipt.ts'
@@ -49,6 +50,15 @@ export function initRpcTelemetry(spine: EthySpine, enabled: boolean): void {
 
 function err(code: number, message: string): JsonRpcError {
   return { code, message }
+}
+
+const STATE_MISS_MSG = 'State witness unavailable for open-world key; retry'
+
+function stateMissRpc(e: unknown): { error: JsonRpcError } | undefined {
+  if (e instanceof StateMissUnavailableError) {
+    return { error: err(-32000, STATE_MISS_MSG) }
+  }
+  return undefined
 }
 
 function flatStateError(requested: bigint, head: bigint): JsonRpcError {
@@ -255,7 +265,9 @@ export async function dispatchRpcMethod(
         const addr = createAddressFromString(addrRaw)
         const acc = await ctx.stateManager.getAccount(addr)
         return { result: quantityHex(acc?.balance ?? 0n) }
-      } catch {
+      } catch (e) {
+        const miss = stateMissRpc(e)
+        if (miss !== undefined) return miss
         return { error: err(-32602, 'Invalid address') }
       }
     }
@@ -268,7 +280,9 @@ export async function dispatchRpcMethod(
         const addr = createAddressFromString(addrRaw)
         const acc = await ctx.stateManager.getAccount(addr)
         return { result: quantityHex(acc?.nonce ?? 0n) }
-      } catch {
+      } catch (e) {
+        const miss = stateMissRpc(e)
+        if (miss !== undefined) return miss
         return { error: err(-32602, 'Invalid address') }
       }
     }
@@ -285,7 +299,9 @@ export async function dispatchRpcMethod(
         }
         const code = await ctx.stateManager.getCode(addr)
         return { result: dataHex(code) }
-      } catch {
+      } catch (e) {
+        const miss = stateMissRpc(e)
+        if (miss !== undefined) return miss
         return { error: err(-32602, 'Invalid address') }
       }
     }
@@ -303,7 +319,9 @@ export async function dispatchRpcMethod(
         const addr = createAddressFromString(addrRaw)
         const value = await ctx.stateManager.getStorage(addr, slot)
         return { result: data32Hex(value) }
-      } catch {
+      } catch (e) {
+        const miss = stateMissRpc(e)
+        if (miss !== undefined) return miss
         return { error: err(-32602, 'Invalid address or slot') }
       }
     }
@@ -616,9 +634,12 @@ export async function dispatchRpcMethod(
                 nextEventSummary: ctx.spine.machine.nextEventSummary,
               }
             : undefined,
+          custody: custodyStatusPayload(ctx.spine),
         },
       }
     }
+    case 'ethy_custodyStatus':
+      return { result: custodyStatusPayload(ctx.spine) }
     case 'ethy_economy':
       return { result: ctx.spine.economy ?? {} }
     case 'eth_call': {

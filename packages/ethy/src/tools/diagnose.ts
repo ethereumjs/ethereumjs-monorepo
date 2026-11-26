@@ -10,8 +10,10 @@ function countSeedBits16(mask: number): number {
   return n
 }
 
-function parseBucketsBitmask(raw: string): number {
-  return raw.startsWith('0x') ? Number.parseInt(raw, 16) : Number.parseInt(raw, 10)
+function parseBucketsBitmask(raw: string | undefined): number {
+  if (raw === undefined || raw.length === 0) return 0
+  const n = raw.startsWith('0x') ? Number.parseInt(raw, 16) : Number.parseInt(raw, 10)
+  return Number.isFinite(n) ? n & 0xffff : 0
 }
 
 export function peerEthyBucketsLabel(p: PeerTelemetry): string {
@@ -21,12 +23,93 @@ export function peerEthyBucketsLabel(p: PeerTelemetry): string {
   return `${bits}/16`
 }
 
+function buildCustodyMatrixRows(spine: EthySpine): string[][] {
+  const assigned = new Set(spine.custodyBuckets ?? [])
+  const closedMask = spine.closedBucketsMask ?? 0
+  const accMask = spine.ethyBucketsBitmask ?? 0
+  const codeMask = spine.ethyCodeBucketsBitmask ?? 0
+  const storMask = spine.ethyStorageBucketsBitmask ?? 0
+  const trieMask = spine.ethyTrieBucketsBitmask ?? 0
+  const pctMap = spine.custodyBucketSyncPct ?? {}
+
+  const triePeersByBucket = new Uint8Array(16)
+  const flatPeersByBucket = new Uint8Array(16)
+  for (const p of spine.peers.values()) {
+    if (p.ethySession !== true || p.ethyStatus === undefined) continue
+    const bMask = parseBucketsBitmask(p.ethyStatus.bucketsBitmask)
+    const tMask = parseBucketsBitmask(p.ethyStatus.trieBucketsBitmask)
+    for (let b = 0; b < 16; b++) {
+      if ((bMask & (1 << b)) === 0) continue
+      if ((tMask & (1 << b)) !== 0) triePeersByBucket[b]!++
+      else flatPeersByBucket[b]!++
+    }
+  }
+
+  const rows: string[][] = []
+  for (let b = 0; b < 16; b++) {
+    const bit = 1 << b
+    const isClosed = (closedMask & bit) !== 0
+    const isTrie = (trieMask & bit) !== 0
+    const isAssigned = assigned.has(b)
+    const pct = pctMap[b]
+    const localState = isClosed
+      ? isTrie
+        ? 'Closed + Trie ✓'
+        : 'Closed Flat'
+      : isAssigned
+        ? pct !== undefined
+          ? `Syncing ${pct}%`
+          : 'Syncing'
+        : 'Open'
+    const planes = `${(accMask & bit) !== 0 ? 'Acc' : '—'} · ${(codeMask & bit) !== 0 ? 'Code' : '—'} · ${(storMask & bit) !== 0 ? 'Stor' : '—'}`
+    const trieN = triePeersByBucket[b]!
+    const flatN = flatPeersByBucket[b]!
+    const swarmCell =
+      trieN + flatN === 0
+        ? '0 peers'
+        : trieN > 0 && flatN > 0
+          ? `${trieN} trie · ${flatN} flat`
+          : trieN > 0
+            ? `${trieN} trie`
+            : `${flatN} flat`
+    const privacy = isClosed ? '🔒 Private' : trieN + flatN > 0 ? '1-hop' : 'Uncovered'
+    rows.push([`0x${b.toString(16)}`, localState, planes, swarmCell, privacy])
+  }
+  return rows
+}
+
+function ethyPeersDebugSection(spine: EthySpine): DebugSectionSpec {
+  const entries: Array<{ key: string; value: string }> = []
+  for (const p of spine.peers.values()) {
+    if (p.ethySession !== true) continue
+    const st = p.ethyStatus
+    if (st === undefined) {
+      entries.push({ key: p.id.slice(0, 12), value: 'handshake pending' })
+      continue
+    }
+    const acc = parseBucketsBitmask(st.bucketsBitmask).toString(16).padStart(4, '0')
+    const stor = parseBucketsBitmask(st.storageBucketsBitmask).toString(16).padStart(4, '0')
+    const code = parseBucketsBitmask(st.codeBucketsBitmask).toString(16).padStart(4, '0')
+    const trie = parseBucketsBitmask(st.trieBucketsBitmask).toString(16).padStart(4, '0')
+    entries.push({
+      key: p.id.slice(0, 12),
+      value: `pivot #${st.basePivotBlock} · acc 0x${acc} · stor 0x${stor} · code 0x${code} · trie 0x${trie}`,
+    })
+  }
+  return {
+    title: 'Connected ETHY/0 peers',
+    entries: entries.length > 0 ? entries : [{ key: '—', value: 'No active ETHY/0 peers' }],
+  }
+}
+
 export function ethyOverviewWidget(spine: EthySpine): WidgetSpec {
   const transport = spine.syncTransport ?? 'unset'
   const localBits = countSeedBits16(spine.ethyBucketsBitmask ?? 0)
   const s = spine.serving
   const chunks = s?.ethyChunksServed ?? 0
   const balBlocks = s?.ethyBalBlocksServed ?? 0
+  const witnesses = s?.ethyWitnessesServed ?? 0
+  const codes = s?.ethyCodesServed ?? 0
   const ethyPeers = [...spine.peers.values()].filter((p) => p.ethySession === true).length
   const pivot =
     spine.pivotBlockNumber !== undefined
@@ -59,85 +142,134 @@ export function ethyOverviewWidget(spine: EthySpine): WidgetSpec {
     swarm?.shadowRefresh?.mintBucket !== undefined
       ? `0x${swarm.shadowRefresh.mintBucket.toString(16)}`
       : '—'
+  const summaryRows: string[][] = [
+    ['Transport', transport],
+    ['Local seed buckets', `${localBits}/16`],
+    ['ETHY sessions', String(ethyPeers)],
+    ['Pivot', pivot],
+    ['Generation age (blocks)', genAge],
+    ['Disk BAL tail', balTail],
+    ['Shadow refresh', shadowMode],
+    ['Servable head window (eth)', servableWindow],
+    ['Headers served (eth)', String(s?.headersServed ?? 0)],
+    ['Bodies served (eth)', String(s?.bodiesServed ?? 0)],
+    ['Receipts served (eth)', String(s?.receiptsServed ?? 0)],
+    ['BALs served (eth)', String(s?.accessListsServed ?? 0)],
+    ['Witnesses served (ETHY)', String(witnesses)],
+    ['Chunks served (ETHY)', String(chunks)],
+    ['Code served (ETHY)', String(codes)],
+    ['BAL blocks served (ETHY)', String(balBlocks)],
+  ]
+  const shadowDebug: DebugSectionSpec = {
+    title: 'Shadow refresh',
+    entries: [
+      { key: 'Mode', value: shadowMode },
+      ...(swarm?.shadowRefresh?.blockedReason !== undefined
+        ? [
+            {
+              key: 'Blocked',
+              value:
+                swarm.shadowRefresh.freeBytes !== undefined &&
+                swarm.shadowRefresh.requiredFreeBytes !== undefined
+                  ? `${swarm.shadowRefresh.blockedReason} (${(Number(swarm.shadowRefresh.freeBytes) / 1024 ** 3).toFixed(1)} / ${(Number(swarm.shadowRefresh.requiredFreeBytes) / 1024 ** 3).toFixed(1)} GiB)`
+                  : swarm.shadowRefresh.blockedReason,
+            },
+          ]
+        : []),
+      {
+        key: 'Progress',
+        value:
+          swarm?.shadowRefresh?.progressPct !== undefined
+            ? `${swarm.shadowRefresh.progressPct}%`
+            : '—',
+      },
+      {
+        key: 'Target block',
+        value:
+          swarm?.shadowRefresh?.targetBlock !== undefined
+            ? `#${swarm.shadowRefresh.targetBlock.toString()}`
+            : '—',
+      },
+      { key: 'Election deadline (UTC)', value: electionDeadline },
+      { key: 'Mint bucket', value: mintBucket },
+      {
+        key: 'Suppressed by',
+        value: swarm?.shadowRefresh?.suppressedByPeerId ?? '—',
+      },
+      {
+        key: 'Partial minter mask',
+        value:
+          swarm?.shadowRefresh?.partialMinterMask !== undefined
+            ? `0x${swarm.shadowRefresh.partialMinterMask.toString(16)}`
+            : '—',
+      },
+      {
+        key: 'Suppression state',
+        value: swarm?.shadowRefresh?.suppressionState ?? '—',
+      },
+      {
+        key: 'Stalled minters',
+        value:
+          swarm?.shadowRefresh?.stalledMinterPeerIds !== undefined
+            ? swarm.shadowRefresh.stalledMinterPeerIds.join(', ')
+            : '—',
+      },
+    ],
+  }
+
+  const assigned = spine.custodyBuckets
+  if (assigned !== undefined && assigned.length > 0) {
+    const modeLabel = assigned.length === 16 ? 'Full 16/16' : `Custody ${assigned.length}/16`
+    const assignedText =
+      assigned.length === 16 ? '0x0..0xf' : assigned.map((b) => `#${b.toString(16)}`).join(', ')
+    const lastAsm = spine.custodyLastAssembly
+    const rootStatus =
+      lastAsm !== undefined
+        ? `#${lastAsm.anchorBlock} (${lastAsm.viaBootstrap ? 'bootstrap 530B' : '16/16 assembled'})`
+        : 'pending'
+    const res = spine.custodyResolve
+    const resolveText =
+      res !== undefined
+        ? `local ${res.local} · tomb ${res.tombstone} · prf ${res.ethyProof} · ch ${res.ethyChunk} · snap ${res.snap}`
+        : 'local 0 · tomb 0 · prf 0 · ch 0 · snap 0'
+    const asmLog = spine.custodyAssemblyLog ?? []
+    const asmDebug: DebugSectionSpec = {
+      title: 'Root assembly log (recent)',
+      entries:
+        asmLog.length > 0
+          ? asmLog.map((line, i) => ({ key: String(i + 1), value: line }))
+          : [{ key: '—', value: 'No root assemblies yet' }],
+    }
+    return {
+      kind: 'table',
+      title: 'ETHY/0 custody matrix',
+      preface: [
+        { key: 'Custody mode', value: `${modeLabel} (${assignedText})` },
+        { key: 'BAL horizon', value: balTail },
+        { key: 'RootNode assembly', value: rootStatus },
+        { key: 'Resolve breakdown', value: resolveText },
+        { key: 'Local enode', value: localEnode },
+      ],
+      headers: ['Bucket', 'Local state', 'Planes', '1-hop swarm', 'Privacy'],
+      rows: buildCustodyMatrixRows(spine),
+      secondaryTable: {
+        title: 'ETHY/0 swarm',
+        headers: ['Field', 'Value'],
+        rows: summaryRows,
+      },
+      debugPage: [ethyPeersDebugSection(spine), asmDebug, shadowDebug],
+      assistantComment:
+        'Unified Custody ETHY/0: closed buckets resolve privately on disk; open buckets resolve in 1 hop from connected custodians with 0 snap/1.',
+    }
+  }
+
   return {
     kind: 'table',
     title: 'ETHY/0 swarm',
     preface: [{ key: 'Local enode', value: localEnode }],
     headers: ['Field', 'Value'],
-    debugPage: [
-      {
-        title: 'Shadow refresh',
-        entries: [
-          { key: 'Mode', value: shadowMode },
-          ...(swarm?.shadowRefresh?.blockedReason !== undefined
-            ? [
-                {
-                  key: 'Blocked',
-                  value:
-                    swarm.shadowRefresh.freeBytes !== undefined &&
-                    swarm.shadowRefresh.requiredFreeBytes !== undefined
-                      ? `${swarm.shadowRefresh.blockedReason} (${(Number(swarm.shadowRefresh.freeBytes) / 1024 ** 3).toFixed(1)} / ${(Number(swarm.shadowRefresh.requiredFreeBytes) / 1024 ** 3).toFixed(1)} GiB)`
-                      : swarm.shadowRefresh.blockedReason,
-                },
-              ]
-            : []),
-          {
-            key: 'Progress',
-            value:
-              swarm?.shadowRefresh?.progressPct !== undefined
-                ? `${swarm.shadowRefresh.progressPct}%`
-                : '—',
-          },
-          {
-            key: 'Target block',
-            value:
-              swarm?.shadowRefresh?.targetBlock !== undefined
-                ? `#${swarm.shadowRefresh.targetBlock.toString()}`
-                : '—',
-          },
-          { key: 'Election deadline (UTC)', value: electionDeadline },
-          { key: 'Mint bucket', value: mintBucket },
-          {
-            key: 'Suppressed by',
-            value: swarm?.shadowRefresh?.suppressedByPeerId ?? '—',
-          },
-          {
-            key: 'Partial minter mask',
-            value:
-              swarm?.shadowRefresh?.partialMinterMask !== undefined
-                ? `0x${swarm.shadowRefresh.partialMinterMask.toString(16)}`
-                : '—',
-          },
-          {
-            key: 'Suppression state',
-            value: swarm?.shadowRefresh?.suppressionState ?? '—',
-          },
-          {
-            key: 'Stalled minters',
-            value:
-              swarm?.shadowRefresh?.stalledMinterPeerIds !== undefined
-                ? swarm.shadowRefresh.stalledMinterPeerIds.join(', ')
-                : '—',
-          },
-        ],
-      },
-    ],
-    rows: [
-      ['Transport', transport],
-      ['Local seed buckets', `${localBits}/16`],
-      ['ETHY sessions', String(ethyPeers)],
-      ['Pivot', pivot],
-      ['Generation age (blocks)', genAge],
-      ['Disk BAL tail', balTail],
-      ['Shadow refresh', shadowMode],
-      ['Servable head window (eth)', servableWindow],
-      ['Headers served (eth)', String(s?.headersServed ?? 0)],
-      ['Bodies served (eth)', String(s?.bodiesServed ?? 0)],
-      ['Receipts served (eth)', String(s?.receiptsServed ?? 0)],
-      ['BALs served (eth)', String(s?.accessListsServed ?? 0)],
-      ['Chunks served (ETHY)', String(chunks)],
-      ['BAL blocks served (ETHY)', String(balBlocks)],
-    ],
+    debugPage: [ethyPeersDebugSection(spine), shadowDebug],
+    rows: summaryRows,
     assistantComment:
       transport === 'ethy'
         ? 'Base state downloads via ETHY/0 proven chunks; snap cursors may assist unfinished buckets.'
