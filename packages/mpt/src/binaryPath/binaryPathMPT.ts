@@ -3,7 +3,7 @@ import { EthereumJSErrorWithoutCode, bytesToUnprefixedHex, equalsBytes } from '@
 import { keccak_256 } from '@noble/hashes/sha3.js'
 
 import { PathBackedTrie } from './pathBackedTrie.ts'
-import { compareKeysLex, packPath } from './pathKey.ts'
+import { compareKeysLex } from './pathKey.ts'
 import {
   createMultiProof as buildMultiProof,
   createProof as buildProof,
@@ -33,7 +33,14 @@ export class BinaryPathMPT {
     this._anchors = new AnchorSnapshotRing(opts.maxAnchorSnapshots ?? 4)
     this._leaves = opts.leaves
     const store = opts.store ?? new InMemoryBinaryPathStore()
-    this._trie = new PathBackedTrie(store, this._keccak, opts.prefixNibbles ?? [], this._anchors)
+    const interiorOnly = opts.leaves !== undefined
+    this._trie = new PathBackedTrie(
+      store,
+      this._keccak,
+      opts.prefixNibbles ?? [],
+      this._anchors,
+      interiorOnly,
+    )
   }
 
   static async buildFromSortedStream(
@@ -43,7 +50,7 @@ export class BinaryPathMPT {
     opts?: BinaryPathMPTOpts,
   ): Promise<BinaryPathMPT> {
     const trie = new BinaryPathMPT(opts)
-    const batch: BinaryPathBatchEntry[] = []
+    const batch: { key: Uint8Array; value: Uint8Array }[] = []
     if (Symbol.asyncIterator in Object(entries)) {
       for await (const row of entries as AsyncIterable<{ key: Uint8Array; value: Uint8Array }>) {
         batch.push({ key: row.key, value: row.value })
@@ -59,7 +66,17 @@ export class BinaryPathMPT {
         throw EthereumJSErrorWithoutCode('Duplicate keys in sorted stream')
       }
     }
-    await trie.applyBatch(batch)
+
+    const keys = batch.map((row) => row.key)
+    const values = batch.map((row) => row.value)
+    await trie._trie.putSortedLeaves(keys, values)
+    if (trie._leaves?.put !== undefined) {
+      for (const row of batch) {
+        const copy = new Uint8Array(row.value.length)
+        copy.set(row.value)
+        await trie._leaves.put(row.key, copy)
+      }
+    }
     return trie
   }
 
@@ -83,7 +100,18 @@ export class BinaryPathMPT {
 
   async get(key: Uint8Array): Promise<Uint8Array | null> {
     this._trie.assertKeyMatchesPrefix(key)
-    return this._trie.get(key, false)
+    const fromTrie = await this._trie.get(key, false)
+    if (fromTrie !== null) {
+      return fromTrie
+    }
+    if (this._leaves !== undefined) {
+      const external = await this._leaves.get(key)
+      if (external === undefined || external === null) {
+        return null
+      }
+      return external
+    }
+    return null
   }
 
   async put(key: Uint8Array, value: Uint8Array): Promise<void> {
@@ -93,9 +121,16 @@ export class BinaryPathMPT {
       await this.del(key)
       return
     }
-    await this._trie.put(key, value)
+    const valueCopy = new Uint8Array(value.length)
+    valueCopy.set(value)
+    await this._trie.put(key, valueCopy)
+    if (this._leaves?.put !== undefined) {
+      await this._leaves.put(key, valueCopy)
+    }
     if (equalsBytes(this._trie.root(), this.EMPTY_TRIE_ROOT)) {
       await this._trie.clearPathStore()
+    } else {
+      await this._trie.flushPathStore()
     }
   }
 
@@ -103,8 +138,13 @@ export class BinaryPathMPT {
     this._guardLeavesWritable()
     this._trie.assertKeyMatchesPrefix(key)
     await this._trie.del(key)
+    if (this._leaves?.del !== undefined) {
+      await this._leaves.del(key)
+    }
     if (equalsBytes(this._trie.root(), this.EMPTY_TRIE_ROOT)) {
       await this._trie.clearPathStore()
+    } else {
+      await this._trie.flushPathStore()
     }
   }
 
@@ -115,14 +155,32 @@ export class BinaryPathMPT {
     for (const m of sorted) {
       dedup.set(bytesToUnprefixedHex(m.key), m)
     }
+    const puts: { key: Uint8Array; value: Uint8Array }[] = []
+    const deleteKeys: Uint8Array[] = []
     for (const m of dedup.values()) {
       this._trie.assertKeyMatchesPrefix(m.key)
       if (m.value === null || m.value.length === 0) {
-        await this._trie.del(m.key)
+        deleteKeys.push(m.key)
       } else {
-        await this._trie.put(m.key, m.value)
+        const copy = new Uint8Array(m.value.length)
+        copy.set(m.value)
+        puts.push({ key: m.key, value: copy })
       }
     }
+    for (const key of deleteKeys) {
+      await this.del(key)
+    }
+    if (puts.length > 0) {
+      const keys = puts.map((p) => p.key)
+      const values = puts.map((p) => p.value)
+      await this._trie.putSortedLeaves(keys, values)
+      if (this._leaves?.put !== undefined) {
+        for (const row of puts) {
+          await this._leaves.put(row.key, row.value)
+        }
+      }
+    }
+    await this._trie.flushPathStore()
     if (equalsBytes(this._trie.root(), this.EMPTY_TRIE_ROOT)) {
       await this._trie.clearPathStore()
     }

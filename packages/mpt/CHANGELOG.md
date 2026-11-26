@@ -10,7 +10,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Changes
 
-- Additive opt-in `BinaryPathMPT` strain (`packages/mpt/src/binaryPath/`): path-keyed node store, packed branch/extension/leaf codec with RLP hash trailer, reverse-diff anchor snapshots, EIP-1186 proof helpers, and `buildFromSortedStream` — consensus roots match classic `MerklePatriciaTrie` with `useKeyHashing: false`
+- Additive opt-in `BinaryPathMPT` strain (`packages/mpt/src/binaryPath/`): path-keyed node store, packed branch/extension/leaf codec with RLP hash trailer, reverse-diff anchor snapshots, EIP-1186 proof helpers, `prefixNibbles` custody subtrees (`keyPathNibbles` on `MerklePatriciaTrie`), optional external leaf store (interior-only path persistence), and `buildFromSortedStream` via `putSortedLeaves` with 4096-node path-store flushes — consensus roots match classic `MerklePatriciaTrie` with `useKeyHashing: false`
 - `MerklePatriciaTrie.putSortedLeaves()` batches sorted inserts with a dirty stack so each modified node is hashed once; `verifyMerkleRangeProof` uses it on all-elements and two-edge paths
 - `findPath()` uses a direct single-child walk instead of `WalkController` (same `Path` result; faster warm `get` / `findPath` on MapDB benches)
 

@@ -1,3 +1,4 @@
+import { RLP } from '@ethereumjs/rlp'
 import {
   MapDB,
   compareBytes,
@@ -6,14 +7,17 @@ import {
   randomBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 import { assert, describe, expect, it } from 'vitest'
 
 import {
   BinaryPathMPT,
+  BranchMPTNode,
   MerklePatriciaTrie,
   verifyMerkleProof,
   verifyMerkleRangeProof,
 } from '../../src/index.ts'
+import type { NodeReferenceOrRawMPTNode } from '../../src/types.ts'
 
 function classicTrie() {
   return new MerklePatriciaTrie({ useKeyHashing: false, db: new MapDB() })
@@ -117,6 +121,71 @@ describe('BinaryPathMPT', () => {
     await expect(trie.put(keyWithLeadingNibble(0xb), randomBytes(8))).rejects.toThrow(/prefix/)
   })
 
+  it('16-way prefixed subtrees match classic full trie root', async () => {
+    const classic = classicTrie()
+    const subtrees = Array.from({ length: 16 }, (_, n) => new BinaryPathMPT({ prefixNibbles: [n] }))
+    const keys: Uint8Array[] = []
+
+    for (let i = 0; i < 2000; i++) {
+      const n = i % 16
+      const key = keyWithLeadingNibble(n)
+      const val = randomBytes(20)
+      keys.push(key)
+      await classic.put(key, val)
+      await subtrees[n]!.put(key, val)
+    }
+
+    await assert16WayAssembly(classic, subtrees)
+
+    for (let round = 0; round < 30; round++) {
+      const key = keys[randomBytes(2)[0]! % keys.length]!
+      const n = key[0]! >> 4
+      const op = randomBytes(1)[0]! % 2
+      if (op === 0) {
+        const nv = randomBytes(24)
+        await classic.put(key, nv)
+        await subtrees[n]!.put(key, nv)
+      } else {
+        await classic.del(key)
+        await subtrees[n]!.del(key)
+        const idx = keys.findIndex((k) => equalsBytes(k, key))
+        if (idx >= 0) keys.splice(idx, 1)
+        const nk = keyWithLeadingNibble(n)
+        const nv = randomBytes(20)
+        keys.push(nk)
+        await classic.put(nk, nv)
+        await subtrees[n]!.put(nk, nv)
+      }
+      await assert16WayAssembly(classic, subtrees)
+    }
+  })
+
+  it('external leaf store backs values without duplicating leaf path records', async () => {
+    const leafMap = new Map<string, Uint8Array>()
+    const leaves = {
+      get: async (key: Uint8Array) => leafMap.get(Buffer.from(key).toString('hex')) ?? null,
+      put: async (key: Uint8Array, val: Uint8Array) => {
+        leafMap.set(Buffer.from(key).toString('hex'), val)
+      },
+      del: async (key: Uint8Array) => {
+        leafMap.delete(Buffer.from(key).toString('hex'))
+      },
+    }
+    const classic = classicTrie()
+    const binary = new BinaryPathMPT({ leaves })
+    for (let i = 0; i < 100; i++) {
+      const key = randomBytes(32)
+      const val = randomBytes(16)
+      await classic.put(key, val)
+      await binary.put(key, val)
+      await assertRootsMatch(classic, binary)
+      expect(await binary.get(key)).toEqual(val)
+    }
+    const rootPath = new Uint8Array([0])
+    const rootRecord = await binary._inner.pathStore.getNode(rootPath)
+    expect(rootRecord === null || !hasLeafTag(rootRecord)).toBe(true)
+  })
+
   it('proofs verify against classic — inclusion, exclusion, multi, range, anchor', async () => {
     const classic = classicTrie()
     const binary = new BinaryPathMPT()
@@ -200,6 +269,50 @@ describe('BinaryPathMPT', () => {
     expect(classicMs + binaryMs).toBeLessThan(2000)
   })
 })
+
+async function assert16WayAssembly(classic: MerklePatriciaTrie, subtrees: BinaryPathMPT[]) {
+  const slots = subtrees.map((t) => t.branchSlotReference())
+  for (let n = 0; n < 16; n++) {
+    const fromClassic = await classicBranchSlot(classic, n)
+    assert(equalsBytes(fromClassic, subtrees[n]!.root()), `subtree ${n} root vs classic slot`)
+    assert(equalsBytes(slots[n]!, fromClassic), `branchSlotReference ${n}`)
+  }
+  assert(equalsBytes(classic.root(), assemble16WayRoot(slots)))
+}
+
+function assemble16WayRoot(slots: ReadonlyArray<Uint8Array>): Uint8Array {
+  const branch: Uint8Array[] = []
+  for (let i = 0; i < 16; i++) {
+    branch.push(slots[i] ?? new Uint8Array(0))
+  }
+  branch.push(new Uint8Array(0))
+  return keccak_256(RLP.encode(branch))
+}
+
+async function classicBranchSlot(trie: MerklePatriciaTrie, slot: number): Promise<Uint8Array> {
+  if (equalsBytes(trie.root(), trie.EMPTY_TRIE_ROOT)) {
+    return new Uint8Array(0)
+  }
+  const root = await trie.lookupNode(trie.root())
+  if (!(root instanceof BranchMPTNode)) {
+    return trie.root()
+  }
+  const ref = root.getBranch(slot)
+  if (ref === null) return new Uint8Array(0)
+  return branchRefToSlotBytes(ref)
+}
+
+function branchRefToSlotBytes(ref: NodeReferenceOrRawMPTNode): Uint8Array {
+  if (ref instanceof Uint8Array) {
+    return ref
+  }
+  return RLP.encode(ref)
+}
+
+function hasLeafTag(record: Uint8Array): boolean {
+  const bodyEnd = record.length - 32
+  return bodyEnd > 0 && record[0] === 0x03
+}
 
 function hexToKey(hex: string): Uint8Array {
   const out = new Uint8Array(hex.length / 2)
