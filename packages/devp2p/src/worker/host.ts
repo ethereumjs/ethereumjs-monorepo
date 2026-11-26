@@ -371,7 +371,8 @@ export class Devp2pWorkerHost {
           this._syncBlockRangeFromStore(true)
           break
         }
-        case 'setNetworkProfile':
+        case 'setNetworkProfile': {
+          const prevDesired = this._networkProfile?.desiredEthyBucketsMask ?? 0
           if (
             this._networkProfile !== null &&
             networkProfilesEqual(this._networkProfile, cmd.profile)
@@ -380,7 +381,12 @@ export class Devp2pWorkerHost {
           }
           this._networkProfile = cmd.profile
           this._rlpx?.applyNetworkProfile(cmd.profile)
+          const nextDesired = cmd.profile.desiredEthyBucketsMask ?? 0
+          if (prevDesired !== nextDesired) {
+            this._broadcastEthyPexQueries()
+          }
           break
+        }
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err)
@@ -998,6 +1004,21 @@ export class Devp2pWorkerHost {
     if (!(anchor instanceof Uint8Array)) return
     const anchorBlock = bytesToBigInt(anchor)
     this._ethySubtreeBook.ingest(anchorBlock, payload[2])
+  }
+
+  private _broadcastEthyPexQueries(): void {
+    const desired = this._networkProfile?.desiredEthyBucketsMask ?? 0
+    for (const peer of this._rlpx?.getPeers() ?? []) {
+      const peerId = peer.getId()
+      if (peerId === null) continue
+      const ethy = this._findEthy(peerId)
+      if (ethy === undefined) continue
+      const req: Input[] = [bigIntToUnpaddedBytes(1n), bigIntToUnpaddedBytes(16n)]
+      if (desired !== 0) {
+        req.push(intToUnpaddedBytes(desired))
+      }
+      ethy.sendMessage(EthyMessageCodes.GET_ETHY_PEERS, req)
+    }
   }
 
   private _onRemoteEthyStatus(peer: Peer, remote: EthyPeerStatus): void {
