@@ -499,9 +499,9 @@ export class CustodyStateResolver {
       const decoded = RLP.decode(raw) as unknown[]
       const origin = decoded[2] as Uint8Array
       const last = decoded[3] as Uint8Array
+      const root = decoded[5] as Uint8Array
       const slab = decoded[7] as Uint8Array
       const proofs = decoded[8] as Uint8Array[]
-      const root = decoded[6] as Uint8Array
       const hasRight = Number(decoded[4] ?? 0) !== 0
       const verified = await verifyProvenAccountChunkJob({
         chunkStateRoot: root,

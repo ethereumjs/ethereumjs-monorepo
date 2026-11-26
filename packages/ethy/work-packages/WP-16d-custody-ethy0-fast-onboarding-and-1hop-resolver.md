@@ -197,4 +197,6 @@ flowchart TD
 
 **Tranche 9:** `custodyPolicyIsolation.spec.ts` — `FlatStateManager` + wired resolver: `swarm-only` / `local-only` → `StateMissUnavailableError`, `full` resolves binary account, default `bootNetworkProfile` omits `snap/1`. `custodyEthyV02Interop.spec.ts` — legacy accounts-only STATUS (no storage/code masks) does not emit `GET_PROVEN_STORAGE_OR_CODE`; v0.4 storage peer still serves kind-2 when mixed.
 
-**Still open:** PEX redundancy gates (WP-16g); full §4 zero-snap cold-miss loopback (RPC + BAL fold).
+**Tranche 10:** Fix `tryAccountChunk` `PROVEN_ACCOUNT_CHUNK` tuple decode (`chunkStateRoot` field 5, not 6 — matches `parseProvenAccountChunk` / `ethyServer`). `custodyColdMissLoopback.spec.ts` — seeded pivot loopback: witness ladder then `0x03` chunk, `eth_getBalance`, zero `snap/1`; closed-world cache stops extra ETHY after `markBucketClosed`.
+
+**Still open:** PEX redundancy gates (WP-16g); §4 remainder (storage/code/`eth_call` cold miss + BAL fold over post-pivot mutations).
