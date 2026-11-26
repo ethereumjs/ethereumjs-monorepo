@@ -92,6 +92,7 @@ export type WorkerCommand =
   | { type: 'sendEthyMessage'; peerId: Uint8Array; code: number; payload: Uint8Array }
   | { type: 'setEthyStatus'; status: WorkerEthyLocalStatus }
   | { type: 'setEthyWitnessDir'; dir?: string }
+  | { type: 'setEthyLiveProofMode'; enabled: boolean }
   | { type: 'setSharedCodeDir'; dir?: string }
   | { type: 'setEthyStorageDir'; dir?: string }
   | { type: 'setEthyPivotAccountsDir'; dir?: string }

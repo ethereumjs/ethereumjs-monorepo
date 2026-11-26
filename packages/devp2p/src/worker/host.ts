@@ -59,6 +59,7 @@ import type { PeerInfo } from '../types.ts'
 import { pk2id } from '../util.ts'
 import { dptDnsOptionsFromCommon, resolveWorkerBootnodes } from './bootNodes.ts'
 import { EthyKnownPeerBook } from './ethyPex.ts'
+import { deferEthyWitnessToMain } from './ethyServePolicy.ts'
 import type {
   ThreadedNetworkInitOptions,
   WorkerCommand,
@@ -173,6 +174,8 @@ export class Devp2pWorkerHost {
   private _ethyPexSent = new Set<string>()
   private _ethyWitnessStore = new EthyWitnessStore()
   private _ethySubtreeBook = new EthySubtreeRootBook()
+  /** When true, inbound `0x0b` is forwarded to main for live subtree proof serving (WP-16f). */
+  private _ethyLiveProofMode = false
   private readonly _ethyWitnessThrottles = new Map<string, EthyWitnessServeThrottle>()
   private _sharedCode = new SharedCodeDisk()
   private _ethyStorage = new EthyStorageStore()
@@ -284,6 +287,9 @@ export class Devp2pWorkerHost {
           break
         case 'setEthyWitnessDir':
           this._ethyWitnessStore.setDataDir(cmd.dir)
+          break
+        case 'setEthyLiveProofMode':
+          this._ethyLiveProofMode = cmd.enabled
           break
         case 'putEthyWitness': {
           const w = cmd.witness
@@ -1055,6 +1061,7 @@ export class Devp2pWorkerHost {
   private _tryServeEthyGet(peer: Peer, msgCode: number, payload: Uint8Array): boolean {
     const name = EthyMessageCodeNames[msgCode as EthyMessageCodes]
     if (name === undefined || !name.startsWith('GET_')) return false
+    if (deferEthyWitnessToMain(this._ethyLiveProofMode, name)) return false
     const ethy = this._findEthyOnPeer(peer)
     if (ethy === undefined || this._localNodeId === null) return false
     let decoded: unknown

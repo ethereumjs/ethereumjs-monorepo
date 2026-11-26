@@ -165,6 +165,11 @@ export class Devp2pWorkerClient {
     this._send({ type: 'setEthyWitnessDir', dir })
   }
 
+  /** Forward inbound `0x0b` to main instead of answering from worker witness cache. */
+  setEthyLiveProofMode(enabled: boolean): void {
+    this._send({ type: 'setEthyLiveProofMode', enabled })
+  }
+
   setSharedCodeDir(dir: string | undefined): void {
     this._send({ type: 'setSharedCodeDir', dir })
   }
