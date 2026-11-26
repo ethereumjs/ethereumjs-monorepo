@@ -183,4 +183,6 @@ flowchart TD
 
 **Tranche 2:** `custodyOnboarding.ts` BAL-window pivot + `beginCustodyBalOnboarding`; fast path skips default snap sync and full ethy swarm anchor; `HEAD_FOLLOWING` triggers background `EthySwarmSynchronizer` (`custodyBuckets`, `backgroundMode`); `StatyWriteIndex` on applied BALs; `CustodyStateResolver` wired via `custodyMissDelegate` + ETHY `0x03`/`0x05`/`0x0c` routing; `desiredEthyBucketsMask` on network profile; tests `custodyOnboarding` + `custodyStateResolver`.
 
-**Still open:** `foldWitnessToHead` + commit path in resolver; storage plane + atomic three-mask flip on bucket close; full `ethyCodeStorageSync` verify; `custodyEthySync` loopback integration; honest closed-only `bucketsBitmask` until flip (partially wired).
+**Tranche 3:** Resolver returns `BINARY_ACCOUNT_SIZE` slabs; witness path uses `foldWitnessToHead` + `buildWitnessFoldContext`; `noteCustodyPlaneComplete` atomic three-mask STATUS on accounts+code+storage + head; accounts background marks plane on bucket done.
+
+**Still open:** Storage miss ladder + `ethyCodeStorageSync` verify/persist; code/storage plane completion hooks; `custodyEthySync` loopback integration; PEX redundancy gates (WP-16g).

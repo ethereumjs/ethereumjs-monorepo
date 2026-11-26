@@ -297,6 +297,9 @@ Track every modification or planned modification to sibling monorepo packages he
 
 *Agents: Append a new dated subsection at the top of this list after each Planning (Grok 4.7) or Implementation (Composer 2.5) pass.*
 
+### 2026-11-26 — `WP-16d` tranche 3: witness fold, binary miss bytes, bucket flip (Implementer — Composer 2.5)
+- `foldWitnessToHead` on resolver witness path; `noteCustodyPlaneComplete` for atomic closed-world STATUS; binary account miss encoding. WP-16d §3 updated.
+
 ### 2026-11-26 — `WP-16d` tranche 2: BAL-first onboarding, miss hooks, background sync (Implementer — Composer 2.5)
 - `custodyOnboarding` fast path: onboarding pivot, BAL catch-up to head, skip default `snap/1` base sync; background custody swarm after `HEAD_FOLLOWING`; resolver + `StatyWriteIndex` wiring. WP-16d §3 updated.
 

@@ -11,8 +11,11 @@ import type {
   StorageMissResult,
 } from '@ethereumjs/statemanager'
 import {
+  BINARY_ACCOUNT_SIZE,
+  accountToBinaryAccount,
   bigIntToUnpaddedBytes,
   bytesToUnprefixedHex,
+  createAccountFromRLP,
   equalsBytes,
   intToUnpaddedBytes,
 } from '@ethereumjs/util'
@@ -22,8 +25,11 @@ import { ethyKeccak256 } from '../crypto/keccak.ts'
 import { peerIdToBytes } from '../net/pivotHeader.ts'
 import type { EthySpine } from '../spine/types.ts'
 import { verifyStatyMultiProof } from '../staty/multiProofVerify.ts'
+import { foldWitnessToHead } from '../staty/witnessFold.ts'
+import type { WitnessFoldContext } from '../staty/witnessFold.ts'
 import type { StatyWriteIndex } from '../staty/writeIndex.ts'
 import { verifyProvenAccountChunkJob } from '../sync/snapVerifyJob.ts'
+import { accountHashHex, buildWitnessFoldContext } from './custodyWitnessFold.ts'
 
 const RESOLVER_TIMEOUT_MS = 12_000
 const ACCOUNT_SLAB_STRIDE = 136
@@ -35,6 +41,8 @@ export type CustodyResolverDeps = {
   writeIndex: StatyWriteIndex
   snapBootstrapEnabled: boolean
   balEarliestBlock: () => bigint
+  /** Optional fold context override (defaults to spine + writeIndex builder). */
+  foldContext?: () => WitnessFoldContext
 }
 
 type PendingEthy = {
@@ -216,7 +224,24 @@ export class CustodyStateResolver {
       const hit = accounts.find((a) => equalsBytes(a.accountHash, accountHash))
       if (hit === undefined) return 'empty'
       if (hit.accountRlpOrEmpty.length === 0) return 'empty'
-      return hit.accountRlpOrEmpty
+      const anchorBlock = Number(peer.ethyStatus?.basePivotBlock ?? minAnchor)
+      const ctx =
+        this.deps.foldContext?.() ?? buildWitnessFoldContext(this.deps.spine, this.deps.writeIndex)
+      const folded = foldWitnessToHead(
+        {
+          anchorBlock,
+          anchorStateRoot: anchorRoot,
+          accountHashHex: accountHashHex(accountHash),
+          accountRlpOrEmpty: hit.accountRlpOrEmpty,
+          slotWitnesses: [],
+        },
+        ctx,
+      )
+      if (folded.ok && folded.provenEmptyAccount) return 'empty'
+      if (folded.ok && folded.account !== undefined) {
+        return accountToBinaryAccount(folded.account)
+      }
+      return accountMissFromRlpOrBinary(hit.accountRlpOrEmpty)
     } catch {
       return undefined
     }
@@ -295,6 +320,12 @@ export function createCustodyResolverHooks(resolver: CustodyStateResolver): {
     resolveStorageMiss: (a, s, p) => resolver.resolveStorageMiss(a, s, p),
     resolveCodeMiss: (h, p) => resolver.resolveCodeMiss(h, p),
   }
+}
+
+export function accountMissFromRlpOrBinary(body: Uint8Array): AccountMissResult {
+  if (body.length === 0) return 'empty'
+  if (body.length === BINARY_ACCOUNT_SIZE) return body
+  return accountToBinaryAccount(createAccountFromRLP(body))
 }
 
 function compareBytes32(a: Uint8Array, b: Uint8Array): number {

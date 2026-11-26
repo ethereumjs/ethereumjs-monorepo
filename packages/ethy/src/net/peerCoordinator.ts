@@ -28,6 +28,7 @@ import { secp256k1 } from '@noble/curves/secp256k1.js'
 import { DEFAULT_CUSTODY_COUNT } from '../cli/args.ts'
 import { getEthyClientVersion } from '../clientMeta.ts'
 import { ethyKeccak256 } from '../crypto/keccak.ts'
+import { noteCustodyPlaneComplete } from '../custody/custodyBucketFlip.ts'
 import type { CustodyMissDelegate } from '../custody/custodyMissDelegate.ts'
 import {
   beginCustodyBalOnboarding,
@@ -40,6 +41,7 @@ import {
   CustodyStateResolver,
   createCustodyResolverHooks,
 } from '../custody/custodyStateResolver.ts'
+import { buildWitnessFoldContext } from '../custody/custodyWitnessFold.ts'
 import type { ETHEconomyDataManager } from '../economy/economyDataManager.ts'
 import type { NoticeBoard } from '../notify/board.ts'
 import {
@@ -2127,6 +2129,7 @@ export async function startPeerCoordinator(
       const pivot = spine.pivotBlockNumber ?? 0n
       return pivot > 0n ? pivot + 1n : 0n
     },
+    foldContext: () => buildWitnessFoldContext(spine, statyWriteIndex),
   })
   if (opts.custodyMissDelegate !== undefined) {
     Object.assign(opts.custodyMissDelegate, createCustodyResolverHooks(custodyResolver))
@@ -2189,7 +2192,17 @@ export async function startPeerCoordinator(
       onAccountsIngested: (entries) => codeSync?.noteAccounts(entries),
       onBucketDone: (idx) => {
         noteBucketAdvertised(client, idx)
-        snapStore?.updateCustodyPlane(idx, { accounts: true })
+        const head =
+          spine.bestPeerHead ?? spine.lastVerifiedBlockNumber ?? spine.pivotBlockNumber ?? 0n
+        noteCustodyPlaneComplete({
+          snapStore,
+          stateManager,
+          spine,
+          client,
+          bucketIndex: idx,
+          plane: 'accounts',
+          headBlock: head,
+        })
       },
       onBucketPivot: (idx, pivotBlock) => snapStore?.noteBucketPivot(idx, pivotBlock),
       economy: opts.economy,
