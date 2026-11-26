@@ -1,6 +1,6 @@
 # WP-16e: `@ethereumjs/mpt` — Path-Keyed `BinaryPathMPT` Strain (Packed Binary Branch Nodes, `O(depth)` Streaming Builder, Reverse-Diff Anchor Snapshots & Proof Generator)
 
-- **Status:** `PLANNED`
+- **Status:** `DONE`
 - **Dependencies:** `WP-04i` (`DONE`), `WP-04j` (`DONE`)
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
@@ -78,10 +78,10 @@ Classic hash-keyed `MerklePatriciaTrie` (`packages/mpt/src/mpt.ts`) stores nodes
 ---
 
 ### Acceptance Criteria (`WP-16e`)
-- [ ] `BinaryPathMPT` lands in a clean, **100% additive upstream `@ethereumjs/mpt` commit (D-008)** with zero breaking changes to classic `MerklePatriciaTrie` and zero new runtime dependencies (pure-JS default, injectable `keccak256` per `security.mdc` S3).
-- [ ] Matches classic `MerklePatriciaTrie` bit-for-bit on root hashes, `16`-way `[h_0..h_f]` subtree roots, EIP-1186 inclusion/exclusion proofs, and `verifyMerkleRangeProof` boundary proofs — including at historical reverse-diff anchors after subsequent live mutations.
-- [ ] `buildFromSortedStream` builds sorted key-value streams in `O(depth)` stack RAM with batch flushes.
-- [ ] `config/public-api-snapshots/mpt.json` is updated and `scripts/public-api-snapshot.spec.mjs` (`17/17`), `packages/mpt` `tsc`, `npm test`, and `cspell` all pass.
+- [x] `BinaryPathMPT` lands in a clean, **100% additive upstream `@ethereumjs/mpt` commit (D-008)** with zero breaking changes to classic `MerklePatriciaTrie` and zero new runtime dependencies (pure-JS default, injectable `keccak256` per `security.mdc` S3).
+- [x] Matches classic `MerklePatriciaTrie` bit-for-bit on root hashes, `16`-way `[h_0..h_f]` subtree roots, EIP-1186 inclusion/exclusion proofs, and `verifyMerkleRangeProof` boundary proofs — including at historical reverse-diff anchors after subsequent live mutations.
+- [x] `buildFromSortedStream` builds sorted key-value streams in `O(depth)` stack RAM with batch flushes.
+- [x] `config/public-api-snapshots/mpt.json` is updated and `scripts/public-api-snapshot.spec.mjs` (`17/17`), `packages/mpt` `tsc`, `npm test`, and `cspell` all pass.
 
 ---
 
@@ -181,6 +181,12 @@ flowchart TD
 
 ---
 
-## 3. Implementation Notes & Deviations (Implementer — Composer 2.5)
+## 3. Implementation Notes & Deviations (Implementer — Composer 2.5 / Reviewer — Gemini 4 Neon)
 
-*(To be filled out by Composer 2.5 upon completion.)*
+- **Initial draft (Composer 2.5 — `8a641b688`, `3b9528c48`):** scaffolded `packages/mpt/src/binaryPath/`, public exports, `config/public-api-snapshots/mpt.json`, and initial oracle tests.
+- **Forensic review & standalone rewrite (Gemini 4 Neon):** replaced the initial `PathBackedTrie` facade (which wrapped an unpruned in-memory classic `MerklePatriciaTrie({ db: new MapDB(), useNodePruning: false })`, never read back from `BinaryPathNodeStore`, buffered the full sorted stream in RAM, double-hashed 32-byte branch children / mishandled `< 32B` inline children in `nodeCodec.ts`, ignored `opts.keccak256` in the trie, and modified classic `packages/mpt/src/mpt.ts`) with a true standalone path-keyed engine:
+  - Reverted `packages/mpt/src/mpt.ts` completely (classic trie code paths 100% untouched per §2) and deleted `pathBackedTrie.ts`.
+  - **`binaryPathMPT.ts`:** direct path-keyed `get`/`put`/`del`, deferred single-post-order-hash `applyBatch`, true `O(depth)` (`<= 64` frames) streaming `buildFromSortedStream` with 4,096-op store flushes and strict ascending/duplicate validation, `BinaryPathMPT.open(opts)` + `loadRoot()` for O(1) cold reopen from persisted stores (`WP-16f`), `branchSlotReference()`, `prefixNibbles` custody subtrees, full `opts.keccak256` injection, and external leaf mode (`TAG_EXTERNAL_LEAF = 0x04` pointer records without duplicating leaf values + pre-mutation anchor leaf snapshotting).
+  - **`nodeCodec.ts`:** lossless `packBinaryRecord` / `unpackBinaryRecord` / `encodeBinaryNodeToRlp` / `decodeRlpToBinaryNode` + fixed classic `packRecord` / `decodeRecordToNode` interop (no double-hashing of 32-byte child hashes, proper `< 32B` inline RLP child decoding).
+  - **`snapshots.ts` & `proofs.ts`:** real lock-free reverse-diff `AnchorSnapshotRing.overlayGet` walking `BinaryPathNodeStore` directly for `createProof`, `createMultiProof`, and `createRangeBoundaryProof`.
+  - **Tests (`nodeCodec.spec.ts`, `binaryPathMPT.spec.ts`):** expanded to cover multi-node codec round-trips (Branch + Extension + Leaf + inline `< 32B` + external leaf `0x04`), `BinaryPathMPT.open()` cold persistence reopen, inline grow/shrink/delete transitions, prefixed 16-way `[parentBranchRlp, ...subProof]` proof interop, external-leaf non-duplication + anchor proof survival on overwrite, read-only `leaves` guard, historical range proof + ring eviction, custom `keccak256` + single-pass `applyBatch` hash-count gate, and `AsyncIterable` / unsorted / duplicate stream checks. All 20 test files (401 tests), `tsc`, `public-api-snapshot.spec.mjs` (17/17), Biome, and `cspell` pass.
