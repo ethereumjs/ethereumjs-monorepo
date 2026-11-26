@@ -327,7 +327,7 @@ export class MerklePatriciaTrie {
       stack: [],
     },
   ): Promise<Path> {
-    const targetKey = this.keyPathNibbles(key)
+    const targetKey = bytesToNibbles(key)
     const keyLen = targetKey.length
     const stack: MPTNode[] = Array.from({ length: keyLen })
 
@@ -510,7 +510,7 @@ export class MerklePatriciaTrie {
    * @private
    */
   protected async _createInitialNode(key: Uint8Array, value: Uint8Array): Promise<void> {
-    const newNode = new LeafMPTNode(this.keyPathNibbles(key), value)
+    const newNode = new LeafMPTNode(bytesToNibbles(key), value)
 
     const encoded = newNode.serialize()
     this.root(this.hash(encoded))
@@ -581,7 +581,7 @@ export class MerklePatriciaTrie {
     stack: MPTNode[],
   ): Promise<void> {
     const opStack: BatchDBOp[] = []
-    const fullKeyNibbles = this.keyPathNibbles(keyBytes)
+    const fullKeyNibbles = bytesToNibbles(keyBytes)
     this._stageNodeUpdate(keyBytes, value, keyRemainder, stack, opStack)
     await this.saveStack(fullKeyNibbles, stack, opStack)
   }
@@ -602,7 +602,7 @@ export class MerklePatriciaTrie {
       throw EthereumJSErrorWithoutCode('Stack underflow')
     }
 
-    const fullKeyNibbles = this.keyPathNibbles(keyBytes)
+    const fullKeyNibbles = bytesToNibbles(keyBytes)
     const matchLeaf = this._isMatchingLeafUpdate(lastNode, stack, fullKeyNibbles, keyRemainder)
 
     if (matchLeaf) {
@@ -779,7 +779,7 @@ export class MerklePatriciaTrie {
             `Attempted to set '${bytesToUtf8(ROOT_DB_KEY)}' key but it is not allowed.`,
           )
         }
-        const keyNibbles = preallocatedNibbles?.[i] ?? this.keyPathNibbles(key)
+        const keyNibbles = preallocatedNibbles?.[i] ?? bytesToNibbles(key)
 
         if (i > 0 && livePathNibbles !== null) {
           const keep = matchingNibbleLength(livePathNibbles, keyNibbles)
@@ -946,7 +946,7 @@ export class MerklePatriciaTrie {
     if (lastNode === undefined) throw EthereumJSErrorWithoutCode('missing last node')
     let parentNode = stack.pop()
     const opStack: BatchDBOp[] = []
-    let pathNibbles = this.keyPathNibbles(keyBytes)
+    let pathNibbles = bytesToNibbles(keyBytes)
 
     if (parentNode === undefined) {
       this.root(this.EMPTY_TRIE_ROOT)
@@ -1289,13 +1289,6 @@ export class MerklePatriciaTrie {
       return this.hash(key)
     }
     return key
-  }
-
-  /**
-   * Nibble path used for trie lookups and structural updates (default: both halves of every key byte).
-   */
-  protected keyPathNibbles(key: Uint8Array): Nibbles {
-    return bytesToNibbles(key)
   }
 
   protected hash(inputBytes: Uint8Array): Uint8Array {

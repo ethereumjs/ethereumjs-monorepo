@@ -1,64 +1,87 @@
-import { equalsBytes } from '@ethereumjs/util'
+import { bytesToUnprefixedHex } from '@ethereumjs/util'
 
-import { createMerkleProof, verifyMerkleProof } from '../proof/proof.ts'
-import { decodeRecordToNode, encodeNodeToRlp } from './nodeCodec.ts'
-import { packPath } from './pathKey.ts'
+import { verifyMerkleProof } from '../proof/proof.ts'
+import { decodeRlpToBinaryNode, encodeBinaryNodeToRlp, unpackBinaryRecord } from './nodeCodec.ts'
+import {
+  appendNibble,
+  commonPrefixLen,
+  compareKeysLex,
+  concatNibbles,
+  keyToNibbles,
+  packPath,
+} from './pathKey.ts'
 
 import type { Proof } from '../types.ts'
 import type { BinaryPathMPT } from './binaryPathMPT.ts'
+import type { BinaryBranchNode, BinaryExtensionNode, BinaryLeafNode } from './nodeCodec.ts'
 
 export async function createProof(
   trie: BinaryPathMPT,
   key: Uint8Array,
   anchorId?: string | bigint,
 ): Promise<Proof> {
-  if (anchorId === undefined) {
-    return createMerkleProof(trie._inner, key)
-  }
-  const anchorRoot = trie._anchorRing.rootFor(anchorId)
-  if (anchorRoot === undefined) {
+  trie._assertKeyMatchesPrefix(key)
+  if (anchorId !== undefined && trie._anchorRing.rootFor(anchorId) === undefined) {
     throw new Error('Unknown anchor id')
   }
-  return createProofAtAnchor(trie, key, anchorId, anchorRoot)
-}
+  const rootBytes = await trie._readRecordAt(packPath(new Uint8Array(0)), anchorId)
+  if (rootBytes === null) {
+    return []
+  }
+  const proof: Proof = []
+  let path: Uint8Array = new Uint8Array(0)
+  let rem: Uint8Array = keyToNibbles(key, trie._prefixLength)
+  let current: BinaryBranchNode | BinaryExtensionNode | BinaryLeafNode =
+    await trie._materializeRecord(path, rootBytes)
+  let currentIsInline = false
 
-async function createProofAtAnchor(
-  trie: BinaryPathMPT,
-  key: Uint8Array,
-  anchorId: string | bigint,
-  anchorRoot: Uint8Array,
-): Promise<Proof> {
-  const inner = trie._inner
-  const { stack } = await inner.findPath(key, true)
-  const nodes: Uint8Array[] = []
-  for (const node of stack) {
-    nodes.push(encodeNodeToRlp(node))
+  while (true) {
+    if (!currentIsInline) {
+      proof.push(encodeBinaryNodeToRlp(current))
+    }
+    if (current.kind === 'leaf') {
+      break
+    }
+    if (current.kind === 'extension') {
+      const lcp = commonPrefixLen(current.path, rem)
+      if (lcp < current.path.length) {
+        break
+      }
+      path = concatNibbles(path, current.path)
+      rem = rem.subarray(current.path.length)
+      if (current.child.inline) {
+        current = decodeRlpToBinaryNode(current.child.rlp)
+        currentIsInline = true
+      } else {
+        const nextBytes = await trie._readRecordAt(packPath(path), anchorId)
+        if (nextBytes === null) break
+        current = await trie._materializeRecord(path, nextBytes)
+        currentIsInline = false
+      }
+      continue
+    }
+    // Branch node
+    if (rem.length === 0) {
+      break
+    }
+    const nibble = rem[0]!
+    const childRef = current.children[nibble]
+    if (childRef === null || childRef === undefined) {
+      break
+    }
+    path = appendNibble(path, nibble)
+    rem = rem.subarray(1)
+    if (childRef.inline) {
+      current = decodeRlpToBinaryNode(childRef.rlp)
+      currentIsInline = true
+    } else {
+      const nextBytes = await trie._readRecordAt(packPath(path), anchorId)
+      if (nextBytes === null) break
+      current = await trie._materializeRecord(path, nextBytes)
+      currentIsInline = false
+    }
   }
-  if (nodes.length === 0) {
-    throw new Error('Empty proof path')
-  }
-  if (!equalsBytes(inner.root(), anchorRoot)) {
-    // Historical anchor: rebuild proof nodes from path store overlay
-    return createProofFromPathStore(trie, key, anchorId, anchorRoot)
-  }
-  return nodes
-}
-
-async function createProofFromPathStore(
-  trie: BinaryPathMPT,
-  key: Uint8Array,
-  anchorId: string | bigint,
-  anchorRoot: Uint8Array,
-): Promise<Proof> {
-  // Fallback: use live stack when at anchor root; otherwise verify via classic proof at anchor root
-  const inner = trie._inner
-  const savedRoot = inner.root()
-  inner.root(anchorRoot)
-  try {
-    return await createMerkleProof(inner, key)
-  } finally {
-    inner.root(savedRoot)
-  }
+  return proof
 }
 
 export async function createMultiProof(
@@ -66,26 +89,16 @@ export async function createMultiProof(
   keys: Uint8Array[],
   anchorId?: string | bigint,
 ): Promise<Proof> {
-  const sorted = keys.slice().sort((a, b) => {
-    for (let i = 0; i < Math.min(a.length, b.length); i++) {
-      const d = a[i]! - b[i]!
-      if (d !== 0) return d
-    }
-    return a.length - b.length
-  })
+  const sorted = keys.slice().sort(compareKeysLex)
   const seen = new Set<string>()
   const proof: Proof = []
   for (const key of sorted) {
     const p = await createProof(trie, key, anchorId)
-    for (const node of p) {
-      const h = trie._inner.nodeHash(node).toString()
+    for (const nodeRlp of p) {
+      const h = bytesToUnprefixedHex(trie._hashRlp(nodeRlp))
       if (!seen.has(h)) {
         seen.add(h)
-        if (proof.length === 0) {
-          proof.push(node)
-        } else if (!equalsBytes(proof[0]!, node)) {
-          proof.push(node)
-        }
+        proof.push(nodeRlp)
       }
     }
   }
@@ -102,13 +115,13 @@ export async function createRangeBoundaryProof(
   const right = await createProof(trie, lastHash32, anchorId)
   const seen = new Set<string>()
   const out: Proof = []
-  for (const node of [...left, ...right]) {
-    const id = trie._inner.nodeHash(node).toString()
+  for (const nodeRlp of [...left, ...right]) {
+    const id = bytesToUnprefixedHex(trie._hashRlp(nodeRlp))
     if (seen.has(id)) continue
     seen.add(id)
-    out.push(node)
+    out.push(nodeRlp)
   }
   return out
 }
 
-export { verifyMerkleProof }
+export { unpackBinaryRecord, verifyMerkleProof }

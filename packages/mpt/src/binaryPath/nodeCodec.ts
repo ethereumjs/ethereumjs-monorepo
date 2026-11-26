@@ -9,131 +9,376 @@ import { bytesToNibbles, matchingNibbleLength, nibblesTypeToPackedBytes } from '
 import type { MPTNode, NodeReferenceOrRawMPTNode } from '../types.ts'
 import type { BinaryPathKeccak } from './types.ts'
 
-const TAG_BRANCH = 0x01
-const TAG_EXTENSION = 0x02
-const TAG_LEAF = 0x03
+export const TAG_BRANCH = 0x01
+export const TAG_EXTENSION = 0x02
+export const TAG_LEAF = 0x03
+/** Interior-only leaf pointer: stores path suffix + 32B hash trailer (value owned by external leaf store). */
+export const TAG_EXTERNAL_LEAF = 0x04
 
 export const RECORD_HASH_LEN = 32
 
-/** Serialize an in-memory node to canonical Ethereum MPT RLP. */
-export function encodeNodeToRlp(node: MPTNode): Uint8Array {
-  return node.serialize()
+export type BinaryChildRef = { inline: false; hash: Uint8Array } | { inline: true; rlp: Uint8Array }
+
+export type BinaryBranchNode = {
+  kind: 'branch'
+  children: (BinaryChildRef | null)[]
+  value: Uint8Array
 }
 
-export function hashCanonicalRlp(rlp: Uint8Array, keccak256: BinaryPathKeccak): Uint8Array {
-  return keccak256(rlp)
+export type BinaryExtensionNode = {
+  kind: 'extension'
+  path: Uint8Array
+  child: BinaryChildRef
 }
 
-/** Packed body (no keccak trailer). */
-export function encodeNodeBody(node: MPTNode): Uint8Array {
-  if (node instanceof BranchMPTNode) {
-    const children = node.getChildren()
-    let childMask = 0
-    let inlineMask = 0
-    const parts: number[] = [TAG_BRANCH]
-    const childPayloads: Uint8Array[] = []
+export type BinaryLeafNode = {
+  kind: 'leaf'
+  path: Uint8Array
+  value: Uint8Array
+}
 
-    for (const [idx, ref] of children) {
-      childMask |= 1 << idx
-      const rlp = childRefToRlpBytes(ref)
-      if (rlp.length < 32) {
-        inlineMask |= 1 << idx
-        const inline = new Uint8Array(1 + rlp.length)
-        inline[0] = rlp.length
-        inline.set(rlp, 1)
-        childPayloads.push(inline)
+export type BinaryExternalLeafNode = {
+  kind: 'external-leaf'
+  path: Uint8Array
+}
+
+export type BinaryPathNode =
+  | BinaryBranchNode
+  | BinaryExtensionNode
+  | BinaryLeafNode
+  | BinaryExternalLeafNode
+
+const EMPTY_RLP_BYTES = new Uint8Array([0x80])
+
+/** Encode raw pre-encoded RLP items as a single canonical RLP list without decoding inline children. */
+function encodePreEncodedRlpList(items: Uint8Array[]): Uint8Array {
+  let payloadLen = 0
+  for (const item of items) payloadLen += item.length
+  let header: Uint8Array
+  if (payloadLen < 56) {
+    header = new Uint8Array([0xc0 + payloadLen])
+  } else {
+    const lenBytes = encodeLengthBigEndian(payloadLen)
+    header = new Uint8Array(1 + lenBytes.length)
+    header[0] = 0xf7 + lenBytes.length
+    header.set(lenBytes, 1)
+  }
+  const out = new Uint8Array(header.length + payloadLen)
+  out.set(header, 0)
+  let off = header.length
+  for (const item of items) {
+    out.set(item, off)
+    off += item.length
+  }
+  return out
+}
+
+function encodeLengthBigEndian(len: number): Uint8Array {
+  const tmp: number[] = []
+  let n = len
+  while (n > 0) {
+    tmp.push(n & 0xff)
+    n >>>= 8
+  }
+  tmp.reverse()
+  return Uint8Array.from(tmp)
+}
+
+/** Compact Hex-Prefix encoding for MPT extension (`isLeaf = false`) or leaf (`isLeaf = true`). */
+export function encodeHexPrefix(nibbles: Uint8Array, isLeaf: boolean): Uint8Array {
+  const flag = isLeaf ? 2 : 0
+  const odd = (nibbles.length & 1) === 1
+  if (odd) {
+    const out = new Uint8Array(1 + (nibbles.length >> 1))
+    out[0] = ((flag | 1) << 4) | (nibbles[0]! & 0x0f)
+    for (let i = 1; i < nibbles.length; i += 2) {
+      out[1 + (i >> 1)] = ((nibbles[i]! & 0x0f) << 4) | (nibbles[i + 1]! & 0x0f)
+    }
+    return out
+  }
+  const out = new Uint8Array(1 + (nibbles.length >> 1))
+  out[0] = flag << 4
+  for (let i = 0; i < nibbles.length; i += 2) {
+    out[1 + (i >> 1)] = ((nibbles[i]! & 0x0f) << 4) | (nibbles[i + 1]! & 0x0f)
+  }
+  return out
+}
+
+/** Decode Hex-Prefix bytes back into `{ isLeaf, nibbles }`. */
+export function decodeHexPrefix(hp: Uint8Array): { isLeaf: boolean; nibbles: Uint8Array } {
+  if (hp.length === 0) return { isLeaf: false, nibbles: new Uint8Array(0) }
+  const first = hp[0]!
+  const prefix = first >> 4
+  const isLeaf = (prefix & 2) !== 0
+  const isOdd = (prefix & 1) !== 0
+  const total = (hp.length - 1) * 2 + (isOdd ? 1 : 0)
+  const nibbles = new Uint8Array(total)
+  let outIdx = 0
+  if (isOdd) {
+    nibbles[outIdx++] = first & 0x0f
+  }
+  for (let i = 1; i < hp.length; i++) {
+    const b = hp[i]!
+    nibbles[outIdx++] = b >> 4
+    nibbles[outIdx++] = b & 0x0f
+  }
+  return { isLeaf, nibbles }
+}
+
+/** Serialize a `BinaryPathNode` (branch / extension / leaf) into canonical Ethereum MPT RLP. */
+export function encodeBinaryNodeToRlp(
+  node: BinaryBranchNode | BinaryExtensionNode | BinaryLeafNode,
+): Uint8Array {
+  if (node.kind === 'branch') {
+    const items: Uint8Array[] = new Array(17)
+    for (let i = 0; i < 16; i++) {
+      const c = node.children[i]
+      if (c === null || c === undefined) {
+        items[i] = EMPTY_RLP_BYTES
+      } else if (c.inline) {
+        items[i] = c.rlp
       } else {
-        const h = hashCanonicalRlp(rlp, keccak_256_default)
-        childPayloads.push(h)
+        items[i] = RLP.encode(c.hash)
       }
     }
-    const header = new Uint8Array(1 + 4)
-    header[0] = TAG_BRANCH
-    header[1] = (childMask >> 8) & 0xff
-    header[2] = childMask & 0xff
-    header[3] = (inlineMask >> 8) & 0xff
-    header[4] = inlineMask & 0xff
+    items[16] = node.value.length === 0 ? EMPTY_RLP_BYTES : RLP.encode(node.value)
+    return encodePreEncodedRlpList(items)
+  }
+  if (node.kind === 'extension') {
+    const keyItem = RLP.encode(encodeHexPrefix(node.path, false))
+    const childItem = node.child.inline ? node.child.rlp : RLP.encode(node.child.hash)
+    return encodePreEncodedRlpList([keyItem, childItem])
+  }
+  const keyItem = RLP.encode(encodeHexPrefix(node.path, true))
+  const valItem = RLP.encode(node.value)
+  return encodePreEncodedRlpList([keyItem, valItem])
+}
 
-    const val = node.value()
-    const chunks = [header, ...childPayloads]
-    if (val !== null && val.length > 0) {
-      chunks.push(val)
+/** Decode canonical Ethereum MPT RLP (e.g. an inline `< 32B` child) into a `BinaryPathNode`. */
+export function decodeRlpToBinaryNode(
+  rlp: Uint8Array,
+): BinaryBranchNode | BinaryExtensionNode | BinaryLeafNode {
+  const raw = RLP.decode(rlp)
+  if (!Array.isArray(raw)) {
+    throw new Error('Invalid MPT node RLP: expected list')
+  }
+  if (raw.length === 17) {
+    const children: (BinaryChildRef | null)[] = new Array(16).fill(null)
+    for (let i = 0; i < 16; i++) {
+      const slot = raw[i]
+      if (slot instanceof Uint8Array) {
+        if (slot.length === 0) {
+          children[i] = null
+        } else if (slot.length === 32) {
+          children[i] = { inline: false, hash: slot }
+        } else {
+          throw new Error(`Unexpected branch child byte length ${slot.length}`)
+        }
+      } else if (Array.isArray(slot)) {
+        children[i] = { inline: true, rlp: RLP.encode(slot) }
+      }
     }
-    return concatChunks(chunks)
+    const valSlot = raw[16]
+    const value = valSlot instanceof Uint8Array ? valSlot : new Uint8Array(0)
+    return { kind: 'branch', children, value }
   }
-  if (node instanceof ExtensionMPTNode) {
-    return encodeExtensionOrLeafBody(TAG_EXTENSION, node.key(), node.value() as Uint8Array)
+  if (raw.length === 2) {
+    const hp = raw[0]
+    if (!(hp instanceof Uint8Array)) {
+      throw new Error('Invalid MPT node RLP: key must be bytes')
+    }
+    const { isLeaf, nibbles } = decodeHexPrefix(hp)
+    if (isLeaf) {
+      const val = raw[1] instanceof Uint8Array ? raw[1] : new Uint8Array(0)
+      return { kind: 'leaf', path: nibbles, value: val }
+    }
+    const childRaw = raw[1]
+    const child: BinaryChildRef =
+      childRaw instanceof Uint8Array
+        ? { inline: false, hash: childRaw }
+        : { inline: true, rlp: RLP.encode(childRaw as never) }
+    return { kind: 'extension', path: nibbles, child }
   }
-  if (node instanceof LeafMPTNode) {
-    return encodeExtensionOrLeafBody(TAG_LEAF, node.key(), node.value())
-  }
-  throw new Error('Unknown node type')
+  throw new Error(`Invalid MPT node RLP length ${raw.length}`)
 }
 
-function encodeExtensionOrLeafBody(
-  tag: number,
-  nibbles: number[],
-  childOrValue: Uint8Array,
-): Uint8Array {
-  const pathBytes = packedPathBytesFromNibbles(nibbles)
-  const pathLen = nibbles.length
-  if (tag === TAG_LEAF) {
-    const head = new Uint8Array(2 + pathBytes.length)
-    head[0] = tag
-    head[1] = pathLen
-    head.set(pathBytes, 2)
-    return concatChunks([head, childOrValue])
-  }
-  const childIsInline = childOrValue.length < 32 ? 1 : 0
-  const head = new Uint8Array(3 + pathBytes.length)
-  head[0] = tag
-  head[1] = pathLen
-  head.set(pathBytes, 2)
-  head[2 + pathBytes.length] = childIsInline
-  if (childIsInline) {
-    const inline = new Uint8Array(1 + childOrValue.length)
-    inline[0] = childOrValue.length
-    inline.set(childOrValue, 1)
-    return concatChunks([head, inline])
-  }
-  return concatChunks([head, childOrValue])
+/** Compute child reference for parent branch/extension (`< 32B` RLP inlined; else 32B hash). */
+export function binaryNodeToChildRef(
+  node: BinaryBranchNode | BinaryExtensionNode | BinaryLeafNode,
+  keccak256: BinaryPathKeccak,
+): { ref: BinaryChildRef; rlp: Uint8Array; hash: Uint8Array } {
+  const rlp = encodeBinaryNodeToRlp(node)
+  const hash = keccak256(rlp)
+  const ref: BinaryChildRef = rlp.length < 32 ? { inline: true, rlp } : { inline: false, hash }
+  return { ref, rlp, hash }
 }
 
-function packedPathBytesFromNibbles(nibbles: number[]): Uint8Array {
-  const out = new Uint8Array(Math.ceil(nibbles.length / 2))
+function packNibblesBytes(nibbles: Uint8Array): Uint8Array {
+  const out = new Uint8Array((nibbles.length + 1) >> 1)
   for (let i = 0; i < nibbles.length; i++) {
-    if (i % 2 === 0) {
-      out[i >> 1] = nibbles[i]! << 4
+    if ((i & 1) === 0) {
+      out[i >> 1] = (nibbles[i]! & 0x0f) << 4
     } else {
-      out[i >> 1] |= nibbles[i]!
+      out[i >> 1] |= nibbles[i]! & 0x0f
     }
   }
   return out
 }
 
-function childRefToRlpBytes(ref: NodeReferenceOrRawMPTNode): Uint8Array {
-  if (ref === null) return new Uint8Array(0)
-  if (ref instanceof Uint8Array && ref.length === 32) {
-    return ref
+function unpackNibblesBytes(buf: Uint8Array, pathLen: number): Uint8Array {
+  const nibbles = new Uint8Array(pathLen)
+  for (let i = 0; i < pathLen; i++) {
+    const byte = buf[i >> 1]!
+    nibbles[i] = (i & 1) === 0 ? byte >> 4 : byte & 0x0f
   }
-  if (ref instanceof Uint8Array) {
-    return ref
-  }
-  if (isRawMPTNode(ref)) {
-    return RLP.encode(ref)
-  }
-  return new Uint8Array(0)
+  return nibbles
 }
 
-/** Full stored record: body + keccak(canonical RLP) trailer. */
-export function packRecord(node: MPTNode, keccak256: BinaryPathKeccak): Uint8Array {
-  const body = encodeNodeBody(node)
-  const rlp = encodeNodeToRlp(node)
-  const hash = hashCanonicalRlp(rlp, keccak256)
-  const out = new Uint8Array(body.length + RECORD_HASH_LEN)
-  out.set(body, 0)
-  out.set(hash, body.length)
+/** Pack a `BinaryPathNode` + 32-byte canonical hash trailer for `BinaryPathNodeStore`. */
+export function packBinaryRecord(node: BinaryPathNode, hash: Uint8Array): Uint8Array {
+  if (hash.length !== RECORD_HASH_LEN) {
+    throw new Error('packBinaryRecord requires a 32-byte hash trailer')
+  }
+  if (node.kind === 'branch') {
+    let childMask = 0
+    let inlineMask = 0
+    let childrenBytes = 0
+    for (let i = 0; i < 16; i++) {
+      const c = node.children[i]
+      if (c === null || c === undefined) continue
+      childMask |= 1 << i
+      if (c.inline) {
+        inlineMask |= 1 << i
+        childrenBytes += 1 + c.rlp.length
+      } else {
+        childrenBytes += 32
+      }
+    }
+    const out = new Uint8Array(5 + childrenBytes + node.value.length + RECORD_HASH_LEN)
+    out[0] = TAG_BRANCH
+    out[1] = (childMask >> 8) & 0xff
+    out[2] = childMask & 0xff
+    out[3] = (inlineMask >> 8) & 0xff
+    out[4] = inlineMask & 0xff
+    let off = 5
+    for (let i = 0; i < 16; i++) {
+      const c = node.children[i]
+      if (c === null || c === undefined) continue
+      if (c.inline) {
+        out[off++] = c.rlp.length
+        out.set(c.rlp, off)
+        off += c.rlp.length
+      } else {
+        out.set(c.hash, off)
+        off += 32
+      }
+    }
+    if (node.value.length > 0) {
+      out.set(node.value, off)
+      off += node.value.length
+    }
+    out.set(hash, off)
+    return out
+  }
+  if (node.kind === 'extension') {
+    const pathBytes = packNibblesBytes(node.path)
+    const childLen = node.child.inline ? 1 + node.child.rlp.length : 32
+    const out = new Uint8Array(3 + pathBytes.length + childLen + RECORD_HASH_LEN)
+    out[0] = TAG_EXTENSION
+    out[1] = node.path.length
+    out.set(pathBytes, 2)
+    let off = 2 + pathBytes.length
+    out[off++] = node.child.inline ? 1 : 0
+    if (node.child.inline) {
+      out[off++] = node.child.rlp.length
+      out.set(node.child.rlp, off)
+      off += node.child.rlp.length
+    } else {
+      out.set(node.child.hash, off)
+      off += 32
+    }
+    out.set(hash, off)
+    return out
+  }
+  if (node.kind === 'leaf') {
+    const pathBytes = packNibblesBytes(node.path)
+    const out = new Uint8Array(2 + pathBytes.length + node.value.length + RECORD_HASH_LEN)
+    out[0] = TAG_LEAF
+    out[1] = node.path.length
+    out.set(pathBytes, 2)
+    const off = 2 + pathBytes.length
+    out.set(node.value, off)
+    out.set(hash, off + node.value.length)
+    return out
+  }
+  // TAG_EXTERNAL_LEAF: stores path suffix + 32-byte hash trailer (no value duplication).
+  const pathBytes = packNibblesBytes(node.path)
+  const out = new Uint8Array(2 + pathBytes.length + RECORD_HASH_LEN)
+  out[0] = TAG_EXTERNAL_LEAF
+  out[1] = node.path.length
+  out.set(pathBytes, 2)
+  out.set(hash, 2 + pathBytes.length)
   return out
+}
+
+/** Unpack a stored binary record into `{ node, hash }`. */
+export function unpackBinaryRecord(bytes: Uint8Array): { node: BinaryPathNode; hash: Uint8Array } {
+  if (bytes.length < RECORD_HASH_LEN + 1) {
+    throw new Error('Corrupt packed binary node record')
+  }
+  const body = bytes.subarray(0, bytes.length - RECORD_HASH_LEN)
+  const hash = bytes.subarray(bytes.length - RECORD_HASH_LEN)
+  const tag = body[0]!
+  if (tag === TAG_BRANCH) {
+    const childMask = (body[1]! << 8) | body[2]!
+    const inlineMask = (body[3]! << 8) | body[4]!
+    const children: (BinaryChildRef | null)[] = new Array(16).fill(null)
+    let off = 5
+    for (let i = 0; i < 16; i++) {
+      if ((childMask & (1 << i)) === 0) continue
+      if ((inlineMask & (1 << i)) !== 0) {
+        const len = body[off++]!
+        const rlp = body.slice(off, off + len)
+        off += len
+        children[i] = { inline: true, rlp }
+      } else {
+        const childHash = body.slice(off, off + 32)
+        off += 32
+        children[i] = { inline: false, hash: childHash }
+      }
+    }
+    const value = off < body.length ? body.slice(off) : new Uint8Array(0)
+    return { node: { kind: 'branch', children, value }, hash }
+  }
+  if (tag === TAG_EXTENSION) {
+    const pathLen = body[1]!
+    const pathBytesLen = (pathLen + 1) >> 1
+    const path = unpackNibblesBytes(body.subarray(2, 2 + pathBytesLen), pathLen)
+    let off = 2 + pathBytesLen
+    const isInline = body[off++]! === 1
+    const child: BinaryChildRef = isInline
+      ? (() => {
+          const len = body[off++]!
+          const rlp = body.slice(off, off + len)
+          return { inline: true, rlp }
+        })()
+      : { inline: false, hash: body.slice(off, off + 32) }
+    return { node: { kind: 'extension', path, child }, hash }
+  }
+  if (tag === TAG_LEAF) {
+    const pathLen = body[1]!
+    const pathBytesLen = (pathLen + 1) >> 1
+    const path = unpackNibblesBytes(body.subarray(2, 2 + pathBytesLen), pathLen)
+    const value = body.slice(2 + pathBytesLen)
+    return { node: { kind: 'leaf', path, value }, hash }
+  }
+  if (tag === TAG_EXTERNAL_LEAF) {
+    const pathLen = body[1]!
+    const pathBytesLen = (pathLen + 1) >> 1
+    const path = unpackNibblesBytes(body.subarray(2, 2 + pathBytesLen), pathLen)
+    return { node: { kind: 'external-leaf', path }, hash }
+  }
+  throw new Error(`Unknown packed node tag 0x${tag.toString(16)}`)
 }
 
 export function recordBody(bytes: Uint8Array): Uint8Array {
@@ -146,93 +391,87 @@ export function recordHash(bytes: Uint8Array): Uint8Array | null {
   return bytes.subarray(bytes.length - RECORD_HASH_LEN)
 }
 
+// --- Classic MPTNode codec interop helpers (used by nodeCodec.spec.ts and diagnostics) ---
+
+/** Serialize an in-memory classic `MPTNode` to canonical Ethereum MPT RLP. */
+export function encodeNodeToRlp(node: MPTNode): Uint8Array {
+  return node.serialize()
+}
+
+export function hashCanonicalRlp(rlp: Uint8Array, keccak256: BinaryPathKeccak): Uint8Array {
+  return keccak256(rlp)
+}
+
+function mptChildRefToBinaryChild(ref: NodeReferenceOrRawMPTNode): BinaryChildRef | null {
+  if (ref === null) return null
+  if (ref instanceof Uint8Array) {
+    if (ref.length === 0) return null
+    if (ref.length === 32) return { inline: false, hash: ref }
+    return { inline: true, rlp: ref }
+  }
+  if (isRawMPTNode(ref)) {
+    return { inline: true, rlp: RLP.encode(ref) }
+  }
+  return null
+}
+
+function mptNodeToBinaryNode(
+  node: MPTNode,
+): BinaryBranchNode | BinaryExtensionNode | BinaryLeafNode {
+  if (node instanceof BranchMPTNode) {
+    const children: (BinaryChildRef | null)[] = new Array(16).fill(null)
+    for (const [idx, ref] of node.getChildren()) {
+      children[idx] = mptChildRefToBinaryChild(ref)
+    }
+    const val = node.value()
+    return { kind: 'branch', children, value: val ?? new Uint8Array(0) }
+  }
+  if (node instanceof ExtensionMPTNode) {
+    const val = node.value()
+    const child = mptChildRefToBinaryChild(val as unknown as NodeReferenceOrRawMPTNode)
+    if (child === null) throw new Error('ExtensionMPTNode missing child reference')
+    return { kind: 'extension', path: Uint8Array.from(node.key()), child }
+  }
+  if (node instanceof LeafMPTNode) {
+    return { kind: 'leaf', path: Uint8Array.from(node.key()), value: node.value() }
+  }
+  throw new Error('Unknown node type')
+}
+
+/** Pack a classic `MPTNode` into a canonical binary record with 32-byte keccak trailer. */
+export function packRecord(node: MPTNode, keccak256: BinaryPathKeccak): Uint8Array {
+  const bin = mptNodeToBinaryNode(node)
+  const rlp = encodeBinaryNodeToRlp(bin)
+  return packBinaryRecord(bin, keccak256(rlp))
+}
+
+/** Decode a packed binary record back into a classic `MPTNode` (with proper inline RLP decoding). */
 export function decodeRecordToNode(bytes: Uint8Array): MPTNode {
-  const body = recordBody(bytes)
-  const tag = body[0]!
-  if (tag === TAG_BRANCH) {
-    const childMask = (body[1]! << 8) | body[2]!
-    const inlineMask = (body[3]! << 8) | body[4]!
+  const { node } = unpackBinaryRecord(bytes)
+  if (node.kind === 'branch') {
     const branch = new BranchMPTNode()
-    let offset = 5
     for (let i = 0; i < 16; i++) {
-      if ((childMask & (1 << i)) === 0) continue
-      if ((inlineMask & (1 << i)) !== 0) {
-        const len = body[offset]!
-        offset++
-        const raw = body.subarray(offset, offset + len)
-        offset += len
-        branch.setBranch(i, raw)
+      const c = node.children[i]
+      if (c === null || c === undefined) continue
+      if (c.inline) {
+        branch.setBranch(i, RLP.decode(c.rlp) as NodeReferenceOrRawMPTNode)
       } else {
-        const h = body.subarray(offset, offset + 32)
-        offset += 32
-        branch.setBranch(i, h)
+        branch.setBranch(i, c.hash)
       }
     }
-    if (offset < body.length) {
-      branch.value(body.subarray(offset))
+    if (node.value.length > 0) {
+      branch.value(node.value)
     }
     return branch
   }
-  if (tag === TAG_EXTENSION) {
-    const pathLen = body[1]!
-    const pathBytesLen = Math.ceil(pathLen / 2)
-    const nibbles = unpackPathBytes(body.subarray(2, 2 + pathBytesLen), pathLen)
-    const childIsInline = body[2 + pathBytesLen]!
-    let childOffset = 3 + pathBytesLen
-    const child =
-      childIsInline === 1
-        ? (() => {
-            const len = body[childOffset]!
-            childOffset++
-            return body.subarray(childOffset, childOffset + len)
-          })()
-        : body.subarray(childOffset, childOffset + 32)
-    return new ExtensionMPTNode(nibbles, child)
+  if (node.kind === 'extension') {
+    const child = node.child.inline ? (RLP.decode(node.child.rlp) as Uint8Array) : node.child.hash
+    return new ExtensionMPTNode(Array.from(node.path), child)
   }
-  if (tag === TAG_LEAF) {
-    const pathLen = body[1]!
-    const pathBytesLen = Math.ceil(pathLen / 2)
-    const nibbles = unpackPathBytes(body.subarray(2, 2 + pathBytesLen), pathLen)
-    const val = body.subarray(2 + pathBytesLen)
-    return new LeafMPTNode(nibbles, val)
+  if (node.kind === 'leaf') {
+    return new LeafMPTNode(Array.from(node.path), node.value)
   }
-  throw new Error(`Unknown packed node tag 0x${tag.toString(16)}`)
-}
-
-function unpackPathBytes(buf: Uint8Array, pathLen: number): number[] {
-  const nibbles: number[] = []
-  for (let i = 0; i < pathLen; i++) {
-    const byte = buf[i >> 1]!
-    nibbles.push(i % 2 === 0 ? byte >> 4 : byte & 0x0f)
-  }
-  return nibbles
-}
-
-function concatChunks(chunks: Uint8Array[]): Uint8Array {
-  let len = 0
-  for (const c of chunks) len += c.length
-  const out = new Uint8Array(len)
-  let o = 0
-  for (const c of chunks) {
-    out.set(c, o)
-    o += c.length
-  }
-  return out
-}
-
-import { keccak_256 as keccak_256_default } from '@noble/hashes/sha3.js'
-
-/** Format a child reference for parents (hash or inline raw). */
-export function formatChildRef(
-  node: MPTNode,
-  topLevel: boolean,
-  keccak256: BinaryPathKeccak,
-): Uint8Array | NodeReferenceOrRawMPTNode {
-  const encoded = encodeNodeToRlp(node)
-  if (encoded.length >= 32 || topLevel) {
-    return hashCanonicalRlp(encoded, keccak256)
-  }
-  return node.raw() as NodeReferenceOrRawMPTNode
+  throw new Error('Cannot decode external-leaf pointer to classic MPTNode without leaf value')
 }
 
 export { matchingNibbleLength, bytesToNibbles, nibblesTypeToPackedBytes, addHexPrefix, equalsBytes }
