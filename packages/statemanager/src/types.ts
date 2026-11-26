@@ -49,6 +49,26 @@ export interface FlatStateManagerOpts extends BaseStateManagerOpts {
    * `slotHash` is keccak256 of the 32-byte slot key. Must return slot value bytes (≤32) or `undefined`.
    */
   coldStorageLookup?: (accountHash: Uint8Array, slotHash: Uint8Array) => Uint8Array | undefined
+  /**
+   * Bit `b` set = nibble bucket `b` is closed-world (no miss resolvers; absent key = empty).
+   * Default `0xffff` keeps legacy full-state behavior.
+   */
+  closedBucketsMask?: number
+  /** Overlay / sandbox resolution policy (default `'full'`). */
+  resolutionPolicy?: import('./stateMiss.ts').StateResolutionPolicy
+  resolveAccountMiss?: (
+    accountHash: Uint8Array,
+    policy: import('./stateMiss.ts').StateResolutionPolicy,
+  ) => Promise<import('./stateMiss.ts').AccountMissResult>
+  resolveStorageMiss?: (
+    accountHash: Uint8Array,
+    slotHash: Uint8Array,
+    policy: import('./stateMiss.ts').StateResolutionPolicy,
+  ) => Promise<import('./stateMiss.ts').StorageMissResult>
+  resolveCodeMiss?: (
+    codeHash: Uint8Array,
+    policy: import('./stateMiss.ts').StateResolutionPolicy,
+  ) => Promise<import('./stateMiss.ts').CodeMissResult>
 }
 
 /** Options for constructing a {@link RPCStateManager}. */

@@ -46,7 +46,18 @@ import type {
   StateManagerInterface,
 } from '@ethereumjs/common'
 import type { PrefixedHexString } from '@ethereumjs/util'
+import {
+  type AccountMissResult,
+  type CodeMissResult,
+  StateMissUnavailableError,
+  type StateResolutionPolicy,
+  type StorageMissResult,
+} from './stateMiss.ts'
 import type { FlatStateManagerOpts } from './types.ts'
+
+const DEFAULT_CLOSED_BUCKETS_MASK = 0xffff
+const MAX_PROVEN_EMPTY_ACCOUNTS = 65_536
+const MAX_PROVEN_EMPTY_STORAGE = 262_144
 
 export type FlatAccountSample = {
   accountHash: Uint8Array
@@ -122,6 +133,28 @@ export class FlatStateManager implements StateManagerInterface {
   private readonly _deltaStack: DeltaFrame[] = []
   private readonly _overlayFrames: DeltaFrame[] = []
   private readonly _keccak: (data: Uint8Array) => Uint8Array
+  private _closedBucketsMask: number
+  private _resolutionPolicy: StateResolutionPolicy
+  private readonly _resolveAccountMiss?: (
+    accountHash: Uint8Array,
+    policy: StateResolutionPolicy,
+  ) => Promise<AccountMissResult>
+  private readonly _resolveStorageMiss?: (
+    accountHash: Uint8Array,
+    slotHash: Uint8Array,
+    policy: StateResolutionPolicy,
+  ) => Promise<StorageMissResult>
+  private readonly _resolveCodeMiss?: (
+    codeHash: Uint8Array,
+    policy: StateResolutionPolicy,
+  ) => Promise<CodeMissResult>
+  private readonly _provenEmptyAccounts = new Set<string>()
+  private readonly _provenEmptyAccountOrder: string[] = []
+  private readonly _provenEmptyStorage = new Set<string>()
+  private readonly _provenEmptyStorageOrder: string[] = []
+  private readonly _accountMissInflight = new Map<string, Promise<AccountMissResult>>()
+  private readonly _storageMissInflight = new Map<string, Promise<StorageMissResult>>()
+  private readonly _codeMissInflight = new Map<string, Promise<CodeMissResult>>()
 
   constructor(opts: FlatStateManagerOpts = {}, parent?: FlatStateManager) {
     this.common = opts.common ?? parent?.common
@@ -136,8 +169,227 @@ export class FlatStateManager implements StateManagerInterface {
       this._coldAccountBatchLookup = opts.coldAccountBatchLookup
       this._coldCodeLookup = opts.coldCodeLookup
       this._coldStorageLookup = opts.coldStorageLookup
+      this._closedBucketsMask = opts.closedBucketsMask ?? DEFAULT_CLOSED_BUCKETS_MASK
+      this._resolveAccountMiss = opts.resolveAccountMiss
+      this._resolveStorageMiss = opts.resolveStorageMiss
+      this._resolveCodeMiss = opts.resolveCodeMiss
+    } else {
+      this._closedBucketsMask = parent._closedBucketsMask
+      this._resolveAccountMiss = undefined
+      this._resolveStorageMiss = undefined
+      this._resolveCodeMiss = undefined
     }
+    this._resolutionPolicy = opts.resolutionPolicy ?? parent?._resolutionPolicy ?? 'full'
     this._overlayAccountShards = createOverlayAccountShards()
+  }
+
+  /** Root manager (mask, hooks, proven-empty tombstones). */
+  root(): FlatStateManager {
+    let cur: FlatStateManager = this
+    while (cur._parent !== undefined) cur = cur._parent
+    return cur
+  }
+
+  effectivePolicy(): StateResolutionPolicy {
+    return this._resolutionPolicy
+  }
+
+  closedBucketsMask(): number {
+    return this.root()._closedBucketsMask
+  }
+
+  setClosedBucketsMask(mask: number): void {
+    if (this._parent !== undefined) {
+      this.root().setClosedBucketsMask(mask)
+      return
+    }
+    this._closedBucketsMask = mask & 0xffff
+  }
+
+  markBucketClosed(bucketIndex: number): void {
+    if (bucketIndex < 0 || bucketIndex > 15) return
+    if (this._parent !== undefined) {
+      this.root().markBucketClosed(bucketIndex)
+      return
+    }
+    this._closedBucketsMask |= 1 << bucketIndex
+  }
+
+  private bucketClosedForHash(accountHash: Uint8Array): boolean {
+    if (accountHash.length === 0) return true
+    const bucket = accountHash[0]! >> 4
+    return (this.closedBucketsMask() & (1 << bucket)) !== 0
+  }
+
+  private isProvenEmptyAccountKey(key: string): boolean {
+    return this.root()._provenEmptyAccounts.has(key)
+  }
+
+  private isProvenEmptyStorageKey(storageKey: string): boolean {
+    return this.root()._provenEmptyStorage.has(storageKey)
+  }
+
+  markAccountEmpty(accountHash: Uint8Array): void {
+    if (this._parent !== undefined) {
+      this.root().markAccountEmpty(accountHash)
+      return
+    }
+    const key = this.accountHashKey(accountHash)
+    this.touchProvenEmpty(
+      this._provenEmptyAccounts,
+      this._provenEmptyAccountOrder,
+      key,
+      MAX_PROVEN_EMPTY_ACCOUNTS,
+    )
+  }
+
+  markStorageEmpty(accountHash: Uint8Array, slotHash: Uint8Array): void {
+    if (this._parent !== undefined) {
+      this.root().markStorageEmpty(accountHash, slotHash)
+      return
+    }
+    const sk = this.storageKey(this.accountHashKey(accountHash), bytesToUnprefixedHex(slotHash))
+    this.touchProvenEmpty(
+      this._provenEmptyStorage,
+      this._provenEmptyStorageOrder,
+      sk,
+      MAX_PROVEN_EMPTY_STORAGE,
+    )
+  }
+
+  private touchProvenEmpty(set: Set<string>, order: string[], key: string, cap: number): void {
+    if (set.has(key)) return
+    set.add(key)
+    order.push(key)
+    while (order.length > cap) {
+      const drop = order.shift()
+      if (drop !== undefined) set.delete(drop)
+    }
+  }
+
+  private async coalesceAccountMiss(
+    accountHash: Uint8Array,
+    policy: StateResolutionPolicy,
+  ): Promise<AccountMissResult> {
+    const root = this.root()
+    const key = this.accountHashKey(accountHash)
+    const existing = root._accountMissInflight.get(key)
+    if (existing !== undefined) return existing
+    const resolver = root._resolveAccountMiss
+    if (resolver === undefined) return undefined
+    const flight = resolver(accountHash, policy).finally(() => {
+      root._accountMissInflight.delete(key)
+    })
+    root._accountMissInflight.set(key, flight)
+    return flight
+  }
+
+  private async coalesceStorageMiss(
+    accountHash: Uint8Array,
+    slotHash: Uint8Array,
+    policy: StateResolutionPolicy,
+  ): Promise<StorageMissResult> {
+    const root = this.root()
+    const sk = this.storageKey(this.accountHashKey(accountHash), bytesToUnprefixedHex(slotHash))
+    const existing = root._storageMissInflight.get(sk)
+    if (existing !== undefined) return existing
+    const resolver = root._resolveStorageMiss
+    if (resolver === undefined) return undefined
+    const flight = resolver(accountHash, slotHash, policy).finally(() => {
+      root._storageMissInflight.delete(sk)
+    })
+    root._storageMissInflight.set(sk, flight)
+    return flight
+  }
+
+  private async coalesceCodeMiss(
+    codeHash: Uint8Array,
+    policy: StateResolutionPolicy,
+  ): Promise<CodeMissResult> {
+    const root = this.root()
+    const key = bytesToUnprefixedHex(codeHash)
+    const existing = root._codeMissInflight.get(key)
+    if (existing !== undefined) return existing
+    const resolver = root._resolveCodeMiss
+    if (resolver === undefined) return undefined
+    const flight = resolver(codeHash, policy).finally(() => {
+      root._codeMissInflight.delete(key)
+    })
+    root._codeMissInflight.set(key, flight)
+    return flight
+  }
+
+  private commitResolvedAccountBinary(key: string, binary: Uint8Array): void {
+    this.root().writeBinaryAccountKey(key, binary, false)
+  }
+
+  private clearProvenEmptyAccount(key: string): void {
+    const root = this.root()
+    if (root._provenEmptyAccounts.delete(key)) {
+      const idx = root._provenEmptyAccountOrder.indexOf(key)
+      if (idx >= 0) root._provenEmptyAccountOrder.splice(idx, 1)
+    }
+  }
+
+  private clearProvenEmptyStorage(storageKey: string): void {
+    const root = this.root()
+    if (root._provenEmptyStorage.delete(storageKey)) {
+      const idx = root._provenEmptyStorageOrder.indexOf(storageKey)
+      if (idx >= 0) root._provenEmptyStorageOrder.splice(idx, 1)
+    }
+  }
+
+  private async resolveAccountIfMissing(key: string, accountHash: Uint8Array): Promise<void> {
+    if (this.readAccountKey(key) !== undefined) return
+    const root = this.root()
+    if (root.bucketClosedForHash(accountHash)) return
+    if (root.isProvenEmptyAccountKey(key)) return
+    const policy = this.effectivePolicy()
+    if (policy === 'local-only') {
+      throw new StateMissUnavailableError('account', accountHash)
+    }
+    const result = await this.coalesceAccountMiss(accountHash, policy)
+    if (result === undefined) {
+      throw new StateMissUnavailableError('account', accountHash)
+    }
+    if (result === 'empty') {
+      root.markAccountEmpty(accountHash)
+      return
+    }
+    if (result.length !== BINARY_ACCOUNT_SIZE) {
+      throw new StateMissUnavailableError(
+        'account',
+        accountHash,
+        'invalid account bytes from resolver',
+      )
+    }
+    this.clearProvenEmptyAccount(key)
+    this.commitResolvedAccountBinary(key, result)
+  }
+
+  private async resolveStorageIfMissing(
+    accountHash: Uint8Array,
+    slotHash: Uint8Array,
+    storageKey: string,
+  ): Promise<void> {
+    if (this.readStorageKey(storageKey) !== undefined) return
+    const root = this.root()
+    if (root.bucketClosedForHash(accountHash)) return
+    if (root.isProvenEmptyStorageKey(storageKey)) return
+    const policy = this.effectivePolicy()
+    if (policy === 'local-only') {
+      throw new StateMissUnavailableError('storage', slotHash)
+    }
+    const result = await this.coalesceStorageMiss(accountHash, slotHash, policy)
+    if (result === undefined) {
+      throw new StateMissUnavailableError('storage', slotHash)
+    }
+    if (result === 'empty') {
+      root.markStorageEmpty(accountHash, slotHash)
+      return
+    }
+    this.clearProvenEmptyStorage(storageKey)
+    this.writeStorageKey(storageKey, result)
   }
 
   private slotShard(key: string): Map<string, number> {
@@ -461,12 +713,20 @@ export class FlatStateManager implements StateManagerInterface {
   }
 
   async getAccount(address: Address): Promise<Account | undefined> {
-    return this.readAccountKey(this.accountHashHex(address))
+    const key = this.accountHashHex(address)
+    const hit = this.readAccountKey(key)
+    if (hit !== undefined) return hit
+    const accountHash = this._keccak(address.bytes)
+    await this.resolveAccountIfMissing(key, accountHash)
+    return this.readAccountKey(key)
   }
 
   async putAccount(address: Address, account?: Account): Promise<void> {
     const key = this.accountHashHex(address)
     this._hashToAddress.set(key, address)
+    if (account !== undefined) {
+      this.clearProvenEmptyAccount(key)
+    }
     this.writeAccountKey(key, account)
   }
 
@@ -487,7 +747,22 @@ export class FlatStateManager implements StateManagerInterface {
       return new Uint8Array(0)
     }
     const codeHashHex = bytesToUnprefixedHex(account.codeHash)
-    return this.readCodeKey(codeHashHex) ?? new Uint8Array(0)
+    const hit = this.readCodeKey(codeHashHex)
+    if (hit !== undefined) return hit
+    const accountHash = this._keccak(address.bytes)
+    if (this.root().bucketClosedForHash(accountHash)) {
+      return new Uint8Array(0)
+    }
+    const policy = this.effectivePolicy()
+    if (policy === 'local-only') {
+      throw new StateMissUnavailableError('code', account.codeHash)
+    }
+    const resolved = await this.coalesceCodeMiss(account.codeHash, policy)
+    if (resolved === undefined) {
+      throw new StateMissUnavailableError('code', account.codeHash)
+    }
+    this.writeCodeKey(codeHashHex, resolved)
+    return resolved
   }
 
   async putCode(address: Address, value: Uint8Array): Promise<void> {
@@ -512,8 +787,22 @@ export class FlatStateManager implements StateManagerInterface {
     if (account === undefined) {
       return new Uint8Array(0)
     }
+    const accountHash = this._keccak(address.bytes)
     const ah = this.accountHashHex(address)
+    const slotHash = unprefixedHexToBytes(this.slotHashHex(key))
     const sk = this.storageKey(ah, this.slotHashHex(key))
+    const hit = this.readStorageKey(sk)
+    if (hit !== undefined) return hit
+    if (this.root().bucketClosedForHash(accountHash)) {
+      return new Uint8Array(0)
+    }
+    if (equalsBytes(account.storageRoot, KECCAK256_RLP)) {
+      return new Uint8Array(0)
+    }
+    if (this.root().isProvenEmptyStorageKey(sk)) {
+      return new Uint8Array(0)
+    }
+    await this.resolveStorageIfMissing(accountHash, slotHash, sk)
     return this.readStorageKey(sk) ?? new Uint8Array(0)
   }
 
@@ -531,6 +820,14 @@ export class FlatStateManager implements StateManagerInterface {
     this.pinKey(this.accountHashHex(address))
     const ah = this.accountHashHex(address)
     const sk = this.storageKey(ah, this.slotHashHex(key))
+    const ahHex = this.accountHashHex(address)
+    if (value.length === 0) {
+      const accountHash = this._keccak(address.bytes)
+      const slotHash = unprefixedHexToBytes(this.slotHashHex(key))
+      this.root().markStorageEmpty(accountHash, slotHash)
+    } else {
+      this.clearProvenEmptyStorage(this.storageKey(ahHex, this.slotHashHex(key)))
+    }
     this.writeStorageKey(sk, value.length === 0 ? undefined : value)
   }
 
@@ -620,7 +917,19 @@ export class FlatStateManager implements StateManagerInterface {
     this.originalStorageCache.clear()
   }
 
-  shallowCopy(): StateManagerInterface {
+  shallowCopy(
+    downlevelCachesOrOpts?: boolean | { resolutionPolicy?: StateResolutionPolicy },
+  ): StateManagerInterface {
+    if (
+      typeof downlevelCachesOrOpts === 'object' &&
+      downlevelCachesOrOpts !== null &&
+      'resolutionPolicy' in downlevelCachesOrOpts
+    ) {
+      return new FlatStateManager(
+        { common: this.common, resolutionPolicy: downlevelCachesOrOpts.resolutionPolicy },
+        this,
+      )
+    }
     return new FlatStateManager({ common: this.common }, this)
   }
 
@@ -1012,6 +1321,13 @@ export class FlatStateManager implements StateManagerInterface {
     this._code.clear()
     this._coldHydratedCodeKeys.clear()
     this._coldHydratedStorageKeys.clear()
+    this._provenEmptyAccounts.clear()
+    this._provenEmptyAccountOrder.length = 0
+    this._provenEmptyStorage.clear()
+    this._provenEmptyStorageOrder.length = 0
+    this._accountMissInflight.clear()
+    this._storageMissInflight.clear()
+    this._codeMissInflight.clear()
     this._deltaStack.length = 0
     this._overlayFrames.length = 0
     this.originalStorageCache.clear()
