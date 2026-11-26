@@ -38,19 +38,23 @@ function calmHeadFollowingObs(nowMs: number): MachineObservation {
 }
 
 describe('machineOrchestrator', () => {
-  it('cold boot-warmup with 0 peers stays in boot-warmup and keeps snap1 on (off for ethy mode)', () => {
+  it('cold boot-warmup omits snap1 unless --snap-bootstrap (ethy mode keeps snap off)', () => {
     const now = Date.now()
     const base: MachineObservation = {
       ...calmHeadFollowingObs(now),
       phase: 'P2P_WARMUP',
       healthyEthPeers: 0,
       bucketsMask: 0,
+      snapBootstrap: false,
     }
     const autoPlan = evaluateMachinePlan(base)
     assert.equal(autoPlan.mode, 'boot-warmup')
     assert.equal(autoPlan.planes.snap, 'prewarming')
-    assert.include(autoPlan.profile.capabilities, 'snap1')
+    assert.notInclude(autoPlan.profile.capabilities, 'snap1')
     assert.equal(autoPlan.servingEthy, 'off')
+
+    const bootstrapped = evaluateMachinePlan({ ...base, snapBootstrap: true })
+    assert.include(bootstrapped.profile.capabilities, 'snap1')
 
     const ethyOnlyPlan = evaluateMachinePlan({ ...base, syncMode: 'ethy' })
     assert.equal(ethyOnlyPlan.mode, 'boot-warmup')
@@ -117,6 +121,7 @@ describe('machineOrchestrator', () => {
     const obs: MachineObservation = {
       ...calmHeadFollowingObs(now),
       healthyEthPeers: 4,
+      snapBootstrap: true,
       shadowMode: 'waiting-election',
       electionDeadlineMs: now + SNAP_PREWARM_LEAD_MS - 5_000,
       electionSuppressed: false,

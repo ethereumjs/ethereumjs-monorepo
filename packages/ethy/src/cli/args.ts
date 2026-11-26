@@ -6,6 +6,8 @@ export type EthyAiMemory = 'ephemeral' | 'off'
 
 export type EthyAiModeCli = 'default' | 'off' | 'local'
 
+export const DEFAULT_CUSTODY_COUNT = 2
+
 export interface EthyCliArgs {
   network: string
   demo: boolean
@@ -18,6 +20,12 @@ export interface EthyCliArgs {
   rpcPort?: number
   rpcPortExplicit: boolean
   syncMode: EthySyncMode
+  /** Custody dial 1..16 (default 2). WP-16d. */
+  custodyCount: number
+  /** `--full` → custody 16. */
+  fullCustody: boolean
+  /** Explicit opt-in to mount dial `snap/1` (WP-16d). */
+  snapBootstrap: boolean
   /** `enode://` URLs for direct dial after P2P start. */
   connectEnodeUrls: string[]
   llmUrl?: string
@@ -70,6 +78,10 @@ export function parseEthyArgs(argv: string[]): EthyCliArgs {
   let noSave = false
   let aiSharePrompts: boolean | undefined
   let shadowRefreshEnabled = true
+  let custodyCount = DEFAULT_CUSTODY_COUNT
+  let fullCustody = false
+  let snapBootstrap = false
+  let custodyExplicit = false
 
   for (let i = 0; i < args.length; i++) {
     const a = args[i]
@@ -137,6 +149,26 @@ export function parseEthyArgs(argv: string[]): EthyCliArgs {
         throw new Error('--sync-mode must be auto, ethy, or snap')
       }
       syncMode = next
+      continue
+    }
+    if (a === '--custody') {
+      const next = args[++i]
+      if (next === undefined) throw new Error('--custody requires a number 1..16')
+      if (fullCustody) throw new Error('--custody cannot be combined with --full')
+      custodyCount = Number.parseInt(next, 10)
+      custodyExplicit = true
+      if (Number.isNaN(custodyCount) || custodyCount < 1 || custodyCount > 16) {
+        throw new Error('--custody must be between 1 and 16 (0 is not allowed)')
+      }
+      continue
+    }
+    if (a === '--full') {
+      fullCustody = true
+      custodyCount = 16
+      continue
+    }
+    if (a === '--snap-bootstrap') {
+      snapBootstrap = true
       continue
     }
     if (a === '--llm-url') {
@@ -231,6 +263,12 @@ export function parseEthyArgs(argv: string[]): EthyCliArgs {
   if (demo && !rpcForced) {
     rpcEnabled = false
   }
+  if (syncMode === 'snap') {
+    snapBootstrap = true
+  }
+  if (fullCustody && custodyExplicit) {
+    throw new Error('--full cannot be combined with --custody')
+  }
 
   return {
     network,
@@ -259,14 +297,18 @@ export function parseEthyArgs(argv: string[]): EthyCliArgs {
     noSave,
     aiSharePrompts,
     shadowRefreshEnabled,
+    custodyCount,
+    fullCustody,
+    snapBootstrap,
   }
 }
 
 export function printEthyUsage(): string {
-  return `ethy — EthereumJS execution-free state node (Amsterdam focus)
+  return `ethy — EthereumJS execution-free state node (unified ETHY/0 custody)
 
 Usage:
   ethy [network] [--demo] [--headless] [--fresh] [--sync-mode auto|ethy|snap]
+        [--custody 1..16] [--full] [--snap-bootstrap]
         [--no-rpc] [--rpc] [--rpc-host HOST] [--rpc-port N]
         [--datadir PATH] [--port N] [--connect enode://...]
         [--no-ai] [--ai default|off|local] [--ollama [model]]

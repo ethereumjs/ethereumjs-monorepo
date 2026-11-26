@@ -25,7 +25,9 @@ import {
 } from '@ethereumjs/util'
 import { secp256k1 } from '@noble/curves/secp256k1.js'
 
+import { DEFAULT_CUSTODY_COUNT } from '../cli/args.ts'
 import { getEthyClientVersion } from '../clientMeta.ts'
+import { custodyBitmask, loadOrAssignCustody } from '../custody/custodyPlan.ts'
 import type { ETHEconomyDataManager } from '../economy/economyDataManager.ts'
 import type { NoticeBoard } from '../notify/board.ts'
 import {
@@ -240,6 +242,10 @@ export type StartPeerCoordinatorOptions = {
   shadowRefreshEnabled?: boolean
   /** CL poll cadence from the machine reconciler (WP-13). */
   setConsensusPollInterval?: (ms: number) => void
+  /** WP-16d custody dial count (default 2). */
+  custodyCount?: number
+  /** WP-16d explicit `snap/1` dial (also on when `syncMode === 'snap'`). */
+  snapBootstrap?: boolean
 }
 
 export type PeerCoordinatorHandle = {
@@ -439,6 +445,8 @@ export async function startPeerCoordinator(
   let resumeHydrateStarted = false
   let rollingStatusAdvertised = false
   const syncMode: SyncMode = opts.syncMode ?? 'auto'
+  const snapBootstrap = opts.snapBootstrap === true || syncMode === 'snap'
+  const custodyCount = opts.custodyCount ?? DEFAULT_CUSTODY_COUNT
   let firstEthStatusAtMs = 0
   let ethySwarm: EthySwarmSynchronizer | undefined
   let ethySeederPeerId: string | undefined
@@ -477,6 +485,19 @@ export async function startPeerCoordinator(
       return genPrivateKey()
     }
   })()
+
+  const custodyAssign = loadOrAssignCustody(snapStore?.getCustodyMeta(), privateKey, custodyCount)
+  spine.custodyBuckets = custodyAssign.buckets
+  spine.closedBucketsMask = snapStore?.closedBucketsMaskFromPlanes() ?? 0
+  stateManager.setClosedBucketsMask(spine.closedBucketsMask)
+  if (snapStore?.getCustodyMeta() !== undefined) {
+    snapStore.persistCustodyAssignment(
+      custodyAssign.nodeIdHex,
+      custodyAssign.count,
+      custodyAssign.buckets,
+    )
+  }
+  spine.ethyBucketsBitmask = custodyBitmask(custodyAssign.buckets)
   const localNodeId = pk2id(secp256k1.getPublicKey(privateKey, false))
   const shadowRefreshEnabled = opts.shadowRefreshEnabled !== false
   const processStartedAtMs = Date.now()
@@ -1027,7 +1048,7 @@ export async function startPeerCoordinator(
   let link = initialP2pLinkState()
   const linkStartedAt = Date.now()
   let discoveryHoldActive: boolean | undefined
-  let lastAppliedProfile = bootNetworkProfile(syncMode)
+  let lastAppliedProfile = bootNetworkProfile(syncMode, snapBootstrap)
   let machineState = createMachineState()
   let lastMachinePlan: MachinePlan | undefined
   let lastClPollMs: number | undefined
@@ -2028,7 +2049,7 @@ export async function startPeerCoordinator(
       discoveryLowWaterMark: SYNC_DISCOVERY_LOW_WATER,
       // Current Sepolia clients speak eth/69 and later. eth/68 fills dial slots
       // with peers that cannot serve this chain.
-      capabilities: ['eth69', 'eth70', 'eth71', 'eth72', 'snap1', 'ethy0'],
+      capabilities: [...lastAppliedProfile.capabilities],
       listenPort: opts.listenPort ?? 0,
       goodCitizen: opts.goodCitizen ?? true,
       // An empty account proof is not valid snap, so inbound GETs stay unanswered.
@@ -2407,6 +2428,7 @@ export async function startPeerCoordinator(
         spine,
         peerSnapshots: snap.peers,
         syncMode,
+        snapBootstrap,
         shadowRefreshEnabled,
         clDisabled: opts.setConsensusPollInterval === undefined,
         nowMs,

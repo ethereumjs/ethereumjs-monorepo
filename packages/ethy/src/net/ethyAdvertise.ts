@@ -27,6 +27,18 @@ export function refreshEthyWorkerAdvertisement(client: Devp2pWorkerClient, spine
     basePivotBlock: pivotStr,
     basePivotStateRoot: bytesToUnprefixedHex(spine.pivotStateRoot),
     bucketsBitmask: mask === 0 ? '0' : `0x${mask.toString(16)}`,
+    storageBucketsBitmask:
+      spine.ethyStorageBucketsBitmask !== undefined
+        ? spine.ethyStorageBucketsBitmask === 0
+          ? '0'
+          : `0x${spine.ethyStorageBucketsBitmask.toString(16)}`
+        : undefined,
+    codeBucketsBitmask:
+      spine.ethyCodeBucketsBitmask !== undefined
+        ? spine.ethyCodeBucketsBitmask === 0
+          ? '0'
+          : `0x${spine.ethyCodeBucketsBitmask.toString(16)}`
+        : undefined,
     balEarliestBlock: earliest,
     balLatestBlock: latest,
   })

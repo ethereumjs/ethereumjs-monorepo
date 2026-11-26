@@ -1,6 +1,6 @@
 # WP-16d: Unified Custody `ETHY/0` — Default Fast Onboarding (`--custody 2`), Background 3-Plane Custody Sync & 1-Hop Cold-Miss Resolver (Option B)
 
-- **Status:** `PLANNED`
+- **Status:** `IN_PROGRESS`
 - **Dependencies:** `WP-16b` (`DONE`), `WP-16c` (`DONE`), `WP-06f` (`DONE`), `WP-08b` (`DONE`), `WP-11b` (`DONE`), `WP-14` (`DONE`)
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
@@ -179,4 +179,6 @@ flowchart TD
 
 ## 3. Implementation Notes & Deviations (Implementer — Composer 2.5)
 
-*(To be filled out by Composer 2.5 upon completion.)*
+**Tranche 1 (local commit):** CLI `--custody` / `--full` / `--snap-bootstrap`; `custodyPlan` + `snapStore` persistence; coordinator custody bucket assign + filtered `EthySwarmSynchronizer`; default `HELLO` without `snap/1` (`bootNetworkProfile` + machine reconciler `snapBootstrap` gate); `closedBucketsMask` from disk in `createEthyNode`; scaffold `custodyStateResolver`, `ethyCodeStorageSync`, `blockCalendar`; tests `custodyPlan` + machine/args updates.
+
+**Still open:** BAL-first `custodyOnboarding` → immediate `HEAD_FOLLOWING`; wire `custodyStateResolver` into `FlatStateManager` miss hooks + coordinator `handleEthyResponse`; background 3-plane sync + atomic STATUS flip; full resolver storage path + witness fold-to-head; `custodyEthySync` integration tests.

@@ -85,6 +85,11 @@ type ActiveMeta = {
   ethyBucketsBitmask?: number
   /** Per-nibble ETHY snapshot block (`"0"`..`"15"`), WP-06g. */
   bucketPivotBlocks?: Record<string, string>
+  /** WP-16d custody dial persistence. */
+  custodyCount?: number
+  custodyNodeId?: string
+  custodyBuckets?: number[]
+  custodyPlanes?: Record<string, { accounts: boolean; code: boolean; storage: boolean }>
 }
 
 type PivotMeta = {
@@ -347,6 +352,63 @@ export class SnapPivotStore {
   getBucketPivotBlocks(): Record<string, string> | undefined {
     if (!this.enabled) return undefined
     return this.readActive()?.bucketPivotBlocks
+  }
+
+  getCustodyMeta(): ActiveMeta | undefined {
+    if (!this.enabled) return undefined
+    return this.readActive()
+  }
+
+  persistCustodyAssignment(nodeIdHex: string, count: number, buckets: number[]): void {
+    if (!this.enabled) return
+    const active = this.readActive()
+    if (active === undefined) return
+    writeAtomicDoc(path.join(this.networkDir, 'active.json'), {
+      ...active,
+      custodyNodeId: nodeIdHex,
+      custodyCount: count,
+      custodyBuckets: buckets,
+      custodyPlanes: active.custodyPlanes ?? {},
+    } satisfies ActiveMeta)
+  }
+
+  updateCustodyPlane(
+    bucketIndex: number,
+    patch: Partial<{ accounts: boolean; code: boolean; storage: boolean }>,
+  ): void {
+    if (!this.enabled) return
+    const active = this.readActive()
+    if (active === undefined) return
+    const key = bucketIndex.toString(16)
+    const prev = active.custodyPlanes?.[key] ?? {
+      accounts: false,
+      code: false,
+      storage: false,
+    }
+    const next: Record<string, { accounts: boolean; code: boolean; storage: boolean }> = {
+      ...(active.custodyPlanes ?? {}),
+      [key]: {
+        accounts: patch.accounts ?? prev.accounts,
+        code: patch.code ?? prev.code,
+        storage: patch.storage ?? prev.storage,
+      },
+    }
+    writeAtomicDoc(path.join(this.networkDir, 'active.json'), {
+      ...active,
+      custodyPlanes: next,
+    } satisfies ActiveMeta)
+  }
+
+  closedBucketsMaskFromPlanes(): number {
+    const active = this.readActive()
+    if (active?.custodyPlanes === undefined) return 0
+    let mask = 0
+    for (const [hex, row] of Object.entries(active.custodyPlanes)) {
+      const b = Number.parseInt(hex, 16)
+      if (Number.isNaN(b) || b < 0 || b > 15) continue
+      if (row.accounts && row.code && row.storage) mask |= 1 << b
+    }
+    return mask
   }
 
   /** Filesystem data root for the active network (WP-11b shadow refresh). */

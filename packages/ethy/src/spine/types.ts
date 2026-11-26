@@ -170,6 +170,12 @@ export interface EthySpine {
   diskHydrated?: boolean
   /** Local servable ETHY/0 account buckets (`1 << nibble`). */
   ethyBucketsBitmask?: number
+  ethyStorageBucketsBitmask?: number
+  ethyCodeBucketsBitmask?: number
+  /** Assigned custody buckets for this node (WP-16d). */
+  custodyBuckets?: number[]
+  closedBucketsMask?: number
+  custodyBackgroundActive?: boolean
   currentSlot: number
   pivotBlockNumber?: bigint
   pivotStateRoot?: Uint8Array

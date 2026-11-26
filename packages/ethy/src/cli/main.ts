@@ -161,6 +161,8 @@ async function main(): Promise<void> {
       listenPort: cli.listenPort,
       connectEnodeUrls: cli.connectEnodeUrls.length > 0 ? cli.connectEnodeUrls : undefined,
       syncMode: cli.syncMode,
+      custodyCount: cli.custodyCount,
+      snapBootstrap: cli.snapBootstrap,
       shadowRefreshEnabled: cli.shadowRefreshEnabled,
       witnessExecutionHeader,
       setConsensusPollInterval: consensus.setPollIntervalMs,

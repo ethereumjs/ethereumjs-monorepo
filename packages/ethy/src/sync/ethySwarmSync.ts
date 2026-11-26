@@ -69,6 +69,8 @@ export type EthySwarmSyncOpts = {
   skipBalCatchUp?: boolean
   persistBuckets?: SnapBucket[]
   backgroundMaxChunksInFlight?: number
+  /** When set, sync only these nibble buckets (WP-16d custody background). */
+  custodyBuckets?: number[]
 }
 
 type ManifestEntry = {
@@ -390,6 +392,7 @@ export class EthySwarmSynchronizer {
     if (assigned === undefined) return
 
     for (let b = 0; b < 16; b++) {
+      if (!this.bucketInCustody(b)) continue
       const existing = this.bucketAssignments.get(b)
       const bucketLocked =
         this.manifestOrigins.has(b) ||
@@ -424,6 +427,7 @@ export class EthySwarmSynchronizer {
     if (this.started && !this.stopped && !this.accountsPassComplete) {
       const mask = this.seedMaskUnion()
       for (let b = 0; b < 16; b++) {
+        if (!this.bucketInCustody(b)) continue
         if ((mask & (1 << b)) === 0) continue
         if (this.bucketsDone.has(b) || this.manifestRequested.has(b)) continue
         this.requestManifest(b)
@@ -436,6 +440,20 @@ export class EthySwarmSynchronizer {
     let mask = 0
     for (const s of this.seeders.values()) mask |= s.bucketsBitmask
     return mask
+  }
+
+  private bucketInCustody(bucketIndex: number): boolean {
+    const list = this.opts.custodyBuckets
+    if (list === undefined || list.length === 0) return true
+    return list.includes(bucketIndex)
+  }
+
+  private requiredBuckets(): number[] {
+    const list = this.opts.custodyBuckets
+    if (list === undefined || list.length === 0) {
+      return Array.from({ length: 16 }, (_, i) => i)
+    }
+    return [...list]
   }
 
   private assignmentForBucket(bucketIndex: number): BucketAssignment | undefined {
@@ -949,7 +967,8 @@ export class EthySwarmSynchronizer {
   private maybeFinishAccountsPass(): void {
     if (this.accountsPassComplete) return
     const mask = this.seedMaskUnion()
-    for (let b = 0; b < 16; b++) {
+    const required = this.requiredBuckets()
+    for (const b of required) {
       if ((mask & (1 << b)) === 0) continue
       if (!this.bucketsDone.has(b)) return
     }

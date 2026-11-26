@@ -44,6 +44,8 @@ export type MachineObservation = {
   phase: EthyPhase
   syncTransport: 'unset' | 'snap' | 'ethy'
   syncMode: SyncMode
+  /** Mount dial `snap/1` when the reconciler would prewarm snap (WP-16d). */
+  snapBootstrap: boolean
   shadowRefreshEnabled: boolean
   clDisabled: boolean
   healthyEthPeers: number
@@ -273,7 +275,8 @@ export function evaluateMachinePlan(obs: MachineObservation): MachinePlan {
     emergency,
   )
 
-  const includeSnap = snapStatus === 'active' || snapStatus === 'prewarming'
+  const snapWanted = snapStatus === 'active' || snapStatus === 'prewarming'
+  const includeSnap = snapWanted && (obs.snapBootstrap || obs.syncMode === 'snap')
   const includeEthy = !(obs.syncMode === 'snap' && obs.bucketsMask === 0)
   const capabilities = ['eth69', 'eth70', 'eth71', 'eth72']
   if (includeEthy) capabilities.push('ethy0')
@@ -380,10 +383,13 @@ export function stepMachineOrchestrator(
   }
 }
 
-export function bootNetworkProfile(syncMode: SyncMode = 'auto'): NetworkProfile {
+export function bootNetworkProfile(
+  syncMode: SyncMode = 'auto',
+  snapBootstrap = false,
+): NetworkProfile {
   const capabilities = ['eth69', 'eth70', 'eth71', 'eth72']
   if (syncMode !== 'snap') capabilities.push('ethy0')
-  if (syncMode !== 'ethy') capabilities.push('snap1')
+  if (syncMode !== 'ethy' && snapBootstrap) capabilities.push('snap1')
   const budget = BUDGETS['boot-warmup']
   return {
     capabilities,
@@ -401,6 +407,7 @@ export function buildMachineObservation(opts: {
   spine: EthySpine
   peerSnapshots: WorkerPeerSnapshot[]
   syncMode: SyncMode
+  snapBootstrap?: boolean
   shadowRefreshEnabled: boolean
   clDisabled?: boolean
   nowMs: number
@@ -417,6 +424,7 @@ export function buildMachineObservation(opts: {
     phase: opts.spine.phase,
     syncTransport: opts.spine.syncTransport ?? 'unset',
     syncMode: opts.syncMode,
+    snapBootstrap: opts.snapBootstrap === true,
     shadowRefreshEnabled: opts.shadowRefreshEnabled,
     clDisabled: opts.clDisabled ?? false,
     healthyEthPeers: opts.peerSnapshots.filter((p) => p.bestHash !== undefined).length,
