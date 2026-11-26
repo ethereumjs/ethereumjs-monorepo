@@ -150,6 +150,8 @@ async function runTxOnOverlay(
       accessList: result.accessList,
     }
   } catch (e: unknown) {
+    const mapped = mapThrownToRpc(e)
+    if (mapped !== undefined) return mapped
     return err(-32000, (e as Error).message)
   }
 }
@@ -163,9 +165,14 @@ export function createEthySandbox(opts: {
 }): EthySandbox {
   const { spine, stateManager, chain, hardfork, blockWindow } = opts
 
+  const catchSandboxError = (e: unknown): ExecutionOutcome => {
+    const mapped = mapThrownToRpc(e)
+    if (mapped !== undefined) return mapped
+    return err(-32000, e instanceof Error ? e.message : 'evm error')
+  }
+
   return {
     runEthCall(txObj, stateOverride, laneOpts) {
-      const resolved = resolveSandboxOpts(laneOpts)
       return enqueueSandbox(async () => {
         try {
           const parsed = parseRpcTxObject(txObj)
@@ -201,15 +208,12 @@ export function createEthySandbox(opts: {
           }
           return { result: dataHex(result.execResult.returnValue) }
         } catch (e) {
-          const mapped = mapThrownToRpc(e)
-          if (mapped !== undefined) return mapped
-          return err(-32000, e instanceof Error ? e.message : 'evm error')
+          return catchSandboxError(e)
         }
-      }, laneOpts)
+      }, laneOpts).catch(catchSandboxError)
     },
 
     runEstimateGas(txObj, stateOverride, laneOpts) {
-      const resolved = resolveSandboxOpts(laneOpts)
       return enqueueSandbox(async () => {
         try {
           const parsed = parseRpcTxObject(txObj)
@@ -246,6 +250,12 @@ export function createEthySandbox(opts: {
             if (!('error' in exact)) {
               return { result: quantityHex(hi.gas) }
             }
+            if (
+              exact.error.code === -32000 &&
+              exact.error.message.includes('State witness unavailable')
+            ) {
+              return exact
+            }
           }
           for (let i = 0; i < 20 && low < high; i++) {
             const mid = (low + high) / 2n
@@ -260,6 +270,12 @@ export function createEthySandbox(opts: {
               { gasLimit: mid },
             )
             if ('error' in run) {
+              if (
+                run.error.code === -32000 &&
+                run.error.message.includes('State witness unavailable')
+              ) {
+                return run
+              }
               low = mid + 1n
             } else {
               best = mid
@@ -268,15 +284,12 @@ export function createEthySandbox(opts: {
           }
           return { result: quantityHex(best) }
         } catch (e) {
-          const mapped = mapThrownToRpc(e)
-          if (mapped !== undefined) return mapped
-          return err(-32000, e instanceof Error ? e.message : 'evm error')
+          return catchSandboxError(e)
         }
-      }, laneOpts)
+      }, laneOpts).catch(catchSandboxError)
     },
 
     runCreateAccessList(txObj, stateOverride, laneOpts) {
-      const resolved = resolveSandboxOpts(laneOpts)
       return enqueueSandbox(async () => {
         try {
           const parsed = parseRpcTxObject(txObj)
@@ -302,15 +315,25 @@ export function createEthySandbox(opts: {
             },
           }
         } catch (e) {
-          const mapped = mapThrownToRpc(e)
-          if (mapped !== undefined) return mapped
-          return err(-32000, e instanceof Error ? e.message : 'evm error')
+          return catchSandboxError(e)
         }
-      }, laneOpts)
+      }, laneOpts).catch(catchSandboxError)
     },
 
     runSimulateCall(parsed, laneOpts) {
-      const resolved = resolveSandboxOpts(laneOpts)
+      const simulateError = (e: unknown) => {
+        const mapped = mapThrownToRpc(e)
+        if (mapped !== undefined) {
+          return {
+            gasUsed: 0n,
+            returnData: new Uint8Array(),
+            logs: [],
+            overlay: stateManager.shallowCopy() as FlatStateManager,
+            execError: mapped.error,
+          }
+        }
+        throw e
+      }
       return enqueueSandbox(async () => {
         try {
           const prep = await prepareOverlay(stateManager, undefined, laneOpts)
@@ -369,19 +392,9 @@ export function createEthySandbox(opts: {
             overlay: prep.overlay,
           }
         } catch (e) {
-          const mapped = mapThrownToRpc(e)
-          if (mapped !== undefined) {
-            return {
-              gasUsed: 0n,
-              returnData: new Uint8Array(),
-              logs: [],
-              overlay: stateManager.shallowCopy() as FlatStateManager,
-              execError: mapped.error,
-            }
-          }
-          throw e
+          return simulateError(e)
         }
-      }, laneOpts)
+      }, laneOpts).catch(simulateError)
     },
   }
 }

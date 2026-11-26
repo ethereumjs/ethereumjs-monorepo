@@ -2760,6 +2760,9 @@ export async function startPeerCoordinator(
     if (prevServingEthy !== plan.servingEthy) {
       refreshEthyWorkerAdvertisement(clientRef, spine, subtreeRegistry)
     }
+    if (spine.phase === 'HEAD_FOLLOWING') {
+      void opts.economy?.getIdentityResolver().warmEnsBootstrap()
+    }
 
     if (!networkProfilesEqual(lastAppliedProfile, plan.profile)) {
       clientRef.setNetworkProfile(plan.profile)

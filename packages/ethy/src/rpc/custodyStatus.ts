@@ -1,3 +1,4 @@
+import { custodyPeersFromSpine, evaluateCustodyCoverage } from '../custody/custodyCoverage.ts'
 import { localVerifiedBlock, resolveChainHeadClock } from '../spine/chainHead.ts'
 import type { EthySpine } from '../spine/types.ts'
 
@@ -23,8 +24,18 @@ export function custodyStatusPayload(spine: EthySpine): Record<string, unknown> 
     if (b >= 0 && b <= 15) custodyBucketsMask |= 1 << b
   }
   const closed = spine.closedBucketsMask ?? 0
-  const uncovered = spine.machine?.uncoveredBucketsMask ?? 0
+  const fallbackCov =
+    spine.machine?.uncoveredBucketsMask === undefined
+      ? evaluateCustodyCoverage({
+          closedBucketsMask: closed,
+          peers: custodyPeersFromSpine(spine.peers.values()),
+        })
+      : undefined
+  const uncovered =
+    spine.machine?.uncoveredBucketsMask ?? fallbackCov?.uncoveredBucketsMask ?? 0xffff & ~closed
   const swarmReachable = (closed | (~uncovered & 0xffff)) & 0xffff
+  const hopBuckets =
+    spine.machine?.hopBuckets ?? fallbackCov?.hopBuckets ?? countMaskBits16(swarmReachable)
   const localHead = localVerifiedBlock(spine)
   const clock = resolveChainHeadClock(spine)
   return {
@@ -37,7 +48,7 @@ export function custodyStatusPayload(spine: EthySpine): Record<string, unknown> 
         : undefined,
     swarmReachableBucketsMask: maskHex(swarmReachable),
     privateBucketsCount: countMaskBits16(closed),
-    hopBuckets: spine.machine?.hopBuckets,
+    hopBuckets,
     balHorizon: {
       localVerifiedBlock: localHead?.toString(),
       chainHeadBlock: clock?.chainHeadBlock.toString(),

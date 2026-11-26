@@ -89,7 +89,13 @@ export function inspectAccount(
     .filter((w) => w.balJson?.some((a) => a.address.toLowerCase() === addrLower))
     .map((w) => `#${w.blockNumber}`)
     .slice(0, 5)
-  const prov = provenanceLabelForAccountHash(bytesToUnprefixedHex(accountHash))
+  const prov =
+    provenanceLabelForAccountHash(bytesToUnprefixedHex(accountHash)) ??
+    (((spine.closedBucketsMask ?? 0) & (1 << (accountHash[0]! >> 4))) !== 0
+      ? 'Local Custody 🔒'
+      : mutationBlocks.length > 0
+        ? 'Local BAL'
+        : undefined)
   const entries: Array<{ key: string; value: string }> = [
     { key: 'Lookup', value: display },
     { key: 'Balance', value: acc.balance.toString() },

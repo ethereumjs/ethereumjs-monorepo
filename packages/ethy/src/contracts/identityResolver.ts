@@ -1,9 +1,9 @@
 import type { ChainConfig } from '@ethereumjs/common'
 import type { FlatStateManager } from '@ethereumjs/statemanager'
 
-import { bytesToBigInt, bytesToHex, hexToBytes } from '@ethereumjs/util'
+import { bytesToBigInt, bytesToHex, createAddressFromString, hexToBytes } from '@ethereumjs/util'
 import { ethyKeccak256 } from '../crypto/keccak.ts'
-import type { EnqueueSandboxOpts } from '../evm/queue.ts'
+import { type EnqueueSandboxOpts, enqueueSandbox } from '../evm/queue.ts'
 import type { EthySandbox } from '../evm/sandbox.ts'
 import { quantityHex } from '../rpc/quantities.ts'
 import type { EthySpine } from '../spine/types.ts'
@@ -121,24 +121,45 @@ export class IdentityResolver {
    */
   /** One-shot ENS registry warm-up on live head (identity lane, swarm-only). */
   async warmEnsBootstrap(): Promise<void> {
-    if (this.ensBootstrapStarted) return
-    this.ensBootstrapStarted = true
+    if (this.ensBootstrapReady || this.ensBootstrapStarted) return
     const chainId = BigInt(this.chain.chainId)
     if (chainId !== 1n && chainId !== 11155111n) return
-    if (this.sandbox === undefined || this.spine.phase !== 'HEAD_FOLLOWING') return
+    if (this.spine.phase !== 'HEAD_FOLLOWING') return
+    if (this.stateManager === undefined && this.sandbox === undefined) return
+    this.ensBootstrapStarted = true
     const lane: EnqueueSandboxOpts = { lane: 'identity', resolutionPolicy: 'swarm-only' }
     const touch = [ENS_REGISTRY_MAINNET, ENS_REVERSE_REGISTRAR]
     try {
-      for (const addr of touch) {
-        await this.sandbox.runEthCall(
-          { to: addr, data: '0x', gas: quantityHex(21_000n) },
-          undefined,
-          lane,
-        )
+      if (this.stateManager !== undefined) {
+        const root = this.stateManager
+        await enqueueSandbox(async () => {
+          const overlay = root.shallowCopy({ resolutionPolicy: 'swarm-only' }) as FlatStateManager
+          for (const raw of touch) {
+            const addr = createAddressFromString(raw)
+            try {
+              await overlay.getAccount(addr)
+              await overlay.getCode(addr)
+            } catch {
+              /* ignore open-world miss while swarm warms */
+            }
+          }
+        }, lane)
+      } else if (this.sandbox !== undefined) {
+        for (const addr of touch) {
+          await this.sandbox.runEthCall(
+            { to: addr, data: '0x', gas: quantityHex(21_000n) },
+            undefined,
+            lane,
+          )
+        }
       }
       this.ensBootstrapReady = this.hasLocalEnsRegistrySync()
     } catch {
       this.ensBootstrapReady = this.hasLocalEnsRegistrySync()
+    } finally {
+      if (!this.ensBootstrapReady) {
+        this.ensBootstrapStarted = false
+      }
     }
   }
 

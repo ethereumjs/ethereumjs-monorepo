@@ -75,10 +75,7 @@ async function runJob(job: PendingJob<unknown>): Promise<void> {
   let timer: ReturnType<typeof setTimeout> | undefined
   const timeout = new Promise<never>((_, reject) => {
     timer = setTimeout(() => {
-      if (!job.settled) {
-        job.settled = true
-        reject(new Error('EVM sandbox timed out'))
-      }
+      reject(new Error('EVM sandbox timed out'))
     }, job.timeoutMs)
   })
 

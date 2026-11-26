@@ -1,6 +1,6 @@
 import type { ChainConfig } from '@ethereumjs/common'
 import type { FlatStateManager } from '@ethereumjs/statemanager'
-import { bytesToUnprefixedHex, hexToBytes } from '@ethereumjs/util'
+import { bytesToUnprefixedHex, hexToBytes, isHexString } from '@ethereumjs/util'
 import type { ContractDossierStore } from '../contracts/contractDossierStore.ts'
 import {
   buildCodeLookup,
@@ -63,8 +63,18 @@ export function contractMicroscopeWidget(
   const arch = profile.archetype ?? 'Contract'
   const conf = profile.confidence ?? 'low'
   const addrHex = address.startsWith('0x') ? address : `0x${address}`
-  const accHash = bytesToUnprefixedHex(ethyKeccak256(hexToBytes(addrHex as `0x${string}`)))
-  const source = provenanceLabelForAccountHash(accHash)
+  let source: string | undefined
+  if (isHexString(addrHex) && addrHex.length === 42) {
+    const hashBytes = ethyKeccak256(hexToBytes(addrHex))
+    const accHash = bytesToUnprefixedHex(hashBytes)
+    source =
+      provenanceLabelForAccountHash(accHash) ??
+      (((spine.closedBucketsMask ?? 0) & (1 << (hashBytes[0]! >> 4))) !== 0
+        ? 'Local Custody 🔒'
+        : profile.blocksActive > 0
+          ? 'Local BAL'
+          : undefined)
+  }
   const preface: Array<{ key: string; value: string }> = [
     {
       key: 'Address',

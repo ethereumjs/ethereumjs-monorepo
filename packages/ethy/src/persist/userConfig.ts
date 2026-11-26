@@ -135,7 +135,7 @@ export function resolveEffectiveCustodyCount(
   cli: EthyCliArgs,
 ): { count: number; persistOnBoot: boolean } {
   if (cli.fullCustody) {
-    return { count: 16, persistOnBoot: cli.custodyExplicit && cli.noSave !== true }
+    return { count: 16, persistOnBoot: cli.noSave !== true }
   }
   if (cli.custodyExplicit) {
     return { count: cli.custodyCount, persistOnBoot: cli.noSave !== true }

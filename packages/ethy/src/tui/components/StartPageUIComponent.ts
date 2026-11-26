@@ -55,8 +55,19 @@ function custodyOnboardingLine(spine: EthySpine): string | undefined {
     return `${DIM}Rolling BALs → custody warm-up…${RESET}`
   }
   const dial = spine.custodyDialCount ?? spine.custodyBuckets?.length ?? 2
-  const hop = spine.machine?.hopBuckets ?? 0
-  return `${FG.yellow}★${RESET} Live + Background ${hop}/16 hop · custody dial ${dial}`
+  const closedMask = spine.closedBucketsMask ?? 0
+  let closedN = 0
+  for (let b = 0; b < 16; b++) {
+    if ((closedMask & (1 << b)) !== 0) closedN++
+  }
+  const hop = spine.machine?.hopBuckets ?? closedN
+  if (dial === 16 && closedN === 16) {
+    return `${FG.yellow}★${RESET} Live · Full 16/16 (Private)`
+  }
+  if (closedN >= dial) {
+    return `${FG.yellow}★${RESET} Live · Custody ${dial}/16 (${hop}/16 1-hop)`
+  }
+  return `${FG.yellow}★${RESET} Live + Background ${closedN}/${dial} Custody (${hop}/16 1-hop)`
 }
 
 function buildRightRows(spine: EthySpine): string[] {

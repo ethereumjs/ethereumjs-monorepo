@@ -44,12 +44,21 @@ function deriveStateCapability(spine: EthySpine): void {
       spine.capabilities.state = { status: 'partial', label: 'Rolling BALs' }
       return
     }
-    const dial = spine.custodyDialCount ?? spine.custodyBuckets?.length ?? 2
-    const hop = spine.machine?.hopBuckets ?? countBits16(spine.closedBucketsMask ?? 0)
-    spine.capabilities.state = {
-      status: 'ready',
-      label: `★ Live + ${hop}/${dial}`,
+    const assigned = spine.custodyBuckets
+    if (assigned !== undefined && assigned.length > 0) {
+      const dial = spine.custodyDialCount ?? assigned.length
+      const closed = countBits16(spine.closedBucketsMask ?? 0)
+      const hop = spine.machine?.hopBuckets ?? closed
+      const label =
+        dial === 16 && closed === 16
+          ? 'Full 16/16'
+          : hop > 0
+            ? `Live ${hop}/16`
+            : `Custody ${closed}/${dial}`
+      spine.capabilities.state = { status: 'ready', label }
+      return
     }
+    spine.capabilities.state = { status: 'ready', label: 'Following' }
     return
   }
   spine.capabilities.state = { status: 'locked', label: 'Starting' }
