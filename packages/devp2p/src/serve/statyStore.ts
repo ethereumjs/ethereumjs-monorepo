@@ -1,6 +1,7 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 
+import { RLP } from '@ethereumjs/rlp'
 import { bytesToUnprefixedHex } from '@ethereumjs/util'
 
 import { MAX_STATY_PROOF_NODES } from '../protocol/staty/codec.ts'
@@ -48,6 +49,89 @@ export type StatyWitnessQuery = {
 
 const partKey = (epoch: bigint, shard: number, part: number): string => `${epoch}:${shard}:${part}`
 
+const MANIFEST_MAGIC = Buffer.from([0x53, 0x54, 0x59, 0x4d])
+const PART_MAGIC = Buffer.from([0x53, 0x54, 0x59, 0x50])
+
+function scalarBigInt(v: unknown): bigint {
+  if (v instanceof Uint8Array) {
+    if (v.length === 0) return 0n
+    let n = 0n
+    for (const b of v) n = (n << 8n) + BigInt(b)
+    return n
+  }
+  if (typeof v === 'number') return BigInt(v)
+  if (typeof v === 'bigint') return v
+  return 0n
+}
+
+function parseManifestFile(raw: Buffer): StatyEpochManifest | undefined {
+  if (raw.length < 4 || !raw.subarray(0, 4).equals(MANIFEST_MAGIC)) return undefined
+  const decoded = RLP.decode(raw.subarray(4)) as unknown[]
+  if (!Array.isArray(decoded) || decoded.length < 5) return undefined
+  const shardsRaw = decoded[4] as unknown[]
+  const shards: StatyEpochShardRow[] = []
+  if (Array.isArray(shardsRaw)) {
+    for (const row of shardsRaw) {
+      const r = row as unknown[]
+      shards.push({
+        shardIndex: Number(r[0]),
+        partCount: Number(r[1]),
+        accountCount: Number(r[2]),
+        slotCount: Number(r[3]),
+        totalBytes: Number(r[4]),
+      })
+    }
+  }
+  return {
+    epochNumber: scalarBigInt(decoded[0]),
+    anchorBlock: scalarBigInt(decoded[1]),
+    anchorStateRoot: decoded[2] as Uint8Array,
+    dedupBaseEpoch: scalarBigInt(decoded[3]),
+    shards,
+  }
+}
+
+function parseEpochPartFile(raw: Buffer): StatyEpochPart | undefined {
+  if (raw.length < 7 || !raw.subarray(0, 4).equals(PART_MAGIC)) return undefined
+  const bodyOff = 7
+  const decoded = RLP.decode(raw.subarray(bodyOff)) as unknown[]
+  if (!Array.isArray(decoded) || decoded.length < 7) return undefined
+  const accountsRaw = decoded[4] as unknown[]
+  const slotsRaw = decoded[5] as unknown[]
+  const proofRaw = decoded[6] as unknown[]
+  const accounts: StatyEpochPart['accounts'] = []
+  if (Array.isArray(accountsRaw)) {
+    for (const row of accountsRaw) {
+      const r = row as unknown[]
+      accounts.push({ accountHash: r[0] as Uint8Array, accountRlpOrEmpty: r[1] as Uint8Array })
+    }
+  }
+  const slots: StatyEpochPart['slots'] = []
+  if (Array.isArray(slotsRaw)) {
+    for (const row of slotsRaw) {
+      const r = row as unknown[]
+      slots.push({
+        accountHash: r[0] as Uint8Array,
+        slotHash: r[1] as Uint8Array,
+        slotValOrEmpty: r[2] as Uint8Array,
+      })
+    }
+  }
+  const proofNodes = Array.isArray(proofRaw)
+    ? proofRaw.filter((n): n is Uint8Array => n instanceof Uint8Array)
+    : []
+  return {
+    epochNumber: scalarBigInt(decoded[0]),
+    shardIndex: Number(decoded[1]),
+    partIndex: Number(decoded[2]),
+    anchorBlock: scalarBigInt(decoded[0]) * 256n,
+    anchorStateRoot: decoded[3] as Uint8Array,
+    accounts,
+    slots,
+    proofNodes,
+  }
+}
+
 export class StatyStore {
   private readonly _manifests = new Map<string, StatyEpochManifest>()
   private readonly _parts = new Map<string, StatyEpochPart>()
@@ -80,15 +164,36 @@ export class StatyStore {
     const file = path.join(this._dataDir, 'epochs', epochNumber.toString(), 'manifest.rlp')
     try {
       if (!fs.existsSync(file)) return undefined
-      // Disk manifest parsing deferred — in-memory tests only in WP-16a
-      return undefined
+      const parsed = parseManifestFile(fs.readFileSync(file))
+      if (parsed !== undefined) {
+        this._manifests.set(epochNumber.toString(), parsed)
+      }
+      return parsed
     } catch {
       return undefined
     }
   }
 
   partFor(epochNumber: bigint, shardIndex: number, partIndex: number): StatyEpochPart | undefined {
-    return this._parts.get(partKey(epochNumber, shardIndex, partIndex))
+    const hit = this._parts.get(partKey(epochNumber, shardIndex, partIndex))
+    if (hit !== undefined) return hit
+    if (this._dataDir === undefined) return undefined
+    const file = path.join(
+      this._dataDir,
+      'epochs',
+      epochNumber.toString(),
+      `${shardIndex}-${partIndex}.rlp`,
+    )
+    try {
+      if (!fs.existsSync(file)) return undefined
+      const parsed = parseEpochPartFile(fs.readFileSync(file))
+      if (parsed !== undefined) {
+        this._parts.set(partKey(epochNumber, shardIndex, partIndex), parsed)
+      }
+      return parsed
+    } catch {
+      return undefined
+    }
   }
 
   resolveWitnesses(
