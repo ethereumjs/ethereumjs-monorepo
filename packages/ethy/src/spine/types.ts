@@ -172,6 +172,8 @@ export interface EthySpine {
   diskHydrated?: boolean
   /** Local servable ETHY/0 account buckets (`1 << nibble`). */
   ethyBucketsBitmask?: number
+  /** Live subtree tries verified at recent anchor (`trieBucketsBitmask`, WP-16f). */
+  ethyTrieBucketsBitmask?: number
   ethyStorageBucketsBitmask?: number
   ethyCodeBucketsBitmask?: number
   /** Assigned custody buckets for this node (WP-16d). */
