@@ -93,14 +93,17 @@ export class EthyStorageStore {
       if (compareHash(target, firstSlot) < 0) {
         startIdx = 0
       } else if (compareHash(target, lastSlot) > 0) {
-        if (rec.complete) return undefined
+        if (!rec.complete) return undefined
         startIdx = rowCount - 1
       } else {
         let found = false
         for (let i = 0; i < rowCount; i++) {
           const h = slotHashAt(rec.slotsSlab64B, i)
-          if (compareHash(h, target) >= 0) {
-            startIdx = i
+          const cmp = compareHash(h, target)
+          if (cmp >= 0) {
+            // Exact match starts at `i`; gap between `i - 1` and `i` includes `i - 1` so the
+            // returned `[originSlotHash .. lastSlotHash]` range covers `target` for exclusion proofs.
+            startIdx = cmp === 0 ? i : Math.max(0, i - 1)
             found = true
             break
           }

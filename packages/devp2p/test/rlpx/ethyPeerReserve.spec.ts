@@ -9,13 +9,12 @@ import { DISCONNECT_REASON } from '../../src/types.ts'
 class ETH {}
 class SNAP {}
 class ETHY {
-  peerStatus() {
-    return { bucketsBitmask: 0xffff }
+  private readonly _mask: number
+  constructor(mask = 0xffff) {
+    this._mask = mask
   }
-}
-class ETHYMaskZero {
   peerStatus() {
-    return { bucketsBitmask: 0 }
+    return { bucketsBitmask: this._mask }
   }
 }
 class OTHER {}
@@ -147,23 +146,44 @@ describe('[Devp2p/RLPx]: _trimSurplusPeers mask-0 ETHY', () => {
     return rlpx
   }
 
-  it('prefers evicting ETHY peers with bucketsBitmask 0', () => {
-    const rlpx = makeRlpx(1, 0)
-    const disconnect = vi.fn()
+  it('prefers evicting ETHY peers with bucketsBitmask 0 even when minEthyPeers protects custodians', () => {
+    const rlpx = makeRlpx(1, 1)
+    const custodianDisconnect = vi.fn()
     const custodian = Object.create(Peer.prototype) as Peer
     Object.assign(custodian, {
-      getProtocols: () => [new ETHY()],
-      disconnect,
+      getProtocols: () => [new ETHY(0xffff)],
+      disconnect: custodianDisconnect,
     })
+    const leechDisconnect = vi.fn()
     const leech = Object.create(Peer.prototype) as Peer
     Object.assign(leech, {
-      getProtocols: () => [new ETHYMaskZero()],
-      disconnect: vi.fn(),
+      getProtocols: () => [new ETHY(0)],
+      disconnect: leechDisconnect,
     })
     rlpx['_peers'].set(KEY_1, custodian)
     rlpx['_peers'].set(KEY_2, leech)
     ;(rlpx as unknown as { _trimSurplusPeers: () => void })._trimSurplusPeers()
-    expect(leech.disconnect).toHaveBeenCalledWith(DISCONNECT_REASON.TOO_MANY_PEERS)
-    expect(disconnect).not.toHaveBeenCalled()
+    expect(leechDisconnect).toHaveBeenCalledWith(DISCONNECT_REASON.TOO_MANY_PEERS)
+    expect(custodianDisconnect).not.toHaveBeenCalled()
+  })
+
+  it('_enforceEthyPeerReserve evicts mask-0 ETHY peer before non-ETHY peers for incoming custodian', () => {
+    const rlpx = makeRlpx(3, 2)
+    const headSnap = fakePeer(['ETH'])
+    const leechDisconnect = vi.fn()
+    const leech = Object.create(Peer.prototype) as Peer
+    Object.assign(leech, {
+      getProtocols: () => [new ETHY(0)],
+      disconnect: leechDisconnect,
+    })
+    const incomingCustodian = fakePeer(['ETHY'])
+    rlpx['_peers'].set(KEY_1, headSnap.peer)
+    rlpx['_peers'].set(KEY_2, leech)
+    rlpx['_peers'].set(KEY_3, incomingCustodian.peer)
+    ;(rlpx as unknown as { _enforceEthyPeerReserve: (p: Peer) => void })._enforceEthyPeerReserve(
+      incomingCustodian.peer,
+    )
+    expect(leechDisconnect).toHaveBeenCalledWith(DISCONNECT_REASON.TOO_MANY_PEERS)
+    expect(headSnap.disconnect).not.toHaveBeenCalled()
   })
 })

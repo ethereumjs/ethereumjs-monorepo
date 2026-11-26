@@ -4,7 +4,11 @@ import * as path from 'node:path'
 import { RLP } from '@ethereumjs/rlp'
 import { bytesToUnprefixedHex } from '@ethereumjs/util'
 
-import { MAX_ETHY_PROOF_NODES } from '../protocol/ethy/codec.ts'
+import {
+  MAX_ETHY_PROOF_NODES,
+  MAX_WITNESS_ACCOUNTS,
+  MAX_WITNESS_SLOTS,
+} from '../protocol/ethy/codec.ts'
 
 export type EthyWitnessRecord = {
   accountHash: Uint8Array
@@ -20,7 +24,23 @@ export type EthyWitnessQuery = {
   slotHashes: Uint8Array[]
 }
 
+/** Optional synchronous generator hook for Option C live subtree tries (`WP-16f`). */
+export type EthyWitnessGenerator = (
+  minAnchorBlock: bigint,
+  query: EthyWitnessQuery,
+) => EthyWitnessRecord | undefined
+
 const WITNESS_MAGIC = Buffer.from([0x53, 0x54, 0x59, 0x58])
+const MAX_RECORDS_PER_ACCOUNT = 8
+
+function compareBytes32(a: Uint8Array, b: Uint8Array): number {
+  const len = Math.min(a.length, b.length)
+  for (let i = 0; i < len; i++) {
+    if (a[i]! < b[i]!) return -1
+    if (a[i]! > b[i]!) return 1
+  }
+  return a.length - b.length
+}
 
 function scalarBigInt(v: unknown): bigint {
   if (v instanceof Uint8Array) {
@@ -34,19 +54,36 @@ function scalarBigInt(v: unknown): bigint {
   return 0n
 }
 
-/** In-worker ETHY/0 witness cache (RAM + optional `witnesses/` disk). */
+/** In-worker ETHY/0 witness cache (RAM + optional `witnesses/` disk + live trie hook). */
 export class EthyWitnessStore {
   private readonly _witnesses = new Map<string, EthyWitnessRecord[]>()
   private _dataDir: string | undefined
+  private _generator: EthyWitnessGenerator | undefined
 
   setDataDir(dir: string | undefined): void {
     this._dataDir = dir
   }
 
+  /** Register an optional non-blocking witness generator (e.g. `WP-16f` live subtree trie). */
+  setWitnessGenerator(generator: EthyWitnessGenerator | undefined): void {
+    this._generator = generator
+  }
+
   putWitness(record: EthyWitnessRecord): void {
     const key = bytesToUnprefixedHex(record.accountHash)
     const list = this._witnesses.get(key) ?? []
-    list.push(record)
+    const existingIdx = list.findIndex((r) => r.anchorBlock === record.anchorBlock)
+    if (existingIdx >= 0) {
+      list[existingIdx] = record
+    } else {
+      list.push(record)
+    }
+    list.sort((a, b) =>
+      b.anchorBlock > a.anchorBlock ? 1 : b.anchorBlock < a.anchorBlock ? -1 : 0,
+    )
+    if (list.length > MAX_RECORDS_PER_ACCOUNT) {
+      list.length = MAX_RECORDS_PER_ACCOUNT
+    }
     this._witnesses.set(key, list)
   }
 
@@ -127,33 +164,41 @@ export class EthyWitnessStore {
         slots: Array<{ accountHash: Uint8Array; slotHash: Uint8Array; slotValOrEmpty: Uint8Array }>
         proofNodes: Uint8Array[]
         proofKeys: Set<string>
+        slotKeys: Set<string>
       }
     >()
     let budget = maxBytes
     let totalSlots = 0
     let totalProofNodes = 0
-    const accountQueries = queries.slice(0, 64)
+    const accountQueries = queries.slice(0, MAX_WITNESS_ACCOUNTS)
 
     for (const q of accountQueries) {
       if (q.accountHash.length !== 32) continue
       const keyHex = bytesToUnprefixedHex(q.accountHash)
       const records = this._witnesses.get(keyHex) ?? this._loadDiskWitness(q.accountHash)
-      const best = records
+      let best = records
         .filter((r) => r.anchorBlock >= minAnchorBlock)
         .sort((a, b) =>
           b.anchorBlock > a.anchorBlock ? 1 : b.anchorBlock < a.anchorBlock ? -1 : 0,
         )[0]
+      if (best === undefined && this._generator !== undefined) {
+        const generated = this._generator(minAnchorBlock, q)
+        if (generated !== undefined && generated.anchorBlock >= minAnchorBlock) {
+          best = generated
+        }
+      }
       if (best === undefined) continue
 
       const gKey = `${best.anchorBlock}:${bytesToUnprefixedHex(best.anchorStateRoot)}`
       let group = groups.get(gKey)
       const existingKeys = group?.proofKeys
       const newProofs: Uint8Array[] = []
+      const seenNew = new Set<string>()
       let newProofBytes = 0
       for (const node of best.proofNodes) {
         const nk = bytesToUnprefixedHex(node)
-        if (existingKeys?.has(nk) === true) continue
-        if (newProofs.some((p) => bytesToUnprefixedHex(p) === nk)) continue
+        if (existingKeys?.has(nk) === true || seenNew.has(nk)) continue
+        seenNew.add(nk)
         newProofs.push(node)
         newProofBytes += node.length
       }
@@ -174,6 +219,7 @@ export class EthyWitnessStore {
           slots: [],
           proofNodes: [],
           proofKeys: new Set<string>(),
+          slotKeys: new Set<string>(),
         }
         groups.set(gKey, group)
       }
@@ -193,14 +239,16 @@ export class EthyWitnessStore {
         budget -= accountCost
       }
       for (const slotHash of q.slotHashes) {
-        if (totalSlots >= 256) break
+        if (totalSlots >= MAX_WITNESS_SLOTS) break
         if (slotHash.length !== 32) continue
-        const slot = best.slots.find(
-          (s) => bytesToUnprefixedHex(s.slotHash) === bytesToUnprefixedHex(slotHash),
-        )
+        const slotHex = bytesToUnprefixedHex(slotHash)
+        const sk = `${acctHex}:${slotHex}`
+        if (group.slotKeys.has(sk)) continue
+        const slot = best.slots.find((s) => bytesToUnprefixedHex(s.slotHash) === slotHex)
         if (slot === undefined) continue
         const est = 64 + slot.slotValOrEmpty.length
         if (budget < est) continue
+        group.slotKeys.add(sk)
         group.slots.push({
           accountHash: q.accountHash,
           slotHash,
@@ -211,6 +259,13 @@ export class EthyWitnessStore {
       }
     }
 
-    return [...groups.values()].map(({ proofKeys: _ignored, ...rest }) => rest)
+    return [...groups.values()].map(({ proofKeys: _pk, slotKeys: _sk, ...rest }) => {
+      rest.accounts.sort((a, b) => compareBytes32(a.accountHash, b.accountHash))
+      rest.slots.sort((a, b) => {
+        const acctCmp = compareBytes32(a.accountHash, b.accountHash)
+        return acctCmp !== 0 ? acctCmp : compareBytes32(a.slotHash, b.slotHash)
+      })
+      return rest
+    })
   }
 }

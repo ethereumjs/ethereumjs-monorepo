@@ -108,7 +108,8 @@ export function tryServeEthyGet(
 
   if (msgName === 'GET_BUCKET_MANIFEST') {
     if (!Array.isArray(decoded) || decoded.length < 2) return undefined
-    const bucketIndex = bytesToInt(decoded[1] as Uint8Array)
+    const bucketIndex = safeInt(decoded[1])
+    if (bucketIndex === undefined || bucketIndex < 0 || bucketIndex > 15) return undefined
     const manifest = chunks.manifestForBucket(bucketIndex)
     const entries = manifest.map((e) => [
       e.originHash,
@@ -125,8 +126,17 @@ export function tryServeEthyGet(
 
   if (msgName === 'GET_PROVEN_ACCOUNT_CHUNK') {
     if (!Array.isArray(decoded) || decoded.length < 3) return undefined
-    const bucketIndex = bytesToInt(decoded[1] as Uint8Array)
-    const originHash = decoded[2] as Uint8Array
+    const bucketIndex = safeInt(decoded[1])
+    const originHash = decoded[2]
+    if (
+      bucketIndex === undefined ||
+      bucketIndex < 0 ||
+      bucketIndex > 15 ||
+      !(originHash instanceof Uint8Array) ||
+      originHash.length !== 32
+    ) {
+      return undefined
+    }
     const rec = chunks.getAccountChunk(bucketIndex, originHash)
     if (rec === undefined) {
       return {
@@ -271,7 +281,8 @@ export function tryServeEthyGet(
 
   if (msgName === 'GET_BAL_RANGE') {
     if (!Array.isArray(decoded) || decoded.length < 3) return undefined
-    const start = bytesToBigInt(decoded[1] as Uint8Array)
+    const start = safeBigInt(decoded[1])
+    if (start === undefined) return undefined
     const count = clampCount(decoded[2], 1, 32)
     const tuples: unknown[] = []
     let bytes = 0

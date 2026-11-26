@@ -28,23 +28,55 @@ function countSetBits(mask: number): number {
   return c
 }
 
-function pexRankScore(row: EthyKnownPeerRow, desiredBucketsMask: number): number {
-  let score = Number(row.basePivotBlock) * 1_000_000 + row.lastSeenSec
+/**
+ * Lexicographic descending comparator (returns negative when `a` ranks ahead of `b`).
+ * When `desiredBucketsMask !== 0`, prioritizes:
+ * 1. Bucket overlap (`bucketsBitmask & desiredBucketsMask !== 0`)
+ * 2. Live subtree-trie overlap (`countSetBits(trieBucketsBitmask & desiredBucketsMask)`)
+ * 3. Total 3-plane coverage on desired buckets (`buckets + storage + code`)
+ * 4. Freshest `basePivotBlock` (`bigint` exact comparison)
+ * 5. Most recently seen (`lastSeenSec`)
+ */
+function comparePexRank(
+  a: EthyKnownPeerRow,
+  b: EthyKnownPeerRow,
+  desiredBucketsMask: number,
+): number {
   if (desiredBucketsMask !== 0) {
-    const overlap = row.bucketsBitmask & desiredBucketsMask
-    if (overlap !== 0) score += 500_000
-    const trieOverlap = row.trieBucketsBitmask & desiredBucketsMask
-    if (trieOverlap !== 0) score += 200_000
-    const planes =
-      countSetBits(row.bucketsBitmask & desiredBucketsMask) +
-      countSetBits(row.storageBucketsBitmask & desiredBucketsMask) +
-      countSetBits(row.codeBucketsBitmask & desiredBucketsMask)
-    score += planes * 10_000
-  } else {
-    score += countSetBits(row.bucketsBitmask) * 1_000
-    score += countSetBits(row.trieBucketsBitmask) * 500
+    const aHas = (a.bucketsBitmask & desiredBucketsMask) !== 0 ? 1 : 0
+    const bHas = (b.bucketsBitmask & desiredBucketsMask) !== 0 ? 1 : 0
+    if (aHas !== bHas) return bHas - aHas
+
+    const aTrie = countSetBits(a.trieBucketsBitmask & desiredBucketsMask)
+    const bTrie = countSetBits(b.trieBucketsBitmask & desiredBucketsMask)
+    if (aTrie !== bTrie) return bTrie - aTrie
+
+    const aPlanes =
+      countSetBits(a.bucketsBitmask & desiredBucketsMask) +
+      countSetBits(a.storageBucketsBitmask & desiredBucketsMask) +
+      countSetBits(a.codeBucketsBitmask & desiredBucketsMask)
+    const bPlanes =
+      countSetBits(b.bucketsBitmask & desiredBucketsMask) +
+      countSetBits(b.storageBucketsBitmask & desiredBucketsMask) +
+      countSetBits(b.codeBucketsBitmask & desiredBucketsMask)
+    if (aPlanes !== bPlanes) return bPlanes - aPlanes
   }
-  return score
+
+  if (a.basePivotBlock !== b.basePivotBlock) {
+    return b.basePivotBlock > a.basePivotBlock ? 1 : -1
+  }
+
+  if (desiredBucketsMask === 0) {
+    const aTrie = countSetBits(a.trieBucketsBitmask)
+    const bTrie = countSetBits(b.trieBucketsBitmask)
+    if (aTrie !== bTrie) return bTrie - aTrie
+
+    const aBuckets = countSetBits(a.bucketsBitmask)
+    const bBuckets = countSetBits(b.bucketsBitmask)
+    if (aBuckets !== bBuckets) return bBuckets - aBuckets
+  }
+
+  return b.lastSeenSec - a.lastSeenSec
 }
 
 /**
@@ -59,16 +91,10 @@ export function selectEthyPexPeers(
   const custodians = rows.filter((r) => r.bucketsBitmask !== 0)
   if (maxPeers <= 0 || custodians.length === 0) return []
   if (custodians.length <= maxPeers) {
-    return [...custodians].sort(
-      (a, b) => pexRankScore(b, desiredBucketsMask) - pexRankScore(a, desiredBucketsMask),
-    )
+    return [...custodians].sort((a, b) => comparePexRank(a, b, desiredBucketsMask))
   }
-  const indexed = custodians.map((r, i) => ({
-    row: r,
-    i,
-    score: pexRankScore(r, desiredBucketsMask),
-  }))
-  indexed.sort((a, b) => b.score - a.score)
+  const indexed = custodians.map((row, i) => ({ row, i }))
+  indexed.sort((a, b) => comparePexRank(a.row, b.row, desiredBucketsMask))
   const freshN = Math.min(maxPeers, Math.ceil(maxPeers * 0.75))
   const chosen = new Set<number>()
   const out: EthyKnownPeerRow[] = []

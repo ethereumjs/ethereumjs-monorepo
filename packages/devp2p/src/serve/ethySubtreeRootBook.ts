@@ -5,7 +5,7 @@ export type SubtreeRootEntry = { bucketIndex: number; subtreeRootHash: Uint8Arra
 const MAX_ANCHOR_RING = 16
 
 function validateEntries(entries: unknown): SubtreeRootEntry[] | undefined {
-  if (!Array.isArray(entries) || entries.length === 0 || entries.length > 16) return undefined
+  if (!Array.isArray(entries) || entries.length > 16) return undefined
   const out: SubtreeRootEntry[] = []
   let lastBucket = -1
   for (const row of entries) {
@@ -13,11 +13,15 @@ function validateEntries(entries: unknown): SubtreeRootEntry[] | undefined {
     const bucketRaw = row[0]
     const hash = row[1]
     if (!(bucketRaw instanceof Uint8Array) || !(hash instanceof Uint8Array)) return undefined
-    const bucketIndex = bytesToInt(bucketRaw)
+    if (bucketRaw.length > 1) return undefined
+    const bucketIndex = bucketRaw.length === 0 ? 0 : bytesToInt(bucketRaw)
     if (bucketIndex < 0 || bucketIndex > 15 || bucketIndex <= lastBucket) return undefined
     lastBucket = bucketIndex
     if (hash.length !== 0 && hash.length !== 32) return undefined
-    out.push({ bucketIndex, subtreeRootHash: hash.length === 32 ? hash : new Uint8Array(32) })
+    out.push({
+      bucketIndex,
+      subtreeRootHash: hash.length === 32 ? new Uint8Array(hash) : new Uint8Array(0),
+    })
   }
   return out
 }
@@ -30,6 +34,7 @@ export class EthySubtreeRootBook {
   ingest(anchorBlock: bigint, entries: unknown): boolean {
     const parsed = validateEntries(entries)
     if (parsed === undefined) return false
+    if (parsed.length === 0) return true
     const key = anchorBlock.toString()
     let map = this._byAnchor.get(key)
     if (map === undefined) {

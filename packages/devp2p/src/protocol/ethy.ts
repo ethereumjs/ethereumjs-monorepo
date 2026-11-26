@@ -101,6 +101,10 @@ export class ETHY extends Protocol {
       this._peer.disconnect(DISCONNECT_REASON.SUBPROTOCOL_ERROR)
       return
     }
+    if (code < 0 || code > EthyMessageCodes.SUBTREE_ROOTS) {
+      this._peer.disconnect(DISCONNECT_REASON.SUBPROTOCOL_ERROR)
+      return
+    }
     if (countProofNodesInEthyMessage(code as EthyMessageCodes, payload) > MAX_ETHY_PROOF_NODES) {
       this._peer.disconnect(DISCONNECT_REASON.SUBPROTOCOL_ERROR)
       return
@@ -194,6 +198,9 @@ export class ETHY extends Protocol {
         break
       default:
         throw EthereumJSErrorWithoutCode(`Unknown ETHY code ${code}`)
+    }
+    if (countProofNodesInEthyMessage(code, payload) > MAX_ETHY_PROOF_NODES) {
+      throw EthereumJSErrorWithoutCode('ETHY message exceeds max proof nodes')
     }
     let encoded = RLP.encode(payload)
     if (encoded.byteLength > MAX_ETHY_MESSAGE_BYTES) {

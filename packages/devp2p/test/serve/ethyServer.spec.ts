@@ -351,13 +351,18 @@ describe('[Devp2p/ETHY]: worker serving', () => {
     assert.equal(none, undefined)
   })
 
-  it('GET_SUBTREE_ROOTS serves entries from EthySubtreeRootBook', () => {
+  it('GET_SUBTREE_ROOTS preserves 0-byte empty nibble hashes (0x80) and filters by mask', () => {
     const book = new EthySubtreeRootBook()
     const root = new Uint8Array(32).fill(0x11)
-    book.ingest(100n, [[intToUnpaddedBytes(3), root]])
+    assert.isTrue(
+      book.ingest(100n, [
+        [intToUnpaddedBytes(0), new Uint8Array(0)],
+        [intToUnpaddedBytes(3), root],
+      ]),
+    )
     const opts = { ...defaultEthyServeOpts, subtreeBook: book }
     const decoded = RLP.decode(
-      RLP.encode([bigIntToUnpaddedBytes(1n), bigIntToUnpaddedBytes(100n), intToUnpaddedBytes(8)]),
+      RLP.encode([bigIntToUnpaddedBytes(1n), bigIntToUnpaddedBytes(100n), intToUnpaddedBytes(0)]),
     )
     const served = tryServeEthyGet(
       new EthyChunkStore(),
@@ -372,8 +377,131 @@ describe('[Devp2p/ETHY]: worker serving', () => {
       opts,
     )
     assert.equal(served!.code, EthyMessageCodes.SUBTREE_ROOTS)
-    const wire = served!.rlp[2] as unknown[]
-    assert.equal(wire.length, 1)
+    const wire = served!.rlp[2] as [Uint8Array, Uint8Array][]
+    assert.equal(wire.length, 2)
+    assert.equal(wire[0]![0].length, 0) // bucket 0 canonical 0x80
+    assert.equal(wire[0]![1].length, 0) // empty nibble preserved as 0-byte (0x80), never 32 zero bytes
+    assert.isTrue(equalsBytes(wire[1]![1], root))
+  })
+
+  it('GET_STATE_WITNESS sorts accounts and slots strictly ascending, deduplicates proofNodes, and supports live generator hook', () => {
+    const witnessStore = new EthyWitnessStore()
+    const acctA = new Uint8Array(32).fill(0x10)
+    const acctB = new Uint8Array(32).fill(0x20)
+    const slot1 = new Uint8Array(32).fill(0x01)
+    const slot2 = new Uint8Array(32).fill(0x02)
+    const anchorRoot = new Uint8Array(32).fill(0xaa)
+    const sharedNode = new Uint8Array([0xde, 0xad, 0xbe, 0xef])
+
+    witnessStore.putWitness({
+      accountHash: acctB,
+      anchorBlock: 500n,
+      anchorStateRoot: anchorRoot,
+      accountRlpOrEmpty: new Uint8Array([0xc1, 0x02]),
+      slots: [
+        { slotHash: slot2, slotValOrEmpty: new Uint8Array([0x22]) },
+        { slotHash: slot1, slotValOrEmpty: new Uint8Array([0x11]) },
+      ],
+      proofNodes: [sharedNode, new Uint8Array([0x02])],
+    })
+    // Account A comes via live witness generator hook (WP-16f seam)
+    witnessStore.setWitnessGenerator((minAnchor, q) => {
+      if (!equalsBytes(q.accountHash, acctA) || minAnchor > 500n) return undefined
+      return {
+        accountHash: acctA,
+        anchorBlock: 500n,
+        anchorStateRoot: anchorRoot,
+        accountRlpOrEmpty: new Uint8Array([0xc1, 0x01]),
+        slots: [],
+        proofNodes: [sharedNode, new Uint8Array([0x01])],
+      }
+    })
+
+    // Query in reverse order (acctB before acctA; slot2 before slot1 + duplicate slot2)
+    const decoded = RLP.decode(
+      RLP.encode([
+        bigIntToUnpaddedBytes(7n),
+        bigIntToUnpaddedBytes(400n),
+        intToUnpaddedBytes(524_288),
+        [
+          [acctB, [slot2, slot1, slot2]],
+          [acctA, []],
+        ],
+      ]),
+    )
+    const served = tryServeEthyGet(
+      new EthyChunkStore(),
+      new RollingBlockStore(),
+      [],
+      new Uint8Array(64),
+      undefined,
+      'GET_STATE_WITNESS',
+      decoded,
+      emptyCode,
+      emptyStorage,
+      { ...defaultEthyServeOpts, witnessStore, remoteBucketsBitmask: 0x0001 },
+    )
+    assert.equal(served!.code, EthyMessageCodes.STATE_WITNESS)
+    assert.equal(served!.metric, 'witness')
+    const groups = served!.rlp[1] as unknown[][]
+    assert.equal(groups.length, 1)
+    const accounts = groups[0]![2] as [Uint8Array, Uint8Array][]
+    const slots = groups[0]![3] as [Uint8Array, Uint8Array, Uint8Array][]
+    const proofNodes = groups[0]![4] as Uint8Array[]
+    assert.equal(accounts.length, 2)
+    assert.isTrue(equalsBytes(accounts[0]![0], acctA))
+    assert.isTrue(equalsBytes(accounts[1]![0], acctB))
+    assert.equal(slots.length, 2)
+    assert.isTrue(equalsBytes(slots[0]![1], slot1))
+    assert.isTrue(equalsBytes(slots[1]![1], slot2))
+    assert.equal(proofNodes.length, 3) // sharedNode deduplicated
+  })
+
+  it('kind 1 covering range handles gap exclusion and complete vs incomplete right boundary', () => {
+    const storage = new EthyStorageStore()
+    const acct = new Uint8Array(32).fill(0x55)
+    const root = new Uint8Array(32).fill(0x66)
+    const s10 = new Uint8Array(32)
+    s10[31] = 0x10
+    const s30 = new Uint8Array(32)
+    s30[31] = 0x30
+    const slab = new Uint8Array(128)
+    slab.set(s10, 0)
+    slab.set(s30, 64)
+    storage.put({
+      accountHash: acct,
+      storageRoot: root,
+      chunkBlockNumber: 20n,
+      slotsSlab64B: slab,
+      complete: true,
+      proofNodes: [new Uint8Array([0x99])],
+    })
+    // Target between s10 and s30 MUST include s10 as originSlotHash so range covers target
+    const mid = new Uint8Array(32)
+    mid[31] = 0x20
+    const midSlice = storage.sliceKind1(acct, root, mid, 524_288)
+    assert.notEqual(midSlice, undefined)
+    assert.isTrue(equalsBytes(midSlice!.originSlotHash, s10))
+    assert.isTrue(equalsBytes(midSlice!.lastSlotHash, s30))
+
+    // Target after s30 on complete contract returns right boundary (hasRight = 0) proving exclusion
+    const after = new Uint8Array(32)
+    after[31] = 0x40
+    const rightSlice = storage.sliceKind1(acct, root, after, 524_288)
+    assert.notEqual(rightSlice, undefined)
+    assert.equal(rightSlice!.hasRight, 0)
+    assert.isTrue(equalsBytes(rightSlice!.lastSlotHash, s30))
+
+    // Incomplete contract does NOT cover target after lastSlot
+    storage.put({
+      accountHash: acct,
+      storageRoot: root,
+      chunkBlockNumber: 20n,
+      slotsSlab64B: slab,
+      complete: false,
+      proofNodes: [new Uint8Array([0x99])],
+    })
+    assert.equal(storage.sliceKind1(acct, root, after, 524_288), undefined)
   })
 
   it('GET_STATE_WITNESS throttles mask-0 remotes', () => {

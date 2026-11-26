@@ -445,13 +445,18 @@ export class RLPx {
     if (this._minEthyPeers <= 0) return
     if (!this._peerSpeaksEthy(incoming)) return
     if (this._connectedPeerCount() < this._maxPeers) return
-    let existingEthyCount = 0
+    let existingCustodianCount = 0
+    const maskZeroEthyCandidates: Peer[] = []
     const nonHeadSnapCandidates: Peer[] = []
     const headSnapCandidates: Peer[] = []
     for (const item of this._peers.values()) {
       if (!(item instanceof Peer) || item === incoming) continue
       if (this._peerSpeaksEthy(item)) {
-        existingEthyCount++
+        if (this._ethyPeerBucketsMask(item) === 0) {
+          maskZeroEthyCandidates.push(item)
+        } else {
+          existingCustodianCount++
+        }
       } else if (
         item
           .getProtocols()
@@ -462,8 +467,9 @@ export class RLPx {
         nonHeadSnapCandidates.push(item)
       }
     }
-    if (existingEthyCount >= this._minEthyPeers) return
+    if (existingCustodianCount >= this._minEthyPeers) return
     const victim =
+      maskZeroEthyCandidates[0] ??
       nonHeadSnapCandidates[0] ??
       (headSnapCandidates.length > 1 ? headSnapCandidates[0] : undefined)
     victim?.disconnect(DISCONNECT_REASON.TOO_MANY_PEERS)
@@ -683,7 +689,9 @@ export class RLPx {
     let surplus = connected.length - this._maxPeers
     if (surplus <= 0) return
 
-    let ethyCount = connected.filter((p) => this._peerSpeaksEthy(p)).length
+    let custodianEthyCount = connected.filter(
+      (p) => this._peerSpeaksEthy(p) && this._ethyPeerBucketsMask(p) !== 0,
+    ).length
     let ethHeadCount = connected.filter(
       (p) => this._peerSpeaksEth(p) || this._peerSpeaksSnap(p),
     ).length
@@ -702,13 +710,13 @@ export class RLPx {
     const victims = [...connected].sort((a, b) => score(b) - score(a))
     for (const peer of victims) {
       if (surplus <= 0) break
-      const isEthy = this._peerSpeaksEthy(peer)
+      const isCustodianEthy = this._peerSpeaksEthy(peer) && this._ethyPeerBucketsMask(peer) !== 0
       const isEthHead = this._peerSpeaksEth(peer) || this._peerSpeaksSnap(peer)
-      if (isEthy && ethyCount <= this._minEthyPeers) continue
+      if (isCustodianEthy && custodianEthyCount <= this._minEthyPeers) continue
       if (isEthHead && ethHeadCount <= 1) continue
       peer.disconnect(DISCONNECT_REASON.TOO_MANY_PEERS)
       surplus--
-      if (isEthy) ethyCount--
+      if (isCustodianEthy) custodianEthyCount--
       if (isEthHead) ethHeadCount--
     }
   }

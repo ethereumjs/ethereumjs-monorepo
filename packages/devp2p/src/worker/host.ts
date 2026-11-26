@@ -514,9 +514,13 @@ export class Devp2pWorkerHost {
 
     this._rlpx.events.on('peer:added', (peer) => this._wirePeer(peer))
     this._rlpx.events.on('peer:removed', (peer, reason, disconnectWe) => {
-      if (typeof reason !== 'number') return
       const rawId = peer.getId()
       const peerId = rawId instanceof Uint8Array ? bytesToUnprefixedHex(rawId) : undefined
+      if (peerId !== undefined) {
+        this._ethyWitnessThrottles.delete(peerId)
+        this._ethyPexSent.delete(peerId)
+      }
+      if (typeof reason !== 'number') return
       if (reason === DISCONNECT_REASON.TOO_MANY_PEERS) {
         const who = disconnectWe === true ? 'we dropped remote' : 'remote dropped us'
         this._pushDiagnostic('warn', `TOO_MANY_PEERS (${who})`, peerId)
@@ -1060,7 +1064,7 @@ export class Devp2pWorkerHost {
       return false
     }
     const excludeId = peer.getId() ?? undefined
-    const peerKey = bytesToUnprefixedHex(peer.getId() as Uint8Array)
+    const peerKey = excludeId !== undefined ? bytesToUnprefixedHex(excludeId) : ''
     const remote = ethy.peerStatus()
     const served = tryServeEthyGet(
       this._ethyChunks,
