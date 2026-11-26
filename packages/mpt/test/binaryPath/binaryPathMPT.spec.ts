@@ -565,7 +565,8 @@ describe('BinaryPathMPT', () => {
     const binaryMs = performance.now() - t1
 
     await assertRootsMatch(classic, binary)
-    expect(classicMs + binaryMs).toBeLessThan(2000)
+    // Streaming sorted build must beat sequential classic puts (hardware- and coverage-independent).
+    expect(binaryMs).toBeLessThan(classicMs)
 
     // AsyncIterable stream
     async function* asyncGen() {
@@ -589,7 +590,7 @@ describe('BinaryPathMPT', () => {
     await expect(BinaryPathMPT.buildFromSortedStream([rows[2]!, rows[1]!])).rejects.toThrow(
       /ascending/,
     )
-  })
+  }, 30_000)
 })
 
 async function assert16WayAssembly(classic: MerklePatriciaTrie, subtrees: BinaryPathMPT[]) {
