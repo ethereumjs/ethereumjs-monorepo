@@ -1,3 +1,4 @@
+export * from './binaryPath/index.ts'
 export * from './constructors.ts'
 export * from './db/index.ts'
 export * from './mpt.ts'
