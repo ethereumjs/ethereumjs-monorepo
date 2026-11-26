@@ -10,6 +10,8 @@ import {
   EthyMessageCodeNames,
   EthyMessageCodes,
   EthyStorageStore,
+  EthySubtreeRootBook,
+  EthyWitnessStore,
   RollingBlockStore,
   SharedCodeDisk,
   createThreadedNetwork,
@@ -117,6 +119,12 @@ describe('[Ethy/Net]: ETHY/0 swarm loopback', () => {
         RLP.decode(msg.payload),
         new SharedCodeDisk(),
         new EthyStorageStore(),
+        {
+          witnessStore: new EthyWitnessStore(),
+          subtreeBook: new EthySubtreeRootBook(),
+          remoteBucketsBitmask: 0xffff,
+          witnessThrottle: { windowStartMs: 0, count: 0 },
+        },
       )
       if (served === undefined) return
       seeder.sendEthyMessage(peer, served.code, RLP.encode(served.rlp as never))
