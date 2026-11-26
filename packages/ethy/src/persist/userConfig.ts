@@ -30,6 +30,8 @@ export interface EthyUserConfig {
   schemaVersion: 1
   updatedAt: string
   ai?: EthyAiConfig
+  /** WP-16h: persisted `--custody` dial (1..16). */
+  custodyCount?: number
 }
 
 export type ResolveEnv = {
@@ -85,10 +87,19 @@ export function readUserConfig(dataDir?: string): EthyUserConfig | undefined {
     if (!isRecord(parsed)) return undefined
     if (parsed.schemaVersion !== 1) return { schemaVersion: 1, updatedAt: '', ai: undefined }
     const ai = parsed.ai !== undefined ? parseAiBlock(parsed.ai) : undefined
+    const custodyRaw = parsed.custodyCount
+    const custodyCount =
+      typeof custodyRaw === 'number' &&
+      Number.isInteger(custodyRaw) &&
+      custodyRaw >= 1 &&
+      custodyRaw <= 16
+        ? custodyRaw
+        : undefined
     return {
       schemaVersion: 1,
       updatedAt: typeof parsed.updatedAt === 'string' ? parsed.updatedAt : '',
       ai,
+      custodyCount,
     }
   } catch {
     return undefined
@@ -96,17 +107,44 @@ export function readUserConfig(dataDir?: string): EthyUserConfig | undefined {
 }
 
 export function writeUserConfig(dataDir: string | undefined, ai: EthyAiConfig): void {
+  mergeUserConfig(dataDir, { ai })
+}
+
+/** Merge-write so `ai` and `custodyCount` blocks do not clobber each other. */
+export function mergeUserConfig(
+  dataDir: string | undefined,
+  patch: { ai?: EthyAiConfig; custodyCount?: number },
+): void {
   const file = userConfigFilePath(dataDir)
   const dir = path.dirname(file)
   fs.mkdirSync(dir, { recursive: true })
+  const existing = readUserConfig(dataDir)
   const payload: EthyUserConfig = {
     schemaVersion: 1,
     updatedAt: new Date().toISOString(),
-    ai,
+    ai: patch.ai ?? existing?.ai,
+    custodyCount: patch.custodyCount ?? existing?.custodyCount,
   }
   const tmp = `${file}.tmp`
   fs.writeFileSync(tmp, `${JSON.stringify(payload, null, 2)}\n`, 'utf8')
   fs.renameSync(tmp, file)
+}
+
+export function resolveEffectiveCustodyCount(
+  saved: EthyUserConfig | undefined,
+  cli: EthyCliArgs,
+): { count: number; persistOnBoot: boolean } {
+  if (cli.fullCustody) {
+    return { count: 16, persistOnBoot: cli.custodyExplicit && cli.noSave !== true }
+  }
+  if (cli.custodyExplicit) {
+    return { count: cli.custodyCount, persistOnBoot: cli.noSave !== true }
+  }
+  const savedCount = saved?.custodyCount
+  if (savedCount !== undefined) {
+    return { count: savedCount, persistOnBoot: false }
+  }
+  return { count: cli.custodyCount, persistOnBoot: false }
 }
 
 function cliTouchesAiMode(cli: EthyCliArgs): boolean {

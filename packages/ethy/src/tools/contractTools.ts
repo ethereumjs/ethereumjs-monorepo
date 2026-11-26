@@ -1,5 +1,6 @@
 import type { ChainConfig } from '@ethereumjs/common'
 import type { FlatStateManager } from '@ethereumjs/statemanager'
+import { bytesToUnprefixedHex, hexToBytes } from '@ethereumjs/util'
 import type { ContractDossierStore } from '../contracts/contractDossierStore.ts'
 import {
   buildCodeLookup,
@@ -10,6 +11,8 @@ import {
   topSelectorLabels,
 } from '../contracts/contractIntelligence.ts'
 import { lookupFunctionSelector } from '../contracts/signatureCatalog.ts'
+import { ethyKeccak256 } from '../crypto/keccak.ts'
+import { provenanceLabelForAccountHash } from '../custody/provenance.ts'
 import type { ETHEconomyDataManager } from '../economy/economyDataManager.ts'
 import { formatSignedEthFromWei, shortAddress } from '../economy/format.ts'
 import { ECONOMY_LEADERBOARD_SIZE } from '../economy/types.ts'
@@ -59,12 +62,16 @@ export function contractMicroscopeWidget(
   const profile = buildContractProfile(row, agg, lookup, cache)
   const arch = profile.archetype ?? 'Contract'
   const conf = profile.confidence ?? 'low'
+  const addrHex = address.startsWith('0x') ? address : `0x${address}`
+  const accHash = bytesToUnprefixedHex(ethyKeccak256(hexToBytes(addrHex as `0x${string}`)))
+  const source = provenanceLabelForAccountHash(accHash)
   const preface: Array<{ key: string; value: string }> = [
     {
       key: 'Address',
       value:
         profile.knownName !== undefined ? `${profile.knownName} ${shortAddress(address)}` : address,
     },
+    ...(source !== undefined ? [{ key: 'Source', value: source }] : []),
     { key: 'Archetype', value: `${arch} · ${conf}` },
     { key: 'Blocks active', value: String(profile.blocksActive) },
     { key: 'Storage writes', value: String(profile.storageWrites) },

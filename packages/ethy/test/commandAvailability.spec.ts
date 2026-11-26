@@ -23,11 +23,10 @@ describe('[Ethy/Domains]: command availability', () => {
     assert.equal(avail.shortTag, 'snap complete')
   })
 
-  it('/contract with address is ready while list row stays locked', () => {
+  it('/contract is ready at HEAD_FOLLOWING (custody leverage)', () => {
     const spine = createSpine('sepolia', 11155111n)
     setPhase(spine, 'HEAD_FOLLOWING')
-    spine.totalAccountsSynced = 50_000
-    assert.equal(getCommandAvailability('/contract', spine).status, 'locked')
+    assert.equal(getCommandAvailability('/contract', spine).status, 'ready')
     assert.equal(
       getCommandAvailability('/contract', spine, { args: '0x' + 'ab'.repeat(20) }).status,
       'ready',

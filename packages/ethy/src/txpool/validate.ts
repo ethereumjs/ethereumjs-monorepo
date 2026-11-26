@@ -1,5 +1,5 @@
 import { type ChainConfig, Common } from '@ethereumjs/common'
-import type { FlatStateManager } from '@ethereumjs/statemanager'
+import { type FlatStateManager, StateMissUnavailableError } from '@ethereumjs/statemanager'
 import { createTxFromRLP } from '@ethereumjs/tx'
 import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 
@@ -32,7 +32,15 @@ export async function validateRawTransaction(
     return err(-32000, 'Transaction chain id mismatch')
   }
   const sender = tx.getSenderAddress()
-  const account = await stateManager.getAccount(sender)
+  let account
+  try {
+    account = await stateManager.getAccount(sender)
+  } catch (e) {
+    if (e instanceof StateMissUnavailableError) {
+      return err(-32000, 'State witness unavailable for open-world key; retry')
+    }
+    throw e
+  }
   const nonce = account?.nonce ?? 0n
   const balance = account?.balance ?? 0n
   if (tx.nonce < nonce) {

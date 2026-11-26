@@ -22,6 +22,8 @@ export interface EthyCliArgs {
   syncMode: EthySyncMode
   /** Custody dial 1..16 (default 2). WP-16d. */
   custodyCount: number
+  /** True when `--custody` was passed (not default / config). */
+  custodyExplicit: boolean
   /** `--full` → custody 16. */
   fullCustody: boolean
   /** Explicit opt-in to mount dial `snap/1` (WP-16d). */
@@ -301,6 +303,7 @@ export function parseEthyArgs(argv: string[]): EthyCliArgs {
     aiSharePrompts,
     shadowRefreshEnabled,
     custodyCount,
+    custodyExplicit,
     fullCustody,
     snapBootstrap,
   }

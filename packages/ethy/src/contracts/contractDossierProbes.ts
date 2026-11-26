@@ -3,7 +3,7 @@ import { probeContractViewLive } from '../ai/investigationTools.ts'
 import type { ContractDossierProbes, ContractDossierStore } from './contractDossierStore.ts'
 import type { ForensicStaticScan } from './contractForensics.ts'
 
-const PROBE_BUDGET_MS = 100
+const PROBE_BUDGET_MS = 1_200
 const PROBE_MAX = 4
 
 type ProbeField = keyof Omit<ContractDossierProbes, 'probedAtBlock' | 'miss'>

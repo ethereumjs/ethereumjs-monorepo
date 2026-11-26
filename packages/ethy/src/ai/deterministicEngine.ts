@@ -131,12 +131,12 @@ export function dispatchSlashWidget(line: string, ctx: SlashDispatchCtx): Widget
     case '/range': {
       const locked = slashIfLocked('/range', spine)
       if (locked !== undefined) return locked
-      return inspectRawAccountRange(stateManager, parts[1], snapStore)
+      return inspectRawAccountRange(stateManager, parts[1], snapStore, spine)
     }
     case '/sample': {
       const locked = slashIfLocked('/sample', spine)
       if (locked !== undefined) return locked
-      return sampleSyncedAccounts(stateManager, snapStore)
+      return sampleSyncedAccounts(stateManager, snapStore, spine)
     }
     case '/pause': {
       const locked = slashIfLocked('/pause', spine)

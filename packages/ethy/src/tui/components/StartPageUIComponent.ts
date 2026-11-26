@@ -49,6 +49,16 @@ function buildCrystalRows(spine: EthySpine, tick: number): string[] {
   ]
 }
 
+function custodyOnboardingLine(spine: EthySpine): string | undefined {
+  if (spine.phase !== 'HEAD_FOLLOWING' && spine.phase !== 'BAL_CATCHUP') return undefined
+  if (spine.custodyBalOnboarding === true) {
+    return `${DIM}Rolling BALs → custody warm-up…${RESET}`
+  }
+  const dial = spine.custodyDialCount ?? spine.custodyBuckets?.length ?? 2
+  const hop = spine.machine?.hopBuckets ?? 0
+  return `${FG.yellow}★${RESET} Live + Background ${hop}/16 hop · custody dial ${dial}`
+}
+
 function buildRightRows(spine: EthySpine): string[] {
   const econMark = capabilityMark('economy', spine.capabilities.economy.status)
   const stateMark = capabilityMark('state', spine.capabilities.state.status)
@@ -65,7 +75,7 @@ function buildRightRows(spine: EthySpine): string[] {
       ? `${econMark} ${BOLD}Economy${RESET}   ${stateMark} ${BOLD}State${RESET}   ${p2pMark} ${BOLD}P2P${RESET}`
       : `${econMark} ${BOLD}Economy${RESET}   ${stateMark} ${BOLD}State${RESET}   ${p2pMark} ${BOLD}P2P${RESET}   ${aiMark} ${BOLD}AI${RESET}`
 
-  return [
+  const rows = [
     '',
     word1,
     word2,
@@ -77,11 +87,16 @@ function buildRightRows(spine: EthySpine): string[] {
       : `${DIM}Economy · Flat State · Swarm Intelligence${RESET}`,
     '',
     pillRow,
+  ]
+  const custody = custodyOnboardingLine(spine)
+  if (custody !== undefined) rows.push('', custody)
+  rows.push(
     '',
     spine.aiMode === 'off'
       ? `${DIM}Press ${RESET}${BOLD}Tab${RESET}${DIM} for help · Enter plaza · ${RESET}${BOLD}/${RESET}${DIM} command${RESET}`
       : `${DIM}Press ${RESET}${BOLD}Tab${RESET}${DIM} for help · ${RESET}${BOLD}/${RESET}${DIM} command · ask AI${RESET}`,
-  ]
+  )
+  return rows
 }
 
 export function renderStartPageUIComponent(

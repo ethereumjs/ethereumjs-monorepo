@@ -1,4 +1,12 @@
 import { ETHY_CLIENT_NAME, getEthyClientVersion } from '../clientMeta.ts'
+
+function countBits16(mask: number): number {
+  let n = 0
+  for (let i = 0; i < 16; i++) {
+    if ((mask & (1 << i)) !== 0) n++
+  }
+  return n
+}
 import { createSnapBuckets, formatSnapCapabilityLabel } from './buckets.ts'
 import type { EthyPhase, EthySpine } from './types.ts'
 
@@ -32,7 +40,16 @@ function deriveStateCapability(spine: EthySpine): void {
     return
   }
   if (phase === 'HEAD_FOLLOWING') {
-    spine.capabilities.state = { status: 'ready', label: 'Following' }
+    if (spine.custodyBalOnboarding === true) {
+      spine.capabilities.state = { status: 'partial', label: 'Rolling BALs' }
+      return
+    }
+    const dial = spine.custodyDialCount ?? spine.custodyBuckets?.length ?? 2
+    const hop = spine.machine?.hopBuckets ?? countBits16(spine.closedBucketsMask ?? 0)
+    spine.capabilities.state = {
+      status: 'ready',
+      label: `★ Live + ${hop}/${dial}`,
+    }
     return
   }
   spine.capabilities.state = { status: 'locked', label: 'Starting' }

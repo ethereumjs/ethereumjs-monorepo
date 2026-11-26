@@ -3,6 +3,7 @@ import type { FlatStateManager } from '@ethereumjs/statemanager'
 
 import { bytesToBigInt, bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { ethyKeccak256 } from '../crypto/keccak.ts'
+import type { EnqueueSandboxOpts } from '../evm/queue.ts'
 import type { EthySandbox } from '../evm/sandbox.ts'
 import { quantityHex } from '../rpc/quantities.ts'
 import type { EthySpine } from '../spine/types.ts'
@@ -18,6 +19,7 @@ const MAX_PROBES_PER_BLOCK = 4
 const CALL_GAS = 80_000n
 
 const ENS_REGISTRY_MAINNET = '0x00000000000c2e074ec69a0dfb2997ba6c7d2e1e'
+const ENS_REVERSE_REGISTRAR = '0x084b1c3c81545d370f3634392de611caabff8148'
 
 type CacheEntry = {
   block: bigint
@@ -42,6 +44,8 @@ export class IdentityResolver {
   private queue: QueueItem[] = []
   private ensHitsCount = 0
   private tokenHitsCount = 0
+  private ensBootstrapStarted = false
+  private ensBootstrapReady = false
 
   constructor(opts: {
     chain: ChainConfig
@@ -61,6 +65,11 @@ export class IdentityResolver {
    * code is not yet on disk, returns false so we avoid poisoning the 256-block cache.
    */
   hasLocalEnsRegistry(): boolean {
+    if (this.ensBootstrapReady) return true
+    return this.hasLocalEnsRegistrySync()
+  }
+
+  private hasLocalEnsRegistrySync(): boolean {
     const chainId = BigInt(this.chain.chainId)
     if (chainId !== 1n && chainId !== 11155111n) return false
     if (this.stateManager === undefined) return true
@@ -110,10 +119,33 @@ export class IdentityResolver {
    * On-demand cached lookup (used by AI forensics so subject + embedded addresses
    * have verified ENS / token identity ready before story generation).
    */
+  /** One-shot ENS registry warm-up on live head (identity lane, swarm-only). */
+  async warmEnsBootstrap(): Promise<void> {
+    if (this.ensBootstrapStarted) return
+    this.ensBootstrapStarted = true
+    const chainId = BigInt(this.chain.chainId)
+    if (chainId !== 1n && chainId !== 11155111n) return
+    if (this.sandbox === undefined || this.spine.phase !== 'HEAD_FOLLOWING') return
+    const lane: EnqueueSandboxOpts = { lane: 'identity', resolutionPolicy: 'swarm-only' }
+    const touch = [ENS_REGISTRY_MAINNET, ENS_REVERSE_REGISTRAR]
+    try {
+      for (const addr of touch) {
+        await this.sandbox.runEthCall(
+          { to: addr, data: '0x', gas: quantityHex(21_000n) },
+          undefined,
+          lane,
+        )
+      }
+      this.ensBootstrapReady = this.hasLocalEnsRegistrySync()
+    } catch {
+      this.ensBootstrapReady = this.hasLocalEnsRegistrySync()
+    }
+  }
+
   async resolveNow(
     address: string,
     blockNumber = 0n,
-    opts: { ensOnly?: boolean } = {},
+    opts: { ensOnly?: boolean; userFacing?: boolean } = {},
   ): Promise<{ knownName?: string; ensName?: string }> {
     const key = address.toLowerCase()
     const cached = this.cache.get(key)
@@ -124,7 +156,7 @@ export class IdentityResolver {
       return { knownName: this.getKnownName(key), ensName: this.getEnsName(key) }
     }
     try {
-      await this.probeOne(key, blockNumber, opts.ensOnly === true)
+      await this.probeOne(key, blockNumber, opts.ensOnly === true, opts.userFacing === true)
     } catch {
       this.putCache(key, { block: blockNumber, miss: true })
     }
@@ -175,14 +207,26 @@ export class IdentityResolver {
     this.cache.set(address.toLowerCase(), entry)
   }
 
-  private async probeOne(address: string, blockNumber: bigint, ensOnly = false): Promise<void> {
+  private identityLaneOpts(userFacing = false): EnqueueSandboxOpts {
+    return userFacing
+      ? { lane: 'identity', resolutionPolicy: 'full' }
+      : { lane: 'identity', resolutionPolicy: 'swarm-only' }
+  }
+
+  private async probeOne(
+    address: string,
+    blockNumber: bigint,
+    ensOnly = false,
+    userFacing = false,
+  ): Promise<void> {
     if (this.sandbox === undefined) return
+    const lane = this.identityLaneOpts(userFacing)
     const ensReady = this.hasLocalEnsRegistry()
-    const name = ensOnly ? undefined : await this.ethCallString(address, NAME_SEL, 48)
-    const symbol = ensOnly ? undefined : await this.ethCallString(address, SYMBOL_SEL, 32)
+    const name = ensOnly ? undefined : await this.ethCallString(address, NAME_SEL, 48, lane)
+    const symbol = ensOnly ? undefined : await this.ethCallString(address, SYMBOL_SEL, 32, lane)
     let ensName: string | undefined
     if (ensReady) {
-      ensName = await this.resolveEnsReverse(address)
+      ensName = await this.resolveEnsReverse(address, lane)
     }
     if (name === undefined && symbol === undefined && ensName === undefined) {
       // Never cache a 256-block negative miss for ENS-only lookups while ENS Registry code is absent
@@ -199,6 +243,7 @@ export class IdentityResolver {
     contract: string,
     data: Uint8Array,
     maxLen = 64,
+    laneOpts?: EnqueueSandboxOpts,
   ): Promise<string | undefined> {
     if (this.sandbox === undefined) return undefined
     const outcome = await this.sandbox.runEthCall(
@@ -208,6 +253,7 @@ export class IdentityResolver {
         gas: quantityHex(CALL_GAS),
       },
       undefined,
+      laneOpts ?? this.identityLaneOpts(),
     )
     if ('error' in outcome) return undefined
     const hex = String(outcome.result ?? '')
@@ -215,18 +261,27 @@ export class IdentityResolver {
     return decodeAbiString(hexToBytes(hex as `0x${string}`), maxLen)
   }
 
-  private async resolveEnsReverse(address: string): Promise<string | undefined> {
+  private async resolveEnsReverse(
+    address: string,
+    laneOpts?: EnqueueSandboxOpts,
+  ): Promise<string | undefined> {
+    const lane = laneOpts ?? this.identityLaneOpts()
     const node = ensReverseNode(address)
-    const resolver = await this.ethCallAddress(ENS_REGISTRY_MAINNET, concatCall(RESOLVER_SEL, node))
+    const resolver = await this.ethCallAddress(
+      ENS_REGISTRY_MAINNET,
+      concatCall(RESOLVER_SEL, node),
+      lane,
+    )
     if (resolver === undefined || resolver === '0x0000000000000000000000000000000000000000') {
       return undefined
     }
-    const name = await this.ethCallString(resolver, concatCall(NAME_BYTES32_SEL, node))
+    const name = await this.ethCallString(resolver, concatCall(NAME_BYTES32_SEL, node), 64, lane)
     if (name === undefined) return undefined
     const forwardNode = ensNameHash(name)
     const forwardResolver = await this.ethCallAddress(
       ENS_REGISTRY_MAINNET,
       concatCall(RESOLVER_SEL, forwardNode),
+      lane,
     )
     if (
       forwardResolver === undefined ||
@@ -237,13 +292,18 @@ export class IdentityResolver {
     const forwardAddr = await this.ethCallAddress(
       forwardResolver,
       concatCall(ADDR_SEL, forwardNode),
+      lane,
     )
     if (forwardAddr === undefined) return undefined
     if (forwardAddr.toLowerCase() !== address.toLowerCase()) return undefined
     return name
   }
 
-  private async ethCallAddress(contract: string, data: Uint8Array): Promise<string | undefined> {
+  private async ethCallAddress(
+    contract: string,
+    data: Uint8Array,
+    laneOpts?: EnqueueSandboxOpts,
+  ): Promise<string | undefined> {
     if (this.sandbox === undefined) return undefined
     const outcome = await this.sandbox.runEthCall(
       {
@@ -252,6 +312,7 @@ export class IdentityResolver {
         gas: quantityHex(CALL_GAS),
       },
       undefined,
+      laneOpts ?? this.identityLaneOpts(),
     )
     if ('error' in outcome) return undefined
     const hex = String(outcome.result ?? '')

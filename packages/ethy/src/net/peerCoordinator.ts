@@ -1665,6 +1665,7 @@ export async function startPeerCoordinator(
         ensureHeadFollower(client)
         if (flipped && spine.phase === 'HEAD_FOLLOWING') {
           populateHeadFlipSummary(bestHead)
+          void opts.economy?.getIdentityResolver().warmEnsBootstrap()
         }
         deriveCapabilities(spine)
       } finally {

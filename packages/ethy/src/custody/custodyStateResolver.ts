@@ -36,6 +36,7 @@ import { verifyProvenAccountChunkJob, verifyProvenStorageKind1Job } from '../syn
 import { pickEthyCodeCustodians, pickEthyCustodianForBucket } from './custodyPeerPick.ts'
 import { ethyWireKind, findSlotInKind1Slab, parseProvenCodePairs } from './custodyStorageCodec.ts'
 import { accountHashHex, buildWitnessFoldContext } from './custodyWitnessFold.ts'
+import { type ProvenanceLabel, noteAccountProvenance } from './provenance.ts'
 
 const RESOLVER_TIMEOUT_MS = 12_000
 const ACCOUNT_SLAB_STRIDE = 136
@@ -79,9 +80,13 @@ type PendingEthy = {
 
 let nextReqId = 1000n
 
-type CustodyResolveKind = 'local' | 'tombstone' | 'ethyProof' | 'ethyChunk' | 'snap'
+export type CustodyResolveKind = 'local' | 'tombstone' | 'ethyProof' | 'ethyChunk' | 'snap'
 
-function noteCustodyResolve(spine: EthySpine, kind: CustodyResolveKind): void {
+function noteCustodyResolve(
+  spine: EthySpine,
+  kind: CustodyResolveKind,
+  accountHashHex?: string,
+): void {
   const row = spine.custodyResolve ?? {
     local: 0,
     tombstone: 0,
@@ -91,6 +96,27 @@ function noteCustodyResolve(spine: EthySpine, kind: CustodyResolveKind): void {
   }
   row[kind]++
   spine.custodyResolve = row
+  if (accountHashHex !== undefined) {
+    const label = resolveKindLabel(kind)
+    if (label !== undefined) noteAccountProvenance(accountHashHex, label)
+  }
+}
+
+function resolveKindLabel(kind: CustodyResolveKind): ProvenanceLabel | undefined {
+  switch (kind) {
+    case 'local':
+      return 'Local Custody'
+    case 'tombstone':
+      return 'Proven-Empty'
+    case 'ethyProof':
+      return 'ETHY 1-Hop Proof'
+    case 'ethyChunk':
+      return 'ETHY 1-Hop Chunk'
+    case 'snap':
+      return 'SNAP Bootstrap'
+    default:
+      return undefined
+  }
 }
 
 function pendingEthyKey(peerId: string, reqId: bigint): string {
@@ -251,21 +277,21 @@ export class CustodyStateResolver {
     const witness = await this.tryWitnessAccount(accountHash, bucket)
     if (witness instanceof Uint8Array) {
       this.cacheStorageRootFromBinary(accountHash, witness)
-      noteCustodyResolve(this.deps.spine, 'ethyProof')
+      noteCustodyResolve(this.deps.spine, 'ethyProof', bytesToUnprefixedHex(accountHash))
       return witness
     }
     if (witness === 'empty') {
-      noteCustodyResolve(this.deps.spine, 'tombstone')
+      noteCustodyResolve(this.deps.spine, 'tombstone', bytesToUnprefixedHex(accountHash))
       return witness
     }
     const chunk = await this.tryAccountChunk(accountHash, bucket)
     if (chunk instanceof Uint8Array) {
       this.cacheStorageRootFromBinary(accountHash, chunk)
-      noteCustodyResolve(this.deps.spine, 'ethyChunk')
+      noteCustodyResolve(this.deps.spine, 'ethyChunk', bytesToUnprefixedHex(accountHash))
       return chunk
     }
     if (chunk === 'empty') {
-      noteCustodyResolve(this.deps.spine, 'tombstone')
+      noteCustodyResolve(this.deps.spine, 'tombstone', bytesToUnprefixedHex(accountHash))
       return chunk
     }
     if (this.deps.snapBootstrapEnabled && policy === 'full') return undefined

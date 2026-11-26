@@ -1,7 +1,8 @@
 import type { FlatStateManager } from '@ethereumjs/statemanager'
-import { bytesToHex, hexToBytes, isHexString } from '@ethereumjs/util'
+import { bytesToHex, bytesToUnprefixedHex, hexToBytes, isHexString } from '@ethereumjs/util'
 
 import { ethyKeccak256 } from '../crypto/keccak.ts'
+import { provenanceLabelForAccountHash } from '../custody/provenance.ts'
 import type { EthySpine, WidgetSpec } from '../spine/types.ts'
 
 export function inspectLatestBAL(spine: EthySpine): WidgetSpec {
@@ -88,16 +89,19 @@ export function inspectAccount(
     .filter((w) => w.balJson?.some((a) => a.address.toLowerCase() === addrLower))
     .map((w) => `#${w.blockNumber}`)
     .slice(0, 5)
+  const prov = provenanceLabelForAccountHash(bytesToUnprefixedHex(accountHash))
+  const entries: Array<{ key: string; value: string }> = [
+    { key: 'Lookup', value: display },
+    { key: 'Balance', value: acc.balance.toString() },
+    { key: 'Nonce', value: acc.nonce.toString() },
+    { key: 'Code size', value: String(code.length) },
+    { key: 'Storage root', value: bytesToHex(acc.storageRoot) },
+    { key: 'Recent BAL blocks', value: mutationBlocks.join(', ') || '—' },
+  ]
+  if (prov !== undefined) entries.splice(1, 0, { key: 'Source', value: prov })
   return {
     kind: 'key_value',
     title: 'Account',
-    entries: [
-      { key: 'Lookup', value: display },
-      { key: 'Balance', value: acc.balance.toString() },
-      { key: 'Nonce', value: acc.nonce.toString() },
-      { key: 'Code size', value: String(code.length) },
-      { key: 'Storage root', value: bytesToHex(acc.storageRoot) },
-      { key: 'Recent BAL blocks', value: mutationBlocks.join(', ') || '—' },
-    ],
+    entries,
   }
 }

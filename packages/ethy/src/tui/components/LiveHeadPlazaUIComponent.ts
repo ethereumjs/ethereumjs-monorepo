@@ -100,6 +100,16 @@ function truncateVisiblePlain(text: string, maxW: number): string {
   return out
 }
 
+function custodyDistrictMark(spine: EthySpine, nibble: number): string {
+  const bit = 1 << nibble
+  const closed = spine.closedBucketsMask ?? 0
+  const uncovered = spine.machine?.uncoveredBucketsMask ?? 0xffff
+  const hopReachable = 0xffff & ~uncovered
+  if ((closed & bit) !== 0) return `${FG.green}●${RESET}`
+  if ((hopReachable & bit) !== 0 && (closed & bit) === 0) return `${FG.yellow}◐${RESET}`
+  return `${DIM}○${RESET}`
+}
+
 function nibbleSpark(heat: number, max: number): string {
   if (heat <= 0 || max <= 0) return '····'
   const ratio = heat / max
@@ -148,7 +158,7 @@ export function renderLiveHeadPlazaUIComponent(
   renderHorizon(lines, econ, spine, leftColW, rightColW, gapStr, w, tick)
   lines.push(fixedLine('', w))
 
-  const leftLines = buildLeftColumn(econ, leftColW)
+  const leftLines = buildLeftColumn(econ, spine, leftColW)
   const rightLines = buildRightColumn(econ, rightColW, Math.max(1, maxBodyLines - lines.length))
   const rowCount = Math.min(
     maxBodyLines - lines.length,
@@ -224,7 +234,7 @@ function renderHorizon(
   }
 }
 
-function buildLeftColumn(econ: EconomySnapshot, colW: number): string[] {
+function buildLeftColumn(econ: EconomySnapshot, spine: EthySpine, colW: number): string[] {
   const out: string[] = []
   out.push(fixedLine(`${BOLD}● BLOCK ANATOMY (#${econ.latestBlockNumber ?? '—'})${RESET}`, colW))
   const split = econ.txTypeSplit
@@ -262,7 +272,12 @@ function buildLeftColumn(econ: EconomySnapshot, colW: number): string[] {
     out.push(barRow(b.label, b.fill, 10, colW, b.suffix))
   }
   out.push(fixedLine('', colW))
-  out.push(fixedLine(`${BOLD}● NEIGHBORHOOD LIGHTS (0x0..0xf)${RESET}`, colW))
+  out.push(
+    fixedLine(
+      `${BOLD}● DISTRICTS (0x0..0xf)${RESET} ${DIM}● closed · ◐ swarm · ○ open${RESET}`,
+      colW,
+    ),
+  )
   const heat = econ.nibbleHeat ?? new Array(16).fill(0)
   let maxH = 1
   for (const h of heat) maxH = Math.max(maxH, h)
@@ -271,7 +286,9 @@ function buildLeftColumn(econ: EconomySnapshot, colW: number): string[] {
     for (let col = 0; col < 4; col++) {
       const i = row * 4 + col
       const spark = nibbleSpark(heat[i] ?? 0, maxH)
-      cells.push(`${DIM}0x${i.toString(16)}${RESET} ${FG.yellow}${spark}${RESET}`)
+      cells.push(
+        `${custodyDistrictMark(spine, i)} ${DIM}0x${i.toString(16)}${RESET} ${FG.yellow}${spark}${RESET}`,
+      )
     }
     out.push(fixedLine(cells.join('  '), colW))
   }

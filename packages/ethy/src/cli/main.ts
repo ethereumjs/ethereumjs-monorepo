@@ -5,7 +5,13 @@ import { initEthyKeccak } from '../crypto/keccak.ts'
 import { advanceDemo } from '../demo/advanceDemo.ts'
 import { activeHardfork, chainConfigForNetwork } from '../net/chainHardfork.ts'
 import { startPeerCoordinator } from '../net/peerCoordinator.ts'
-import { readUserConfig, resolveEffectiveAiConfig, writeUserConfig } from '../persist/userConfig.ts'
+import {
+  mergeUserConfig,
+  readUserConfig,
+  resolveEffectiveAiConfig,
+  resolveEffectiveCustodyCount,
+  writeUserConfig,
+} from '../persist/userConfig.ts'
 import { initRpcTelemetry } from '../rpc/methods.ts'
 import { type JsonRpcHandle, startJsonRpcServer } from '../rpc/server.ts'
 import { recordDiagnostic } from '../spine/diagnostics.ts'
@@ -44,6 +50,11 @@ async function main(): Promise<void> {
   if (aiResolution.persistOnBoot) {
     writeUserConfig(cli.dataDir, aiResolution.effective)
   }
+  const custodyResolution = resolveEffectiveCustodyCount(saved, cli)
+  if (custodyResolution.persistOnBoot) {
+    mergeUserConfig(cli.dataDir, { custodyCount: custodyResolution.count })
+  }
+  cli.custodyCount = custodyResolution.count
 
   const node = createEthyNode({
     network,
@@ -59,6 +70,7 @@ async function main(): Promise<void> {
     aiMemory: cli.aiMemory,
     recordFixturePath: cli.recordFixturePath,
   })
+  node.spine.custodyDialCount = custodyResolution.count
 
   const aiRuntime = createAiRuntimeController({
     node,

@@ -84,8 +84,9 @@ const RPC_GROUPS: RpcGroupDef[] = [
       'eth_getBlockAccessListByHash',
       'ethy_status',
       'ethy_economy',
+      'ethy_custodyStatus',
     ],
-    methodSummary: 'eth_getBlockAccessListBy*, ethy_status, ethy_economy',
+    methodSummary: 'eth_getBlockAccessListBy*, ethy_status, ethy_custodyStatus, ethy_economy',
   },
 ]
 
@@ -114,7 +115,10 @@ function groupStatus(
     return { kind: 'off', display: formatGroupStatus('off') }
   }
   const atHeadOrAccounts =
-    spine.totalAccountsSynced > 0 || isNodeAtChainHead(spine) || spine.demoClock === true
+    spine.phase === 'HEAD_FOLLOWING' ||
+    spine.totalAccountsSynced > 0 ||
+    isNodeAtChainHead(spine) ||
+    spine.demoClock === true
   const hasBlocks = spine.economy?.hasBlocks === true
   const hasPeers = spine.peers.size > 0 || spine.demoClock === true
 
@@ -133,7 +137,7 @@ function groupStatus(
         ? { kind: 'active', display: formatGroupStatus('active') }
         : { kind: 'awaiting', display: formatGroupStatus('awaiting') }
     case 'tx_broadcast':
-      return hasPeers
+      return hasPeers || spine.phase === 'HEAD_FOLLOWING' || spine.demoClock === true
         ? { kind: 'active', display: formatGroupStatus('active') }
         : { kind: 'no_peers', display: formatGroupStatus('no_peers') }
     default:

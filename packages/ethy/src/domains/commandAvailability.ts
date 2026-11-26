@@ -37,6 +37,12 @@ function economyReady(spine: EthySpine): CommandAvailability {
 }
 
 function contractAvailability(spine: EthySpine, args?: string): CommandAvailability {
+  if (
+    spine.phase === 'HEAD_FOLLOWING' ||
+    (spine.demoClock === true && spine.economy?.hasBlocks === true)
+  ) {
+    return { status: 'ready' }
+  }
   const arg = args?.trim() ?? ''
   if (arg.length > 0 && spine.totalAccountsSynced > 0) {
     return { status: 'ready' }
@@ -100,18 +106,21 @@ export function getCommandAvailability(
       return { status: 'ready' }
     case '/range':
     case '/sample':
+      if ((spine.closedBucketsMask ?? 0) !== 0 || snapBucketsDoneCount(spine.snapBuckets) === 16) {
+        return {
+          status: 'ready',
+          reason: 'Samples are scoped to locally closed custody buckets when snap is incomplete.',
+        }
+      }
       if (
         spine.phase === 'HEAD_FOLLOWING' ||
         spine.phase === 'BAL_CATCHUP' ||
-        snapBucketsDoneCount(spine.snapBuckets) === 16
+        spine.totalAccountsSynced > 0
       ) {
-        return { status: 'ready' }
-      }
-      if (spine.totalAccountsSynced > 0) {
         return {
           status: 'partial',
-          shortTag: 'syncing',
-          reason: 'Accounts are on disk but the full 16-bucket snap pass is not finished.',
+          shortTag: 'custody open',
+          reason: 'No closed custody buckets yet — range output stays empty until a bucket seals.',
         }
       }
       return {
@@ -120,20 +129,23 @@ export function getCommandAvailability(
         reason: 'No synced accounts yet to sample.',
       }
     case '/account':
-      if (headInspectUnlocked(spine) && snapBucketsDoneCount(spine.snapBuckets) === 16) {
+      if (
+        spine.phase === 'HEAD_FOLLOWING' ||
+        (spine.demoClock === true && spine.economy?.hasBlocks === true)
+      ) {
         return { status: 'ready' }
       }
       if (headInspectUnlocked(spine) || spine.totalAccountsSynced > 0) {
         return {
           status: 'partial',
           shortTag: 'partial state',
-          reason: 'Some state is available but snap buckets or BAL stream are not complete.',
+          reason: 'Account lookup unlocks fully once live head following is active.',
         }
       }
       return {
         status: 'locked',
         shortTag: 'awaiting state',
-        reason: 'Account microscope unlocks after snap accounts or BAL catch-up.',
+        reason: 'Account microscope unlocks at live head following or partial snap.',
       }
     case '/bal':
       if (spine.balWindow.some((w) => w.balJson !== undefined)) {
@@ -186,11 +198,14 @@ export function getCommandAvailability(
         reason: 'Connect to at least one peer before dropping a session.',
       }
     case '/simulate':
-      if (!headInspectUnlocked(spine)) {
+      if (
+        spine.phase !== 'HEAD_FOLLOWING' &&
+        !(spine.demoClock === true && spine.economy?.hasBlocks === true)
+      ) {
         return {
           status: 'locked',
-          shortTag: 'awaiting state',
-          reason: 'Simulation needs head-verified flat state.',
+          shortTag: 'awaiting head',
+          reason: 'Simulation needs live head following.',
         }
       }
       return { status: 'ready', reason: 'On-demand EVM call at head (overlay sandbox).' }

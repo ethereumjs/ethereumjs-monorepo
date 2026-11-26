@@ -179,6 +179,8 @@ export interface EthySpine {
   ethyTrieBucketsBitmask?: number
   ethyStorageBucketsBitmask?: number
   ethyCodeBucketsBitmask?: number
+  /** Effective `--custody` / config dial (1..16). */
+  custodyDialCount?: number
   /** Assigned custody buckets for this node (WP-16d). */
   custodyBuckets?: number[]
   closedBucketsMask?: number
