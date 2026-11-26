@@ -2190,7 +2190,10 @@ export async function startPeerCoordinator(
       custodyBuckets: spine.custodyBuckets,
       backgroundMode: true,
       skipBalCatchUp: true,
-      onAccountsIngested: (entries) => codeSync?.noteAccounts(entries),
+      onAccountsIngested: (entries) => {
+        codeSync?.noteAccounts(entries)
+        custodyCodeSync?.noteAccounts(entries)
+      },
       onBucketDone: (idx) => {
         noteBucketAdvertised(client, idx)
         const head =
@@ -2214,6 +2217,7 @@ export async function startPeerCoordinator(
       stateManager,
       snapStore,
       buckets: spine.custodyBuckets ?? [],
+      getPeers: () => lastTelemetryPeers,
       onCodeBatchForBucket: (idx) => {
         const head =
           spine.bestPeerHead ?? spine.lastVerifiedBlockNumber ?? spine.pivotBlockNumber ?? 0n
@@ -2224,6 +2228,19 @@ export async function startPeerCoordinator(
           client,
           bucketIndex: idx,
           plane: 'code',
+          headBlock: head,
+        })
+      },
+      onStorageBatchForBucket: (idx) => {
+        const head =
+          spine.bestPeerHead ?? spine.lastVerifiedBlockNumber ?? spine.pivotBlockNumber ?? 0n
+        noteCustodyPlaneComplete({
+          snapStore,
+          stateManager,
+          spine,
+          client,
+          bucketIndex: idx,
+          plane: 'storage',
           headBlock: head,
         })
       },

@@ -187,4 +187,6 @@ flowchart TD
 
 **Tranche 4:** `resolveStorageMiss` kind-1 ladder + `verifyProvenStorageKind1Job` + write-index proven-empty; code miss persists via `snapStore.appendCode`; `EthyCodeStorageSynchronizer` verifies `kind=0` and marks **code** plane; `custodyStorageCodec` + focused `custodyEthySync` tests.
 
-**Still open:** Storage **background** plane completion + kind-2 batch sync; full zero-snap loopback (`custodyEthySync` live mesh); PEX redundancy gates (WP-16g).
+**Tranche 5:** `EthyCodeStorageSynchronizer.noteAccounts` + kind-0/2 scheduling; `verifyProvenStorageKind2Slab`; storage plane flip when bucket queue drains; coordinator wires background ingest + `getPeers`; `custodyPeerPick.ts`.
+
+**Still open:** Full zero-snap **live mesh** loopback (`ethySwarmLoopback` + custody CLI); kind-1 large-contract storage crawl; PEX redundancy gates (WP-16g).

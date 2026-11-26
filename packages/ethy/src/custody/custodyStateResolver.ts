@@ -33,6 +33,7 @@ import { foldWitnessToHead } from '../staty/witnessFold.ts'
 import type { WitnessFoldContext } from '../staty/witnessFold.ts'
 import type { StatyWriteIndex } from '../staty/writeIndex.ts'
 import { verifyProvenAccountChunkJob, verifyProvenStorageKind1Job } from '../sync/snapVerifyJob.ts'
+import { pickEthyCustodianForBucket } from './custodyPeerPick.ts'
 import { findSlotInKind1Slab, parseProvenCodePairs } from './custodyStorageCodec.ts'
 import { accountHashHex, buildWitnessFoldContext } from './custodyWitnessFold.ts'
 
@@ -118,24 +119,7 @@ export class CustodyStateResolver {
     bucket: number,
     plane: 'accounts' | 'code' | 'storage',
   ): WorkerPeerSnapshot | undefined {
-    const candidates = this.deps.getPeers().filter((p) => {
-      if (p.ethySession !== true || p.ethyStatus === undefined) return false
-      const st = p.ethyStatus
-      const mask =
-        plane === 'accounts'
-          ? ethyMaskFromStatus(st, 'buckets')
-          : plane === 'code'
-            ? ethyMaskFromStatus(st, 'code')
-            : ethyMaskFromStatus(st, 'storage')
-      return (mask & (1 << bucket)) !== 0
-    })
-    if (candidates.length === 0) return undefined
-    candidates.sort((a, b) => {
-      const ab = BigInt(a.ethyStatus?.basePivotBlock ?? '0')
-      const bb = BigInt(b.ethyStatus?.basePivotBlock ?? '0')
-      return ab > bb ? -1 : ab < bb ? 1 : 0
-    })
-    return candidates[0]
+    return pickEthyCustodianForBucket(this.deps.getPeers(), bucket, plane)
   }
 
   resolveAccountMiss = async (
@@ -444,8 +428,6 @@ function findAccountBinaryInSlab(
   return undefined
 }
 
-type EthyPeerStatusView = NonNullable<WorkerPeerSnapshot['ethyStatus']>
-
 function fieldToBlockNumber(field: unknown): number {
   if (field instanceof Uint8Array) {
     try {
@@ -455,15 +437,4 @@ function fieldToBlockNumber(field: unknown): number {
     }
   }
   return 0
-}
-
-function ethyMaskFromStatus(st: EthyPeerStatusView, plane: 'buckets' | 'code' | 'storage'): number {
-  const raw =
-    plane === 'buckets'
-      ? st.bucketsBitmask
-      : plane === 'code'
-        ? (st.codeBucketsBitmask ?? '0')
-        : (st.storageBucketsBitmask ?? '0')
-  if (raw.startsWith('0x')) return Number.parseInt(raw, 16)
-  return Number.parseInt(raw, 10)
 }

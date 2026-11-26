@@ -32,3 +32,45 @@ export function parseProvenCodePairs(
   }
   return out
 }
+
+export type Kind2StorageEntry = {
+  accountHash: Uint8Array
+  storageRoot: Uint8Array
+  slotsSlab64B: Uint8Array
+}
+
+export function parseProvenStorageKind2Entries(decoded: unknown[]): Kind2StorageEntry[] {
+  if (Number(decoded[1]) !== 2) return []
+  const rows = decoded[2]
+  if (!Array.isArray(rows)) return []
+  const out: Kind2StorageEntry[] = []
+  for (const row of rows) {
+    if (!Array.isArray(row) || row.length < 3) continue
+    const accountHash = row[0]
+    const storageRoot = row[1]
+    const slab = row[2]
+    if (
+      accountHash instanceof Uint8Array &&
+      accountHash.length === 32 &&
+      storageRoot instanceof Uint8Array &&
+      storageRoot.length === 32 &&
+      slab instanceof Uint8Array
+    ) {
+      out.push({ accountHash, storageRoot, slotsSlab64B: slab })
+    }
+  }
+  return out
+}
+
+export function storageSlotsFromKindSlab(
+  slab: Uint8Array,
+): Array<{ slotHash: Uint8Array; value: Uint8Array }> {
+  const out: Array<{ slotHash: Uint8Array; value: Uint8Array }> = []
+  for (let off = 0; off + STORAGE_SLAB_STRIDE <= slab.length; off += STORAGE_SLAB_STRIDE) {
+    out.push({
+      slotHash: slab.subarray(off, off + 32),
+      value: new Uint8Array(slab.subarray(off + 32, off + STORAGE_SLAB_STRIDE)),
+    })
+  }
+  return out
+}
