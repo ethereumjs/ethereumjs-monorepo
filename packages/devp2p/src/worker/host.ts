@@ -172,6 +172,7 @@ export class Devp2pWorkerHost {
   private _ethyKnown = new EthyKnownPeerBook()
   private _ethyLocal: WorkerEthyLocalStatus = {}
   private _ethyPexSent = new Set<string>()
+  private _ethyPexReqId = 1n
   private _ethyWitnessStore = new EthyWitnessStore()
   private _ethySubtreeBook = new EthySubtreeRootBook()
   /** When true, inbound `0x0b` is forwarded to main for live subtree proof serving (WP-16f). */
@@ -382,7 +383,7 @@ export class Devp2pWorkerHost {
           this._networkProfile = cmd.profile
           this._rlpx?.applyNetworkProfile(cmd.profile)
           const nextDesired = cmd.profile.desiredEthyBucketsMask ?? 0
-          if (prevDesired !== nextDesired) {
+          if (nextDesired !== 0 && prevDesired !== nextDesired) {
             this._broadcastEthyPexQueries()
           }
           break
@@ -1008,15 +1009,18 @@ export class Devp2pWorkerHost {
 
   private _broadcastEthyPexQueries(): void {
     const desired = this._networkProfile?.desiredEthyBucketsMask ?? 0
+    if (desired === 0) return
     for (const peer of this._rlpx?.getPeers() ?? []) {
       const peerId = peer.getId()
       if (peerId === null) continue
       const ethy = this._findEthy(peerId)
       if (ethy === undefined) continue
-      const req: Input[] = [bigIntToUnpaddedBytes(1n), bigIntToUnpaddedBytes(16n)]
-      if (desired !== 0) {
-        req.push(intToUnpaddedBytes(desired))
-      }
+      const reqId = this._ethyPexReqId++
+      const req: Input[] = [
+        bigIntToUnpaddedBytes(reqId),
+        bigIntToUnpaddedBytes(16n),
+        intToUnpaddedBytes(desired),
+      ]
       ethy.sendMessage(EthyMessageCodes.GET_ETHY_PEERS, req)
     }
   }
@@ -1035,7 +1039,8 @@ export class Devp2pWorkerHost {
       const ethy = this._findEthy(peerId)
       if (ethy !== undefined) {
         const desired = this._networkProfile?.desiredEthyBucketsMask ?? 0
-        const req: Input[] = [bigIntToUnpaddedBytes(1n), bigIntToUnpaddedBytes(16n)]
+        const reqId = this._ethyPexReqId++
+        const req: Input[] = [bigIntToUnpaddedBytes(reqId), bigIntToUnpaddedBytes(16n)]
         if (desired !== 0) {
           req.push(intToUnpaddedBytes(desired))
         }

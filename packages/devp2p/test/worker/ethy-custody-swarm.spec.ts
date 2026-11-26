@@ -225,6 +225,43 @@ describe('[DevP2P/Worker]: ETHY/0 custody swarm', () => {
       const entries = subtreeDecoded[2] as [Uint8Array, Uint8Array][]
       assert.equal(entries.length, 1)
       assert.isTrue(equalsBytes(entries[0]![1], h2))
+
+      // Step 6 (WP-16g): a new bucket-0x7 custodian joins Hub AFTER initial PEX;
+      // updating desiredEthyBucketsMask via setNetworkProfile re-issues 0x09 GET_ETHY_PEERS
+      // and Joiner discovers the new custodian without reconnecting to Hub.
+      const keyCustodian7 = genPrivateKey()
+      const custodian7 = await makeNode(keyCustodian7, BASE + 3)
+      try {
+        custodian7.setEthyStatus({
+          bucketsBitmask: '128', // bit 7 (bucket 0x7)
+          trieBucketsBitmask: '128',
+          basePivotBlock: '100',
+        })
+        custodian7.connectPeer({
+          id: idHub,
+          address: '127.0.0.1',
+          tcpPort: BASE,
+          udpPort: BASE,
+        })
+        await waitTelemetry(hub, (s) => s.peers.some((p) => p.ethyStatus?.bucketsBitmask === '128'))
+        joiner.setNetworkProfile({
+          capabilities: ['eth71', 'ethy0'],
+          maxPeers: 8,
+          minEthyPeers: 2,
+          discoveryMode: 'off',
+          ethyDiscoveryTag: false,
+          desiredEthyBucketsMask: 0x0080, // now want bucket 0x7
+        })
+        const joinerAfter = await waitTelemetry(joiner, (s) =>
+          s.peers.some((p) => p.ethyStatus?.bucketsBitmask === '128'),
+        )
+        assert.ok(
+          joinerAfter.peers.some((p) => p.ethyStatus?.bucketsBitmask === '128'),
+          'joiner discovered bucket-0x7 custodian after desiredEthyBucketsMask change re-issued PEX',
+        )
+      } finally {
+        custodian7.stop()
+      }
     } finally {
       joiner.stop()
       custodian.stop()
