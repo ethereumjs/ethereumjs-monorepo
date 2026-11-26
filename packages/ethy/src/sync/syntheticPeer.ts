@@ -146,7 +146,7 @@ export class SyntheticSnapPeer {
         continue
       }
       const trie = row.storageTrie
-      const slotHash = keccak_256(new Uint8Array([0x01]))
+      const slotHash = keccak_256(setLengthLeft(new Uint8Array([0x01]), 32))
       if (compareBytes32(slotHash, origin) < 0 || compareBytes32(slotHash, limit) > 0) {
         ranges.push([])
         continue
@@ -209,7 +209,10 @@ async function attachContractToFirstAccount(
   if (row === undefined) return
   const code = new Uint8Array([0x00])
   const codeHash = keccak_256(code)
-  const storageTrie = new MerklePatriciaTrie({ useKeyHashingFunction: ethyKeccak256 })
+  const storageTrie = new MerklePatriciaTrie({
+    useKeyHashing: false,
+    useKeyHashingFunction: ethyKeccak256,
+  })
   const slotHash = keccak_256(setLengthLeft(new Uint8Array([0x01]), 32))
   const slotValBe = new Uint8Array(32)
   slotValBe[31] = 2

@@ -2224,6 +2224,7 @@ export async function startPeerCoordinator(
           plane: 'accounts',
           headBlock: head,
         })
+        custodyCodeSync?.markAccountsFinished(idx)
       },
       onBucketPivot: (idx, pivotBlock) => snapStore?.noteBucketPivot(idx, pivotBlock),
       economy: opts.economy,
@@ -2235,6 +2236,7 @@ export async function startPeerCoordinator(
       snapStore,
       buckets: spine.custodyBuckets ?? [],
       getPeers: () => lastTelemetryPeers,
+      waitForAccountsFinish: true,
       onCodeBatchForBucket: (idx) => {
         const head =
           spine.bestPeerHead ?? spine.lastVerifiedBlockNumber ?? spine.pivotBlockNumber ?? 0n
@@ -2950,15 +2952,13 @@ export async function startPeerCoordinator(
       shadowEthySwarm?.handleMessage(msg.peerId, msg.code, msg.payload)
       ethySwarm?.handleMessage(msg.peerId, msg.code, msg.payload)
       if (
+        msg.code === EthyMessageCodes.PROVEN_ACCOUNT_CHUNK ||
         msg.code === EthyMessageCodes.PROVEN_STORAGE_OR_CODE ||
         msg.code === EthyMessageCodes.STATE_WITNESS
       ) {
         custodyResolver?.handleEthyResponse(msg.peerId, msg.code, msg.payload)
       }
-      if (
-        msg.code === EthyMessageCodes.PROVEN_ACCOUNT_CHUNK ||
-        msg.code === EthyMessageCodes.PROVEN_STORAGE_OR_CODE
-      ) {
+      if (msg.code === EthyMessageCodes.PROVEN_STORAGE_OR_CODE) {
         custodyCodeSync?.handleEthyResponse(msg.peerId, msg.code, msg.payload)
       }
       return

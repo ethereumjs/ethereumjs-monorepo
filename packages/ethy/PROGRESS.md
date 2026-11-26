@@ -297,6 +297,16 @@ Track every modification or planned modification to sibling monorepo packages he
 
 *Agents: Append a new dated subsection at the top of this list after each Planning (Grok 4.7) or Implementation (Composer 2.5) pass.*
 
+### 2026-11-26 — `WP-16d` Review & Hardening (Reviewer — Gemini 4 Neon)
+- **Fixed 8 issues found during forensic review of `WP-16d` (`3d5dde6f1..7941f1a11`):**
+  1. `syntheticPeer.ts`: aligned `buildStorageRangesReply` to 32-byte padded slot hash (fixing broken `test/wasmCrypto.spec.ts`).
+  2. `peerCoordinator.ts`: routed `PROVEN_ACCOUNT_CHUNK` (`0x04`) to `custodyResolver` (was routed only to `custodyCodeSync`, causing live Step-2 chunk misses to time out) and wired `custodyCodeSync.markAccountsFinished(idx)` on `ethySwarm.onBucketDone`.
+  3. `custodyStateResolver.ts`: eliminated S0/S1 false-zero fabrication on omitted/unverified `0x0c STATE_WITNESS` keys; parsed `anchorBlock` from `group[0]`; enforced verified `ctx.stateRootAt(...)` on both `STATE_WITNESS` and `PROVEN_ACCOUNT_CHUNK`; rejected failed `foldWitnessToHead` instead of returning raw pre-BAL state; added `client.putEthyWitness(...)` cache-back; added BAL write-index guard + right-tail exclusion on `tryStorageKind1` & `tryAccountChunk`; removed stale `storageSlotCache` and added BAL-aware `storageRootByAccount` invalidation; added cross-bucket `pickEthyCodeCustodians` fallback + `trieBucketsBitmask` preference in `custodyPeerPick.ts`.
+  4. `custodyWitnessFold.ts` & `spine/types.ts`: fixed `stateRootAt(block)` so non-pivot `balWindow` blocks never reuse `spine.pivotStateRoot` (reads `headStateRoot` or optional `BalWindowEntry.stateRoot`).
+  5. `ethyCodeStorageSync.ts`: gated background plane completion behind `waitForAccountsFinish` / `markAccountsFinished(bucket)` (preventing premature `code`/`storage` completion on early EOA chunks), deleted `kind=2` tasks on `kind=1` promotion (fixing duplicate `kind=2` loop), and replaced raw `Number(...)` / `BigInt('0x'...)` wire decodes with `ethyWireKind` / `bytesToBigInt`.
+  6. `cli/args.ts`: rejected non-integer `--custody` values (`2.5`, `2abc`).
+- Added regression unit tests in `custodyStateResolver.spec.ts`, `custodyEthySync.spec.ts`, `custodyZeroSnapPolicy.spec.ts`, and `args.spec.ts`.
+
 ### 2026-11-26 — `WP-16d` tranche 11: §4 E2E loopback and resolver wire fixes (Implementer — Composer 2.5)
 - `custodySection4.spec.ts`, `custodyLoopbackHarness.ts`: zero-`snap/1` balance/code/storage/`eth_call` + BAL fold + hybrid `markBucketClosed`. `parseProvenCodePairs` (kind-0 code list), `ethyWireKind`, chunk BAL fold, storage-root/slot caches, `buildWitnessFoldContext` pivot earliest. `syntheticPeer` ETHY storage trie + slot keys. **WP-16d** → **`DONE`** (PEX remains **WP-16g**).
 

@@ -155,6 +155,9 @@ export function parseEthyArgs(argv: string[]): EthyCliArgs {
       const next = args[++i]
       if (next === undefined) throw new Error('--custody requires a number 1..16')
       if (fullCustody) throw new Error('--custody cannot be combined with --full')
+      if (!/^\d+$/.test(next)) {
+        throw new Error('--custody must be an integer between 1 and 16 (0 is not allowed)')
+      }
       custodyCount = Number.parseInt(next, 10)
       custodyExplicit = true
       if (Number.isNaN(custodyCount) || custodyCount < 1 || custodyCount > 16) {

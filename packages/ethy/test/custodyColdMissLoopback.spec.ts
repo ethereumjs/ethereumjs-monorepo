@@ -118,6 +118,7 @@ describe('custodyColdMissLoopback', () => {
 
       const spine = createSpine('mainnet', 1n)
       spine.pivotBlockNumber = seed.pivotBlock
+      spine.pivotStateRoot = seed.stateRoot
       spine.headBlockNumber = seed.pivotBlock
       const writeIndex = new StatyWriteIndex(keccak_256)
 
@@ -219,6 +220,7 @@ describe('custodyColdMissLoopback', () => {
       chunks.setPivotAccountsDir(seed.accountsDir)
       const spine = createSpine('mainnet', 1n)
       spine.pivotBlockNumber = seed.pivotBlock
+      spine.pivotStateRoot = seed.stateRoot
       const writeIndex = new StatyWriteIndex(keccak_256)
 
       let ethySends = 0

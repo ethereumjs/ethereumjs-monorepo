@@ -126,6 +126,8 @@ export interface CapabilityState {
 export type BalWindowEntry = {
   blockNumber: bigint
   accountCount: number
+  /** Verified block header stateRoot when available. */
+  stateRoot?: Uint8Array
   /** Full JSON for the latest head block only. */
   balJson?: BALJSONBlockAccessList
 }

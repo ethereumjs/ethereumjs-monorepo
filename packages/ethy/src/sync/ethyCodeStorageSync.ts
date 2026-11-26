@@ -9,15 +9,17 @@ import {
   KECCAK256_NULL,
   KECCAK256_RLP,
   bigIntToUnpaddedBytes,
+  bytesToBigInt,
   bytesToUnprefixedHex,
   equalsBytes,
   hexToBytes,
   intToUnpaddedBytes,
 } from '@ethereumjs/util'
-import { keccak_256 } from '@noble/hashes/sha3.js'
 
+import { ethyKeccak256 } from '../crypto/keccak.ts'
 import { pickEthyCustodianForBucket } from '../custody/custodyPeerPick.ts'
 import {
+  ethyWireKind,
   parseProvenCodePairs,
   parseProvenStorageKind2Entries,
   storageSlotsFromKindSlab,
@@ -62,6 +64,10 @@ export class EthyCodeStorageSynchronizer {
   private readonly storageInFlight = new Set<number>()
   private readonly storageKind1ByBucket = new Map<number, Map<string, StorageKind1Task>>()
   private readonly storageKind1InFlight = new Set<number>()
+  private readonly waitForAccountsFinish: boolean
+  private readonly accountsFinished = new Set<number>()
+  private readonly codePlaneCompleted = new Set<number>()
+  private readonly storagePlaneCompleted = new Set<number>()
 
   constructor(opts: {
     spine: EthySpine
@@ -70,6 +76,7 @@ export class EthyCodeStorageSynchronizer {
     snapStore?: SnapPivotStore
     buckets: number[]
     getPeers: () => WorkerPeerSnapshot[]
+    waitForAccountsFinish?: boolean
     onCodeBatchForBucket?: (bucketIndex: number) => void
     onStorageBatchForBucket?: (bucketIndex: number) => void
   }) {
@@ -79,6 +86,7 @@ export class EthyCodeStorageSynchronizer {
     this.snapStore = opts.snapStore
     this.buckets = opts.buckets
     this.getPeers = opts.getPeers
+    this.waitForAccountsFinish = opts.waitForAccountsFinish === true
     this.onCodePlaneComplete = opts.onCodeBatchForBucket
     this.onStoragePlaneComplete = opts.onStorageBatchForBucket
     for (const b of opts.buckets) {
@@ -107,6 +115,18 @@ export class EthyCodeStorageSynchronizer {
     this.storageInFlight.clear()
     this.storageKind1ByBucket.clear()
     this.storageKind1InFlight.clear()
+    this.accountsFinished.clear()
+    this.codePlaneCompleted.clear()
+    this.storagePlaneCompleted.clear()
+  }
+
+  /** Signal that the accounts plane for `bucket` has finished downloading all chunks. */
+  markAccountsFinished(bucket: number): void {
+    if (!this.buckets.includes(bucket)) return
+    this.accountsFinished.add(bucket)
+    if (!this.running) return
+    this.maybeCompleteCodePlane(bucket)
+    this.maybeCompleteStoragePlane(bucket)
   }
 
   isRunning(): boolean {
@@ -162,7 +182,7 @@ export class EthyCodeStorageSynchronizer {
     if (!(reqBytes instanceof Uint8Array)) return
     let reqId: bigint
     try {
-      reqId = BigInt(`0x${bytesToUnprefixedHex(reqBytes)}`)
+      reqId = bytesToBigInt(reqBytes)
     } catch {
       return
     }
@@ -200,7 +220,7 @@ export class EthyCodeStorageSynchronizer {
     const queue = this.codeQueueByBucket.get(bucketHint)
     for (const [hash, bytecode] of pairs) {
       if (bytecode.length === 0) continue
-      if (!equalsBytes(keccak_256(bytecode), hash)) continue
+      if (!equalsBytes(ethyKeccak256(bytecode), hash)) continue
       this.snapStore?.appendCode(hash, bytecode)
       queue?.delete(bytesToUnprefixedHex(hash))
     }
@@ -228,6 +248,7 @@ export class EthyCodeStorageSynchronizer {
       if (entry === undefined || entry.slotsSlab64B.length === 0) {
         const task = queue.get(key)
         if (task !== undefined) {
+          queue.delete(key)
           this.enqueueStorageKind1(bucketHint, key, task)
         }
       }
@@ -254,7 +275,7 @@ export class EthyCodeStorageSynchronizer {
     bucketHint: number,
     accountKey: string | undefined,
   ): Promise<void> {
-    if (accountKey === undefined || Number(decoded[1]) !== 1) return
+    if (accountKey === undefined || ethyWireKind(decoded[1]) !== 1) return
     const kind1Row = this.storageKind1ByBucket.get(bucketHint)?.get(accountKey)
     const queue = this.storageQueueByBucket.get(bucketHint)
     const task = kind1Row ?? queue?.get(accountKey)
@@ -265,7 +286,7 @@ export class EthyCodeStorageSynchronizer {
     }
     const origin = decoded[5]
     const last = decoded[6]
-    const hasRight = Number(decoded[7] ?? 0) !== 0
+    const hasRight = ethyWireKind(decoded[7]) !== 0
     const slab = (decoded[8] as Uint8Array) ?? new Uint8Array(0)
     const proofs = (decoded[9] as Uint8Array[]) ?? []
     if (!(origin instanceof Uint8Array)) return
@@ -403,14 +424,19 @@ export class EthyCodeStorageSynchronizer {
   }
 
   private maybeCompleteCodePlane(bucket: number): void {
+    if (this.codePlaneCompleted.has(bucket)) return
+    if (this.waitForAccountsFinish && !this.accountsFinished.has(bucket)) return
     const queue = this.codeQueueByBucket.get(bucket)
     if (queue === undefined || queue.size > 0) return
     if (this.codeInFlight.has(bucket)) return
     if ([...this.pending.values()].some((p) => p.kind === 0 && p.bucketHint === bucket)) return
+    this.codePlaneCompleted.add(bucket)
     this.onCodePlaneComplete?.(bucket)
   }
 
   private maybeCompleteStoragePlane(bucket: number): void {
+    if (this.storagePlaneCompleted.has(bucket)) return
+    if (this.waitForAccountsFinish && !this.accountsFinished.has(bucket)) return
     const queue = this.storageQueueByBucket.get(bucket)
     const kind1 = this.storageKind1ByBucket.get(bucket)
     if (queue === undefined || queue.size > 0) return
@@ -424,6 +450,7 @@ export class EthyCodeStorageSynchronizer {
     ) {
       return
     }
+    this.storagePlaneCompleted.add(bucket)
     this.onStoragePlaneComplete?.(bucket)
   }
 
@@ -433,6 +460,6 @@ export class EthyCodeStorageSynchronizer {
   }
 
   private reqKey(peerId: string, reqId: bigint): string {
-    return `${peerId}:${reqId.toString(16)}`
+    return `${peerId.toLowerCase()}:${reqId.toString(16)}`
   }
 }

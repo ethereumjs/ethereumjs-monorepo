@@ -31,8 +31,15 @@ export function buildWitnessFoldContext(
       if (spine.pivotBlockNumber !== undefined && block === Number(spine.pivotBlockNumber)) {
         return spine.pivotStateRoot
       }
+      if (
+        spine.headBlockNumber !== undefined &&
+        block === Number(spine.headBlockNumber) &&
+        spine.headStateRoot !== undefined
+      ) {
+        return spine.headStateRoot
+      }
       const hit = spine.balWindow.find((r) => r.blockNumber === BigInt(block))
-      return hit !== undefined ? spine.pivotStateRoot : undefined
+      return hit?.stateRoot
     },
     readVerifiedBal: (block) => balByBlock.get(block),
     writeIndex,

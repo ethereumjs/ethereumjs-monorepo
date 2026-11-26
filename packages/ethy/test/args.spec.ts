@@ -88,4 +88,10 @@ describe('[Ethy/CLI]: args', () => {
     assert.equal(a.llmUrl, 'http://127.0.0.1:8080')
     assert.equal(a.aiMemory, 'off')
   })
+
+  it('parseEthyArgs() rejects non-integer --custody values', () => {
+    assert.throws(() => parseEthyArgs(['node', 'ethy', '--custody', '2.5']), /integer/)
+    assert.throws(() => parseEthyArgs(['node', 'ethy', '--custody', '2abc']), /integer/)
+    assert.throws(() => parseEthyArgs(['node', 'ethy', '--custody', '-1']), /integer/)
+  })
 })

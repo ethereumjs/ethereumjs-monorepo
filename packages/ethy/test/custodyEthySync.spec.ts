@@ -152,4 +152,50 @@ describe('custodyEthySync', () => {
     sync.stop()
     fs.rmSync(dir, { recursive: true, force: true })
   })
+
+  it('waitForAccountsFinish prevents premature code/storage plane completion before bucket accounts finish', () => {
+    const spine = createSpine('sepolia', 11155111n)
+    const bucket = 0x2
+    spine.custodyBuckets = [bucket]
+    const accountHash = new Uint8Array(32)
+    accountHash[0] = bucket << 4
+
+    const codeCompleted: number[] = []
+    const storageCompleted: number[] = []
+    const client = {
+      setSharedCodeDir: () => {},
+      setEthyStorageDir: () => {},
+      sendEthyMessage: () => {},
+    }
+    const sync = new EthyCodeStorageSynchronizer({
+      spine,
+      client: client as never,
+      stateManager: createFlatStateManager(),
+      buckets: [bucket],
+      getPeers: () => [],
+      waitForAccountsFinish: true,
+      onCodeBatchForBucket: (idx) => codeCompleted.push(idx),
+      onStorageBatchForBucket: (idx) => storageCompleted.push(idx),
+    })
+    sync.start()
+    // EOA-only early chunk must NOT mark code/storage planes complete yet.
+    sync.noteAccounts([
+      {
+        accountHash,
+        codeHash: keccak_256(new Uint8Array(0)),
+        storageRoot: keccak_256(new Uint8Array([0x80])),
+      },
+    ])
+    assert.deepEqual(codeCompleted, [])
+    assert.deepEqual(storageCompleted, [])
+
+    sync.markAccountsFinished(bucket)
+    assert.deepEqual(codeCompleted, [bucket])
+    assert.deepEqual(storageCompleted, [bucket])
+    // Idempotent on duplicate markAccountsFinished.
+    sync.markAccountsFinished(bucket)
+    assert.deepEqual(codeCompleted, [bucket])
+    assert.deepEqual(storageCompleted, [bucket])
+    sync.stop()
+  })
 })

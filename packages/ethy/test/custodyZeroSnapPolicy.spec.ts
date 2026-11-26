@@ -56,6 +56,7 @@ describe('custodyZeroSnapPolicy', () => {
 
     const peerId = `0x${'cc'.repeat(32)}`
     let kind2ReqId = 0n
+    let kind2Count = 0
     let kind1ReqId = 0n
     const client = {
       setSharedCodeDir: () => {},
@@ -64,7 +65,10 @@ describe('custodyZeroSnapPolicy', () => {
         const d = RLP.decode(payload) as unknown[]
         const id = bytesToBigInt(d[0] as Uint8Array)
         const kind = Number(d[1])
-        if (kind === 2) kind2ReqId = id
+        if (kind === 2) {
+          kind2ReqId = id
+          kind2Count += 1
+        }
         if (kind === 1) kind1ReqId = id
       },
     }
@@ -101,6 +105,7 @@ describe('custodyZeroSnapPolicy', () => {
     )
     await new Promise((r) => setTimeout(r, 30))
     assert.notEqual(kind1ReqId, 0n)
+    assert.equal(kind2Count, 1)
 
     const origin = new Uint8Array(32)
     const proofs = await createMerkleProof(trie, slotHash)
