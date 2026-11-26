@@ -353,11 +353,11 @@ Every Work Package delivers a **runnable, observable, and live-testable incremen
                                           │        Dossier DB & AI Observability    │
                                           └───────────────────┬─────────────────────┘
                                                               │
-                                                              ▼ (Two-Protocol State Suite: STATY/0 + ETHY/0 v0.3)
+                                                              ▼ (Unified Custody ETHY/0: Option B -> Option C)
                                           ┌─────────────────────────────────────────┐
-                                          │ WP-16a: @ethereumjs/devp2p STATY/0      │
-                                          │         Subprotocol, ETHY/0 v0.3 Upgrade│
-                                          │         & Shared Code / Storage Serving │
+                                          │ WP-16a: @ethereumjs/devp2p ETHY/0 v0.3  │
+                                          │         Code/Storage Serving & Witness  │
+                                          │         Foundations (DONE)              │
                                           └───────────────────┬─────────────────────┘
                                                               │
                                                               ▼
@@ -369,28 +369,35 @@ Every Work Package delivers a **runnable, observable, and live-testable incremen
                                                               │
                                                               ▼
                                           ┌─────────────────────────────────────────┐
-                                          │ WP-16c: STATY/0 Default Fast Onboarding,│
-                                          │         Hot Epoch Sync, O(1) Minter &   │
-                                          │         Cold-Miss Witness Pipeline      │
+                                          │ WP-16c: Unified Custody ETHY/0 v0.4     │
+                                          │         Consolidation (devp2p 0x00-0x0e,│
+                                          │         Bucket PEX & ETHY-0-SPEC v0.4)  │
                                           └───────────────────┬─────────────────────┘
                                                               │
                                                               ▼
                                           ┌─────────────────────────────────────────┐
-                                          │ WP-16d: ETHY/0 v0.3 Full Code/Storage   │
-                                          │         Swarm & Hybrid --full Mode      │
-                                          │         (Open-World -> Closed-World)    │
+                                          │ WP-16d: Custody ETHY/0 Fast Onboarding  │
+                                          │         (--custody 1..16 / --full) &    │
+                                          │         1-Hop Cold-Miss Resolver (Opt B)│
                                           └───────────────────┬─────────────────────┘
                                                               │
                                                               ▼
                                           ┌─────────────────────────────────────────┐
-                                          │ WP-16e: The Machine 6th Plane (staty),  │
-                                          │         Cockpit UI, /staty Microscope   │
-                                          │         & ethy-sim STATY Swarm Gates    │
+                                          │ WP-16e: 1/16th Live Subtree MPT, 512B   │
+                                          │         [h_0..h_f] Root Assembly &      │
+                                          │         Zero-SNAP Proofs/Chunks (Opt C) │
                                           └───────────────────┬─────────────────────┘
                                                               │
                                                               ▼
                                           ┌─────────────────────────────────────────┐
-                                          │ WP-16f: Client-Wide STATY/0 Leverage —  │
+                                          │ WP-16f: The Machine Custody Planes,     │
+                                          │         16-Bucket /ethy Cockpit UI &    │
+                                          │         ethy-sim Custody Swarm Gates    │
+                                          └───────────────────┬─────────────────────┘
+                                                              │
+                                                              ▼
+                                          ┌─────────────────────────────────────────┐
+                                          │ WP-16g: Client-Wide Custody Leverage —  │
                                           │         Priority EVM Pool, False-Zero-  │
                                           │         Safe RPC/Tx, Live ENS & UX      │
                                           └─────────────────────────────────────────┘
