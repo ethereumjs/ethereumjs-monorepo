@@ -34,7 +34,6 @@ import {
   beginCustodyBalOnboarding,
   custodyFastPathEnabled,
   custodyOnboardingPivotBlock,
-  desiredCustodyBucketsMask,
 } from '../custody/custodyOnboarding.ts'
 import { loadOrAssignCustody } from '../custody/custodyPlan.ts'
 import {
@@ -547,7 +546,6 @@ export async function startPeerCoordinator(
     )
   }
   spine.custodyBalOnboarding = custodyFastOnboard
-  const desiredEthyMask = desiredCustodyBucketsMask(custodyAssign.buckets)
   const localNodeId = pk2id(secp256k1.getPublicKey(privateKey, false))
   const localPeerIdHex = bytesToUnprefixedHex(localNodeId)
   const subtreeRegistry = new SubtreeCustodyRegistry({
@@ -1129,9 +1127,6 @@ export async function startPeerCoordinator(
   const linkStartedAt = Date.now()
   let discoveryHoldActive: boolean | undefined
   let lastAppliedProfile = bootNetworkProfile(syncMode, snapBootstrap)
-  if (desiredEthyMask !== undefined) {
-    lastAppliedProfile = { ...lastAppliedProfile, desiredEthyBucketsMask: desiredEthyMask }
-  }
   let machineState = createMachineState()
   let lastMachinePlan: MachinePlan | undefined
   let lastClPollMs: number | undefined

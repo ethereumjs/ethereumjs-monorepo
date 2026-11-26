@@ -1,5 +1,11 @@
 import { assert, describe, expect, it } from 'vitest'
 
+import {
+  ALL_CUSTODY_SCENARIO_IDS,
+  assertCustodySwarmGates,
+  custodyMetricsCanonicalJSON,
+  runAllCustodySwarmScenarios,
+} from '../src/sim/custodySwarm.ts'
 import { assertLegacyScenarioGates } from '../src/sim/legacyGates.ts'
 import { metricsToCanonicalJSON } from '../src/sim/metrics.ts'
 import { createSeededRng } from '../src/sim/rng.ts'
@@ -59,6 +65,16 @@ describe('[Ethy/Sim]: ethy-sim swarm harness', () => {
     expect(cmp.legacy.snapMintersMax).toBeGreaterThan(cmp.v2.snapMintersMax)
     expect(cmp.v2.snapMintersMax).toBeLessThanOrEqual(2)
     expect(cmp.v2.falseSyncedCount).toBe(0)
+  })
+
+  it('WP-16g custody swarm gates are deterministic', () => {
+    const first = runAllCustodySwarmScenarios(1)
+    const second = runAllCustodySwarmScenarios(1)
+    assert.equal(first.length, ALL_CUSTODY_SCENARIO_IDS.length)
+    for (let i = 0; i < first.length; i++) {
+      assert.equal(custodyMetricsCanonicalJSON(first[i]!), custodyMetricsCanonicalJSON(second[i]!))
+      assertCustodySwarmGates(first[i]!)
+    }
   })
 
   it('500x7 demo thundering herd under 3s wall time', () => {

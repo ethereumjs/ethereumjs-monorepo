@@ -79,6 +79,20 @@ type PendingEthy = {
 
 let nextReqId = 1000n
 
+type CustodyResolveKind = 'ethyProof' | 'ethyChunk'
+
+function noteCustodyResolve(spine: EthySpine, kind: CustodyResolveKind): void {
+  const row = spine.custodyResolve ?? {
+    local: 0,
+    tombstone: 0,
+    ethyProof: 0,
+    ethyChunk: 0,
+    snap: 0,
+  }
+  row[kind]++
+  spine.custodyResolve = row
+}
+
 function pendingEthyKey(peerId: string, reqId: bigint): string {
   return `${peerId.toLowerCase()}:${reqId.toString(16)}`
 }
@@ -237,12 +251,14 @@ export class CustodyStateResolver {
     const witness = await this.tryWitnessAccount(accountHash, bucket)
     if (witness instanceof Uint8Array) {
       this.cacheStorageRootFromBinary(accountHash, witness)
+      noteCustodyResolve(this.deps.spine, 'ethyProof')
       return witness
     }
     if (witness === 'empty') return witness
     const chunk = await this.tryAccountChunk(accountHash, bucket)
     if (chunk instanceof Uint8Array) {
       this.cacheStorageRootFromBinary(accountHash, chunk)
+      noteCustodyResolve(this.deps.spine, 'ethyChunk')
       return chunk
     }
     if (chunk === 'empty') return chunk
@@ -300,6 +316,7 @@ export class CustodyStateResolver {
         if (row === undefined) continue
         if (!equalsBytes(ethyKeccak256(row[1]), codeHash)) continue
         this.deps.snapStore?.appendCode(codeHash, row[1])
+        noteCustodyResolve(this.deps.spine, 'ethyChunk')
         return row[1]
       } catch {
         continue

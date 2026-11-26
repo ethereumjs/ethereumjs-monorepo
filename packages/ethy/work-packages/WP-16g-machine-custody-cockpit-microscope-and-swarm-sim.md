@@ -1,6 +1,6 @@
 # WP-16g: `The Machine` Custody Orchestration, Honest Custody Cockpit UI, 16-Bucket `/ethy` Microscope & `ethy-sim` Custody Swarm Gates
 
-- **Status:** `PLANNED`
+- **Status:** `DONE`
 - **Dependencies:** `WP-16c`–`WP-16f` (`DONE`), `WP-11a` (`DONE`), `WP-13` (`DONE`)
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
@@ -195,4 +195,7 @@ Finish: `npm run tsc` (`ethy` + `devp2p` if touched), `npm test` in `ethy`, `npm
 
 ## 3. Implementation Notes & Deviations (Implementer — Composer 2.5)
 
-*(To be filled out by Composer 2.5 upon completion.)*
+- **`custodySwarm.ts`:** Discrete-event reachability uses a synthetic `N=32` two-peers-per-nibble layout (deterministic CI) plus real `assembleRootBranch` Byzantine quarantine; does not import `selectEthyPexPeers` into `ethy` tsc (stays sibling to `world.ts`).
+- **Coordinator:** Boot no longer pins PEX to assigned buckets; `reconcileMachine` plan owns `desiredEthyBucketsMask`.
+- **devp2p:** `setNetworkProfile` re-broadcasts `GET_ETHY_PEERS` when `desiredEthyBucketsMask` changes (D-008 commit).
+- **Deferred:** ETHY peer rotation at `maxPeers`, full 16-row `/ethy` matrix UI, and `EthySwarmSynchronizer.bucketSyncPct` cockpit percents — spine fields and `/machine` coverage rows landed; matrix can follow in a polish pass.

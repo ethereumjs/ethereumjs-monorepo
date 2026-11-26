@@ -1,5 +1,6 @@
 import { assert, describe, it } from 'vitest'
 
+import { custodyBitmask } from '../src/custody/custodyCoverage.ts'
 import { createSpine, setPhase } from '../src/spine/createSpine.ts'
 import {
   DISCOVERY_PREWARM_BURST_MS,
@@ -9,6 +10,7 @@ import {
   createMachineState,
   evaluateMachinePlan,
   machinePlanesOff,
+  snapDormancyReason,
   stepMachineOrchestrator,
 } from '../src/sync/machineOrchestrator.ts'
 import type { MachineObservation } from '../src/sync/machineOrchestrator.ts'
@@ -49,7 +51,7 @@ describe('machineOrchestrator', () => {
     }
     const autoPlan = evaluateMachinePlan(base)
     assert.equal(autoPlan.mode, 'boot-warmup')
-    assert.equal(autoPlan.planes.snap, 'prewarming')
+    assert.equal(autoPlan.planes.snap, 'off')
     assert.notInclude(autoPlan.profile.capabilities, 'snap1')
     assert.equal(autoPlan.servingEthy, 'off')
 
@@ -160,6 +162,33 @@ describe('machineOrchestrator', () => {
     const plan = evaluateMachinePlan(obs)
     assert.equal(plan.mode, 'live-calm')
     assert.equal(plan.nextEventSummary, 'BAL gap — low disk (15/24 GB)')
+  })
+
+  it('custody-live-calm omits snap1 and steers desiredEthyBucketsMask', () => {
+    const now = Date.now()
+    const spine = createSpine('sepolia', 11155111n)
+    setPhase(spine, 'HEAD_FOLLOWING')
+    spine.custodyBuckets = [0, 8]
+    spine.closedBucketsMask = custodyBitmask([0, 8])
+    spine.ethyBucketsBitmask = spine.closedBucketsMask
+    const obs = buildMachineObservation({
+      spine,
+      peerSnapshots: [
+        { id: 'a', clientId: 't', caps: ['eth71'], bestHash: '0x01', ethySession: false },
+      ],
+      syncMode: 'auto',
+      shadowRefreshEnabled: true,
+      nowMs: now,
+      snapDiscoveryHold: false,
+      ethySwarmActive: false,
+      degradedStall: false,
+      hasUsableEthyGNew: false,
+    })
+    const plan = evaluateMachinePlan(obs)
+    assert.equal(plan.mode, 'custody-live-calm')
+    assert.notInclude(plan.profile.capabilities, 'snap1')
+    assert.equal(plan.profile.desiredEthyBucketsMask, obs.desiredEthyBucketsMask)
+    assert.equal(snapDormancyReason(plan, obs), 'default-off')
   })
 
   it('shows SNAP Mint (starting) before bucket 0 initializes', () => {
