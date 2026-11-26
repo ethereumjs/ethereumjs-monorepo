@@ -1,7 +1,7 @@
 # WP-16g: `The Machine` Custody Orchestration, Honest Custody Cockpit UI, 16-Bucket `/ethy` Microscope & `ethy-sim` Custody Swarm Gates
 
-- **Status:** `READY_FOR_PLANNING`
-- **Dependencies:** `WP-16c` (`DONE`), `WP-16d`..`WP-16f` (`READY_FOR_PLANNING`), `WP-11a` (`DONE`), `WP-13` (`DONE`)
+- **Status:** `PLANNED`
+- **Dependencies:** `WP-16c`–`WP-16f` (`DONE`), `WP-11a` (`DONE`), `WP-13` (`DONE`)
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
 
@@ -69,7 +69,127 @@ Wire Unified Custody `ETHY/0` (Option B + Option C) cleanly into **`The Machine`
 
 ## 2. Concrete Implementation Plan (Planner — Grok 4.7)
 
-*(To be filled out by Grok 4.7 before implementation begins.)*
+Dependencies **WP-16c–WP-16f DONE**. No new runtime deps. No new devp2p message codes.
+
+### 2.1 Baseline (what already ships)
+
+| Area | Today | WP-16g delta |
+| --- | --- | --- |
+| **Planes** | 5 planes in `machineOrchestrator.ts`; `bootNetworkProfile` omits `snap1` unless `--snap-bootstrap` | Custody modes + snap plane `off` when capability absent; `desiredEthyBucketsMask` on every plan |
+| **PEX** | `selectEthyPexPeers` + `NetworkProfile.desiredEthyBucketsMask` in devp2p | Re-query `0x09` on mask change; coordinator computes **1-hop** masks (not assigned buckets only) |
+| **Coordinator** | Boot sets mask to `desiredCustodyBucketsMask(assigned)`; `reconcileMachine` profile **drops** mask; `live-calm` `maxPeers = 6` | Per-tick coverage; custody budgets `maxPeers = 20`; optional ETHY rotation when full |
+| **Cockpit** | `★ Head Following · Live`; planes row without `cl`; generic Served bytes | Custody Stage/State copy; `16/16 bkt`; ETHY prf/ch/code counters; `0 snap` |
+| **Microscopes** | `/ethy` swarm summary table; `/machine` without coverage masks | 16× matrix + resolve breakdown + assembly log |
+| **Sim** | 10 WP-11 scenarios | 3 additive custody gates (do not mutate legacy scenario JSON) |
+
+Subtree tries, root assembly, resolver, and onboarding are **WP-16d–WP-16f** — this WP is orchestration, observability, and CI proof only.
+
+### 2.2 Design locks (**D-151**)
+
+**Custody-native `MachineOperatingMode`** (no 6th plane):
+
+| Mode | When |
+| --- | --- |
+| `custody-bal-warmup` | `BAL_CATCHUP` or `custodyBalOnboarding` |
+| `custody-sync` | `HEAD_FOLLOWING` and any **assigned** bucket not fully closed |
+| `custody-live-calm` | Assigned buckets closed; default `--custody 2` steady state; `snap` off |
+| `full-backfill` | `--custody 16` and `closedBucketsMask !== 0xffff` |
+
+`custodyActive = custodyBuckets.length > 0 && syncMode !== 'snap'`. Precedence: boot / degraded / legacy WP-13 paths unchanged when `!custodyActive`. On default clients, do **not** enter `shadow-snap-mint` or `prewarm-snap-mint`. Shadow ETHY refresh may run underneath; custody Stage line still shows custody text; Refresh row keeps shadow summary.
+
+**Snap:** `includeSnap` only when `snapBootstrap || syncMode === 'snap'` and mode requires mint/sync. If `snap1` not in `capabilities`, plane status **`off`** (dwell bypass on transition down). `full-backfill` drops `snap1` permanently once `closedBucketsMask === 0xffff`.
+
+**Peer budgets** (custody modes only): `maxPeers = 20`, `minEthyPeers = 6`, `vipTarget` tuned for PEX fill. Non-custody `live-calm` keeps `maxPeers = 6` (WP-13 tests). Discovery stays `active` until `hopBuckets === 16` **and** `minRedundancy >= 2`, then existing dwell rules may quiet it.
+
+**Coverage mask** (pure, every tick — replaces boot-time “our buckets” as PEX target):
+
+```
+connectedSwarmBucketsMask = OR(peer.bucketsBitmask) for ethySession peers
+per-bucket count = peers advertising bit + (1 if bit in closedBucketsMask)
+uncovered = 0xffff & ~(closedBucketsMask | connectedSwarmBucketsMask)
+desiredEthyBucketsMask = uncovered if uncovered ≠ 0 else bits with count < 2
+hopBuckets = count of set bits in (closedBucketsMask | connectedSwarmBucketsMask)
+```
+
+`evaluateMachinePlan` must copy `desiredEthyBucketsMask` onto `NetworkProfile` so `networkProfilesEqual` / `setNetworkProfile` do not drop it.
+
+### 2.3 File-by-file
+
+#### 1. `src/custody/custodyCoverage.ts` (new)
+
+Export `evaluateCustodyCoverage({ closedBucketsMask, peers })` → masks above + `minRedundancy`. Tests: empty swarm, single peer 8-bit mask, 16/16 with hole, local closed bucket counts as one custodian.
+
+#### 2. `src/sync/machineOrchestrator.ts`
+
+Extend `MachineObservation` with custody/coverage fields (`custodyActive`, `custodyCount`, masks, `hopBuckets`, `trieBucketsMask`, `snapMounted`). Coordinator passes coverage result into `buildMachineObservation`.
+
+Extend `MachineSpineSnapshot`: `desiredEthyBucketsMask`, `uncoveredBucketsMask`, `snapDormancyReason` (`default-off` | `bootstrap-active` | `dropped-after-close`), optional `subtreeApplyMs`.
+
+Implement `deriveMode` custody branch + `BUDGETS` for the four modes. Wire `desiredEthyBucketsMask` on `plan.profile`.
+
+#### 3. `src/net/peerCoordinator.ts`
+
+Each `reconcileMachine` tick: `evaluateCustodyCoverage` → observation. Remove boot-only mask merge; plan owns the field.
+
+When at `maxPeers` and `desiredEthyBucketsMask !== 0`, disconnect at most one ETHY peer with no overlap on `desired` and not sole custodian for another needed bit (Law 1). Push `custodyAssemblyLog` / `lastAssembly` / `subtreeApplyMs` onto spine from `SubtreeCustodyRegistry`.
+
+#### 4. `@ethereumjs/devp2p` `worker/host.ts` (**D-008**, separate commit)
+
+On `applyNetworkProfile`, if `desiredEthyBucketsMask` changed, send fresh `GET_ETHY_PEERS` on each live ETHY session (do not rely on one-shot `_ethyPexSent` only). Test: mask change → second `0x09`.
+
+#### 5. `src/tui/cockpit.ts` + `src/spine/types.ts`
+
+Custody Stage/State/P2P rows per §1 when `machine.mode` is custody-* (legacy modes unchanged). Planes: `eth · ethy · snap · disc · cl`. Served: `BALs · ETHY prf/ch/code` from `WorkerServingSnapshot`. `local%` from `spine.custodyResolve` counters.
+
+Chunk `%` via `EthySwarmSynchronizer.bucketSyncPct(bucket)` (`chunksDone / manifest length`); omit percent if no manifest yet.
+
+#### 6. `src/custody/custodyStateResolver.ts`
+
+O(1) `spine.custodyResolve` tallies: `local | tombstone | ethyProof | ethyChunk | snap` at existing return sites.
+
+#### 7. `src/tools/diagnose.ts` (`ethyOverviewWidget`)
+
+Preface: custody label, assigned nibbles, BAL horizon, root assembly status, resolve breakdown. Body: 16-row matrix (local state, Acc/Code/Stor, 1-hop custodians, privacy). Widen `PeerTelemetry.ethyStatus` for storage/code/trie mask strings (already on wire).
+
+`debugPage`: ETHY peer STATUS table + bounded `h_b` assembly log.
+
+#### 8. `src/tools/machineTools.ts`
+
+Add uncovered/desired masks, snap dormancy, `subtreeApplyMs`; planes line includes `cl`.
+
+#### 9. `src/sim/custodySwarm.ts` (new)
+
+Sibling to `world.ts` — **do not** edit the 10 legacy scenario loops or canonical metrics JSON. Reuse `createSeededRng`, `selectCustodyBuckets`, `selectEthyPexPeers`, `assembleRootBranch`.
+
+CI scenarios (seed `1`, double-run deep-equal):
+
+1. **`custody-1hop-reachability`** — N=32, custody 2, max 18 peers → all nodes `hopBuckets === 16`, `minRedundancy >= 2`, `snapDials === 0`.
+2. **`custody-zero-snap-cold-reads`** — 500 deterministic cross-bucket queries/node → ETHY witness/chunk only, `snapDials === 0`.
+3. **`custody-root-assembly-and-refresh`** — N=16, 2 Byzantine forged `h_b` peers → honest nodes verify `RootNode`, quarantine, macro refresh, `snapDials === 0`.
+
+Wire in `test/swarmSimulator.spec.ts` and `scripts/sim-swarm.ts` as an extra section; leave `assertV2ScenarioGates` paths untouched.
+
+### 2.4 Tests & gates
+
+| Suite | Files |
+| --- | --- |
+| Coverage | `test/custodyCoverage.spec.ts` |
+| Machine | extend `test/machineOrchestrator.spec.ts` |
+| Cockpit | string/unit snapshots for custody rows |
+| Microscopes | `diagnose` / `machineTools` mount tests |
+| Sim | `custodySwarm` + harness spec |
+| devp2p | mask-change PEX re-query |
+
+Finish: `npm run tsc` (`ethy` + `devp2p` if touched), `npm test` in `ethy`, `npm run spellcheck`.
+
+### 2.5 Commit split
+
+1. **`@ethereumjs/devp2p`** PEX re-query on profile change (D-008).
+2. **`packages/ethy`** custody coverage + machine + coordinator.
+3. **`packages/ethy`** cockpit + spine + tools + resolver counters.
+4. **`packages/ethy`** `custodySwarm` + CI wiring.
+
+**Out of scope:** WP-16h (RPC/ENS/Plaza), new message codes, editing WP-11 scenario worlds or `BinaryPathMPT` fixtures.
 
 ---
 
