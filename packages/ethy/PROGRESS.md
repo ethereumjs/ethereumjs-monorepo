@@ -297,6 +297,9 @@ Track every modification or planned modification to sibling monorepo packages he
 
 *Agents: Append a new dated subsection at the top of this list after each Planning (Grok 4.7) or Implementation (Composer 2.5) pass.*
 
+### 2026-11-26 — `WP-16d` tranche 6: kind-1 storage crawl, zero-snap policy tests (Implementer — Composer 2.5)
+- `EthyCodeStorageSynchronizer` kind-2 miss → kind-1 ladder with Merkle verify + persist; `custodyZeroSnapPolicy` tests. WP-16d §3 updated.
+
 ### 2026-11-26 — `WP-16d` tranche 5: kind-2 storage background, plane drain flip (Implementer — Composer 2.5)
 - `EthyCodeStorageSynchronizer` queues code/storage per custody bucket, `GET_PROVEN_STORAGE_OR_CODE` kind 0/2, drain-based code+storage plane completion; `custodyPeerPick`, `verifyProvenStorageKind2Slab`. WP-16d §3 updated.
 

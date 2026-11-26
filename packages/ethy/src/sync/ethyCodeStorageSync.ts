@@ -26,7 +26,8 @@ import { peerIdToBytes } from '../net/pivotHeader.ts'
 import type { SnapPivotStore } from '../persist/snapStore.ts'
 import type { EthySpine } from '../spine/types.ts'
 import type { IngestedAccountMeta } from './accountSync.ts'
-import { verifyProvenStorageKind2Slab } from './snapVerifyJob.ts'
+import { verifyProvenStorageKind1Job, verifyProvenStorageKind2Slab } from './snapVerifyJob.ts'
+import { incrementKey32 } from './syntheticPeer.ts'
 
 const MAX_CODE_BATCH = 64
 const MAX_KIND2_PAIRS = 64
@@ -34,10 +35,13 @@ const MAX_KIND2_PAIRS = 64
 type StorageTask = { accountHash: Uint8Array; storageRoot: Uint8Array }
 
 type PendingRow = {
-  kind: 0 | 2
+  kind: 0 | 1 | 2
   bucketHint: number
   storageAccountKeys?: string[]
+  storageKind1AccountKey?: string
 }
+
+type StorageKind1Task = StorageTask & { originSlotHash: Uint8Array }
 
 /** Background ETHY/0 code + storage plane sync for custody buckets (WP-16d). */
 export class EthyCodeStorageSynchronizer {
@@ -56,6 +60,8 @@ export class EthyCodeStorageSynchronizer {
   private readonly storageQueueByBucket = new Map<number, Map<string, StorageTask>>()
   private readonly codeInFlight = new Set<number>()
   private readonly storageInFlight = new Set<number>()
+  private readonly storageKind1ByBucket = new Map<number, Map<string, StorageKind1Task>>()
+  private readonly storageKind1InFlight = new Set<number>()
 
   constructor(opts: {
     spine: EthySpine
@@ -99,6 +105,8 @@ export class EthyCodeStorageSynchronizer {
     this.pending.clear()
     this.codeInFlight.clear()
     this.storageInFlight.clear()
+    this.storageKind1ByBucket.clear()
+    this.storageKind1InFlight.clear()
   }
 
   isRunning(): boolean {
@@ -170,8 +178,18 @@ export class EthyCodeStorageSynchronizer {
       })
       return
     }
-    void this.ingestStorageKind2(decoded, row.bucketHint, row.storageAccountKeys ?? []).then(() => {
-      this.storageInFlight.delete(row.bucketHint)
+    if (row.kind === 2) {
+      void this.ingestStorageKind2(decoded, row.bucketHint, row.storageAccountKeys ?? []).then(
+        () => {
+          this.storageInFlight.delete(row.bucketHint)
+          this.maybeCompleteStoragePlane(row.bucketHint)
+          this.schedule()
+        },
+      )
+      return
+    }
+    void this.ingestStorageKind1(decoded, row.bucketHint, row.storageKind1AccountKey).then(() => {
+      this.storageKind1InFlight.delete(row.bucketHint)
       this.maybeCompleteStoragePlane(row.bucketHint)
       this.schedule()
     })
@@ -205,15 +223,78 @@ export class EthyCodeStorageSynchronizer {
       queue?.delete(acctKey)
     }
     for (const key of requestedKeys) {
-      const task = queue?.get(key)
-      if (task === undefined) continue
-      const hit = entries.some((e) => bytesToUnprefixedHex(e.accountHash) === key)
-      if (!hit) continue
-      const slab = entries.find((e) => bytesToUnprefixedHex(e.accountHash) === key)?.slotsSlab64B
-      if (slab !== undefined && slab.length === 0) {
-        queue?.delete(key)
+      if (queue?.has(key) !== true) continue
+      const entry = entries.find((e) => bytesToUnprefixedHex(e.accountHash) === key)
+      if (entry === undefined || entry.slotsSlab64B.length === 0) {
+        const task = queue.get(key)
+        if (task !== undefined) {
+          this.enqueueStorageKind1(bucketHint, key, task)
+        }
       }
     }
+  }
+
+  private enqueueStorageKind1(bucket: number, accountKey: string, task: StorageTask): void {
+    let row = this.storageKind1ByBucket.get(bucket)
+    if (row === undefined) {
+      row = new Map()
+      this.storageKind1ByBucket.set(bucket, row)
+    }
+    if (!row.has(accountKey)) {
+      row.set(accountKey, {
+        accountHash: task.accountHash,
+        storageRoot: task.storageRoot,
+        originSlotHash: new Uint8Array(32),
+      })
+    }
+  }
+
+  private async ingestStorageKind1(
+    decoded: unknown[],
+    bucketHint: number,
+    accountKey: string | undefined,
+  ): Promise<void> {
+    if (accountKey === undefined || Number(decoded[1]) !== 1) return
+    const kind1Row = this.storageKind1ByBucket.get(bucketHint)?.get(accountKey)
+    const queue = this.storageQueueByBucket.get(bucketHint)
+    const task = kind1Row ?? queue?.get(accountKey)
+    if (task === undefined) return
+    const storageRoot = decoded[3]
+    if (!(storageRoot instanceof Uint8Array) || !equalsBytes(storageRoot, task.storageRoot)) {
+      return
+    }
+    const origin = decoded[5]
+    const last = decoded[6]
+    const hasRight = Number(decoded[7] ?? 0) !== 0
+    const slab = (decoded[8] as Uint8Array) ?? new Uint8Array(0)
+    const proofs = (decoded[9] as Uint8Array[]) ?? []
+    if (!(origin instanceof Uint8Array)) return
+    const verified = await verifyProvenStorageKind1Job({
+      storageRoot: task.storageRoot,
+      originSlotHash: origin,
+      slotsSlab64B: slab,
+      proofNodes: proofs,
+      hasRightHint: hasRight,
+    })
+    if (!verified.ok) return
+    if (slab.length > 0) {
+      const slots = storageSlotsFromKindSlab(slab)
+      await this.snapStore?.appendStorageSlots(task.accountHash, slots)
+    }
+    if (hasRight && last instanceof Uint8Array) {
+      const nextOrigin = incrementKey32(last)
+      const row = this.storageKind1ByBucket.get(bucketHint)
+      if (row?.has(accountKey)) {
+        row.set(accountKey, {
+          accountHash: task.accountHash,
+          storageRoot: task.storageRoot,
+          originSlotHash: nextOrigin,
+        })
+      }
+      return
+    }
+    queue?.delete(accountKey)
+    this.storageKind1ByBucket.get(bucketHint)?.delete(accountKey)
   }
 
   private schedule(): void {
@@ -257,9 +338,41 @@ export class EthyCodeStorageSynchronizer {
           )
         }
       }
+      if (!this.storageKind1InFlight.has(bucket)) {
+        const peer = pickEthyCustodianForBucket(peers, bucket, 'storage')
+        const crawl = this.drainStorageKind1(bucket)
+        if (peer !== undefined && crawl !== undefined) {
+          const reqId = this.allocReqId()
+          this.storageKind1InFlight.add(bucket)
+          const acctKey = bytesToUnprefixedHex(crawl.accountHash)
+          this.pending.set(this.reqKey(peer.id, reqId), {
+            kind: 1,
+            bucketHint: bucket,
+            storageKind1AccountKey: acctKey,
+          })
+          this.client.sendEthyMessage(
+            peerIdToBytes(peer.id),
+            EthyMessageCodes.GET_PROVEN_STORAGE_OR_CODE,
+            RLP.encode([
+              bigIntToUnpaddedBytes(reqId),
+              intToUnpaddedBytes(1),
+              crawl.accountHash,
+              crawl.storageRoot,
+              crawl.originSlotHash,
+            ] as never),
+          )
+        }
+      }
       this.maybeCompleteCodePlane(bucket)
       this.maybeCompleteStoragePlane(bucket)
     }
+  }
+
+  private drainStorageKind1(bucket: number): StorageKind1Task | undefined {
+    const row = this.storageKind1ByBucket.get(bucket)
+    if (row === undefined || row.size === 0) return undefined
+    const first = row.values().next().value
+    return first
   }
 
   private drainCodeBatch(bucket: number): Uint8Array[] {
@@ -299,9 +412,18 @@ export class EthyCodeStorageSynchronizer {
 
   private maybeCompleteStoragePlane(bucket: number): void {
     const queue = this.storageQueueByBucket.get(bucket)
+    const kind1 = this.storageKind1ByBucket.get(bucket)
     if (queue === undefined || queue.size > 0) return
+    if (kind1 !== undefined && kind1.size > 0) return
     if (this.storageInFlight.has(bucket)) return
-    if ([...this.pending.values()].some((p) => p.kind === 2 && p.bucketHint === bucket)) return
+    if (this.storageKind1InFlight.has(bucket)) return
+    if (
+      [...this.pending.values()].some(
+        (p) => (p.kind === 2 || p.kind === 1) && p.bucketHint === bucket,
+      )
+    ) {
+      return
+    }
     this.onStoragePlaneComplete?.(bucket)
   }
 
