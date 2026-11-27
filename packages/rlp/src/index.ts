@@ -223,7 +223,13 @@ function utf8ToBytes(utf: string): Uint8Array {
 
 /** Transform an integer into its hexadecimal value */
 function numberToHex(integer: number | bigint): string {
-  if (integer < 0) {
+  if (typeof integer === 'number') {
+    // NaN / Infinity / floats must not fall through: `!NaN` is true, so the
+    // empty-bytes shortcut in toBytes would otherwise encode them as 0x80.
+    if (!Number.isInteger(integer) || !Number.isSafeInteger(integer) || integer < 0) {
+      throw EthereumJSErrorWithoutCode('Invalid integer as argument, must be unsigned!')
+    }
+  } else if (integer < 0n) {
     throw EthereumJSErrorWithoutCode('Invalid integer as argument, must be unsigned!')
   }
   const hex = integer.toString(16)
@@ -260,6 +266,15 @@ function toBytes(v: Input): Uint8Array {
     return utf8ToBytes(v)
   }
   if (typeof v === 'number' || typeof v === 'bigint') {
+    // Validate before the falsy shortcut: `!NaN === true` would otherwise
+    // encode NaN as the empty byte string (0x80).
+    if (typeof v === 'number') {
+      if (!Number.isInteger(v) || !Number.isSafeInteger(v) || v < 0) {
+        throw EthereumJSErrorWithoutCode('Invalid integer as argument, must be unsigned!')
+      }
+    } else if (v < 0n) {
+      throw EthereumJSErrorWithoutCode('Invalid integer as argument, must be unsigned!')
+    }
     if (!v) {
       return Uint8Array.from([])
     }
