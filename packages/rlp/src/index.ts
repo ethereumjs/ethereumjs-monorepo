@@ -306,6 +306,15 @@ export function decode(input: Input, stream?: false): Uint8Array | NestedUint8Ar
 export function decode(input: Input, stream?: true): Decoded
 /** decode helper. */
 export function decode(input: Input, stream = false): Uint8Array | NestedUint8Array | Decoded {
+  // encode() accepts number/bigint as integer values. decode() must not treat them as
+  // raw RLP byte streams via toBytes(); that made decode(128) look like empty string
+  // (0x80) and decode(192) look like empty list (0xc0). See #4456.
+  if (typeof input === 'number' || typeof input === 'bigint') {
+    throw EthereumJSErrorWithoutCode(
+      'RLP decode does not accept number/bigint; pass encoded bytes (or decode(encode(n)))',
+    )
+  }
+
   if (typeof input === 'undefined' || input === null || (input as any).length === 0) {
     return Uint8Array.from([])
   }
