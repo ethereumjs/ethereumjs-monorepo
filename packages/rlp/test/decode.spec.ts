@@ -45,17 +45,24 @@ describe('[RLP]: decode (int)', () => {
   })
 })
 
-describe('[RLP]: decode (BigInt)', () => {
-  it('returns byte itself when first byte < 0x7f', () => {
-    const decodedSmallNum = bytesToHex(RLP.decode(BigInt(15)) as Uint8Array)
-    assert.deepEqual(2, decodedSmallNum.length)
-    assert.deepEqual(decodedSmallNum, '0f')
+describe('[RLP]: decode rejects number/bigint (#4456)', () => {
+  it('throws on number input instead of treating it as a raw RLP stream', () => {
+    for (const n of [1, 15, 128, 192, 256]) {
+      assert.throws(() => RLP.decode(n))
+    }
   })
 
-  it('returns payload when first byte < 0xb7', () => {
-    const decodedNum = bytesToHex(RLP.decode(BigInt(0x820400)) as Uint8Array)
-    assert.deepEqual(4, decodedNum.length)
-    assert.deepEqual(decodedNum, '0400')
+  it('throws on bigint input', () => {
+    for (const n of [15n, 128n, 0x820400n]) {
+      assert.throws(() => RLP.decode(n))
+    }
+  })
+
+  it('still round-trips integers via encode then decode', () => {
+    for (const n of [1, 15, 128, 192, 256]) {
+      const encoded = RLP.encode(n)
+      assert.deepEqual(RLP.decode(encoded), RLP.decode(Uint8Array.from(encoded)))
+    }
   })
 })
 
