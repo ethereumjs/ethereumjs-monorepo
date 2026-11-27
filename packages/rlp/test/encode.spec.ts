@@ -110,6 +110,14 @@ describe('[RLP]: encode (integer)', () => {
     assert.throws(() => RLP.encode(-1))
   })
 
+  it('encode() rejects NaN / non-integer / non-finite numbers', () => {
+    assert.throws(() => RLP.encode(NaN), /Invalid integer/)
+    assert.throws(() => RLP.encode(1.5), /Invalid integer/)
+    assert.throws(() => RLP.encode(Infinity), /Invalid integer/)
+    assert.throws(() => RLP.encode(-Infinity), /Invalid integer/)
+    assert.throws(() => RLP.encode([NaN]), /Invalid integer/)
+  })
+
   it('encodes integer zero as 0x80', () => {
     assert.deepEqual(bytesToHex(RLP.encode(0)), '80')
   })
