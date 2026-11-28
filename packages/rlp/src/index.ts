@@ -298,6 +298,7 @@ export function encode(input: Input): Uint8Array {
  * RLP-decode a byte payload, optionally returning unconsumed trailing bytes.
  *
  * @param stream When true, return a {@link Decoded} object instead of throwing on trailing data
+ * @throws If the input has zero length (empty buffers are not a valid RLP item; use `0x80` for the empty byte string)
  * @throws If non-stream decoding leaves a non-empty remainder
  * @see https://ethereum.org/en/developers/docs/data-structures-and-encoding/rlp/
  */
@@ -306,8 +307,13 @@ export function decode(input: Input, stream?: false): Uint8Array | NestedUint8Ar
 export function decode(input: Input, stream?: true): Decoded
 /** decode helper. */
 export function decode(input: Input, stream = false): Uint8Array | NestedUint8Array | Decoded {
-  if (typeof input === 'undefined' || input === null || (input as any).length === 0) {
+  // Keep null/undefined as empty for historical API convenience (#1627).
+  // Zero-length payloads are not a valid RLP item (empty string encodes as 0x80).
+  if (typeof input === 'undefined' || input === null) {
     return Uint8Array.from([])
+  }
+  if ((input as any).length === 0) {
+    throw EthereumJSErrorWithoutCode('invalid RLP: input too short')
   }
 
   const inputBytes = toBytes(input)
