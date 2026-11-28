@@ -183,7 +183,7 @@ export const isValidSignature = function (
     return false
   }
 
-  if (homesteadOrLater && sBigInt >= SECP256K1_ORDER_DIV_2) {
+  if (homesteadOrLater && sBigInt > SECP256K1_ORDER_DIV_2) {
     return false
   }
 
